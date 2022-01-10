@@ -1,0 +1,67 @@
+# Copyright (C) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/ohos.gni")
+import("//build/ohos/ace/ace.gni")
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
+
+config("worksched_private_config") {
+  include_dirs = [
+    "//utils/system/safwk/native/include",
+    "${worksched_native_innerkits_path}/native/include",
+  ]
+}
+
+config("worksched_public_config") {
+  include_dirs = [
+    "${worksched_root_path}/interfaces/kits/js/napi/include",
+  ]
+}
+
+js_declaration("workscheduler_js") {
+  part_name = "${worksched_native_part_name}"
+  sources = [
+    "./@ohos.workscheduler.d.ts",
+  ]
+}
+
+ohos_copy("worksched_declaration") {
+  sources = [
+    "./@ohos.workscheduler.d.ts",
+  ]
+  outputs = [ target_out_dir + "/$target_name/" ]
+  module_source_dir = target_out_dir + "/$target_name"
+  module_install_name = ""
+}
+
+ohos_shared_library("workscheduler") {
+    configs = [
+    ":worksched_private_config",
+    ]
+
+    public_configs = [ ":worksched_public_config" ]
+
+    sources = [
+      "${worksched_root_path}/interfaces/kits/js/napi/src/workscheduler_napi.cpp",
+    ]
+
+    deps = [
+        "//foundation/ace/napi:ace_napi",
+        "//base/hiviewdfx/hilog/interfaces/native/innerkits:libhilog",
+        "${worksched_utils_path}:workschedutils",
+    ]
+
+    relative_install_dir = "module"
+    part_name = "${worksched_native_part_name}"
+    subsystem_name = "resourceschedule"
+}
