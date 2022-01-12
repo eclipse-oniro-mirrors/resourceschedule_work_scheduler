@@ -1,0 +1,52 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
+import("//build/test.gni")
+
+config("system_test_config") {
+  include_dirs = [ "//third_party/json/include" ]
+
+  configs = []
+}
+
+module_output_path = "work_scheduler/constanttest"
+ohos_systemtest("WorkSchedulerConstantTest") {
+  module_out_path = module_output_path
+
+  sources = [ "constant_test.cpp" ]
+
+  include_dirs = [
+    "//utils/native/base/include",
+    "${worksched_native_innerkits_path}/native/include",
+  ]
+
+  cflags = []
+
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+
+  deps = [
+    "//third_party/googletest:gtest_main",
+    "//utils/native/base:utils",
+  ]
+}
+
+group("constanttest") {
+  testonly = true
+
+  deps = [
+    ":WorkSchedulerConstantTest"
+  ]
+}
