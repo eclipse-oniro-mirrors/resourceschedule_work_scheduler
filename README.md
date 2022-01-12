@@ -11,19 +11,19 @@
 
 ## Introduction<a name="section11660541593"></a>
 
-In the resource scheduling subsystem, the work scheduler component provides a mechanism for applications to perform tasks that require low real-time performance. When the set conditions are met, it will be put into the executable queue, and the system will delay triggering tasks in the executable queue according to the equipment situation.
+When an application needs to perform tasks that do not require high real-time performance, such as data learning when the device is idle, the work scheduler can be used. When the application setting conditions are met, the mechanism will uniformly decide the scheduling time according to the current state of the system, such as memory, power consumption, heat, etc.
 
 ## Directory Structure<a name="section161941989596"></a>
 
 ```
 
-├── frameworks   # Frameworks
+├── frameworks       # Frameworks
 ├── interfaces
 │   ├── innerkits    # Internal APIs
 │   └── kits         # External APIs
-├── sa_profile   # SA profile
-├── services     # Services
-└── utils        # Utilities
+├── sa_profile       # SA profile
+├── services         # Services
+└── utils            # Utilities
 
 ```
 ## Work Scheduler<a name="section1312121216216"></a>
