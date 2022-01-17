@@ -14,19 +14,15 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("utils_config") {
-  include_dirs = [
-    "native/include"
-  ]
+  include_dirs = [ "native/include" ]
 }
 
 ohos_source_set("workschedutils") {
-  sources = [
-  ]
+  sources = []
 
   public_configs = [ ":utils_config" ]
 
-  deps = [
-  ]
+  deps = []
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",

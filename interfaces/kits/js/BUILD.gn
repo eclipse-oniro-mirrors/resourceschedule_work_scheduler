@@ -17,15 +17,11 @@ import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 js_declaration("workscheduler_js") {
   part_name = "${worksched_native_part_name}"
-  sources = [
-    "./@ohos.workscheduler.d.ts",
-  ]
+  sources = [ "./@ohos.workscheduler.d.ts" ]
 }
 
 ohos_copy("worksched_declaration") {
-  sources = [
-    "./@ohos.workscheduler.d.ts",
-  ]
+  sources = [ "./@ohos.workscheduler.d.ts" ]
   outputs = [ target_out_dir + "/$target_name/" ]
   module_source_dir = target_out_dir + "/$target_name"
   module_install_name = ""
@@ -41,9 +37,7 @@ ohos_shared_library("workscheduler") {
     "${worksched_root_path}/interfaces/kits/js/napi/src/workscheduler_napi.cpp",
   ]
 
-  deps = [
-    "${worksched_utils_path}:workschedutils",
-  ]
+  deps = [ "${worksched_utils_path}:workschedutils" ]
 
   external_deps = [
     "hiviewdfx_hilog_native:libhilog",
