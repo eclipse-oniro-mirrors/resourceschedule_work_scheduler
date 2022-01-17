@@ -13,39 +13,23 @@
 
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
-config("worksched_private_config") {
-  include_dirs = [
-    "//utils/native/base/include"
-  ]
-}
-
 config("worksched_public_config") {
-  include_dirs = [
-    "native/include"
-  ]
+  include_dirs = [ "native/include" ]
 }
 
 ohos_shared_library("workschedservice") {
-  sources = [
-    "native/src/work_scheduler_service.cpp"
-  ]
-
-  configs = [
-    ":worksched_private_config",
-  ]
+  sources = [ "native/src/work_scheduler_service.cpp" ]
 
   public_configs = [ ":worksched_public_config" ]
 
-  deps = [
-    "//utils/native/base:utils",
-    "${worksched_utils_path}:workschedutils",
-  ]
+  deps = [ "${worksched_utils_path}:workschedutils" ]
 
   external_deps = [
-    "safwk:system_ability_fwk",
-    "ipc:ipc_core",
-    "samgr_standard:samgr_proxy",
     "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "safwk:system_ability_fwk",
+    "samgr_standard:samgr_proxy",
+    "utils_base:utils",
   ]
 
   part_name = "${worksched_native_part_name}"

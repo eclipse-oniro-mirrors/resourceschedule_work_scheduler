@@ -14,24 +14,19 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("utils_config") {
-  include_dirs = [
-    "native/include",
-    "//utils/native/base/include"
-  ]
+  include_dirs = [ "native/include" ]
 }
 
 ohos_source_set("workschedutils") {
-  sources = [
-  ]
+  sources = []
 
   public_configs = [ ":utils_config" ]
 
-  deps = [
-    "//utils/native/base:utils"
-  ]
+  deps = []
 
   external_deps = [
-    "hiviewdfx_hilog_native:libhilog"
+    "hiviewdfx_hilog_native:libhilog",
+    "utils_base:utils",
   ]
 
   part_name = "${worksched_native_part_name}"
