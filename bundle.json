@@ -1,0 +1,49 @@
+{
+    "name": "@ohos/work_scheduler",
+    "description": "work scheduler service",
+    "version": "3.1",
+    "license": "Apache License 2.0",
+    "publishAs": "code-segment",
+    "segment": {
+      "destPath" : "foundation/resourceschedule/work_scheduler"
+    },
+    "dirs": {},
+    "scripts": {},
+    "component": {
+      "name": "work_scheduler",
+      "subsystem": "resourceschedule",
+      "syscap": [ "SystemCapability.Ressched.WorkScheduler" ],
+      "features": [],
+      "adapted_system_type": [
+        "mini",
+        "small",
+        "standard"
+      ],
+      "rom": "2048KB",
+      "ram": "10240KB",
+      "deps": {
+        "components": [
+          "hiviewdfx_hilog_native",
+          "ipc",
+          "napi",
+          "safwk",
+          "samgr_standard",
+          "utils_base"
+        ],
+        "third_party": [ "googletest" ]
+      },
+      "build": {
+        "sub_component": [
+          "//foundation/resourceschedule/work_scheduler/services:workschedservice",
+          "//foundation/resourceschedule/work_scheduler/sa_profile:worksched_sa_profile",
+          "//foundation/resourceschedule/work_scheduler/sa_profile:work_scheduler_service_init",
+          "//foundation/resourceschedule/work_scheduler/interfaces/kits/js:workscheduler",
+          "//foundation/resourceschedule/work_scheduler/interfaces/kits/js:workscheduler_js"
+        ],
+        "inner_kits": [],
+        "test": [
+            "//foundation/resourceschedule/work_scheduler/test/constanttest:constanttest"
+        ]
+      }
+    }
+}
