@@ -14,12 +14,6 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 import("//build/test.gni")
 
-config("system_test_config") {
-  include_dirs = [ "//third_party/json/include" ]
-
-  configs = []
-}
-
 module_output_path = "work_scheduler/constanttest"
 ohos_systemtest("WorkSchedulerConstantTest") {
   module_out_path = module_output_path
@@ -27,7 +21,6 @@ ohos_systemtest("WorkSchedulerConstantTest") {
   sources = [ "constant_test.cpp" ]
 
   include_dirs = [
-    "//utils/native/base/include",
     "${worksched_native_innerkits_path}/native/include",
   ]
 
@@ -39,7 +32,10 @@ ohos_systemtest("WorkSchedulerConstantTest") {
 
   deps = [
     "//third_party/googletest:gtest_main",
-    "//utils/native/base:utils",
+  ]
+
+  external_deps = [
+    "utils_base:utils",
   ]
 }
 
