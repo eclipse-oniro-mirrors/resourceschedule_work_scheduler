@@ -18,6 +18,7 @@
 
 #include <string>
 #include <memory>
+#include <time.h>
 
 namespace OHOS {
 namespace WorkScheduler {
