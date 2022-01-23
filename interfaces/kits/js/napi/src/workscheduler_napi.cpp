@@ -19,7 +19,6 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-
 EXTERN_C_START
 
 static const uint8_t ARG_FIRST = 1;
@@ -56,9 +55,12 @@ napi_value InitNetworkType(napi_env env, napi_value exports)
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_ANY), &network_type_any);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_MOBILE), &network_type_mobile);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_WIFI), &network_type_wifi);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_BLUETOOTH), &network_type_bluetooth);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_WIFI_P2P), &network_type_wifi_p2p);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_ETHERNET), &network_type_ethernet);
+    napi_create_uint32(env,
+        static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_BLUETOOTH), &network_type_bluetooth);
+    napi_create_uint32(env,
+        static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_WIFI_P2P), &network_type_wifi_p2p);
+    napi_create_uint32(env,
+        static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_ETHERNET), &network_type_ethernet);
 
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_ANY", network_type_any),
@@ -110,7 +112,8 @@ napi_value InitChargingType(napi_env env, napi_value exports)
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGER_PLUGGED_ANY), &charging_plugged_any);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGER_PLUGGED_AC), &charging_plugged_ac);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGER_PLUGGED_USB), &charging_plugged_usb);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGER_PLUGGED_WIRELESS), &charging_plugged_wireless);
+    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGER_PLUGGED_WIRELESS),
+        &charging_plugged_wireless);
 
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_ANY", charging_plugged_any),
@@ -120,7 +123,8 @@ napi_value InitChargingType(napi_env env, napi_value exports)
     };
 
     napi_value result = nullptr;
-    napi_define_class(env, "ChargingType", NAPI_AUTO_LENGTH, EnumChargingTypeConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
+    napi_define_class(env, "ChargingType", NAPI_AUTO_LENGTH,
+        EnumChargingTypeConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
     napi_create_reference(env, result, refCount, &chargingTypeConstructor_);
     napi_set_named_property(env, exports, "ChargingType", result);
     return exports;
@@ -152,9 +156,12 @@ napi_value InitBatteryStatus(napi_env env, napi_value exports)
     napi_value battery_status_low_or_okay;
     int32_t refCount = 1;
 
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW), &battery_status_low);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY), &battery_status_okay);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY), &battery_status_low_or_okay);
+    napi_create_uint32(env,
+        static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW), &battery_status_low);
+    napi_create_uint32(env,
+        static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY), &battery_status_okay);
+    napi_create_uint32(env,
+        static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY), &battery_status_low_or_okay);
 
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_STATIC_PROPERTY("BATTERY_STATUS_LOW", battery_status_low),
@@ -238,6 +245,5 @@ __attribute__((constructor)) void RegisterModule(void)
     napi_module_register(&_module);
 }
 EXTERN_C_END
-
 }
 }

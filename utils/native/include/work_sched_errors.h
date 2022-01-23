@@ -20,7 +20,6 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-
 // WorkScheduler's module const defined.
 enum {
     WORKSCHED_MODULE_TYPE = 0x00,
@@ -45,5 +44,4 @@ enum {
 
 } // namespace WorkScheduler
 } // namespace OHOS
-
 #endif // WORK_SCHED_UTILS_ERRORS_H

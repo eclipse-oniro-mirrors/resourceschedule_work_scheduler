@@ -18,7 +18,6 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-
 namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(
