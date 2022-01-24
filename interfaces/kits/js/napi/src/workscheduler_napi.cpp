@@ -72,9 +72,11 @@ napi_value InitNetworkType(napi_env env, napi_value exports)
     };
 
     napi_value result = nullptr;
-    napi_define_class(env, "NetworkType", NAPI_AUTO_LENGTH, EnumNetworkTypeConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
+    napi_define_class(env, "NetworkType", NAPI_AUTO_LENGTH,
+        EnumNetworkTypeConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
     napi_create_reference(env, result, refCount, &networkTypeConstructor_);
-    napi_define_class(env, "NetworkType", NAPI_AUTO_LENGTH, EnumNetworkTypeConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
+    napi_define_class(env, "NetworkType", NAPI_AUTO_LENGTH,
+        EnumNetworkTypeConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
     napi_create_reference(env, result, refCount, &networkTypeConstructor_);
     napi_set_named_property(env, exports, "NetworkType", result);
     return exports;
@@ -170,7 +172,8 @@ napi_value InitBatteryStatus(napi_env env, napi_value exports)
     };
 
     napi_value result = nullptr;
-    napi_define_class(env, "BatteryStatus", NAPI_AUTO_LENGTH, EnumBatteryStatusConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
+    napi_define_class(env, "BatteryStatus", NAPI_AUTO_LENGTH,
+        EnumBatteryStatusConstructor, nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
     napi_create_reference(env, result, refCount, &batteryStatusConstructor_);
     napi_set_named_property(env, exports, "BatteryStatus", result);
     return exports;
@@ -202,9 +205,12 @@ napi_value InitStorageRequest(napi_env env, napi_value exports)
     napi_value storage_level_low_or_okay;
     int32_t refCount = 1;
     
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_LOW), &storage_level_low);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_OKAY), &storage_level_okay);
-    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY), &storage_level_low_or_okay);
+    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_LOW),
+        &storage_level_low);
+    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_OKAY),
+        &storage_level_okay);
+    napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY),
+        &storage_level_low_or_okay);
 
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_STATIC_PROPERTY("STORAGE_LEVEL_LOW", storage_level_low),

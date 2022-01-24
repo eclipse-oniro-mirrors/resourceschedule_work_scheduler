@@ -41,7 +41,6 @@ enum {
     E_ADD_WORK_SCHED_DEATH_RECIPIENT_FAILED,
     E_INNER_ERR
 };
-
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // WORK_SCHED_UTILS_ERRORS_H

@@ -24,7 +24,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerService final : public SystemAbility,
-    public std::enable_shared_from_this<WorkSchedulerService>{
+    public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
     DECLARE_SYSTEM_ABILITY(WorkSchedulerService);
     DECLARE_DELAYED_SINGLETON(WorkSchedulerService);
