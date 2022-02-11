@@ -30,4 +30,3 @@ public:
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // OHOS_ZIDL_I_WORK_SCHED_H
-

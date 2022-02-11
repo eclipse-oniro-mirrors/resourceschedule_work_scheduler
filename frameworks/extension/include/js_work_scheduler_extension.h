@@ -25,21 +25,21 @@ namespace OHOS {
 namespace WorkScheduler {
 class JsWorkSchedulerExtension : public WorkSchedulerExtension {
 public:
-    JsWorkSchedulerExtension(AbilityRuntime::JsRuntime& jsRuntime);
+    JsWorkSchedulerExtension(AbilityRuntime::JsRuntime &jsRuntime);
     virtual ~JsWorkSchedulerExtension() override;
 
     static JsWorkSchedulerExtension* Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime);
 
-    void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord>& record,
-              const std::shared_ptr<AppExecFwk::OHOSApplication>& application,
-              std::shared_ptr<AppExecFwk::AbilityHandler>& handler,
-              const sptr<IRemoteObject>& token) override;
+    void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord> &record,
+              const std::shared_ptr<AppExecFwk::OHOSApplication> &application,
+              std::shared_ptr<AppExecFwk::AbilityHandler> &handler,
+              const sptr<IRemoteObject> &token) override;
 
-    void OnStart(const AAFwk::Want& want) override;
+    void OnStart(const AAFwk::Want &want) override;
 
-    sptr<IRemoteObject> OnConnect(const AAFwk::Want& want) override;
+    sptr<IRemoteObject> OnConnect(const AAFwk::Want &want) override;
 
-    void OnDisconnect(const AAFwk::Want& want) override;
+    void OnDisconnect(const AAFwk::Want &want) override;
 
     void OnStop() override;
 
@@ -48,7 +48,7 @@ public:
     void OnWorkStop() override;
 private:
     void GetSrcPath(std::string &srcPath);
-    AbilityRuntime::JsRuntime& jsRuntime_;
+    AbilityRuntime::JsRuntime &jsRuntime_;
     std::unique_ptr<NativeReference> jsObj_;
 };
 }  // namespace WorkScheduler

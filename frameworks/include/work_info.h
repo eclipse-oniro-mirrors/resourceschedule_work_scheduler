@@ -53,14 +53,13 @@ public:
     WorkCondition::Storage GetStorageLevel();
     bool IsRepeat();
     uint32_t GetTimeInterval();
-
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
-
     bool Marshalling(Parcel &parcel) const override;
     static WorkInfo *Unmarshalling(Parcel &parcel);
     void Dump(std::string &result);
     std::string ParseToJsonStr();
     bool ParseFromJson(const Json::Value value);
+
 private:
     int32_t workId_;
     std::string bundleName_;
