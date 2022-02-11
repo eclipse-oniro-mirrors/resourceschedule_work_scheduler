@@ -12,9 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-#ifndef WORKSCHED_NAPI_H
-#define WORKSCHED_NAPI_H
+#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHED_NAPI_H
+#define FOUNDATION_RESOURCESCHEDULE_WORKSCHED_NAPI_H
 
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
@@ -49,10 +48,10 @@ napi_module _module = {
     .nm_flags = 0,
     .nm_filename = nullptr,
     .nm_register_func = Init,
-    .nm_modname = "workscheduler",
+    .nm_modname = "workScheduler",
     .nm_priv = ((void *)0),
     .reserved = {0}
 };
-}
-}
+}  // namespace WorkScheduler
+}  // namespace OHOS
 #endif

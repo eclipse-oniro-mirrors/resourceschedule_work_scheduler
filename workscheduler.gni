@@ -21,11 +21,9 @@ worksched_service_path = "${worksched_root_path}/services"
 
 worksched_kits_path = "${worksched_root_path}/kits"
 
-worksched_utils_path = "${worksched_root_path}/utils"
+worksched_utils_path = "${worksched_root_path}/utils/native"
 
 worksched_interfaces_path = "${worksched_root_path}/interfaces"
-
-worksched_native_innerkits_path = "${worksched_interfaces_path}/innerkits"
 
 worksched_frameworks_path = "${worksched_root_path}/frameworks"
 

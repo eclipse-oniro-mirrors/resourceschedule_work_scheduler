@@ -13,22 +13,64 @@
 
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
+config("worksched_private_config") {
+  include_dirs = [ "${worksched_service_path}/zidl/include" ]
+}
+
 config("worksched_public_config") {
   include_dirs = [ "native/include" ]
 }
 
 ohos_shared_library("workschedservice") {
-  sources = [ "native/src/work_scheduler_service.cpp" ]
+  sources = [
+    "native/src/conditions/battery_level_listener.cpp",
+    "native/src/conditions/battery_status_listener.cpp",
+    "native/src/conditions/charger_listener.cpp",
+    "native/src/conditions/network_listener.cpp",
+    "native/src/conditions/storage_listener.cpp",
+    "native/src/conditions/timer_listener.cpp",
+    "native/src/policy/app_removed_listener.cpp",
+    "native/src/policy/memory_policy.cpp",
+    "native/src/policy/thermal_policy.cpp",
+    "native/src/work_conn_manager.cpp",
+    "native/src/work_event_handler.cpp",
+    "native/src/work_policy_manager.cpp",
+    "native/src/watchdog.cpp",
+    "native/src/work_queue.cpp",
+    "native/src/work_queue_event_handler.cpp",
+    "native/src/work_queue_manager.cpp",
+    "native/src/work_scheduler_connection.cpp",
+    "native/src/work_scheduler_service.cpp",
+    "native/src/work_status.cpp",
+    "zidl/src/work_sched_service_stub.cpp",
+    "zidl/src/work_scheduler_proxy.cpp",
+  ]
+
+  configs = [ ":worksched_private_config" ]
 
   public_configs = [ ":worksched_public_config" ]
 
-  deps = [ "${worksched_utils_path}:workschedutils" ]
+  deps = [
+    "${worksched_frameworks_path}:workschedclient",
+    "${worksched_frameworks_path}/extension:workschedextension",
+    "${worksched_utils_path}:workschedutils",
+    "//third_party/jsoncpp",
+  ]
 
   external_deps = [
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
+    "ability_runtime:want",
+    "battery_manager_native:batterysrv_client",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "ces_standard:cesfwk_innerkits",
+    "eventhandler:libeventhandler",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
+    "thermal_manager_native:thermalsrv_client",
     "utils_base:utils",
   ]
 
