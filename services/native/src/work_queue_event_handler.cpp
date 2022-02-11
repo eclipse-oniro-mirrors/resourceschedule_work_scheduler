@@ -21,8 +21,6 @@ using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
-static const int TIMER_TICK_DELAY = 600000;
-
 WorkQueueEventHandler::WorkQueueEventHandler(const shared_ptr<AppExecFwk::EventRunner>& runner,
     shared_ptr<WorkQueueManager> manager) : AppExecFwk::EventHandler(runner)
 {
@@ -35,8 +33,12 @@ void WorkQueueEventHandler::ProcessEvent([[maybe_unused]] const AppExecFwk::Inne
     WS_HILOGD("WorkQueueEventHandler::%{public}s, eventId: %{public}d", __func__, event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
         case TIMER_TICK: {
+            if (manager_ == nullptr) {
+                return;
+            }
             manager_->OnConditionChanged(WorkCondition::Type::TIMER, make_shared<DetectorValue>(0, 0, 0, string()));
-            SendEvent(AppExecFwk::InnerEvent::Get(TIMER_TICK, 0), TIMER_TICK_DELAY);
+            int time = manager_->GetTimeCycle();
+            SendEvent(AppExecFwk::InnerEvent::Get(TIMER_TICK, 0), time);
             break;
         }
         default: {

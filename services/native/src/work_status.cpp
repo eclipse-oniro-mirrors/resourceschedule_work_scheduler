@@ -51,34 +51,6 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
         }
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
     }
-    // if (workInfo.GetConditionMap()->count(WorkCondition::Type::CHARGER) > 0) {
-    //     shared_ptr<Condition> chargerCondition = make_shared<Condition>();
-    //     chargerCondition->enumVal = -1;
-    //     BatteryPluggedType pluggedType = BatterySrvClient::GetInstance().GetPluggedType();
-    //     switch (pluggedType) {
-    //         case BatteryPluggedType::PLUGGED_TYPE_NONE:
-    //             chargerCondition->boolVal = false;
-    //             chargerCondition->enumVal = WorkCondition::Charger::CHARGING_UNPLUGGED;
-    //             break;
-    //         case BatteryPluggedType::PLUGGED_TYPE_AC:
-    //             chargerCondition->boolVal = true;
-    //             chargerCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_AC;
-    //             break;
-    //         case BatteryPluggedType::PLUGGED_TYPE_USB:
-    //             chargerCondition->boolVal = true;
-    //             chargerCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_USB;
-    //             break;
-    //         case BatteryPluggedType::PLUGGED_TYPE_WIRELESS:
-    //             chargerCondition->boolVal = true;
-    //             chargerCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_WIRELESS;
-    //             break;
-    //         default:
-    //             break;
-    //     }
-    //     if (chargerCondition->enumVal != -1) {
-    //         conditionMap_.emplace(WorkCondition::Type::CHARGER, chargerCondition);
-    //     }
-    // }
     this->persisted_ = workInfo.IsPersisted();
     this->priority_ = DEFAULT_PRIORITY;
     this->currentStatus_ = WAIT_CONDITION;
@@ -129,7 +101,8 @@ void WorkStatus::UpdateTimerIfNeed()
     }
 }
 
-bool WorkStatus::NeedRemove() {
+bool WorkStatus::NeedRemove()
+{
     if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return true;
     }
@@ -142,7 +115,8 @@ bool WorkStatus::NeedRemove() {
     return false;
 }
 
-bool WorkStatus::IsSameUser() {
+bool WorkStatus::IsSameUser()
+{
 
     if (WorkSchedUtils::GetCurrentAccountId() != userId_) {
         return false;
@@ -200,7 +174,9 @@ bool WorkStatus::IsReady()
             }
             case WorkCondition::Type::TIMER: {
                 uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-                if ((getCurrentTime() - baseTime_) * ONE_SECOND < static_cast<time_t>(intervalTime)) {
+                double del = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
+                WS_HILOGD("del time:%{public}f, intervalTime:%{public}d", del, intervalTime);
+                if (del < intervalTime) {
                     return false;
                 }
                 break;

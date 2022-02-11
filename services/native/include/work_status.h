@@ -72,5 +72,4 @@ private:
 };
 } // namespace WorkScheduler
 } // namespace OHOS
-
 #endif // WORK_SCHED_SERVICES_WORK_STATUS_H
