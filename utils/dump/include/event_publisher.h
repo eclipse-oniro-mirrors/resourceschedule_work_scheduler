@@ -29,6 +29,8 @@ public:
     void PublishNetworkEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
     void PublishChargingEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
     void PublishStorageEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    void PublishbatteryStatusEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    void PublishbatteryLevelEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
 };
 }
 }
