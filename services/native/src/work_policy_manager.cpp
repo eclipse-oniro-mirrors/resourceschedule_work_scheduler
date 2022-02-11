@@ -355,7 +355,8 @@ void WorkPolicyManager::WatchdogTimeOut(int32_t watchdogId)
     wmsptr->WatchdogTimeOut(workStatus);
 }
 
-std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(int32_t id) {
+std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(int32_t id)
+{
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     return watchdogIdMap_.at(id);
 }

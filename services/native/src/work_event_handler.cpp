@@ -15,8 +15,8 @@
 
 #include "work_event_handler.h"
 
+#include "work_scheduler_service.h"
 #include "work_sched_common.h"
-#include "work_policy_manager.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;

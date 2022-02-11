@@ -19,10 +19,10 @@
 #include <event_handler.h>
 #include <refbase.h>
 #include <memory>
-#include "work_scheduler_service.h"
 
 namespace OHOS {
 namespace WorkScheduler {
+class WorkSchedulerService;
 class WorkEventHandler : public AppExecFwk::EventHandler {
 public:
     enum {

@@ -23,15 +23,6 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-class NetworkListener;
-class NetworkEventSubscriber : public EventFwk::CommonEventSubscriber {
-public:
-    NetworkEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo, NetworkListener &listener);
-    ~NetworkEventSubscriber() override = default;
-    void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
-private:
-    NetworkListener &listener_;
-};
 class NetworkListener : public IConditionListener {
 public:
     NetworkListener(std::shared_ptr<WorkQueueManager> workQueueManager);
@@ -43,6 +34,15 @@ public:
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<EventFwk::CommonEventSubscriber> commonEventSubscriber = nullptr;
+};
+
+class NetworkEventSubscriber : public EventFwk::CommonEventSubscriber {
+public:
+    NetworkEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo, NetworkListener &listener);
+    ~NetworkEventSubscriber() override = default;
+    void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
+private:
+    NetworkListener &listener_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -14,7 +14,6 @@
  */
 #include "work_conn_manager.h"
 
-#include <fstream>
 #include <if_system_ability_manager.h>
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
@@ -41,7 +40,8 @@ void WorkConnManager::RemoveConnInfo(string &workId)
     connMap_.erase(workId);
 }
 
-sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId) {
+sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
+{
     std::lock_guard<std::mutex> lock(connMapMutex_);
     if (connMap_.count(workId) >= 0) {
         return connMap_.at(workId);
@@ -56,17 +56,17 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get ability manager service.");
+        WS_HILOGI("WorkSchedulerExtension Failed to get system ability manager service.");
         return false;
     }
     sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
     if (remoteObject == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to ams service.");
+        WS_HILOGI("WorkSchedulerExtension Failed to ability manager service.");
         return false;
     }
     sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
     if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get system ability manager services ability");
+        WS_HILOGI("WorkSchedulerExtension Failed to get ability manager services object");
         return false;
     }
 
@@ -89,17 +89,17 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get ability manager service.");
+        WS_HILOGI("WorkSchedulerExtension Failed to get system ability manager service.");
         return false;
     }
     sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
     if (remoteObject == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to ams service.");
+        WS_HILOGI("WorkSchedulerExtension Failed to ability manager service.");
         return false;
     }
     sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
     if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get system ability manager services ability");
+        WS_HILOGI("WorkSchedulerExtension Failed to  get ability manager services object.");
         return false;
     }
     int ret = abilityMgr_->DisconnectAbility(connect);

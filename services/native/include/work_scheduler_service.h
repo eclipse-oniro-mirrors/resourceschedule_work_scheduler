@@ -30,8 +30,6 @@
 #include "delayed_sp_singleton.h"
 #include "policy/app_removed_listener.h"
 #include "work_info.h"
-#include "work_policy_manager.h"
-#include "work_queue_manager.h"
 #include "work_sched_service_stub.h"
 #include "work_status.h"
 #include "work_event_handler.h"

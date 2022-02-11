@@ -23,15 +23,6 @@ namespace OHOS {
 using namespace EventFwk;
 namespace WorkScheduler {
 class WorkPolicyManager;
-class AppRemovedListener;
-class AppRemovedSubscriber : public CommonEventSubscriber {
-public:
-    AppRemovedSubscriber(const CommonEventSubscribeInfo &subscribeInfo, AppRemovedListener &listener);
-    ~AppRemovedSubscriber() override = default;
-    void OnReceiveEvent(const CommonEventData &data) override;
-private:
-    AppRemovedListener &listener_;
-};
 class AppRemovedListener : public IPolicyListener {
 public:
     AppRemovedListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
@@ -43,6 +34,15 @@ public:
 private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     std::shared_ptr<CommonEventSubscriber> commonEventSubscriber = nullptr;
+};
+
+class AppRemovedSubscriber : public CommonEventSubscriber {
+public:
+    AppRemovedSubscriber(const CommonEventSubscribeInfo &subscribeInfo, AppRemovedListener &listener);
+    ~AppRemovedSubscriber() override = default;
+    void OnReceiveEvent(const CommonEventData &data) override;
+private:
+    AppRemovedListener &listener_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

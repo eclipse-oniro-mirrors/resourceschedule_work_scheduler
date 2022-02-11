@@ -25,16 +25,6 @@
 namespace OHOS {
 namespace WorkScheduler {
 class WorkQueueManager;
-class BatteryLevelListener;
-class BatteryLevelEventSubscriber : public EventFwk::CommonEventSubscriber {
-public:
-    BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
-        BatteryLevelListener &listener);
-    ~BatteryLevelEventSubscriber() override = default;
-    void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
-private:
-    BatteryLevelListener &listener_;
-};
 class BatteryLevelListener : public IConditionListener {
 public:
     BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager);
@@ -47,6 +37,16 @@ public:
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<EventFwk::CommonEventSubscriber> commonEventSubscriber = nullptr;
+};
+
+class BatteryLevelEventSubscriber : public EventFwk::CommonEventSubscriber {
+public:
+    BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
+        BatteryLevelListener &listener);
+    ~BatteryLevelEventSubscriber() override = default;
+    void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
+private:
+    BatteryLevelListener &listener_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

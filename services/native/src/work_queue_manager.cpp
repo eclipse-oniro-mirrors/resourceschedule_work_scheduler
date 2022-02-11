@@ -145,7 +145,8 @@ void WorkQueueManager::SetTimeCycle(int time)
     timeCycle_ = time;
 }
 
-int WorkQueueManager::GetTimeCycle() {
+int WorkQueueManager::GetTimeCycle()
+{
     return timeCycle_;
 }
 } // namespace WorkScheduler

@@ -85,12 +85,4 @@ namespace WorkScheduler {
         }                                                                           \
     } while (0)
 
-#define WRITE_TO_LOG_FILE(logstr)                                                   \
-    do {                                                                            \
-        ofstream fout;                                                              \
-        fout.open(TEST_LOG_FILE_PATH, ios::out);                                        \
-        fout<<logstr<<endl;                                                 \
-        fout.close();                                                               \
-    } while (0)
-
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_COMMON_H

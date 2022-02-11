@@ -24,16 +24,6 @@
 namespace OHOS {
 namespace WorkScheduler {
 class WorkQueueManager;
-class ChargerListener;
-class ChargerEventSubscriber : public EventFwk::CommonEventSubscriber {
-public:
-    ChargerEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
-        ChargerListener &listener);
-    ~ChargerEventSubscriber() override = default;
-    void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
-private:
-    ChargerListener &listener_;
-};
 class ChargerListener : public IConditionListener {
 public:
     ChargerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
@@ -46,6 +36,16 @@ public:
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<EventFwk::CommonEventSubscriber> commonEventSubscriber = nullptr;
+};
+
+class ChargerEventSubscriber : public EventFwk::CommonEventSubscriber {
+public:
+    ChargerEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
+        ChargerListener &listener);
+    ~ChargerEventSubscriber() override = default;
+    void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
+private:
+    ChargerListener &listener_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

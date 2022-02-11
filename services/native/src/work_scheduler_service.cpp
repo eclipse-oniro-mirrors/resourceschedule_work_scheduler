@@ -53,14 +53,18 @@ namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 auto wss = DelayedSpSingleton<WorkSchedulerService>::GetInstance();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss.GetRefPtr());
-static const string ALL_INFO = "All";
-static const string WORK_QUEUE_INFO = "WorkQueue";
-static const string WORK_POLICY_INFO = "WorkPolicy";
-static const string SET_FIX_MEMORY = "SetFixMemory";
-static const string SET_REPEAT_CYCLE_TIME_MIN = "SetRepeatCycleTimeMin";
-static const string SET_WATCHDOG_TIME = "SetWatchdogTime";
-static const string CHECK_BUNDLE = "CheckBundle";
-static const string DEBUG_INFO = "DebugInfo";
+const string ALL_INFO = "All";
+const string WORK_QUEUE_INFO = "WorkQueue";
+const string WORK_POLICY_INFO = "WorkPolicy";
+const string SET_FIX_MEMORY = "SetFixMemory";
+const string SET_REPEAT_CYCLE_TIME_MIN = "SetRepeatCycleTimeMin";
+const string SET_WATCHDOG_TIME = "SetWatchdogTime";
+const string CHECK_BUNDLE = "CheckBundle";
+const string DEBUG_INFO = "DebugInfo";
+const int32_t DELAY_READ_PERSIST = 15 * 1000;
+const int32_t MAX_BUFFER = 256;
+const int32_t DUMP_PARAM_INDEX = 1;
+const int32_t DUMP_VALUE_INDEX = 2;
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -85,7 +89,7 @@ void WorkSchedulerService::OnStart()
         return;
     }
 
-    GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::INIT_PERSISTED_MSG, 0), 15000);
+    GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::INIT_PERSISTED_MSG, 0), DELAY_READ_PERSIST);
     checkBundle_ = true;
     ready_ = true;
 
@@ -111,10 +115,10 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
         WS_HILOGE("cannot open file %{public}s", PERSISTED_FILE_PATH);
         return workInfos;
     }
-    char buffer[256];
+    char buffer[MAX_BUFFER];
     ostringstream os;
     while (!fin.eof()) {
-        fin.getline(buffer, 256);
+        fin.getline(buffer, MAX_BUFFER);
         os << buffer;
     }
     string data = os.str();
@@ -408,28 +412,28 @@ shared_ptr<WorkInfo> WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &
 
 bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<string> &dumpInfo)
 {
-    if (dumpOption[1] == ALL_INFO) {
+    if (dumpOption[DUMP_PARAM_INDEX] == ALL_INFO) {
         DumpAllInfo(dumpInfo);
-    } else if (dumpOption[1] == CHECK_BUNDLE) {
-        if (dumpOption[2] == "true") {
+    } else if (dumpOption[DUMP_PARAM_INDEX] == CHECK_BUNDLE) {
+        if (dumpOption[DUMP_VALUE_INDEX] == "true") {
             checkBundle_ = true;
-        } else if (dumpOption[2] == "false") {
+        } else if (dumpOption[DUMP_VALUE_INDEX] == "false") {
             checkBundle_ = false;
         }
-    } else if (dumpOption[1] == SET_FIX_MEMORY) {
-        workPolicyManager_->SetFixMemory(std::stoi(dumpOption[2]));
+    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_FIX_MEMORY) {
+        workPolicyManager_->SetFixMemory(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
         return true;
-    } else if (dumpOption[1] == SET_WATCHDOG_TIME) {
-        workPolicyManager_->SetWatchdogTime(std::stoi(dumpOption[2]));
+    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_WATCHDOG_TIME) {
+        workPolicyManager_->SetWatchdogTime(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
         return true;
-    } else if (dumpOption[1] == SET_REPEAT_CYCLE_TIME_MIN) {
-        workQueueManager_->SetTimeCycle(std::stoi(dumpOption[2]));
+    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_REPEAT_CYCLE_TIME_MIN) {
+        workQueueManager_->SetTimeCycle(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
         return true;
-    } else if (dumpOption[1] == WORK_QUEUE_INFO) {
+    } else if (dumpOption[DUMP_PARAM_INDEX] == WORK_QUEUE_INFO) {
         DumpWorkQueueInfo(dumpInfo);
-    } else if (dumpOption[1] == WORK_POLICY_INFO) {
+    } else if (dumpOption[DUMP_PARAM_INDEX] == WORK_POLICY_INFO) {
         DumpWorkPolicyInfo(dumpInfo);
-    } else if (dumpOption[1] == DEBUG_INFO) {
+    } else if (dumpOption[DUMP_PARAM_INDEX] == DEBUG_INFO) {
         DumpDebugInfo(dumpInfo);
         return true;
     } else {

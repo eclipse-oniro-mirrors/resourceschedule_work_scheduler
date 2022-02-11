@@ -19,7 +19,8 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-void WorkSchedulerConnection::StopWork() {
+void WorkSchedulerConnection::StopWork()
+{
     if (proxy_ == nullptr) {
         WS_HILOGE("proxy is null");
         return;
