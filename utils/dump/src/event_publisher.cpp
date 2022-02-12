@@ -87,6 +87,7 @@ void EventPublisher::PublishNetworkEvent(const std::vector<std::string> &dumpOpt
         dumpInfo.push_back(std::string("publishing COMMON_EVENT_WIFI_CONN_STATE"));
     } else {
         dumpInfo.push_back(std::string("dump need right param."));
+        return;
     }
     EventFwk::CommonEventData data;
     data.SetWant(want);
@@ -121,6 +122,7 @@ void EventPublisher::PublishChargingEvent(const std::vector<std::string> &dumpOp
         data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE)));
     } else {
         dumpInfo.push_back(std::string("dump need right param."));
+        return;
     }
     EventFwk::CommonEventPublishInfo publishInfo;
     publishInfo.SetOrdered(false);
@@ -139,6 +141,7 @@ void EventPublisher::PublishStorageEvent(const std::vector<std::string> &dumpOpt
         dumpInfo.push_back(std::string("publishing COMMON_EVENT_DEVICE_STORAGE_OKAY"));
     } else {
         dumpInfo.push_back(std::string("dump need right param."));
+        return;
     }
     EventFwk::CommonEventData data;
     data.SetWant(want);
@@ -152,18 +155,25 @@ void EventPublisher::PublishbatteryStatusEvent(const std::vector<std::string> &d
     if (dumpOption[DETAIL_PARAM] == EV_STORAGE_LOW) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_LOW);
         dumpInfo.push_back(std::string("publishing COMMON_EVENT_BATTERY_LOW"));
+        EventFwk::CommonEventData data;
+        data.SetWant(want);
+        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
+        data.SetData("0");
+        bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
+        dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
     } else if (dumpOption[DETAIL_PARAM] == EV_STORAGE_OKAY) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_OKAY);
         dumpInfo.push_back(std::string("publishing COMMON_EVENT_BATTERY_OKAY"));
+        EventFwk::CommonEventData data;
+        data.SetWant(want);
+        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
+        data.SetData("100");
+        bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
+        dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
     } else {
         dumpInfo.push_back(std::string("dump need right param."));
+        return;
     }
-    EventFwk::CommonEventData data;
-    data.SetWant(want);
-    data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
-    data.SetData(0);
-    bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-    dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
 }
 
 void EventPublisher::PublishbatteryLevelEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
