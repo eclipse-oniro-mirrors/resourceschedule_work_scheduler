@@ -20,6 +20,9 @@ using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
+const BUF_LIMIT = 128;
+const NAME_SIZE = 20;
+
 MemoryPolicy::MemoryPolicy(shared_ptr<WorkPolicyManager> workPolicyManager)
 {
     workPolicyManager_ = workPolicyManager;
@@ -45,10 +48,10 @@ int32_t MemoryPolicy::GetMemAvailable()
         WS_HILOGE("GetMemAvailable file open failed.");
         memAvailable = IPolicyFilter::CANNOT_RUNNING_MORE;
     }
-    char buf[128];
-    int buff_len = 128;
+    char buf[BUF_LIMIT];
+    int buff_len = BUF_LIMIT;
     const char mem_name[] = "MemAvailable";
-    char name[20];
+    char name[NAME_SIZE];
     int32_t value = -1;
     while (fgets(buf, buff_len, fp) != NULL) {
         sscanf(buf, "%s%d", name, &value);
@@ -70,7 +73,7 @@ int32_t MemoryPolicy::getPolicyMaxRunning()
     if (memAvailable <= MEM_CRUCIAL) {
         return COUNT_MEMORY_CRUCIAL;
     }
-    if (memAvailable <= MEM_LOW && memAvailable > MEM_CRUCIAL) {
+    if (memAvailable <= MEM_LOW) {
         return COUNT_MEMORY_LOW;
     }
     WS_HILOGI("memory left normal");
