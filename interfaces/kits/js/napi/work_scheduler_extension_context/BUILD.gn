@@ -15,7 +15,6 @@ import("//ark/ts2abc/ts2panda/ts2abc_config.gni")
 import("//build/ohos.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
-
 ts2abc_gen_abc("gen_work_scheduler_extension_context_abc") {
   src_js = rebase_path("work_scheduler_extension_context.js")
   dst_file =
@@ -31,9 +30,9 @@ gen_js_obj("work_scheduler_extension_context_js") {
 }
 
 gen_js_obj("work_scheduler_extension_context_abc") {
-  input = get_label_info(":gen_work_scheduler_extension_context_abc",
-                         "target_out_dir") +
-          "/work_scheduler_extension_context.abc"
+  input =
+      get_label_info(":gen_work_scheduler_extension_context_abc",
+                     "target_out_dir") + "/work_scheduler_extension_context.abc"
   output = target_out_dir + "/work_scheduler_extension_context_abc.o"
   dep = ":gen_work_scheduler_extension_context_abc"
 }
@@ -50,5 +49,5 @@ ohos_shared_library("workschedulerextensioncontext_napi") {
 
   relative_install_dir = "module"
   part_name = "${worksched_native_part_name}"
-    subsystem_name = "resourceschedule"
+  subsystem_name = "resourceschedule"
 }
