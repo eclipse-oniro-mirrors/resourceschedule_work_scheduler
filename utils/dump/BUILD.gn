@@ -39,7 +39,7 @@ ohos_executable("workscheduler") {
   ]
 
   external_deps = [
-    "ability_runtime:want",
+    "ability_base:want",
     "battery_manager_native:batterysrv_client",
     "ces_standard:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",

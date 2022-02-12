@@ -32,10 +32,10 @@ ohos_shared_library("workschedservice") {
     "native/src/policy/app_removed_listener.cpp",
     "native/src/policy/memory_policy.cpp",
     "native/src/policy/thermal_policy.cpp",
+    "native/src/watchdog.cpp",
     "native/src/work_conn_manager.cpp",
     "native/src/work_event_handler.cpp",
     "native/src/work_policy_manager.cpp",
-    "native/src/watchdog.cpp",
     "native/src/work_queue.cpp",
     "native/src/work_queue_event_handler.cpp",
     "native/src/work_queue_manager.cpp",
@@ -58,9 +58,9 @@ ohos_shared_library("workschedservice") {
   ]
 
   external_deps = [
+    "ability_base:want",
     "ability_runtime:ability_manager",
     "ability_runtime:app_manager",
-    "ability_runtime:want",
     "battery_manager_native:batterysrv_client",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -70,7 +70,7 @@ ohos_shared_library("workschedservice") {
     "ipc:ipc_core",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
-    "thermal_manager_native:thermalsrv_client",
+    "thermal_manager:thermalsrv_client",
     "utils_base:utils",
   ]
 
