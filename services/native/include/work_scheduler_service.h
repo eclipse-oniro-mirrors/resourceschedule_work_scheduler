@@ -13,31 +13,96 @@
  * limitations under the License.
  */
 
-#ifndef WORK_SCHED_SERVICES_WORK_SCHEDULER_SERVICES_H
-#define WORK_SCHED_SERVICES_WORK_SCHEDULER_SERVICES_H
+#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_SCHEDULER_SERVICES_H
+#define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_SCHEDULER_SERVICES_H
 
-#include "refbase.h"
-#include "singleton.h"
-#include "system_ability.h"
-#include "system_ability_definition.h"
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <string>
+#include <vector>
+
+#include <iremote_object.h>
+#include <system_ability.h>
+
+#include "ability_manager_interface.h"
+#include "delayed_sp_singleton.h"
+#include "policy/app_removed_listener.h"
+#include "work_info.h"
+#include "work_sched_service_stub.h"
+#include "work_status.h"
+#include "work_event_handler.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-class WorkSchedulerService final : public SystemAbility,
-    public std::enable_shared_from_this<WorkSchedulerService> {
-    DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
+class WorkQueueManager;
+class WorkPolicyManager;
+class WorkSchedulerService final : public SystemAbility, public WorkSchedServiceStub {
     DECLARE_SYSTEM_ABILITY(WorkSchedulerService);
-    DECLARE_DELAYED_SINGLETON(WorkSchedulerService);
+    DECLARE_DELAYED_SP_SINGLETON(WorkSchedulerService);
 public:
-    WorkSchedulerService(const int32_t systemAbilityId, bool runOnCreate);
     virtual void OnStart() override;
     virtual void OnStop() override;
+    bool StartWork(WorkInfo& workInfo) override;
+    bool StopWork(WorkInfo& workInfo) override;
+    bool StopAndCancelWork(WorkInfo& workInfo) override;
+    bool StopAndClearWorks() override;
+    bool IsLastWorkTimeout(int32_t workId) override;
+    std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
+    std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
+    bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
+    void InitPersisted();
+    bool StopAndClearWorksByUid(int32_t uid);
+    int32_t CreateNodeDir(std::string dir);
+    int32_t CreateNodeFile(std::string filePath);
+    void UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus> work);
+    void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
+    void WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatus);
+
+    std::shared_ptr<WorkEventHandler> GetHandler()
+    {
+        return handler_;
+    }
+
+    std::shared_ptr<WorkQueueManager> GetWorkQueueManager()
+    {
+        return workQueueManager_;
+    }
+
+    std::shared_ptr<WorkPolicyManager> GetWorkPolicyManager()
+    {
+        return workPolicyManager_;
+    }
 
 private:
-    bool Init();
+    const char* PERSISTED_FILE_PATH = "/data/workscheduler/persisted";
+    const char* PERSISTED_PATH = "/data/workscheduler/";
+    const char* PERSISTED_FILE = "persisted";
+
+    std::shared_ptr<WorkQueueManager> workQueueManager_;
+    std::shared_ptr<WorkPolicyManager> workPolicyManager_;
+    std::mutex mutex_;
+    std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
+    std::shared_ptr<WorkEventHandler> handler_;
+    std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
+    bool checkBundle_;
+
+    bool Init();
+    void WorkQueueManagerInit();
+    bool WorkPolicyManagerInit();
+    void RefreshPersistedWorks();
+    std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
+    void InitPersistedWork(WorkInfo& workInfo);
+    void DumpAllInfo(std::vector<std::string> &dumpInfo);
+    void DumpWorkQueueInfo(std::vector<std::string> &dumpInfo);
+    void DumpWorkPolicyInfo(std::vector<std::string> &dumpInfo);
+    bool CheckWorkInfo(WorkInfo &workInfo, int32_t &uid);
+    bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
+    bool CheckCondition(WorkInfo& workInfo);
+    void DumpDebugInfo(std::vector<std::string> &dumpInfo);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
-
-#endif // WORK_SCHED_SERVICES_WORK_SCHEDULER_SERVICES_H
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_SCHEDULER_SERVICES_H

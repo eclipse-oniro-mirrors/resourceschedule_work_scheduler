@@ -1,0 +1,54 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
+
+config("worksched_private_config") {
+  include_dirs = [ "${worksched_service_path}/zidl/include" ]
+}
+
+config("worksched_public_config") {
+  include_dirs = [ "include" ]
+}
+
+ohos_shared_library("workschedclient") {
+  sources = [
+    "${worksched_frameworks_path}/src/work_info.cpp",
+    "${worksched_frameworks_path}/src/workscheduler_srv_client.cpp",
+    "${worksched_service_path}/zidl/src/work_sched_service_proxy.cpp",
+  ]
+
+  configs = [ ":worksched_private_config" ]
+
+  public_configs = [ ":worksched_public_config" ]
+
+  deps = [
+    "${worksched_utils_path}:workschedutils",
+    "//third_party/jsoncpp",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
+    "ability_runtime:runtime",
+    "bundle_framework:appexecfwk_core",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "napi:ace_napi",
+    "safwk:system_ability_fwk",
+    "samgr_standard:samgr_proxy",
+  ]
+
+  part_name = "${worksched_native_part_name}"
+}

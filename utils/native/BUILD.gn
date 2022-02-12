@@ -1,0 +1,40 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
+
+config("utils_config") {
+  include_dirs = [ "include" ]
+}
+
+ohos_source_set("workschedutils") {
+  sources = [
+    "${worksched_utils_path}/src/work_sched_hilog.cpp",
+    "${worksched_utils_path}/src/work_sched_utils.cpp",
+  ]
+
+  public_configs = [ ":utils_config" ]
+
+  deps = [ "//third_party/jsoncpp" ]
+
+  external_deps = [
+    "bundle_framework:appexecfwk_base",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "os_account_standard:libaccountkits",
+    "os_account_standard:os_account_innerkits",
+    "utils_base:utils",
+  ]
+
+  part_name = "${worksched_native_part_name}"
+}
