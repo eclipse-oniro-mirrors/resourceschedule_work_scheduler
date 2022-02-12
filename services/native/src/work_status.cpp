@@ -165,8 +165,7 @@ bool WorkStatus::IsReady()
                 break;
             }
             case WorkCondition::Type::BATTERY_LEVEL: {
-                if (workConditionMap->at(it.first)->intVal >
-                    PowerMgr::BatterySrvClient::GetInstance().GetCapacity()) {
+                if (workConditionMap->at(it.first)->intVal > conditionMap_.at(it.first)->intVal) {
                     return false;
                 }
                 break;
