@@ -43,7 +43,7 @@ void WorkConnManager::RemoveConnInfo(string &workId)
 sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
 {
     std::lock_guard<std::mutex> lock(connMapMutex_);
-    if (connMap_.count(workId) >= 0) {
+    if (connMap_.count(workId) > 0) {
         return connMap_.at(workId);
     }
     return nullptr;

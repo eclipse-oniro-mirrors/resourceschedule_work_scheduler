@@ -85,9 +85,8 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
 
 void JsWorkSchedulerExtension::OnStart(const AAFwk::Want& want)
 {
+    WS_HILOGI("JsWorkSchedulerExtension OnStart begin");
     AbilityRuntime::Extension::OnStart(want);
-    WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
-    WS_HILOGI("WorkSchedulerExtension %{public}s end.", __func__);
 }
 
 void JsWorkSchedulerExtension::OnStop()
@@ -108,9 +107,8 @@ sptr<IRemoteObject> JsWorkSchedulerExtension::OnConnect(const AAFwk::Want& want)
 
 void JsWorkSchedulerExtension::OnDisconnect(const AAFwk::Want& want)
 {
-    AbilityRuntime::Extension::OnDisconnect(want);
     WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
-    WS_HILOGI("WorkSchedulerExtension %{public}s end.", __func__);
+    AbilityRuntime::Extension::OnDisconnect(want);
 }
 
 void JsWorkSchedulerExtension::OnWorkStart()
