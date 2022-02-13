@@ -30,9 +30,9 @@ public:
 
     virtual ~WorkSchedulerStubImp() {}
 
-    void OnWorkStart() override;
+    void OnWorkStart(WorkInfo& workInfo) override;
 
-    void OnWorkStop() override;
+    void OnWorkStop(WorkInfo& workInfo) override;
 private:
     std::weak_ptr<JsWorkSchedulerExtension> extension_;
 };

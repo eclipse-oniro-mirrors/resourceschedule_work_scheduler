@@ -19,21 +19,25 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+WorkSchedulerConnection::WorkSchedulerConnection(std::shared_ptr<WorkInfo> workInfo) {
+    this->workInfo_ = workInfo;
+}
+
 void WorkSchedulerConnection::StopWork()
 {
     if (proxy_ == nullptr) {
         WS_HILOGE("proxy is null");
         return;
     }
-    proxy_->OnWorkStop();
+    proxy_->OnWorkStop(*workInfo_);
 }
 
 void WorkSchedulerConnection::OnAbilityConnectDone(
     const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int resultCode)
 {
     proxy_ = (new (std::nothrow) WorkSchedulerProxy(remoteObject));
-    proxy_->OnWorkStart();
-    WS_HILOGI("OnAbilityConnectDone");
+    proxy_->OnWorkStart(*workInfo_);
+    WS_HILOGI("OnAbilityConnectDone.%{public}d", workInfo_->GetWorkId());
 }
 
 void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int resultCode)

@@ -22,6 +22,7 @@
 #include "ability_handler.h"
 #include "runtime.h"
 #include "extension_base.h"
+#include "work_info.h"
 #include "work_scheduler_extension_context.h"
 
 namespace OHOS {
@@ -44,9 +45,9 @@ public:
 
     static WorkSchedulerExtension* Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime);
 
-    virtual void OnWorkStart();
+    virtual void OnWorkStart(WorkInfo& workInfo);
 
-    virtual void OnWorkStop();
+    virtual void OnWorkStop(WorkInfo& workInfo);
 };
 }  // namespace WorkScheduler
 }  // namespace OHOS

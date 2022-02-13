@@ -14,10 +14,10 @@
  */
 
 class WorkSchedulerExtension {
-    onWorkStart() {
+    onWorkStart(workInfo) {
         console.log('MyWorkSchedulerExtension onWorkStart');
     }
-    onWorkStop() {
+    onWorkStop(workInfo) {
         console.log('MyWorkSchedulerExtension onWorkStop');
     }
 }

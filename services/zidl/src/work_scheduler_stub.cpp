@@ -22,11 +22,13 @@ int WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, Messa
 {
     switch (code) {
         case COMMAND_ON_WORK_START: {
-            OnWorkStart();
+            WorkInfo* workInfo = data.ReadParcelable<WorkInfo>();
+            OnWorkStart(*workInfo);
             return ERR_NONE;
         }
         case COMMAND_ON_WORK_STOP: {
-            OnWorkStop();
+            WorkInfo* workInfo = data.ReadParcelable<WorkInfo>();
+            OnWorkStop(*workInfo);
             return ERR_NONE;
         }
         default:

@@ -17,12 +17,14 @@
 #define FOUNDATION_EVENT_CESFWK_SERVICES_INCLUDE_STATIC_SUBSCRIBER_CONNECTION_H
 
 #include "ability_connect_callback_stub.h"
+#include "work_info.h"
 #include "work_scheduler_proxy.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerConnection : public AAFwk::AbilityConnectionStub {
 public:
+    WorkSchedulerConnection(std::shared_ptr<WorkInfo> workInfo);
     void StopWork();
     void OnAbilityConnectDone(
         const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int resultCode) override;
@@ -30,6 +32,7 @@ public:
     void OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int resultCode) override;
 private:
     sptr<WorkSchedulerProxy> proxy_ = nullptr;
+    std::shared_ptr<WorkInfo> workInfo_;
 };
 } // namespace
 } // namespace OHOS

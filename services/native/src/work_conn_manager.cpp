@@ -72,7 +72,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 
     WS_HILOGI("Begin to connect bundle:%{public}s, abilityName:%{public}s, userId:%{public}d",
         workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str(), workStatus->userId_);
-    sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection());
+    sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
     Want want;
     want.SetElementName(workStatus->bundleName_, workStatus->abilityName_);
     int ret = abilityMgr_->ConnectAbility(want, connection, nullptr, workStatus->userId_);

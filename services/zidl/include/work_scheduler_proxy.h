@@ -29,9 +29,9 @@ public:
 
     virtual ~WorkSchedulerProxy() {}
 
-    void OnWorkStart() override;
+    void OnWorkStart(WorkInfo& workInfo) override;
 
-    void OnWorkStop() override;
+    void OnWorkStop(WorkInfo& workInfo) override;
 
 private:
     static constexpr int COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;

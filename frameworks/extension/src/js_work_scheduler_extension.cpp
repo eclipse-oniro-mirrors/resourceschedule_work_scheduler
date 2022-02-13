@@ -15,6 +15,8 @@
 
 #include "js_work_scheduler_extension.h"
 
+#include <string>
+
 #include "runtime.h"
 #include "js_runtime.h"
 #include "js_runtime_utils.h"
@@ -22,9 +24,10 @@
 #include "js_work_scheduler_extension_context.h"
 #include "work_scheduler_stub_imp.h"
 
-
 namespace OHOS {
 namespace WorkScheduler {
+const int INVALID_VALUE = -1;
+
 JsWorkSchedulerExtension* JsWorkSchedulerExtension::Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime)
 {
     return new JsWorkSchedulerExtension(static_cast<AbilityRuntime::JsRuntime&>(*runtime));
@@ -111,17 +114,59 @@ void JsWorkSchedulerExtension::OnDisconnect(const AAFwk::Want& want)
     AbilityRuntime::Extension::OnDisconnect(want);
 }
 
-void JsWorkSchedulerExtension::OnWorkStart()
+void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
 {
-    WorkSchedulerExtension::OnWorkStart();
+    WorkSchedulerExtension::OnWorkStart(workInfo);
     WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
 
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
     NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
 
-    NativeValue* jCommonEventData = nativeEngine.CreateObject();
+    NativeValue* jworkInfoData = nativeEngine.CreateObject();
+    NativeObject* workInfoData = AbilityRuntime::ConvertNativeValueTo<NativeObject>(jworkInfoData);
+    workInfoData->SetProperty("workId", nativeEngine.CreateNumber(workInfo.GetWorkId()));
 
-    NativeValue* argv[] = {jCommonEventData};
+    std::string bundleName = workInfo.GetBundleName();
+    workInfoData->SetProperty("bundleName", nativeEngine.CreateString(bundleName.c_str(), bundleName.size()));
+
+    std::string abilityName = workInfo.GetAbilityName();
+    workInfoData->SetProperty("abilityName", nativeEngine.CreateString(abilityName.c_str(), abilityName.size()));
+
+    workInfoData->SetProperty("isPersisted", nativeEngine.CreateBoolean(workInfo.IsPersisted()));
+    if (workInfo.GetNetworkType() != WorkCondition::Network::NETWORK_UNKNOWN) {
+        workInfoData->SetProperty("networkType", nativeEngine.CreateNumber(workInfo.GetNetworkType()));
+    }
+    WorkCondition::Charger charger = workInfo.GetChargerType();
+    if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
+        if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
+            workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(false));
+        } else {
+            workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(true));
+            workInfoData->SetProperty("chargerType", nativeEngine.CreateNumber(charger));
+        }
+    }
+    if (workInfo.GetBatteryLevel() != INVALID_VALUE) {
+        workInfoData->SetProperty("batteryLevel", nativeEngine.CreateNumber(workInfo.GetBatteryLevel()));
+    }
+    if (workInfo.GetBatteryStatus() != WorkCondition::BatteryStatus::BATTERY_UNKNOWN) {
+        workInfoData->SetProperty("batteryStatus", nativeEngine.CreateNumber(workInfo.GetBatteryStatus()));
+    }
+    if (workInfo.GetStorageLevel() != WorkCondition::Storage::STORAGE_UNKNOWN) {
+        workInfoData->SetProperty("storageRequest", nativeEngine.CreateNumber(workInfo.GetStorageLevel()));
+    }
+
+    uint32_t timeInterval = workInfo.GetTimeInterval();
+    if (timeInterval != INVALID_VALUE) {
+        if (workInfo.IsRepeat()) {
+            workInfoData->SetProperty("isRepeat", nativeEngine.CreateBoolean(true));
+            workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
+        } else {
+            workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
+            workInfoData->SetProperty("repeatCount", nativeEngine.CreateNumber(workInfo.GetCycleCount()));
+        }
+    }
+
+    NativeValue* argv[] = {jworkInfoData};
     if (!jsObj_) {
         WS_HILOGI("WorkSchedulerExtension Not found StaticSubscriberExtension.js");
         return;
@@ -143,17 +188,59 @@ void JsWorkSchedulerExtension::OnWorkStart()
     WS_HILOGI("WorkSchedulerExtension %{public}s end.", __func__);
 }
 
-void JsWorkSchedulerExtension::OnWorkStop()
+void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
 {
-    WorkSchedulerExtension::OnWorkStop();
+    WorkSchedulerExtension::OnWorkStop(workInfo);
     WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
 
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
     NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
 
-    NativeValue* jCommonEventData = nativeEngine.CreateObject();
+    NativeValue* jworkInfoData = nativeEngine.CreateObject();
+    NativeObject* workInfoData = AbilityRuntime::ConvertNativeValueTo<NativeObject>(jworkInfoData);
+    workInfoData->SetProperty("workId", nativeEngine.CreateNumber(workInfo.GetWorkId()));
 
-    NativeValue* argv[] = {jCommonEventData};
+    std::string bundleName = workInfo.GetBundleName();
+    workInfoData->SetProperty("bundleName", nativeEngine.CreateString(bundleName.c_str(), bundleName.size()));
+
+    std::string abilityName = workInfo.GetAbilityName();
+    workInfoData->SetProperty("abilityName", nativeEngine.CreateString(abilityName.c_str(), abilityName.size()));
+
+    workInfoData->SetProperty("isPersisted", nativeEngine.CreateBoolean(workInfo.IsPersisted()));
+    if (workInfo.GetNetworkType() != WorkCondition::Network::NETWORK_UNKNOWN) {
+        workInfoData->SetProperty("networkType", nativeEngine.CreateNumber(workInfo.GetNetworkType()));
+    }
+    WorkCondition::Charger charger = workInfo.GetChargerType();
+    if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
+        if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
+            workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(false));
+        } else {
+            workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(true));
+            workInfoData->SetProperty("chargerType", nativeEngine.CreateNumber(charger));
+        }
+    }
+    if (workInfo.GetBatteryLevel() != INVALID_VALUE) {
+        workInfoData->SetProperty("batteryLevel", nativeEngine.CreateNumber(workInfo.GetBatteryLevel()));
+    }
+    if (workInfo.GetBatteryStatus() != WorkCondition::BatteryStatus::BATTERY_UNKNOWN) {
+        workInfoData->SetProperty("batteryStatus", nativeEngine.CreateNumber(workInfo.GetBatteryStatus()));
+    }
+    if (workInfo.GetStorageLevel() != WorkCondition::Storage::STORAGE_UNKNOWN) {
+        workInfoData->SetProperty("storageRequest", nativeEngine.CreateNumber(workInfo.GetStorageLevel()));
+    }
+
+    uint32_t timeInterval = workInfo.GetTimeInterval();
+    if (timeInterval != INVALID_VALUE) {
+        if (workInfo.IsRepeat()) {
+            workInfoData->SetProperty("isRepeat", nativeEngine.CreateBoolean(true));
+            workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
+        } else {
+            workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
+            workInfoData->SetProperty("repeatCount", nativeEngine.CreateNumber(workInfo.GetCycleCount()));
+        }
+    }
+
+    NativeValue* argv[] = {jworkInfoData};
     if (!jsObj_) {
         WS_HILOGI("WorkSchedulerExtension Not found js");
         return;

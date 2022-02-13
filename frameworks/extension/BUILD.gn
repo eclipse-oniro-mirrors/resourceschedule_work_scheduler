@@ -41,6 +41,7 @@ ohos_shared_library("workschedextension") {
   public_configs = [ ":worksched_public_config" ]
 
   deps = [
+    "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
     "//foundation/aafwk/standard/frameworks/kits/ability/ability_runtime:ability_context_native",
     "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
