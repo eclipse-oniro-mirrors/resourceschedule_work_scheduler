@@ -169,20 +169,6 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
     return hasCanceled;
 }
 
-bool WorkPolicyManager::CancelWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
-{
-    WS_HILOGI("WorkPolicyManager::CancelWork");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
-    if (uidQueueMap_.count(uid) > 0) {
-        bool ret = uidQueueMap_.at(uid)->Remove(workStatus);
-        if (uidQueueMap_.at(uid)->GetSize() <= 0) {
-            uidQueueMap_.erase(uid);
-        }
-        return ret;
-    }
-    return true;
-}
-
 bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
 {
     WS_HILOGI("WorkPolicyManager::StopAndClearWorks");

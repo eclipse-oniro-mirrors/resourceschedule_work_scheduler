@@ -46,7 +46,6 @@ public:
     bool AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     bool StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
-    bool CancelWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     bool StopAndClearWorks(int32_t uid);
     bool IsLastWorkTimeout(int32_t workId, int32_t uid);
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
