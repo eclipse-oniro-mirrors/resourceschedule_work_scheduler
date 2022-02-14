@@ -335,7 +335,7 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     }
 
     // Set charge info.
-    WorkCondition::Charger charger = workInfo.GetChargerType();
+    WorkCondition::Charger charger = workInfo-> GetChargerType();
     if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
         napi_value napiIsCharging = nullptr;
         if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
