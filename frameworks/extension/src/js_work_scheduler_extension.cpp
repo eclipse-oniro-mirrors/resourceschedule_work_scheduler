@@ -156,7 +156,7 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     }
 
     uint32_t timeInterval = workInfo.GetTimeInterval();
-    if (timeInterval != INVALID_VALUE) {
+    if (timeInterval > 0) {
         if (workInfo.IsRepeat()) {
             workInfoData->SetProperty("isRepeat", nativeEngine.CreateBoolean(true));
             workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
@@ -168,7 +168,7 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
 
     NativeValue* argv[] = {jworkInfoData};
     if (!jsObj_) {
-        WS_HILOGI("WorkSchedulerExtension Not found StaticSubscriberExtension.js");
+        WS_HILOGI("WorkSchedulerExtension Not found js");
         return;
     }
 
@@ -230,7 +230,7 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
     }
 
     uint32_t timeInterval = workInfo.GetTimeInterval();
-    if (timeInterval != INVALID_VALUE) {
+    if (timeInterval > 0) {
         if (workInfo.IsRepeat()) {
             workInfoData->SetProperty("isRepeat", nativeEngine.CreateBoolean(true));
             workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));

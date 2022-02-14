@@ -19,6 +19,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 const int INVALID_VALUE = -1;
+const int INVALID_TIME_VALUE = 0;
 
 WorkInfo::WorkInfo() {}
 
@@ -174,7 +175,7 @@ uint32_t WorkInfo::GetTimeInterval()
     if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
         return conditionMap_.at(WorkCondition::Type::TIMER)->uintVal;
     }
-    return INVALID_VALUE;
+    return INVALID_TIME_VALUE;
 }
 
 int32_t WorkInfo::GetCycleCount()
