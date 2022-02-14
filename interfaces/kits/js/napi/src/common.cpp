@@ -372,7 +372,7 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     }
 
     // Set timer info.
-    uint32_t timeInterval = workInfo.GetTimeInterval();
+    uint32_t timeInterval = workInfo->GetTimeInterval();
     if (timeInterval > 0) {
         napi_value napiTimer = nullptr;
         napi_create_int32(env, static_cast<int32_t>(timeInterval), &napiTimer);
