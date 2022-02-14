@@ -307,6 +307,13 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
         AddWatchdogForWork(topWork);
+    } else {
+        if (!topWork->IsRepeating()) {
+            topWork->MarkStatus(WorkStatus::Status::REMOVED);
+            RemoveFromUidQueue(topWork, topWork->uid_);
+        } else {
+            topWork->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+        }
     }
 }
 
