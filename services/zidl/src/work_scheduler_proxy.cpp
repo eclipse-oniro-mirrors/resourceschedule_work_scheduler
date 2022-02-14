@@ -17,21 +17,21 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-void WorkSchedulerProxy::OnWorkStart()
+void WorkSchedulerProxy::OnWorkStart(WorkInfo& workInfo)
 {
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
-
+    data.WriteParcelable(&workInfo);
     Remote()->SendRequest(COMMAND_ON_WORK_START, data, reply, option);
 }
 
-void WorkSchedulerProxy::OnWorkStop()
+void WorkSchedulerProxy::OnWorkStop(WorkInfo& workInfo)
 {
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
-
+    data.WriteParcelable(&workInfo);
     Remote()->SendRequest(COMMAND_ON_WORK_STOP, data, reply, option);
 }
 } // namespace WorkScheduler

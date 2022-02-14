@@ -18,6 +18,8 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+const int INVALID_VALUE = -1;
+
 WorkInfo::WorkInfo() {}
 
 WorkInfo::~WorkInfo() {}
@@ -136,7 +138,7 @@ int32_t WorkInfo::GetBatteryLevel()
     if (conditionMap_.count(WorkCondition::Type::BATTERY_LEVEL) > 0) {
         return conditionMap_.at(WorkCondition::Type::BATTERY_LEVEL)->intVal;
     }
-    return -1;
+    return INVALID_VALUE;
 }
 
 WorkCondition::BatteryStatus WorkInfo::GetBatteryStatus()
@@ -172,7 +174,18 @@ uint32_t WorkInfo::GetTimeInterval()
     if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
         return conditionMap_.at(WorkCondition::Type::TIMER)->uintVal;
     }
-    return -1;
+    return INVALID_VALUE;
+}
+
+int32_t WorkInfo::GetCycleCount()
+{
+    if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
+        if (IsRepeat()) {
+            return INVALID_VALUE;
+        }
+        return conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
+    }
+    return INVALID_VALUE;
 }
 
 std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> WorkInfo::GetConditionMap()

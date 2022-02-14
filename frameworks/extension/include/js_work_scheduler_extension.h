@@ -19,6 +19,7 @@
 #include "work_scheduler_extension.h"
 
 #include "js_runtime.h"
+#include "work_info.h"
 #include "work_sched_hilog.h"
 
 namespace OHOS {
@@ -43,9 +44,9 @@ public:
 
     void OnStop() override;
 
-    void OnWorkStart() override;
+    void OnWorkStart(WorkInfo& workInfo) override;
 
-    void OnWorkStop() override;
+    void OnWorkStop(WorkInfo& workInfo) override;
 private:
     void GetSrcPath(std::string &srcPath);
     AbilityRuntime::JsRuntime &jsRuntime_;

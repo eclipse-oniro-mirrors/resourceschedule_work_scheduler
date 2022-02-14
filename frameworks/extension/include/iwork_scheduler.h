@@ -18,14 +18,15 @@
 
 #include <string_ex.h>
 #include <iremote_broker.h>
+#include "work_info.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 class IWorkScheduler : public IRemoteBroker {
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.WorkScheduler.IWorkScheduler");
-    virtual void OnWorkStart() = 0;
-    virtual void OnWorkStop() = 0;
+    virtual void OnWorkStart(WorkInfo& workInfo) = 0;
+    virtual void OnWorkStop(WorkInfo& workInfo) = 0;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

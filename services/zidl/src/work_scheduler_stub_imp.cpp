@@ -19,22 +19,22 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-void WorkSchedulerStubImp::OnWorkStart()
+void WorkSchedulerStubImp::OnWorkStart(WorkInfo& workInfo)
 {
     WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
     auto extension = extension_.lock();
     if (extension != nullptr) {
-        extension->OnWorkStart();
+        extension->OnWorkStart(workInfo);
         WS_HILOGI("WorkSchedulerExtension %{public}s end successfully.", __func__);
     }
 }
 
-void WorkSchedulerStubImp::OnWorkStop()
+void WorkSchedulerStubImp::OnWorkStop(WorkInfo& workInfo)
 {
     WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
     auto extension = extension_.lock();
     if (extension != nullptr) {
-        extension->OnWorkStop();
+        extension->OnWorkStop(workInfo);
         WS_HILOGI("WorkSchedulerExtension %{public}s end successfully.", __func__);
     }
 }

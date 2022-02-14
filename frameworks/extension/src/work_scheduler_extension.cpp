@@ -55,10 +55,10 @@ std::shared_ptr<WorkSchedulerExtensionContext> WorkSchedulerExtension::CreateAnd
     return context;
 }
 
-void WorkSchedulerExtension::OnWorkStart() {
+void WorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo) {
 }
 
-void WorkSchedulerExtension::OnWorkStop() {
+void WorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo) {
 }
 } // namespace AbilityRuntime
 } // namespace OHOS

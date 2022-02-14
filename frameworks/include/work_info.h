@@ -53,6 +53,7 @@ public:
     WorkCondition::Storage GetStorageLevel();
     bool IsRepeat();
     uint32_t GetTimeInterval();
+    int32_t GetCycleCount();
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     bool Marshalling(Parcel &parcel) const override;
     static WorkInfo *Unmarshalling(Parcel &parcel);
