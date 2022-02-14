@@ -60,7 +60,8 @@ WorkStatus::~WorkStatus() {}
 
 void WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condition> value)
 {
-    if (workInfo_->GetConditionMap()->count(type) > 0) {
+    if (workInfo_->GetConditionMap()->count(type) > 0
+        && type != WorkCondition::Type::TIMER) {
         if (conditionMap_.count(type) > 0) {
             conditionMap_.at(type) = value;
         } else {
@@ -208,13 +209,13 @@ bool WorkStatus::IsLastWorkTimeout()
 
 bool WorkStatus::IsRepeating()
 {
-    if (workInfo_->GetConditionMap()->count(WorkCondition::Type::TIMER) <= 0) {
+    if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return false;
     }
-    if (workInfo_->GetConditionMap()->at(WorkCondition::Type::TIMER)->boolVal) {
+    if (conditionMap_.at(WorkCondition::Type::TIMER)->boolVal) {
         return true;
     } else {
-        return workInfo_->GetConditionMap()->at(WorkCondition::Type::TIMER)->intVal > 0;
+        return conditionMap_.at(WorkCondition::Type::TIMER)->intVal > 0;
     }
 }
 
