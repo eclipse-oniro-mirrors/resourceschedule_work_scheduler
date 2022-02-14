@@ -19,7 +19,8 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-WorkSchedulerConnection::WorkSchedulerConnection(std::shared_ptr<WorkInfo> workInfo) {
+WorkSchedulerConnection::WorkSchedulerConnection(std::shared_ptr<WorkInfo> workInfo)
+{
     this->workInfo_ = workInfo;
 }
 
