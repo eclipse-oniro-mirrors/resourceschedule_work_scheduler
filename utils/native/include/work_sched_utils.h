@@ -27,6 +27,7 @@ public:
     ~WorkSchedUtils() = delete;
 
     static int GetCurrentAccountId();
+    static bool IsIdActive(int id)
     static int32_t GetUserIdByUid(int32_t uid);
     static const int INVALID_DATA = -1;
 };
