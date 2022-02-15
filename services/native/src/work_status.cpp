@@ -118,7 +118,7 @@ bool WorkStatus::NeedRemove()
 
 bool WorkStatus::IsSameUser()
 {
-    if (WorkSchedUtils::GetCurrentAccountId() != userId_) {
+    if (!WorkSchedUtils::IsIdActive(userId_)) {
         return false;
     }
     return true;

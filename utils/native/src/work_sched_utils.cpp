@@ -23,25 +23,48 @@ namespace OHOS {
 namespace WorkScheduler {
 int WorkSchedUtils::GetCurrentAccountId()
 {
-    std::vector<AccountSA::OsAccountInfo> osAccountInfos;
-    ErrCode ret = AccountSA::OsAccountManager::QueryAllCreatedOsAccounts(osAccountInfos);
+    std::vector<int> osAccountIds;
+    ErrCode ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(osAccountIds);
     if (ret != ERR_OK) {
-        WS_HILOGE("QueryAllCreatedOsAccounts failed.");
-        return 0;
+        WS_HILOGE("QueryActiveOsAccountIds failed.");
+        return -1;
     }
 
-    if (osAccountInfos.empty()) {
+    if (osAccountIds.empty()) {
         WS_HILOGE("osAccountInfos is empty, no accounts.");
-        return 0;
+        return -1;
     }
 
-    for (const auto& account : osAccountInfos) {
-        if (account.GetIsActived()) {
-            return account.GetLocalId();
+    for (const auto& accountId : osAccountIds) {
+        if (accountId >= 0) {
+            return accountId;
         }
     }
     WS_HILOGE("GetCurrentAccountId failed, no Actived now.");
     return -1;
+}
+
+bool WorkSchedUtils::IsIdActive(int id)
+{
+    std::vector<int> osAccountIds;
+    ErrCode ret = AccountSA::OsAccountManager::QueryActiveOsAccountIds(osAccountIds);
+    if (ret != ERR_OK) {
+        WS_HILOGE("QueryActiveOsAccountIds failed.");
+        return false;
+    }
+
+    if (osAccountIds.empty()) {
+        WS_HILOGE("osAccountIds is empty, no accounts.");
+        return false;
+    }
+
+    for (const auto& accountId : osAccountIds) {
+        if (accountId == id) {
+            return true;
+        }
+    }
+    WS_HILOGE("IsIdActive failed, no Actived now.");
+    return false;
 }
 
 int32_t WorkSchedUtils::GetUserIdByUid(int32_t uid)
