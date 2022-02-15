@@ -59,7 +59,7 @@ bool WorkSchedUtils::IsIdActive(int id)
     }
 
     for (const auto& accountId : osAccountIds) {
-        if (accountId == uid) {
+        if (accountId == id) {
             return true;
         }
     }
