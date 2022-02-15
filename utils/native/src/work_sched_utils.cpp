@@ -32,11 +32,11 @@ int WorkSchedUtils::GetCurrentAccountId()
 
     if (osAccountIds.empty()) {
         WS_HILOGE("osAccountInfos is empty, no accounts.");
-        return false;
+        return -1;
     }
 
     for (const auto& accountId : osAccountIds) {
-        if (accountId > 0) {
+        if (accountId >= 0) {
             return accountId;
         }
     }
