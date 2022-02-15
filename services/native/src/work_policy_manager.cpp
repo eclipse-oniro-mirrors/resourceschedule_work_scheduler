@@ -85,7 +85,7 @@ bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
         if (uidQueueMap_.at(uid)->Contains(make_shared<string>(workStatus->workId_))) {
             WS_HILOGE("Workid has been added, should remove first.");
             return false;
-        } else if (uidQueueMap_.at(uid)->GetSize() > MAX_WORK_COUNT_PER_UID) {
+        } else if (uidQueueMap_.at(uid)->GetSize() >= MAX_WORK_COUNT_PER_UID) {
             WS_HILOGE("each uid only can be added %{public}d works", MAX_WORK_COUNT_PER_UID);
             return false;
         }
