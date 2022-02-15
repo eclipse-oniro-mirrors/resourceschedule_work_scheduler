@@ -18,18 +18,18 @@ import {AsyncCallback} from './basic';
 /**
  * Work scheduler interface.
  *
- * @since 9 Preview
- * @sysCap SystemCapability.Ressched.WorkScheduler
- * @devices phone, tv, wearable, tablet, car
+ * @since 9
+ * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+ * @StageModelOnly
  */
 declare namespace workScheduler {
     /**
      * The info of work.
      *
      * @name WorkInfo
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tv, wearable, tablet, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
      */
     export interface WorkInfo {
         /**
@@ -37,17 +37,21 @@ declare namespace workScheduler {
          */
         workId: number;
         /**
+         * The bundle name of the current work.
+         */
+        bundleName: string;
+        /**
+         * The ability name of the current work.
+         */
+        abilityName: string;
+        /**
+         * Whether the current work will be saved.
+         */
+        isPersisted?: boolean;
+        /**
          * The network type of the current work.
          */
         networkType?: NetworkType;
-        /**
-         * Whether the device deep idle state has been set for triggering the work.
-         */
-        isDeepIdle?: boolean;
-        /**
-         * The idle wait time based on which the work is triggered.
-         */
-        idleWaitTime?: number;
         /**
          * Whether a charging state has been set for triggering the work.
          */
@@ -69,38 +73,34 @@ declare namespace workScheduler {
          */
         storageRequest?: StorageRequest;
         /**
-         * Whether the work has been set to repeat at the specified interval.
-         */
-        isRepeat?: boolean;
-        /**
-         * Whether the current work will be saved.
-         */
-        isPersisted?: boolean;
-        /**
          * The interval at which the work is repeated.
          */
         repeatCycleTime?: number;
+        /**
+         * Whether the work has been set to repeat at the specified interval.
+         */
+        isRepeat?: boolean;
         /**
          * The repeat of the current work.
          */
         repeatCount?: number;
         /**
-         * The bundle name of the current work.
+         * Whether the device deep idle state has been set for triggering the work.
          */
-        bundleName: string;
+        isDeepIdle?: boolean;
         /**
-         * The ability name of the current work.
+         * The idle wait time based on which the work is triggered.
          */
-        abilityName: string;
+        idleWaitTime?: number;
     }
 
     /**
      * Add a work to the queue. A work can be executed only when it meets the preset triggering condition
-     * and complies with the rules fo work scheduler manager.
+     * and complies with the rules of work scheduler manager.
      *
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tv, wearable, tablet, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
      * @param work The info of work.
      * @return true if success, otherwise false.
      */
@@ -109,56 +109,55 @@ declare namespace workScheduler {
     /**
      * Stop a work.
      *
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tv, wearable, tablet, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
      * @param work The info of work.
-     * @param needCancel Indicates the work that whether need to be canceled.
+     * @param needCancel True if need to be canceled after being stopped, otherwise false.
      * @return true if success, otherwise false.
      */
     function stopWork(work: WorkInfo, needCancel?: boolean): boolean;
 
     /**
-     * Obtains the latest status of a work.
+     * Obtains the work info of the wordId.
      *
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tv, wearable, tablet, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
      * @param workId The id of work.
      */
     function getWorkStatus(workId: number, callback: AsyncCallback<WorkInfo>): void;
     function getWorkStatus(workId: number): Promise<WorkInfo>;
 
     /**
-     * Get all work status.
+     * Get all works of the calling application.
      *
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tv, wearable, tablet, car
-     * @param workId The id of work.
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
      * @return the work info list.
      */
     function obtainAllWorks(callback: AsyncCallback<void>): Array<WorkInfo>;
     function obtainAllWorks(): Promise<Array<WorkInfo>>;
 
     /**
-     * Stop all and clear work.
+     * Stop all and clear all works of the calling application.
      *
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tv, wearable, tablet, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
      * @return true if success, otherwise false.
      */
     function stopAndClearWorks(): boolean;
 
     /**
-     * Check last work timeout.
+     * Check whether last work running is timeout. The interface is for repeating work.
      *
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tv, wearable, tablet, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
      * @param workId The id of work.
-     * @return true if last work is timeout, otherwise false.
+     * @return true if last work running is timeout, otherwise false.
      */
     function isLastWorkTimeOut(workId: number, callback: AsyncCallback<void>): boolean;
     function isLastWorkTimeOut(workId: number): Promise<boolean>;
@@ -167,9 +166,9 @@ declare namespace workScheduler {
      * Describes network type.
      *
      * @name NetworkType
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tablet, tv, wearable, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
     */
     export enum NetworkType {
         /**
@@ -202,9 +201,9 @@ declare namespace workScheduler {
      * Describes charging type.
      *
      * @name ChargingType
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tablet, tv, wearable, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
     */
     export enum ChargingType {
         /**
@@ -229,9 +228,9 @@ declare namespace workScheduler {
      * Describes the battery status.
      *
      * @name BatteryStatus
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tablet, tv, wearable, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
     */
     export enum BatteryStatus {
         /**
@@ -252,9 +251,9 @@ declare namespace workScheduler {
      * Describes the storage request.
      *
      * @name StorageRequest
-     * @since 9 Preview
-     * @sysCap SystemCapability.Ressched.WorkScheduler
-     * @devices phone, tablet, tv, wearable, car
+     * @since 9
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
     */
     export enum StorageRequest {
         /**
