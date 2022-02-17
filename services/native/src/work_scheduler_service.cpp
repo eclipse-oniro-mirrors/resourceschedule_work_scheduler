@@ -145,6 +145,7 @@ void WorkSchedulerService::OnStop()
     WS_HILOGI("stop service.");
     eventRunner_.reset();
     handler_.reset();
+    ready_ = false;
 }
 
 bool WorkSchedulerService::Init()
@@ -259,6 +260,10 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
 
 bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
 {
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return false;
+    }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
         return false;
@@ -313,6 +318,10 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
 
 bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
 {
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return false;
+    }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
         return false;
@@ -327,6 +336,10 @@ bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
 
 bool WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
 {
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return false;
+    }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
         return false;
@@ -371,6 +384,10 @@ bool IsInList(list<std::string> &list, std::string myWork)
 
 bool WorkSchedulerService::StopAndClearWorks()
 {
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return false;
+    }
     return StopAndClearWorksByUid(IPCSkeleton::GetCallingUid());
 }
 
@@ -398,6 +415,10 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
 
 bool WorkSchedulerService::IsLastWorkTimeout(int32_t workId)
 {
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return false;
+    }
     int32_t uid = IPCSkeleton::GetCallingUid();
     return workPolicyManager_->IsLastWorkTimeout(workId, uid);
 }
@@ -409,16 +430,30 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
 
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid)
 {
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        list<shared_ptr<WorkInfo>> allWorks;
+        return allWorks;
+    }
     return workPolicyManager_->ObtainAllWorks(uid);
 }
 
 shared_ptr<WorkInfo> WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &workId)
 {
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return nullptr;
+    }
     return workPolicyManager_->GetWorkStatus(uid, workId);
 }
 
 bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<string> &dumpInfo)
 {
+    if (!ready_) {
+         WS_HILOGE("service is not ready.");
+        dumpInfo.push_back(string("service is not ready."));
+        return false;
+    }
     if (dumpOption[DUMP_PARAM_INDEX] == ALL_INFO) {
         DumpAllInfo(dumpInfo);
     } else if (dumpOption[DUMP_PARAM_INDEX] == CHECK_BUNDLE) {
