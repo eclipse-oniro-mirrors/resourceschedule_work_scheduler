@@ -450,7 +450,7 @@ shared_ptr<WorkInfo> WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &
 bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<string> &dumpInfo)
 {
     if (!ready_) {
-         WS_HILOGE("service is not ready.");
+        WS_HILOGE("service is not ready.");
         dumpInfo.push_back(string("service is not ready."));
         return false;
     }
