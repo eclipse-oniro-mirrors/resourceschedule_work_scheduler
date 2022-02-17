@@ -214,7 +214,6 @@ bool WorkSchedulerService::WorkPolicyManagerInit()
 
 bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
 {
-    std::string bundleName = workInfo.GetBundleName();
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (!systemAbilityManager) {
@@ -229,8 +228,10 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
     BundleInfo bundleInfo;
     int currentAccountId = WorkSchedUtils::GetCurrentAccountId();
-    WS_HILOGD("currentAccountId : %{public}d.", currentAccountId);
-    if (bundleMgr->GetBundleInfo(workInfo.GetBundleName(), BundleFlag::GET_BUNDLE_WITH_ABILITIES,
+    std::string bundleName = workInfo.GetBundleName();
+    WS_HILOGD("check work info currentAccountId : %{public}d, bundleName : %{public}s.",
+        currentAccountId, bundleName.c_str());
+    if (bundleMgr->GetBundleInfo(bundleName, BundleFlag::GET_BUNDLE_WITH_ABILITIES,
         bundleInfo, currentAccountId)) {
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, bundleInfo.uid);
         WS_HILOGD("bundleUid : %{public}d , uid : %{public}d.", bundleInfo.uid, uid);
@@ -313,6 +314,9 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
 bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
+    if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+        return false;
+    }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
         WS_HILOGD("StopWorkInner, workStatus is nullptr");
@@ -324,6 +328,9 @@ bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
 bool WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
+    if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+        return false;
+    }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
         WS_HILOGD("StopWorkInner, workStatus is nullptr");
