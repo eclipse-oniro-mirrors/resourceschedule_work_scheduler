@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef WORK_SCHED_SERVICES_POLICY_APP_REMOVED_LISTENER_H
-#define WORK_SCHED_SERVICES_POLICY_APP_REMOVED_LISTENER_H
+#ifndef WORK_SCHED_SERVICES_POLICY_APP_DATA_CLEAR_LISTENER_H
+#define WORK_SCHED_SERVICES_POLICY_APP_DATA_CLEAR_LISTENER_H
 
 #include "ipolicy_listener.h"
 #include "common_event_subscriber.h"
@@ -23,10 +23,10 @@ namespace OHOS {
 using namespace EventFwk;
 namespace WorkScheduler {
 class WorkPolicyManager;
-class AppRemovedListener : public IPolicyListener {
+class AppDataClearListener : public IPolicyListener {
 public:
-    AppRemovedListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
-    ~AppRemovedListener();
+    AppDataClearListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
+    ~AppDataClearListener();
 
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal) override;
     bool Start() override;
@@ -36,14 +36,14 @@ private:
     std::shared_ptr<CommonEventSubscriber> commonEventSubscriber = nullptr;
 };
 
-class AppRemovedSubscriber : public CommonEventSubscriber {
+class AppDataClearSubscriber : public CommonEventSubscriber {
 public:
-    AppRemovedSubscriber(const CommonEventSubscribeInfo &subscribeInfo, AppRemovedListener &listener);
-    ~AppRemovedSubscriber() override = default;
+    AppDataClearSubscriber(const CommonEventSubscribeInfo &subscribeInfo, AppDataClearListener &listener);
+    ~AppDataClearSubscriber() override = default;
     void OnReceiveEvent(const CommonEventData &data) override;
 private:
-    AppRemovedListener &listener_;
+    AppDataClearListener &listener_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
-#endif // WORK_SCHED_SERVICES_POLICY_APP_REMOVED_LISTENER_H
+#endif // WORK_SCHED_SERVICES_POLICY_APP_DATA_CLEAR_LISTENER_H

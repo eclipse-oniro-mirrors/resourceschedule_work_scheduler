@@ -19,7 +19,8 @@
 namespace OHOS {
 namespace WorkScheduler {
 enum PolicyType {
-    APP_REMOVED = 0
+    APP_REMOVED = 0,
+    APP_DATA_CLEAR
 };
 } // namespace WorkScheduler
 } // namespace OHOS
