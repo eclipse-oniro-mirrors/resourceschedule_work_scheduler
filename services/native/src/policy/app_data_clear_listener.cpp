@@ -26,8 +26,8 @@ namespace OHOS {
 namespace WorkScheduler {
 static const std::string UID_PARAM = "uid";
 
-AppDataClearSubscriber::AppDataClearSubscriber(const CommonEventSubscribeInfo &subscribeInfo, AppDataClearListener &listener)
-    : CommonEventSubscriber(subscribeInfo), listener_(listener) {}
+AppDataClearSubscriber::AppDataClearSubscriber(const CommonEventSubscribeInfo &subscribeInfo,
+    AppDataClearListener &listener) : CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
 void AppDataClearSubscriber::OnReceiveEvent(const CommonEventData &data)
 {
