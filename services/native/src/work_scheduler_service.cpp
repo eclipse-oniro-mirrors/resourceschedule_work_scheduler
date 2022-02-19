@@ -61,7 +61,7 @@ const string SET_REPEAT_CYCLE_TIME_MIN = "SetRepeatCycleTimeMin";
 const string SET_WATCHDOG_TIME = "SetWatchdogTime";
 const string CHECK_BUNDLE = "CheckBundle";
 const string DEBUG_INFO = "DebugInfo";
-const int32_t DELAY_READ_PERSIST = 15 * 1000;
+const int32_t INIT_DELAY = 2 * 1000;
 const int32_t MAX_BUFFER = 256;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
@@ -79,21 +79,42 @@ void WorkSchedulerService::OnStart()
         return;
     }
 
+    // Init handler.
+    if (!eventRunner_) {
+        eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME);
+    }
+    if (eventRunner_ == nullptr) {
+        WS_HILOGE("Init failed due to create EventRunner");
+        return;
+    }
+    handler_ = std::make_shared<WorkEventHandler>(eventRunner_, wss);
+
+    if (!IsBaseAbilityReady()) {
+        WS_HILOGD("request system service is not ready yet!");
+        GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
+        return;
+    }
     if (!Init()) {
-        WS_HILOGE("OnStart call init failed!");
+        WS_HILOGE("Init service failed");
         return;
     }
 
-    if (!Publish(DelayedSpSingleton<WorkSchedulerService>::GetInstance())) {
-        WS_HILOGE("OnStart register to system ability manager failed!");
-        return;
-    }
-
-    GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::INIT_PERSISTED_MSG, 0), DELAY_READ_PERSIST);
     checkBundle_ = true;
     ready_ = true;
-
     WS_HILOGE("OnStart and add system ability success.");
+}
+
+bool WorkSchedulerService::IsBaseAbilityReady()
+{
+    sptr<ISystemAbilityManager> systemAbilityManager
+        = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (systemAbilityManager == nullptr
+        || systemAbilityManager->CheckSystemAbility(APP_MGR_SERVICE_ID) == nullptr
+        || systemAbilityManager->CheckSystemAbility(COMMON_EVENT_SERVICE_ID) == nullptr
+        || systemAbilityManager->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID) == nullptr) {
+        return false;
+    }
+    return true;
 }
 
 void WorkSchedulerService::InitPersisted()
@@ -151,20 +172,21 @@ void WorkSchedulerService::OnStop()
 bool WorkSchedulerService::Init()
 {
     WS_HILOGE("WorkSchedulerService::Init() come in");
-    if (!eventRunner_) {
-        eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME);
-    }
-    if (eventRunner_ == nullptr) {
-        WS_HILOGE("Init failed due to create EventRunner");
+    if (!IsBaseAbilityReady()) {
+        WS_HILOGD("request system service is not ready yet!");
+        GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
         return false;
     }
-    handler_ = std::make_shared<WorkEventHandler>(eventRunner_, wss);
     WorkQueueManagerInit();
     if (!WorkPolicyManagerInit()) {
         WS_HILOGE("init failed due to work policy manager init.");
         return false;
     }
-
+    InitPersisted();
+    if (!Publish(DelayedSpSingleton<WorkSchedulerService>::GetInstance())) {
+        WS_HILOGE("OnStart register to system ability manager failed!");
+        return false;
+    }
     WS_HILOGI("init success.");
     return true;
 }
@@ -209,6 +231,10 @@ bool WorkSchedulerService::WorkPolicyManagerInit()
 
     auto appRemoveListener = make_shared<AppRemovedListener>(workPolicyManager_);
     workPolicyManager_->AddAppRemoveListener(appRemoveListener);
+
+    auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
+    workPolicyManager_->AddAppDataClearListener(appDataClearListener);
+
     WS_HILOGI("work policy manager init success.");
     return true;
 }

@@ -28,6 +28,7 @@
 
 #include "ability_manager_interface.h"
 #include "delayed_sp_singleton.h"
+#include "policy/app_data_clear_listener.h"
 #include "policy/app_removed_listener.h"
 #include "work_info.h"
 #include "work_sched_service_stub.h"
@@ -59,6 +60,7 @@ public:
     void UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus> work);
     void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     void WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatus);
+    bool Init();
 
     std::shared_ptr<WorkEventHandler> GetHandler()
     {
@@ -89,7 +91,6 @@ private:
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_;
 
-    bool Init();
     void WorkQueueManagerInit();
     bool WorkPolicyManagerInit();
     void RefreshPersistedWorks();
@@ -102,6 +103,7 @@ private:
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
     bool CheckCondition(WorkInfo& workInfo);
     void DumpDebugInfo(std::vector<std::string> &dumpInfo);
+    bool IsBaseAbilityReady();
 };
 } // namespace WorkScheduler
 } // namespace OHOS
