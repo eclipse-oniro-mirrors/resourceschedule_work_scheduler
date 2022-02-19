@@ -34,6 +34,7 @@ namespace WorkScheduler {
 class WorkSchedulerService;
 class WorkEventHandler;
 class AppRemovedListener;
+class AppDataClearListener;
 class Watchdog;
 class WorkPolicyManager {
 public:
@@ -59,6 +60,7 @@ public:
     void CheckWorkToRun();
     void SendRetrigger(int64_t delayTime);
     void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
+    void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
     void WatchdogTimeOut(int32_t watchdogId);
     void SetFixMemory(int32_t memory);
     int32_t GetFixMemory();
@@ -94,6 +96,7 @@ private:
 
     std::list<std::shared_ptr<IPolicyFilter>> policyFilters_;
     std::shared_ptr<AppRemovedListener> appRemovedListener_;
+    std::shared_ptr<AppDataClearListener> appDataClearListener_;
 
     std::shared_ptr<Watchdog> watchdog_;
 

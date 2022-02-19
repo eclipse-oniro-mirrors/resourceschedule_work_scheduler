@@ -21,6 +21,7 @@
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
 
+#include "policy/app_data_clear_listener.h"
 #include "work_scheduler_service.h"
 #include "work_event_handler.h"
 
@@ -75,6 +76,12 @@ void WorkPolicyManager::AddAppRemoveListener(shared_ptr<AppRemovedListener> list
 {
     appRemovedListener_ = listener;
     appRemovedListener_->Start();
+}
+
+void WorkPolicyManager::AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener)
+{
+    appDataClearListener_ = listener;
+    appDataClearListener_->Start();
 }
 
 bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
