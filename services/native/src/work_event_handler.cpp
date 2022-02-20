@@ -44,8 +44,8 @@ void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& 
             wssptr->GetWorkPolicyManager()->CheckWorkToRun();
             break;
         }
-        case INIT_PERSISTED_MSG: {
-            wssptr->InitPersisted();
+        case SERVICE_INIT_MSG: {
+            wssptr->Init();
             break;
         }
         default:
