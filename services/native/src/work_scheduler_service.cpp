@@ -89,11 +89,7 @@ void WorkSchedulerService::OnStart()
     }
     handler_ = std::make_shared<WorkEventHandler>(eventRunner_, wss);
 
-    if (!IsBaseAbilityReady()) {
-        WS_HILOGD("request system service is not ready yet!");
-        GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
-        return;
-    }
+    // Try to init.
     Init();
     WS_HILOGE("OnStart success.");
 }
