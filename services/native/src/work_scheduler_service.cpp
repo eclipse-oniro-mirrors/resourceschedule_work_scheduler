@@ -94,14 +94,8 @@ void WorkSchedulerService::OnStart()
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
         return;
     }
-    if (!Init()) {
-        WS_HILOGE("Init service failed");
-        return;
-    }
-
-    checkBundle_ = true;
-    ready_ = true;
-    WS_HILOGE("OnStart and add system ability success.");
+    Init();
+    WS_HILOGE("OnStart success.");
 }
 
 bool WorkSchedulerService::IsBaseAbilityReady()
@@ -171,7 +165,6 @@ void WorkSchedulerService::OnStop()
 
 bool WorkSchedulerService::Init()
 {
-    WS_HILOGE("WorkSchedulerService::Init() come in");
     if (!IsBaseAbilityReady()) {
         WS_HILOGD("request system service is not ready yet!");
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
@@ -187,6 +180,8 @@ bool WorkSchedulerService::Init()
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
+    checkBundle_ = true;
+    ready_ = true;
     WS_HILOGI("init success.");
     return true;
 }
