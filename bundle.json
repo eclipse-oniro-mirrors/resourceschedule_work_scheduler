@@ -28,7 +28,15 @@
           "napi",
           "safwk",
           "samgr_standard",
-          "utils_base"
+          "utils_base",
+          "bundle_framework",
+          "os_account_standard",
+          "ability_base",
+          "battery_manager_native",
+          "ces_standard",
+          "ability_runtime",
+          "eventhandler",
+          "thermal_manager"
         ],
         "third_party": [ "googletest" ]
       },
