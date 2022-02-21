@@ -20,9 +20,9 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-static const int32_t CALLBACK_INDEX = 0;
-static const int32_t OBTAIN_ALL_WORKS_MIN_PARAMS = 0;
-static const int32_t OBTAIN_ALL_WORKS_MAX_PARAMS = 1;
+const int32_t CALLBACK_INDEX = 0;
+const int32_t OBTAIN_ALL_WORKS_MIN_PARAMS = 0;
+const int32_t OBTAIN_ALL_WORKS_MAX_PARAMS = 1;
 
 struct AsyncCallbackInfoObtainAllWorks {
     napi_env env = nullptr;
