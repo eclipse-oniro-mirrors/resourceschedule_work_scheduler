@@ -20,9 +20,9 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-static const int32_t WORK_INFO_INDEX = 0;
-static const int32_t NEED_CANCEL_INDEX = 1;
-static const int32_t STOP_WORK_PARAMS = 2;
+const int32_t WORK_INFO_INDEX = 0;
+const int32_t NEED_CANCEL_INDEX = 1;
+const int32_t STOP_WORK_PARAMS = 2;
 
 napi_value StopWork(napi_env env, napi_callback_info info)
 {

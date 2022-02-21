@@ -181,6 +181,9 @@ std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceProxy::ObtainAllWorks(int32
     WS_HILOGD("BUGOAWF WSSP ObtainAllWorks worksize from read parcel is: %{public}d", worksize);
     for (int32_t i = 0; i < worksize; i++) {
         WorkInfo *workInfo = reply.ReadParcelable<WorkInfo>();
+        if (workInfo == nullptr) {
+            continue;
+        }
         WS_HILOGD("WP read from parcel, workInfo ID: %{public}d", workInfo->GetWorkId());
         workInfos.emplace_back(std::make_shared<WorkInfo>(*workInfo));
     }
