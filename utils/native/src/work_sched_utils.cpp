@@ -14,6 +14,7 @@
  */
 #include "work_sched_utils.h"
 
+#include <cstring>
 #include "errors.h"
 #include "ohos_account_kits.h"
 #include "os_account_manager.h"
@@ -75,6 +76,19 @@ int32_t WorkSchedUtils::GetUserIdByUid(int32_t uid)
     }
     const int BASE_USER_RANGE = 200000;
     return uid / BASE_USER_RANGE;
+}
+
+bool WorkSchedUtils::ConvertFullPath(const std::string& partialPath, std::string& fullPath)
+{
+    if (partialPath.empty() || partialPath.length() >= PATH_MAX) {
+        return false;
+    }
+    char tmpPath[PATH_MAX] = {0};
+    if (realpath(partialPath.c_str(), tmpPath) == nullptr) {
+        return false;
+    }
+    fullPath = tmpPath;
+    return true;
 }
 }
 }
