@@ -39,7 +39,7 @@ public:
     void RequestBatteryLevel(int32_t battLevel);
     void RequestBatteryStatus(WorkCondition::BatteryStatus condition);
     void RequestStorageLevel(WorkCondition::Storage condition);
-    void RequestRepeatCycle(uint32_t timeInterval, uint32_t cycle);
+    void RequestRepeatCycle(uint32_t timeInterval, int32_t cycle);
     void RequestRepeatCycle(uint32_t timeInterval);
     void RefreshUid(int32_t uid);
     int32_t GetUid();

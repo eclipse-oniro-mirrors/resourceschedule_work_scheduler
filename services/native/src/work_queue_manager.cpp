@@ -18,7 +18,7 @@ using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
-const int TIME_CYCLE = 20 * 60 * 1000; // 20min
+const uint32_t TIME_CYCLE = 20 * 60 * 1000; // 20min
 
 WorkQueueManager::WorkQueueManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
 {
@@ -140,7 +140,7 @@ void WorkQueueManager::Dump(string& result)
     }
 }
 
-void WorkQueueManager::SetTimeCycle(int time)
+void WorkQueueManager::SetTimeCycle(uint32_t time)
 {
     timeCycle_ = time;
 }

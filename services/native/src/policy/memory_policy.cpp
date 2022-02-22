@@ -54,7 +54,7 @@ int32_t MemoryPolicy::GetMemAvailable()
     char name[NAME_SIZE];
     int32_t value = -1;
     while (fgets(buf, buff_len, fp) != NULL) {
-        sscanf(buf, "%s%d", name, &value);
+        sscanf_s(buf, "%s%d", name, sizeof(name), &value);
         string sname = name;
         if (sname.find(mem_name) != string::npos) {
             memAvailable = value;
