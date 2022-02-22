@@ -101,8 +101,7 @@ bool WorkSchedulerService::IsBaseAbilityReady()
     if (systemAbilityManager == nullptr
         || systemAbilityManager->CheckSystemAbility(APP_MGR_SERVICE_ID) == nullptr
         || systemAbilityManager->CheckSystemAbility(COMMON_EVENT_SERVICE_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(SUBSYS_ACCOUNT_SYS_ABILITY_ID_BEGIN) == nullptr) {
+        || systemAbilityManager->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID) == nullptr) {
         return false;
     }
     return true;
