@@ -81,7 +81,7 @@ void WorkInfo::RequestStorageLevel(WorkCondition::Storage condition)
     conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
 }
 
-void WorkInfo::RequestRepeatCycle(uint32_t timeInterval, uint32_t cycle)
+void WorkInfo::RequestRepeatCycle(uint32_t timeInterval, int32_t cycle)
 {
     std::shared_ptr<Condition> repeatCycle = std::make_shared<Condition>();
     repeatCycle->uintVal = timeInterval;

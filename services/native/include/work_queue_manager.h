@@ -43,7 +43,7 @@ public:
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
     bool StopAndClearWorks(std::list<std::shared_ptr<WorkStatus>> workList);
-    void SetTimeCycle(int time);
+    void SetTimeCycle(uint32_t time);
     int GetTimeCycle();
     void Dump(std::string& result);
 
@@ -55,7 +55,7 @@ private:
     std::map<WorkCondition::Type, std::shared_ptr<WorkQueue>> queueMap_;
     std::map<WorkCondition::Type, std::shared_ptr<IConditionListener>> listenerMap_;
 
-    int timeCycle_;
+    uint32_t timeCycle_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
