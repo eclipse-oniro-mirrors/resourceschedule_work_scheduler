@@ -14,7 +14,6 @@
  */
 #include "work_sched_utils.h"
 
-#include <cstring>
 #include "errors.h"
 #include "ohos_account_kits.h"
 #include "os_account_manager.h"
