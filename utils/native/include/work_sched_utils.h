@@ -29,6 +29,7 @@ public:
     static int GetCurrentAccountId();
     static bool IsIdActive(int id);
     static int32_t GetUserIdByUid(int32_t uid);
+    static bool ConvertFullPath(const std::string &inOriPath, std::string &outRealPath);
     static const int INVALID_DATA = -1;
 };
 } // namespace WorkScheduler

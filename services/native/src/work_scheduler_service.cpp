@@ -121,9 +121,15 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
     ifstream fin;
-    fin.open(PERSISTED_FILE_PATH, ios::in);
+    std::string realPath;
+    if (!WorkSchedUtils::ConvertFullPath(PERSISTED_FILE_PATH, realPath)) {
+        WS_HILOGE("Get real path failed");
+        return workInfos;
+    }
+    WS_HILOGD("Read from %{public}s", realPath.c_str());
+    fin.open(realPath, ios::in);
     if (!fin.is_open()) {
-        WS_HILOGE("cannot open file %{public}s", PERSISTED_FILE_PATH);
+        WS_HILOGE("cannot open file %{public}s", realPath.c_str());
         return workInfos;
     }
     char buffer[MAX_BUFFER];
@@ -296,7 +302,9 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
         workQueueManager_->AddWork(workStatus);
         if (workInfo.IsPersisted()) {
             std::lock_guard<std::mutex> lock(mutex_);
-            persistedMap_.emplace(workStatus->workId_, make_shared<WorkInfo>(workInfo));
+            std::shared_ptr<WorkInfo> persistedInfo = make_shared<WorkInfo>(workInfo);
+            persistedInfo->RefreshUid(uid);
+            persistedMap_.emplace(workStatus->workId_, persistedInfo);
             RefreshPersistedWorks();
         }
         ret = true;
@@ -309,26 +317,13 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
 void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
 {
     WS_HILOGD("%{public}s come in", __func__);
-    sptr<ISystemAbilityManager> systemAbilityManager =
-        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (!systemAbilityManager) {
-        WS_HILOGE("fail to get system ability mgr.");
-        return;
-    }
-    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
-    if (!remoteObject) {
-        WS_HILOGE("fail to get bundle manager proxy.");
-        return;
-    }
-    sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
-    BundleInfo bundleInfo;
-    int currentAccountId = WorkSchedUtils::GetCurrentAccountId();
-    if (bundleMgr->GetBundleInfo(workInfo.GetBundleName(),
-        BundleFlag::GET_BUNDLE_WITH_ABILITIES, bundleInfo, currentAccountId)) {
-        shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, bundleInfo.uid);
-        if (workPolicyManager_->AddWork(workStatus, bundleInfo.uid)) {
+    if (workInfo.GetUid() > 0) {
+        shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
+        if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid())) {
             workQueueManager_->AddWork(workStatus);
         }
+    } else {
+        WS_HILOGD("uid is invalid : %{public}d", workInfo.GetUid());
     }
     WS_HILOGD("%{public}s come out", __func__);
 }
@@ -572,12 +567,15 @@ void WorkSchedulerService::RefreshPersistedWorks()
     CreateNodeDir(PERSISTED_PATH);
     CreateNodeFile(PERSISTED_FILE_PATH);
     ofstream fout;
-    fout.open(PERSISTED_FILE_PATH, ios::out);
+    std::string realPath;
+    if (!WorkSchedUtils::ConvertFullPath(PERSISTED_FILE_PATH, realPath)) {
+        WS_HILOGE("Get real path failed");
+        return;
+    }
+    WS_HILOGD("Refresh path %{public}s", realPath.c_str());
+    fout.open(realPath, ios::out);
     fout<<result.c_str()<<endl;
     fout.close();
-    if (access(PERSISTED_FILE_PATH, S_IRWXU|S_IRWXG|S_IRWXO) != -1) {
-        WS_HILOGD("path %{public}s creat failed, persisted FAILED", PERSISTED_FILE_PATH);
-    }
     WS_HILOGD("%{public}s come out", __func__);
 }
 

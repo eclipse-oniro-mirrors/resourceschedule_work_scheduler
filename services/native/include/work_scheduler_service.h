@@ -89,7 +89,7 @@ private:
     bool ready_ {false};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
-    bool checkBundle_;
+    bool checkBundle_ {true};
 
     void WorkQueueManagerInit();
     bool WorkPolicyManagerInit();

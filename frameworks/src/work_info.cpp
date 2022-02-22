@@ -21,7 +21,11 @@ namespace WorkScheduler {
 const int INVALID_VALUE = -1;
 const int INVALID_TIME_VALUE = 0;
 
-WorkInfo::WorkInfo() {}
+WorkInfo::WorkInfo()
+{
+    workId_ = INVALID_VALUE;
+    uid_ = INVALID_VALUE;
+}
 
 WorkInfo::~WorkInfo() {}
 
@@ -92,6 +96,16 @@ void WorkInfo::RequestRepeatCycle(uint32_t timeInterval)
     repeatCycle->uintVal = timeInterval;
     repeatCycle->boolVal = true;
     conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
+}
+
+void WorkInfo::RefreshUid(int32_t uid)
+{
+    uid_ = uid;
+}
+
+int32_t WorkInfo::GetUid()
+{
+    return uid_;
 }
 
 int32_t WorkInfo::GetWorkId()
@@ -286,6 +300,9 @@ WorkInfo *WorkInfo::Unmarshalling(Parcel &parcel)
 std::string WorkInfo::ParseToJsonStr()
 {
     Json::Value root;
+    if (uid_ != INVALID_VALUE) {
+        root["uid"] = uid_;
+    }
     root["workId"] = workId_;
     root["bundleName"] = bundleName_;
     root["abilityName"] = abilityName_;
@@ -346,6 +363,9 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     this->bundleName_ = value["bundleName"].asString();
     this->abilityName_ = value["abilityName"].asString();
     this->persisted_ = value["persisted"].asBool();
+    if (value.isMember("uid")) {
+        this->uid_ = value["uid"].asInt();
+    }
     Json::Value conditions = value["conditions"];
     if (conditions.isMember("network")) {
         this->RequestNetworkType(WorkCondition::Network(conditions["network"].asInt()));

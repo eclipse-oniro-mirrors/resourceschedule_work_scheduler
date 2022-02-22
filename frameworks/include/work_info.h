@@ -41,6 +41,8 @@ public:
     void RequestStorageLevel(WorkCondition::Storage condition);
     void RequestRepeatCycle(uint32_t timeInterval, uint32_t cycle);
     void RequestRepeatCycle(uint32_t timeInterval);
+    void RefreshUid(int32_t uid);
+    int32_t GetUid();
 
     int32_t GetWorkId();
     std::string GetBundleName();
@@ -66,6 +68,7 @@ private:
     std::string bundleName_;
     std::string abilityName_;
     bool persisted_;
+    int32_t uid_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
 };
 } // namespace WorkScheduler
