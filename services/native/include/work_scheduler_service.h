@@ -78,9 +78,9 @@ public:
     }
 
 private:
-    const char* PERSISTED_FILE_PATH = "/data/workscheduler/persisted";
-    const char* PERSISTED_PATH = "/data/workscheduler/";
-    const char* PERSISTED_FILE = "persisted";
+    const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
+    const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
+    const char* PERSISTED_FILE = "persisted_work";
 
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
