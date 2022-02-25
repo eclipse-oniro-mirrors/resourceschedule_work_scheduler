@@ -25,6 +25,7 @@ WorkInfo::WorkInfo()
 {
     workId_ = INVALID_VALUE;
     uid_ = INVALID_VALUE;
+    persisted_ = false;
 }
 
 WorkInfo::~WorkInfo() {}
