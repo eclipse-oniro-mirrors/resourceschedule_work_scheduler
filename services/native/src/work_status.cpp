@@ -136,7 +136,7 @@ bool WorkStatus::IsReady()
     }
     auto workConditionMap = workInfo_->GetConditionMap();
     for (auto it : *workConditionMap) {
-        if (conditionMap_.count(it.first) <= 0 || workConditionMap == nullptr) {
+        if (conditionMap_.count(it.first) <= 0) {
             return false;
         }
         switch (it.first) {
