@@ -35,8 +35,8 @@ namespace WorkScheduler {
 namespace {
 const int64_t DELAY_TIME_LONG = 30000;
 const int64_t DELAY_TIME_SHORT = 5000;
-const int MAX_WATCHDOG_ID = 1000;
-const int INIT_WATCHDOG_ID = 1;
+const uint32_t MAX_WATCHDOG_ID = 1000;
+const uint32_t INIT_WATCHDOG_ID = 1;
 const int INIT_FIX_MEMORY = -1;
 const int WATCHDOG_TIME = 2 * 60 * 1000;
 }
@@ -328,7 +328,7 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 
 void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus)
 {
-    int watchId = NewWatchDogId();
+    uint32_t watchId = NewWatchdogId();
     watchdog_->AddWatchdog(watchId, watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
@@ -345,7 +345,7 @@ void WorkPolicyManager::SendRetrigger(int64_t delaytime)
     handler_->SendEvent(InnerEvent::Get(WorkEventHandler::RETRIGGER_MSG, 0), delaytime);
 }
 
-void WorkPolicyManager::WatchdogTimeOut(int32_t watchdogId)
+void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 {
     WS_HILOGI("WatchdogTimeOut.");
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
@@ -357,7 +357,7 @@ void WorkPolicyManager::WatchdogTimeOut(int32_t watchdogId)
     wmsptr->WatchdogTimeOut(workStatus);
 }
 
-std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(int32_t id)
+std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
 {
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     return watchdogIdMap_.at(id);
@@ -432,7 +432,7 @@ void WorkPolicyManager::Dump(string& result)
     result.append(to_string(GetMaxRunningCount()));
 }
 
-int32_t WorkPolicyManager::NewWatchDogId()
+uint32_t WorkPolicyManager::NewWatchdogId()
 {
     if (watchdogId_ == MAX_WATCHDOG_ID) {
         watchdogId_ = INIT_WATCHDOG_ID;

@@ -44,7 +44,7 @@ public:
         std::shared_ptr<DetectorValue> conditionVal);
     bool StopAndClearWorks(std::list<std::shared_ptr<WorkStatus>> workList);
     void SetTimeCycle(uint32_t time);
-    int GetTimeCycle();
+    uint32_t GetTimeCycle();
     void Dump(std::string& result);
 
 private:

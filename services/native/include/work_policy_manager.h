@@ -61,7 +61,7 @@ public:
     void SendRetrigger(int64_t delayTime);
     void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
     void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
-    void WatchdogTimeOut(int32_t watchdogId);
+    void WatchdogTimeOut(uint32_t watchdogId);
     void SetFixMemory(int32_t memory);
     int32_t GetFixMemory();
     void SetWatchdogTime(int time);
@@ -80,9 +80,9 @@ private:
     void RemoveConditionUnReady();
     std::shared_ptr<WorkStatus> GetWorkToRun();
     void RemoveAllUnReady();
-    int32_t NewWatchDogId();
+    uint32_t NewWatchdogId();
     void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
-    std::shared_ptr<WorkStatus> GetWorkFromWatchdog(int32_t id);
+    std::shared_ptr<WorkStatus> GetWorkFromWatchdog(uint32_t id);
 
     const wptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
@@ -101,9 +101,9 @@ private:
     std::shared_ptr<Watchdog> watchdog_;
 
     std::mutex watchdogIdMapMutex_;
-    std::map<int32_t, std::shared_ptr<WorkStatus>> watchdogIdMap_;
+    std::map<uint32_t, std::shared_ptr<WorkStatus>> watchdogIdMap_;
 
-    int32_t watchdogId_;
+    uint32_t watchdogId_;
     int32_t fixMemory_;
     int watchdogTime_;
 };
