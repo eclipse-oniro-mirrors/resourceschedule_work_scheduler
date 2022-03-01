@@ -145,7 +145,7 @@ void WorkQueueManager::SetTimeCycle(uint32_t time)
     timeCycle_ = time;
 }
 
-int WorkQueueManager::GetTimeCycle()
+uint32_t WorkQueueManager::GetTimeCycle()
 {
     return timeCycle_;
 }
