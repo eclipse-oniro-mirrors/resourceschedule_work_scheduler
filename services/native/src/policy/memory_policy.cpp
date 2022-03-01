@@ -47,6 +47,7 @@ int32_t MemoryPolicy::GetMemAvailable()
     if (fp == NULL) {
         WS_HILOGE("GetMemAvailable file open failed.");
         memAvailable = IPolicyFilter::CANNOT_RUNNING_MORE;
+        return memAvailable;
     }
     char buf[BUF_LIMIT];
     int buff_len = BUF_LIMIT;
