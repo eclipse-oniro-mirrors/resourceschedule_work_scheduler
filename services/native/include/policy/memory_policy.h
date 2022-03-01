@@ -28,6 +28,7 @@ public:
     ~MemoryPolicy();
     int32_t getPolicyMaxRunning() override;
 
+    const int32_t INVALID_MEM = -1;
     const int32_t MEM_CRUCIAL = 1 * 1024 * 1024;
     const int32_t MEM_LOW = 2 * 1024 * 1024;
     const int32_t COUNT_MEMORY_CRUCIAL = 1;

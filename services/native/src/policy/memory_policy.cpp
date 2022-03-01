@@ -42,11 +42,10 @@ int32_t MemoryPolicy::GetMemAvailable()
             return fixMemory;
         }
     }
-    int32_t memAvailable;
+    int32_t memAvailable = INVALID_MEM;
     FILE *fp = fopen("/proc/meminfo", "r");
     if (fp == NULL) {
         WS_HILOGE("GetMemAvailable file open failed.");
-        memAvailable = IPolicyFilter::CANNOT_RUNNING_MORE;
         return memAvailable;
     }
     char buf[BUF_LIMIT];
