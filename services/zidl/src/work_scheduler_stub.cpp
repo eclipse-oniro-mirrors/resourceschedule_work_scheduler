@@ -20,6 +20,11 @@ namespace WorkScheduler {
 int WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
+    auto remoteDescriptor = data.ReadInterfaceToken();
+    if (GetDescriptor() != remoteDescriptor) {
+        WS_HILOGE("WorkSchedulerStub::OnRemoteRequest failed, descriptor is not matched!");
+        return ERR_INVALID_STATE;
+    }
     switch (code) {
         case COMMAND_ON_WORK_START: {
             WorkInfo* workInfo = data.ReadParcelable<WorkInfo>();

@@ -22,6 +22,10 @@ void WorkSchedulerProxy::OnWorkStart(WorkInfo& workInfo)
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        WS_HILOGE("WorkSchedulerProxy::%{public}s write descriptor failed!", __func__);
+        return;
+    }
     data.WriteParcelable(&workInfo);
     Remote()->SendRequest(COMMAND_ON_WORK_START, data, reply, option);
 }
@@ -31,6 +35,10 @@ void WorkSchedulerProxy::OnWorkStop(WorkInfo& workInfo)
     MessageParcel data;
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
+    if (!data.WriteInterfaceToken(GetDescriptor())) {
+        WS_HILOGE("WorkSchedulerProxy::%{public}s write descriptor failed!", __func__);
+        return;
+    }
     data.WriteParcelable(&workInfo);
     Remote()->SendRequest(COMMAND_ON_WORK_STOP, data, reply, option);
 }

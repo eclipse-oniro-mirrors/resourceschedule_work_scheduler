@@ -28,7 +28,7 @@ int WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, Me
     std::u16string descriptor = WorkSchedServiceStub::GetDescriptor();
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
     if (descriptor != remoteDescriptor) {
-        WS_HILOGE("BUGOAWF WorkSchedServiceStub::OnRemoteRequest failed, descriptor is not matched!");
+        WS_HILOGE("WorkSchedServiceStub::OnRemoteRequest failed, descriptor is not matched!");
         return E_GET_WORKSCHED_SERVICE_FALIED;
     }
     switch (code) {
