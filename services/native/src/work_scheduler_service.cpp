@@ -56,7 +56,7 @@ const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss.GetRefP
 const string ALL_INFO = "All";
 const string WORK_QUEUE_INFO = "WorkQueue";
 const string WORK_POLICY_INFO = "WorkPolicy";
-const string SET_FIX_MEMORY = "SetMemory";
+const string SET_MEMORY = "SetMemory";
 const string SET_REPEAT_CYCLE_TIME_MIN = "SetRepeatCycleTimeMin";
 const string SET_WATCHDOG_TIME = "SetWatchdogTime";
 const string CHECK_BUNDLE = "CheckBundle";
@@ -474,7 +474,7 @@ bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<st
         } else if (dumpOption[DUMP_VALUE_INDEX] == "false") {
             checkBundle_ = false;
         }
-    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_FIX_MEMORY) {
+    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_MEMORY) {
         workPolicyManager_->SetMemoryByDump(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
         return true;
     } else if (dumpOption[DUMP_PARAM_INDEX] == SET_WATCHDOG_TIME) {

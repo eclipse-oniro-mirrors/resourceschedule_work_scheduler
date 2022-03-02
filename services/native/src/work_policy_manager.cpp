@@ -37,7 +37,7 @@ const int64_t DELAY_TIME_LONG = 30000;
 const int64_t DELAY_TIME_SHORT = 5000;
 const uint32_t MAX_WATCHDOG_ID = 1000;
 const uint32_t INIT_WATCHDOG_ID = 1;
-const int INIT_FIX_MEMORY = -1;
+const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int WATCHDOG_TIME = 2 * 60 * 1000;
 }
 
@@ -46,7 +46,7 @@ WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : ws
     std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_ = std::make_shared<WorkQueue>();
     watchdogId_ = INIT_WATCHDOG_ID;
-    dumpSetMemory_ = INIT_FIX_MEMORY;
+    dumpSetMemory_ = INIT_DUMP_SET_MEMORY;
     watchdogTime_ = WATCHDOG_TIME;
 }
 
