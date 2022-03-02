@@ -46,7 +46,7 @@ WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : ws
     std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_ = std::make_shared<WorkQueue>();
     watchdogId_ = INIT_WATCHDOG_ID;
-    fixMemory_ = INIT_FIX_MEMORY;
+    dumpSetMemory_ = INIT_FIX_MEMORY;
     watchdogTime_ = WATCHDOG_TIME;
 }
 
@@ -440,14 +440,14 @@ uint32_t WorkPolicyManager::NewWatchdogId()
     return watchdogId_++;
 }
 
-int32_t WorkPolicyManager::GetFixMemory()
+int32_t WorkPolicyManager::GetDumpSetMemory()
 {
-    return fixMemory_;
+    return dumpSetMemory_;
 }
 
-void WorkPolicyManager::SetFixMemory(int32_t memory)
+void WorkPolicyManager::SetMemoryByDump(int32_t memory)
 {
-    fixMemory_ = memory;
+    dumpSetMemory_ = memory;
 }
 
 void WorkPolicyManager::SetWatchdogTime(int time)

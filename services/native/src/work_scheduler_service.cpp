@@ -56,7 +56,7 @@ const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss.GetRefP
 const string ALL_INFO = "All";
 const string WORK_QUEUE_INFO = "WorkQueue";
 const string WORK_POLICY_INFO = "WorkPolicy";
-const string SET_FIX_MEMORY = "SetFixMemory";
+const string SET_FIX_MEMORY = "SetMemory";
 const string SET_REPEAT_CYCLE_TIME_MIN = "SetRepeatCycleTimeMin";
 const string SET_WATCHDOG_TIME = "SetWatchdogTime";
 const string CHECK_BUNDLE = "CheckBundle";
@@ -475,7 +475,7 @@ bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<st
             checkBundle_ = false;
         }
     } else if (dumpOption[DUMP_PARAM_INDEX] == SET_FIX_MEMORY) {
-        workPolicyManager_->SetFixMemory(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
+        workPolicyManager_->SetMemoryByDump(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
         return true;
     } else if (dumpOption[DUMP_PARAM_INDEX] == SET_WATCHDOG_TIME) {
         workPolicyManager_->SetWatchdogTime(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
@@ -532,7 +532,7 @@ void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus>
 void WorkSchedulerService::DumpDebugInfo(std::vector<std::string> &dumpInfo)
 {
     dumpInfo.push_back("Need check bundle:" + std::to_string(checkBundle_));
-    dumpInfo.push_back("Fix Memory:" + std::to_string(workPolicyManager_->GetFixMemory()));
+    dumpInfo.push_back("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()));
     dumpInfo.push_back("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()));
     dumpInfo.push_back("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()));
 }

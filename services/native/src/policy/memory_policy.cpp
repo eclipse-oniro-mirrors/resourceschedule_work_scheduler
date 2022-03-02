@@ -34,12 +34,12 @@ MemoryPolicy::~MemoryPolicy()
 
 int32_t MemoryPolicy::GetMemAvailable()
 {
-    int32_t fixMemory;
+    int32_t dumpSetMemory;
     if (workPolicyManager_ != nullptr) {
-        fixMemory = workPolicyManager_->GetFixMemory();
-        if (fixMemory != -1) {
-            WS_HILOGD("fix memory:%{public}d", fixMemory);
-            return fixMemory;
+        dumpSetMemory = workPolicyManager_->GetDumpSetMemory();
+        if (dumpSetMemory != -1) {
+            WS_HILOGD("dump set memory:%{public}d", dumpSetMemory);
+            return dumpSetMemory;
         }
     }
     int32_t memAvailable = INVALID_MEM;

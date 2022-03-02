@@ -62,8 +62,8 @@ public:
     void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
     void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
     void WatchdogTimeOut(uint32_t watchdogId);
-    void SetFixMemory(int32_t memory);
-    int32_t GetFixMemory();
+    void SetMemoryByDump(int32_t memory);
+    int32_t GetDumpSetMemory();
     void SetWatchdogTime(int time);
     int GetWatchdogTime();
 
@@ -104,7 +104,7 @@ private:
     std::map<uint32_t, std::shared_ptr<WorkStatus>> watchdogIdMap_;
 
     uint32_t watchdogId_;
-    int32_t fixMemory_;
+    int32_t dumpSetMemory_;
     int watchdogTime_;
 };
 }

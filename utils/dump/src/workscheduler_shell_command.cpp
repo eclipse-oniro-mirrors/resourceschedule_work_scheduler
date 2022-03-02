@@ -42,7 +42,7 @@ namespace {
         "  -A WorkPolicy                        dump work policy infos\n"
         "  -A DebugInfo                         dump debug info\n"
         "  -A CheckBundle (bool)                set debug of checking bundle, default false\n"
-        "  -A SetFixMemory (number)             fix the available memory\n"
+        "  -A SetMemory (number)                set the available memory\n"
         "  -A SetWatchdogTime (number)          set watch dog time, default 120000\n"
         "  -A SetRepeatCycleTimeMin (number)    set min repeat cycle time, default 1200000\n"
         "  -E help                              show publish common event help menu\n";
