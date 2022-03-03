@@ -26,7 +26,7 @@ void NAPI_WorkSchedulerExtensionAbility_AutoRegister()
     auto moduleManager = NativeModuleManager::GetInstance();
     NativeModule newModuleInfo = {
         .name = "WorkSchedulerExtensionAbility",
-        .fileName = "libworkschedulerextension_napi.so/work_scheduler_extension_ability.js",
+        .fileName = "libworkschedulerextensionability_napi.so/work_scheduler_extension_ability.js",
     };
 
     moduleManager->Register(&newModuleInfo);
