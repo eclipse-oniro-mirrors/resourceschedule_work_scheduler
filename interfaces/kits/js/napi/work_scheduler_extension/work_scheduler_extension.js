@@ -13,13 +13,13 @@
  * limitations under the License.
  */
 
-class WorkSchedulerExtension {
+class WorkSchedulerExtensionAbility {
     onWorkStart(workInfo) {
-        console.log('MyWorkSchedulerExtension onWorkStart');
+        console.log('onWorkStart');
     }
     onWorkStop(workInfo) {
-        console.log('MyWorkSchedulerExtension onWorkStop');
+        console.log('onWorkStop');
     }
 }
 
-export default WorkSchedulerExtension
+export default WorkSchedulerExtensionAbility
