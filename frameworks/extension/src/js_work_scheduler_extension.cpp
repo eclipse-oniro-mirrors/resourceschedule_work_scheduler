@@ -76,7 +76,7 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
     }
     WS_HILOGI("WorkSchedulerExtension ::Init CreateJsWorkSchedulerExtensionContext.");
     NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
-    auto shellContextRef = jsRuntime_.LoadSystemModule("application.CreateJsWorkSchedulerExtensionContext",
+    auto shellContextRef = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
         &contextObj, 1);
     contextObj = shellContextRef->Get();
     WS_HILOGI("WorkSchedulerExtension JsWorkSchedulerExtension::Init Bind.");
