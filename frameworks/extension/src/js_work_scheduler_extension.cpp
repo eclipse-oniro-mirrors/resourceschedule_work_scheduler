@@ -74,16 +74,16 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
         WS_HILOGI("WorkSchedulerExtension Failed to get context");
         return;
     }
-    WS_HILOGI("WorkSchedulerExtension ::Init CreateJsStaticSubscriberExtensionContext.");
+    WS_HILOGI("WorkSchedulerExtension ::Init CreateJsWorkSchedulerExtensionContext.");
     NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
-    auto shellContextRef = jsRuntime_.LoadSystemModule("application.StaticSubscriberExtensionContext",
+    auto shellContextRef = jsRuntime_.LoadSystemModule("application.CreateJsWorkSchedulerExtensionContext",
         &contextObj, 1);
     contextObj = shellContextRef->Get();
-    WS_HILOGI("WorkSchedulerExtension JsStaticSubscriberExtension::Init Bind.");
+    WS_HILOGI("WorkSchedulerExtension JsWorkSchedulerExtension::Init Bind.");
     context->Bind(jsRuntime_, shellContextRef.release());
-    WS_HILOGI("WorkSchedulerExtension JsStaticSubscriberExtension::SetProperty.");
+    WS_HILOGI("WorkSchedulerExtension JsWorkSchedulerExtension::SetProperty.");
     obj->SetProperty("context", contextObj);
-    WS_HILOGI("WorkSchedulerExtension JsStaticSubscriberExtension::Init end.");
+    WS_HILOGI("WorkSchedulerExtension JsWorkSchedulerExtension::Init end.");
 }
 
 void JsWorkSchedulerExtension::OnStart(const AAFwk::Want& want)
@@ -175,13 +175,13 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     NativeValue* value = jsObj_->Get();
     NativeObject* obj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(value);
     if (obj == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get StaticSubscriberExtension object");
+        WS_HILOGI("WorkSchedulerExtension Failed to get WorkSchedulerExtension object");
         return;
     }
 
     NativeValue* method = obj->GetProperty("onWorkStart");
     if (method == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get onCommonEventTriggered from StaticSubscriberExtension object");
+        WS_HILOGI("WorkSchedulerExtension Failed to get onWorkStart from WorkSchedulerExtension object");
         return;
     }
     nativeEngine.CallFunction(value, method, argv, 1);
@@ -255,7 +255,7 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
 
     NativeValue* method = obj->GetProperty("onWorkStop");
     if (method == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get onCommonEventTriggered from object");
+        WS_HILOGI("WorkSchedulerExtension Failed to get onWorkStop from object");
         return;
     }
     nativeEngine.CallFunction(value, method, argv, 1);
