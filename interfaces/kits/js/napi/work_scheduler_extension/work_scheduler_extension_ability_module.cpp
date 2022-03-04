@@ -15,45 +15,45 @@
 
 #include "native_engine/native_engine.h"
 
-extern const char _binary_work_scheduler_extension_js_start[];
-extern const char _binary_work_scheduler_extension_js_end[];
-extern const char _binary_work_scheduler_extension_abc_start[];
-extern const char _binary_work_scheduler_extension_abc_end[];
+extern const char _binary_work_scheduler_extension_ability_js_start[];
+extern const char _binary_work_scheduler_extension_ability_js_end[];
+extern const char _binary_work_scheduler_extension_ability_abc_start[];
+extern const char _binary_work_scheduler_extension_ability_abc_end[];
 
 extern "C" __attribute__((constructor))
-void NAPI_WorkSchedulerExtension_AutoRegister()
+void NAPI_WorkSchedulerExtensionAbility_AutoRegister()
 {
     auto moduleManager = NativeModuleManager::GetInstance();
     NativeModule newModuleInfo = {
-        .name = "WorkSchedulerExtension",
-        .fileName = "libworkschedulerextension_napi.so/WorkSchedulerExtension.js",
+        .name = "WorkSchedulerExtensionAbility",
+        .fileName = "libworkschedulerextensionability_napi.so/work_scheduler_extension_ability.js",
     };
 
     moduleManager->Register(&newModuleInfo);
 }
 
 extern "C" __attribute__((visibility("default")))
-void NAPI_WorkSchedulerExtension_GetJSCode(const char **buf, int *bufLen)
+void NAPI_WorkSchedulerExtensionAbility_GetJSCode(const char **buf, int *bufLen)
 {
     if (buf != nullptr) {
-        *buf = _binary_work_scheduler_extension_js_start;
+        *buf = _binary_work_scheduler_extension_ability_js_start;
     }
 
     if (bufLen != nullptr) {
-        *bufLen = _binary_work_scheduler_extension_js_end -
-            _binary_work_scheduler_extension_js_start;
+        *bufLen = _binary_work_scheduler_extension_ability_js_end -
+            _binary_work_scheduler_extension_ability_js_start;
     }
 }
 
 // WorkSchedulerExtension JS register
 extern "C" __attribute__((visibility("default")))
-void NAPI_WorkSchedulerExtension_GetABCCode(const char **buf, int *buflen)
+void NAPI_WorkSchedulerExtensionAbility_GetABCCode(const char **buf, int *buflen)
 {
     if (buf != nullptr) {
-        *buf = _binary_work_scheduler_extension_abc_start;
+        *buf = _binary_work_scheduler_extension_ability_abc_start;
     }
     if (buflen != nullptr) {
-        *buflen = _binary_work_scheduler_extension_abc_end -
-            _binary_work_scheduler_extension_abc_start;
+        *buflen = _binary_work_scheduler_extension_ability_abc_end -
+            _binary_work_scheduler_extension_ability_abc_start;
     }
 }
