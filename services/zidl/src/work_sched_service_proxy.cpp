@@ -200,7 +200,7 @@ std::shared_ptr<WorkInfo> WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int
     MessageParcel reply;
     MessageOption option;
     if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
-        WS_HILOGE("%{public}s wirte descriptor failed!", __func__);
+        WS_HILOGE("%{public}s write descriptor failed!", __func__);
         return nullptr;
     }
     WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
