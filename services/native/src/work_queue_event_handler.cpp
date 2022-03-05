@@ -37,7 +37,7 @@ void WorkQueueEventHandler::ProcessEvent([[maybe_unused]] const AppExecFwk::Inne
                 return;
             }
             manager_->OnConditionChanged(WorkCondition::Type::TIMER, make_shared<DetectorValue>(0, 0, 0, string()));
-            int time = manager_->GetTimeCycle();
+            uint32_t time = manager_->GetTimeCycle();
             SendEvent(AppExecFwk::InnerEvent::Get(TIMER_TICK, 0), time);
             break;
         }
