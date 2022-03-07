@@ -16,7 +16,7 @@ module_output_path = "work_scheduler/interfaces"
 
 ohos_js_unittest("WorkSchedulerJsTest") {
   module_out_path = module_output_path
-  hap_profile = "./work_scheduler_jsunittest/config.json"
+  hap_profile = "./config.json"
   certificate_profile = "//test/developertest/signature/openharmony_sx.p7b"
 }
 
