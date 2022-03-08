@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2022 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,9 +35,9 @@ namespace WorkScheduler {
 namespace {
 const int64_t DELAY_TIME_LONG = 30000;
 const int64_t DELAY_TIME_SHORT = 5000;
-const int MAX_WATCHDOG_ID = 1000;
-const int INIT_WATCHDOG_ID = 1;
-const int INIT_FIX_MEMORY = -1;
+const uint32_t MAX_WATCHDOG_ID = 1000;
+const uint32_t INIT_WATCHDOG_ID = 1;
+const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int WATCHDOG_TIME = 2 * 60 * 1000;
 }
 
@@ -46,7 +46,7 @@ WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : ws
     std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_ = std::make_shared<WorkQueue>();
     watchdogId_ = INIT_WATCHDOG_ID;
-    fixMemory_ = INIT_FIX_MEMORY;
+    dumpSetMemory_ = INIT_DUMP_SET_MEMORY;
     watchdogTime_ = WATCHDOG_TIME;
 }
 
@@ -328,7 +328,7 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 
 void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus)
 {
-    int watchId = NewWatchDogId();
+    uint32_t watchId = NewWatchdogId();
     watchdog_->AddWatchdog(watchId, watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
@@ -345,7 +345,7 @@ void WorkPolicyManager::SendRetrigger(int64_t delaytime)
     handler_->SendEvent(InnerEvent::Get(WorkEventHandler::RETRIGGER_MSG, 0), delaytime);
 }
 
-void WorkPolicyManager::WatchdogTimeOut(int32_t watchdogId)
+void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 {
     WS_HILOGI("WatchdogTimeOut.");
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
@@ -357,7 +357,7 @@ void WorkPolicyManager::WatchdogTimeOut(int32_t watchdogId)
     wmsptr->WatchdogTimeOut(workStatus);
 }
 
-std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(int32_t id)
+std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
 {
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     return watchdogIdMap_.at(id);
@@ -432,7 +432,7 @@ void WorkPolicyManager::Dump(string& result)
     result.append(to_string(GetMaxRunningCount()));
 }
 
-int32_t WorkPolicyManager::NewWatchDogId()
+uint32_t WorkPolicyManager::NewWatchdogId()
 {
     if (watchdogId_ == MAX_WATCHDOG_ID) {
         watchdogId_ = INIT_WATCHDOG_ID;
@@ -440,14 +440,14 @@ int32_t WorkPolicyManager::NewWatchDogId()
     return watchdogId_++;
 }
 
-int32_t WorkPolicyManager::GetFixMemory()
+int32_t WorkPolicyManager::GetDumpSetMemory()
 {
-    return fixMemory_;
+    return dumpSetMemory_;
 }
 
-void WorkPolicyManager::SetFixMemory(int32_t memory)
+void WorkPolicyManager::SetMemoryByDump(int32_t memory)
 {
-    fixMemory_ = memory;
+    dumpSetMemory_ = memory;
 }
 
 void WorkPolicyManager::SetWatchdogTime(int time)

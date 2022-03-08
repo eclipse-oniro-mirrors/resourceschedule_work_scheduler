@@ -34,26 +34,26 @@ MemoryPolicy::~MemoryPolicy()
 
 int32_t MemoryPolicy::GetMemAvailable()
 {
-    int32_t fixMemory;
+    int32_t dumpSetMemory;
     if (workPolicyManager_ != nullptr) {
-        fixMemory = workPolicyManager_->GetFixMemory();
-        if (fixMemory != -1) {
-            WS_HILOGD("fix memory:%{public}d", fixMemory);
-            return fixMemory;
+        dumpSetMemory = workPolicyManager_->GetDumpSetMemory();
+        if (dumpSetMemory != -1) {
+            WS_HILOGD("dump set memory:%{public}d", dumpSetMemory);
+            return dumpSetMemory;
         }
     }
-    int32_t memAvailable;
+    int32_t memAvailable = INVALID_MEM;
     FILE *fp = fopen("/proc/meminfo", "r");
-    if (fp == NULL) {
+    if (fp == nullptr) {
         WS_HILOGE("GetMemAvailable file open failed.");
-        memAvailable = IPolicyFilter::CANNOT_RUNNING_MORE;
+        return memAvailable;
     }
     char buf[BUF_LIMIT];
     int buff_len = BUF_LIMIT;
     const char mem_name[] = "MemAvailable";
     char name[NAME_SIZE];
     int32_t value = -1;
-    while (fgets(buf, buff_len, fp) != NULL) {
+    while (fgets(buf, buff_len, fp) != nullptr) {
         int res = sscanf_s(buf, "%s%d", name, sizeof(name), &value);
         if (res < 0) {
             WS_HILOGE("sscanf_s failed");

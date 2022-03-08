@@ -40,7 +40,7 @@ int WorkSchedUtils::GetCurrentAccountId()
             return accountId;
         }
     }
-    WS_HILOGE("GetCurrentAccountId failed, no Actived now.");
+    WS_HILOGE("GetCurrentAccountId failed, no osAccountIds now.");
     return -1;
 }
 
@@ -63,7 +63,7 @@ bool WorkSchedUtils::IsIdActive(int id)
             return true;
         }
     }
-    WS_HILOGE("IsIdActive failed, no Actived now.");
+    WS_HILOGE("IsIdActive failed, osAccountIds now.");
     return false;
 }
 

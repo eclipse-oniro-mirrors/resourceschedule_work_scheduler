@@ -45,7 +45,7 @@ bool TimerListener::Start()
         WS_HILOGD("workQueueManager_ is null");
         return false;
     }
-    int time = workQueueManager_->GetTimeCycle();
+    uint32_t time = workQueueManager_->GetTimeCycle();
     handler_->SendEvent(AppExecFwk::InnerEvent::Get(WorkQueueEventHandler::TIMER_TICK, 0), time);
     return true;
 }

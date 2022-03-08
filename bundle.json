@@ -49,13 +49,13 @@
           "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient",
           "//foundation/resourceschedule/work_scheduler/frameworks/extension:workschedextension",
           "//foundation/resourceschedule/work_scheduler/utils/dump:workscheduler_target",
-          "//foundation/resourceschedule/work_scheduler/interfaces/kits/js/napi/work_scheduler_extension:workschedulerextension_napi",
+          "//foundation/resourceschedule/work_scheduler/interfaces/kits/js/napi/work_scheduler_extension:workschedulerextensionability_napi",
           "//foundation/resourceschedule/work_scheduler/interfaces/kits/js/napi/work_scheduler_extension_context:workschedulerextensioncontext_napi"
         ],
         "inner_kits": [],
         "test": [
             "//foundation/resourceschedule/work_scheduler/frameworks/test/unittest:workinfotest",
-            "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest:js_unittest"
+            "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest/work_scheduler_jsunittest:js_unittest"
         ]
       }
     }
