@@ -37,6 +37,10 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
     const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int resultCode)
 {
     proxy_ = (new (std::nothrow) WorkSchedulerProxy(remoteObject));
+    if (proxy_ == nullptr) {
+        WS_HILOGE("proxy is null");
+        return;
+    }
     proxy_->OnWorkStart(*workInfo_);
     WS_HILOGI("OnAbilityConnectDone.%{public}d", workInfo_->GetWorkId());
 }
