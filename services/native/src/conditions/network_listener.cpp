@@ -18,9 +18,17 @@
 #include "common_event_support.h"
 #include "matching_skills.h"
 #include "want.h"
+#include "net_supplier_info.h"
 
 namespace OHOS {
 namespace WorkScheduler {
+const int DEFAULT_VALUE = -1;
+const int BEARER_CELLULAR = 0;
+const int BEARER_WIFI = 1;
+const int BEARER_BLUETOOTH = 2;
+const int BEARER_ETHERNET = 3;
+const int BEARER_WIFI_AWARE = 5;
+
 NetworkEventSubscriber::NetworkEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     NetworkListener &listener) : CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
@@ -29,19 +37,51 @@ void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
     const std::string action = data.GetWant().GetAction();
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
 
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_WIFI_CONN_STATE) {
-        WS_HILOGI("Condition changed: WIFI_CONN_STATE");
-        listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
-            std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_WIFI, 0, 0, std::string()));
-    } else {
-        WS_HILOGI("OnReceiveEvent action is invalid");
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE) {
+        int code = data.GetCode();
+        int netType = data.GetWant().GetIntParam("NetType", DEFAULT_VALUE);
+        WS_HILOGI("Condition changed code:%{public}d, netType:%{public}d", code, netType);
+        if (code == NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED) {
+            if (netType == DEFAULT_VALUE) {
+                return;
+            }
+            switch (netType) {
+                case BEARER_CELLULAR:
+                    listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                        std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_MOBILE, 0, 0, std::string()));
+                    break;
+                case BEARER_WIFI:
+                    listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                        std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_WIFI, 0, 0, std::string()));
+                    break;
+                case BEARER_BLUETOOTH:
+                    listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                        std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_BLUETOOTH, 0, 0, std::string()));
+                    break;
+                case BEARER_ETHERNET:
+                    listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                        std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_ETHERNET, 0, 0, std::string()));
+                    break;
+                case BEARER_WIFI_AWARE:
+                    listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                        std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_WIFI_P2P, 0, 0, std::string()));
+                    break;
+                default:
+                    listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                        std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_ANY, 0, 0, std::string()));
+                    break;
+            }
+        } else {
+            listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
+        }
     }
 }
 
 std::shared_ptr<EventFwk::CommonEventSubscriber> CreateNetworkEventSubscriber(NetworkListener &listener)
 {
     EventFwk::MatchingSkills skill = EventFwk::MatchingSkills();
-    skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_WIFI_CONN_STATE);
+    skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
     EventFwk::CommonEventSubscribeInfo info(skill);
     return std::make_shared<NetworkEventSubscriber>(info, listener);
 }

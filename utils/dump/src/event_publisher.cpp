@@ -22,6 +22,7 @@
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "want.h"
+#include "net_supplier_info.h"
 
 #include "work_sched_common.h"
 
@@ -32,6 +33,7 @@ namespace {
     static const int DETAIL_PARAM = 2;
     static const std::string NETWORK = "network";
     static const std::string EV_NETWORK_TYPE_WIFI = "wifi";
+    static const std::string EV_NETWORK_TYPE_DISCONNECT = "disconnect";
     static const std::string CHARGING = "charging";
     static const std::string EV_CHARGING_TYPE_USB = "usb";
     static const std::string EV_CHARGING_TYPE_AC = "ac";
@@ -47,7 +49,8 @@ namespace {
         "usage: workscheduler dump -E [<options>]\n"
         "options list:\n"
         "  help                   help menu\n"
-        "  network wifi           (TMP)publish COMMON_EVENT_WIFI_CONN_STATE event\n"
+        "  network wifi           (TMP)publish COMMON_EVENT_CONNECTIVITY_CHANGE event\n"
+        "  network disconnect           (TMP)publish COMMON_EVENT_CONNECTIVITY_CHANGE event\n"
         "  charging usb           publish usb charging event\n"
         "  charging ac            publish ac charging event\n"
         "  charging wireless      publish wireless charging event\n"
@@ -83,16 +86,26 @@ void EventPublisher::PublishNetworkEvent(const std::vector<std::string> &dumpOpt
 {
     EventFwk::Want want;
     if (dumpOption[DETAIL_PARAM] == EV_NETWORK_TYPE_WIFI) {
-        want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_WIFI_CONN_STATE);
+        want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
+        want.SetParam("NetType", 1);
         dumpInfo.push_back(std::string("publishing COMMON_EVENT_WIFI_CONN_STATE"));
+        EventFwk::CommonEventData data;
+        data.SetWant(want);
+        data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
+        bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
+        dumpInfo.push_back(std::string("publish result: " + std::to_string(isSuccess)));
+    } else if(dumpOption[DETAIL_PARAM] == EV_NETWORK_TYPE_DISCONNECT) {
+        want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
+        dumpInfo.push_back(std::string("publishing COMMON_EVENT_WIFI_CONN_STATE"));
+        EventFwk::CommonEventData data;
+        data.SetWant(want);
+        data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_DISCONNECTED);
+        bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
+        dumpInfo.push_back(std::string("publish result: " + std::to_string(isSuccess)));
     } else {
         dumpInfo.push_back(std::string("dump need right param."));
         return;
     }
-    EventFwk::CommonEventData data;
-    data.SetWant(want);
-    bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-    dumpInfo.push_back(std::string("publish result: " + std::to_string(isSuccess)));
 }
 
 void EventPublisher::PublishChargingEvent(const std::vector<std::string> &dumpOption,
