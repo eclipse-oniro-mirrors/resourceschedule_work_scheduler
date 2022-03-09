@@ -104,6 +104,10 @@ sptr<IRemoteObject> JsWorkSchedulerExtension::OnConnect(const AAFwk::Want& want)
     WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
     sptr<WorkSchedulerStubImp> remoteObject = new (std::nothrow) WorkSchedulerStubImp(
         std::static_pointer_cast<JsWorkSchedulerExtension>(shared_from_this()));
+    if (remoteObject == nullptr) {
+        WS_HILOGI("OnConnect get null");
+        return remoteObject;
+    }
     WS_HILOGI("WorkSchedulerExtension %{public}s end. ", __func__);
     return remoteObject->AsObject();
 }

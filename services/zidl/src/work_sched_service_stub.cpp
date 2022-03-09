@@ -61,7 +61,6 @@ int WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, Me
         case static_cast<int>(IWorkSchedService::OBTAIN_ALL_WORKS): {
             std::list<std::shared_ptr<WorkInfo>> workInfos = ObtainAllWorksStub(data);
             size_t worksize = workInfos.size();
-            WS_HILOGD("BUFOAWF OBTAIN_ALL_WORKS worksize returns %{public}d", worksize);
             reply.WriteInt32(worksize);
             for (auto workInfo : workInfos) {
                 reply.WriteParcelable(&*workInfo);
