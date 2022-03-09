@@ -150,8 +150,15 @@ bool WorkStatus::IsReady()
                 }
                 break;
             case WorkCondition::Type::BATTERY_STATUS:
+                int batteryReq = workConditionMap->at(it.first)->enumVal;
+                if (batteryReq != WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY &&
+                    batteryReq != conditionMap_.at(it.first)->enumVal) {
+                    return false;
+                }
+                break;
             case WorkCondition::Type::STORAGE: {
-                if (workConditionMap->at(it.first)->enumVal != conditionMap_.at(it.first)->enumVal) {
+                if (workConditionMap->at(it.first)->enumVal != WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY &&
+                    workConditionMap->at(it.first)->enumVal != conditionMap_.at(it.first)->enumVal) {
                     return false;
                 }
                 break;

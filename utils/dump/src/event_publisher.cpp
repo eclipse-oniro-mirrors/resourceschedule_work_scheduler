@@ -21,9 +21,8 @@
 #include "battery_srv_client.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
-#include "want.h"
 #include "net_supplier_info.h"
-
+#include "want.h"
 #include "work_sched_common.h"
 
 namespace OHOS {
