@@ -87,7 +87,7 @@ int WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, Me
 
 int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
 {
-    WorkInfo* pw = data.ReadParcelable<WorkInfo>();
+    sptr<WorkInfo> pw = data.ReadStrongParcelable<WorkInfo>();
     WorkInfo& workInfo = *pw;
     if (!StartWork(workInfo)) {
         WS_HILOGE("StartWork failed");
@@ -98,7 +98,7 @@ int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
 
 int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
 {
-    WorkInfo* pw = data.ReadParcelable<WorkInfo>();
+    sptr<WorkInfo> pw = data.ReadStrongParcelable<WorkInfo>();
     WorkInfo& workInfo = *pw;
     if (!StopWork(workInfo)) {
         return E_STOP_WORK_FAILED;
@@ -108,7 +108,7 @@ int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
 
 int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
 {
-    WorkInfo* pw = data.ReadParcelable<WorkInfo>();
+    sptr<WorkInfo> pw = data.ReadStrongParcelable<WorkInfo>();
     WorkInfo& workInfo = *pw;
     if (!StopAndCancelWork(workInfo)) {
         return E_STOP_AND_CANCEL_WORK_FAILED;

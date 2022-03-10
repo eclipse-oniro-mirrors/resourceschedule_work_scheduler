@@ -255,18 +255,16 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
     return ret;
 }
 
-WorkInfo *WorkInfo::Unmarshalling(Parcel &parcel)
+sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
 {
-    auto *read = new WorkInfo();
+    sptr<WorkInfo> read = new (std::nothrow) WorkInfo();
     read->workId_ = parcel.ReadInt32();
     read->bundleName_ = parcel.ReadString();
     read->abilityName_ = parcel.ReadString();
     read->persisted_ = parcel.ReadBool();
     size_t mapsize = parcel.ReadUint32();
     if (mapsize >= MAX_SIZE) {
-        delete read;
-        read = nullptr;
-        return new WorkInfo();
+        return nullptr;
     }
 
     read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();

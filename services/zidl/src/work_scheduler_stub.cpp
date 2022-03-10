@@ -27,12 +27,18 @@ int WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, Messa
     }
     switch (code) {
         case COMMAND_ON_WORK_START: {
-            WorkInfo* workInfo = data.ReadParcelable<WorkInfo>();
+            sptr<WorkInfo> workInfo = reply.ReadStrongParcelable<WorkInfo>();
+            if (workInfo == nullptr) {
+                return ERR_TRANSACTION_FAILED;
+            }
             OnWorkStart(*workInfo);
             return ERR_NONE;
         }
         case COMMAND_ON_WORK_STOP: {
-            WorkInfo* workInfo = data.ReadParcelable<WorkInfo>();
+            sptr<WorkInfo> workInfo = reply.ReadStrongParcelable<WorkInfo>();
+            if (workInfo == nullptr) {
+                return ERR_TRANSACTION_FAILED;
+            }
             OnWorkStop(*workInfo);
             return ERR_NONE;
         }
