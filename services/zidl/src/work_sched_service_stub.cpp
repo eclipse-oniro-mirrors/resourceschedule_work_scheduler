@@ -104,7 +104,7 @@ int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_START_WORK_FAILED;
+        return E_STOP_WORK_FAILED;
     }
     if (!StopWork(*workInfo)) {
         return E_STOP_WORK_FAILED;
@@ -117,7 +117,7 @@ int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_START_WORK_FAILED;
+        return E_STOP_AND_CANCEL_WORK_FAILED;
     }
     if (!StopAndCancelWork(*workInfo)) {
         return E_STOP_AND_CANCEL_WORK_FAILED;
