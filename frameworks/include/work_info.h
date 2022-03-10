@@ -58,7 +58,7 @@ public:
     int32_t GetCycleCount();
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     bool Marshalling(Parcel &parcel) const override;
-    static WorkInfo *Unmarshalling(Parcel &parcel);
+    static sptr<WorkInfo> Unmarshalling(Parcel &parcel);
     void Dump(std::string &result);
     std::string ParseToJsonStr();
     bool ParseFromJson(const Json::Value value);

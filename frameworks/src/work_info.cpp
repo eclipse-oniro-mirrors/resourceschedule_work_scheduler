@@ -20,6 +20,7 @@ namespace OHOS {
 namespace WorkScheduler {
 const int INVALID_VALUE = -1;
 const int INVALID_TIME_VALUE = 0;
+const size_t MAX_SIZE = 1024;
 
 WorkInfo::WorkInfo()
 {
@@ -254,14 +255,23 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
     return ret;
 }
 
-WorkInfo *WorkInfo::Unmarshalling(Parcel &parcel)
+sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
 {
-    auto *read = new WorkInfo();
+    sptr<WorkInfo> read = new (std::nothrow) WorkInfo();
+    if (read == nullptr) {
+        WS_HILOGD("read is nullptr.");
+        return nullptr;
+    }
     read->workId_ = parcel.ReadInt32();
     read->bundleName_ = parcel.ReadString();
     read->abilityName_ = parcel.ReadString();
     read->persisted_ = parcel.ReadBool();
     size_t mapsize = parcel.ReadUint32();
+    if (mapsize >= MAX_SIZE) {
+        WS_HILOGD("mapsize is too big.");
+        return nullptr;
+    }
+
     read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
     for (size_t i = 0; i < mapsize; i++) {
         int32_t key = parcel.ReadInt32();

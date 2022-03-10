@@ -87,9 +87,12 @@ int WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, Me
 
 int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
 {
-    WorkInfo* pw = data.ReadParcelable<WorkInfo>();
-    WorkInfo& workInfo = *pw;
-    if (!StartWork(workInfo)) {
+    sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
+    if (workInfo == nullptr) {
+        WS_HILOGD("workInfo is nullptr");
+        return E_START_WORK_FAILED;
+    }
+    if (!StartWork(*workInfo)) {
         WS_HILOGE("StartWork failed");
         return E_START_WORK_FAILED;
     }
@@ -98,9 +101,12 @@ int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
 
 int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
 {
-    WorkInfo* pw = data.ReadParcelable<WorkInfo>();
-    WorkInfo& workInfo = *pw;
-    if (!StopWork(workInfo)) {
+    sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
+    if (workInfo == nullptr) {
+        WS_HILOGD("workInfo is nullptr");
+        return E_STOP_WORK_FAILED;
+    }
+    if (!StopWork(*workInfo)) {
         return E_STOP_WORK_FAILED;
     }
     return ERR_OK;
@@ -108,9 +114,12 @@ int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
 
 int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
 {
-    WorkInfo* pw = data.ReadParcelable<WorkInfo>();
-    WorkInfo& workInfo = *pw;
-    if (!StopAndCancelWork(workInfo)) {
+    sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
+    if (workInfo == nullptr) {
+        WS_HILOGD("workInfo is nullptr");
+        return E_STOP_AND_CANCEL_WORK_FAILED;
+    }
+    if (!StopAndCancelWork(*workInfo)) {
         return E_STOP_AND_CANCEL_WORK_FAILED;
     }
     return ERR_OK;
