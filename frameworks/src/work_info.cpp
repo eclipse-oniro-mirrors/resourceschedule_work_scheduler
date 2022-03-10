@@ -259,6 +259,7 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
 {
     sptr<WorkInfo> read = new (std::nothrow) WorkInfo();
     if (read == nullptr) {
+        WS_HILOGD("read is nullptr.");
         return nullptr;
     }
     read->workId_ = parcel.ReadInt32();
@@ -267,6 +268,7 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     read->persisted_ = parcel.ReadBool();
     size_t mapsize = parcel.ReadUint32();
     if (mapsize >= MAX_SIZE) {
+        WS_HILOGD("mapsize is too big.");
         return nullptr;
     }
 
