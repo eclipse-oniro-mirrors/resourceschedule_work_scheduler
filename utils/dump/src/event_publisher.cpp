@@ -93,7 +93,7 @@ void EventPublisher::PublishNetworkEvent(const std::vector<std::string> &dumpOpt
         data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
         bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
         dumpInfo.push_back(std::string("publish result: " + std::to_string(isSuccess)));
-    } else if(dumpOption[DETAIL_PARAM] == EV_NETWORK_TYPE_DISCONNECT) {
+    } else if (dumpOption[DETAIL_PARAM] == EV_NETWORK_TYPE_DISCONNECT) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
         dumpInfo.push_back(std::string("publishing COMMON_EVENT_WIFI_CONN_STATE"));
         EventFwk::CommonEventData data;
