@@ -29,6 +29,7 @@ int WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, Messa
         case COMMAND_ON_WORK_START: {
             sptr<WorkInfo> workInfo = reply.ReadStrongParcelable<WorkInfo>();
             if (workInfo == nullptr) {
+                WS_HILOGE("workInfo is nullptr");
                 return ERR_TRANSACTION_FAILED;
             }
             OnWorkStart(*workInfo);
@@ -37,6 +38,7 @@ int WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, Messa
         case COMMAND_ON_WORK_STOP: {
             sptr<WorkInfo> workInfo = reply.ReadStrongParcelable<WorkInfo>();
             if (workInfo == nullptr) {
+                WS_HILOGE("workInfo is nullptr");
                 return ERR_TRANSACTION_FAILED;
             }
             OnWorkStop(*workInfo);

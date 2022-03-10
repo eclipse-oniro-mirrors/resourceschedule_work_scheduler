@@ -258,6 +258,9 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
 sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
 {
     sptr<WorkInfo> read = new (std::nothrow) WorkInfo();
+    if (read == nullptr) {
+        return nullptr;
+    }
     read->workId_ = parcel.ReadInt32();
     read->bundleName_ = parcel.ReadString();
     read->abilityName_ = parcel.ReadString();
