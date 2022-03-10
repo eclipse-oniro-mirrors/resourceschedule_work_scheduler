@@ -264,6 +264,8 @@ WorkInfo *WorkInfo::Unmarshalling(Parcel &parcel)
     read->persisted_ = parcel.ReadBool();
     size_t mapsize = parcel.ReadUint32();
     if (mapsize >= MAX_SIZE) {
+        delete read;
+        read = nullptr;
         return new WorkInfo();
     }
 
