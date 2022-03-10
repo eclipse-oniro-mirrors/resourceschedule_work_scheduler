@@ -69,6 +69,7 @@ ohos_shared_library("workschedservice") {
     "eventhandler:libeventhandler",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "netmanager_base:net_conn_manager_if",
     "safwk:system_ability_fwk",
     "samgr_standard:samgr_proxy",
     "thermal_manager:thermalsrv_client",
