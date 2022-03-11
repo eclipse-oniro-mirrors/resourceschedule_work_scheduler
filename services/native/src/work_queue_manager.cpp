@@ -125,9 +125,8 @@ void WorkQueueManager::Dump(string& result)
         "storage", "timer", "unknown"};
     size_t size = sizeof(conditionType);
     for (auto it : queueMap_) {
-        int type = it.first;
-        if (type < size) {
-            result.append(conditionType[type]);
+        if (it.first < size) {
+            result.append(conditionType[it.first]);
         } else {
             result.append(conditionType[size - 1]);
         }
