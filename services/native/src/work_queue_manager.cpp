@@ -123,7 +123,7 @@ void WorkQueueManager::Dump(string& result)
     std::lock_guard<std::mutex> lock(mutex_);
     string conditionType[] = {"network", "charger", "battery_status", "battery_level",
         "storage", "timer", "unknown"};
-    int size = sizeof(conditionType);
+    size_t size = sizeof(conditionType);
     for (auto it : queueMap_) {
         int type = it.first;
         if (type < size) {
