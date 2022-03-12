@@ -273,7 +273,7 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         uint32_t time = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER)->uintVal;
         if (time < workQueueManager_->GetTimeCycle()) {
-            WS_HILOGE("fail, set time:%{public}d must more than %{public}d", time,
+            WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time,
                 workQueueManager_->GetTimeCycle());
             return false;
         }

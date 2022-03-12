@@ -44,6 +44,7 @@ ohos_executable("workscheduler") {
     "ces_standard:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
+    "netmanager_base:net_conn_manager_if",
     "samgr_standard:samgr_proxy",
     "utils_base:utils",
   ]

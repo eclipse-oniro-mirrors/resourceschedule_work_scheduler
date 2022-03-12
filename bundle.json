@@ -36,7 +36,8 @@
           "ces_standard",
           "ability_runtime",
           "eventhandler",
-          "thermal_manager"
+          "thermal_manager",
+          "netmanager_base"
         ],
         "third_party": [ "googletest" ]
       },
