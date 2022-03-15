@@ -405,4 +405,570 @@ describe("WorkSchedulerJsTest", function () {
             done();
         }, 500);
     })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest016
+     * @tc.desc: test spent time by startWork.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest016", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest016---------------------------');
+        let workInfo = {
+            workId: 16,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        let begin = getTime();
+        var res = workScheduler.startWork(workInfo);
+        if (res === true) {
+            let end = getTime();
+            let times = end - begin;
+            if (times < 50) {
+                expect(res).assertEqual(true)
+            }
+        }
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest017
+     * @tc.desc: test spent time by startWork takes 20 times.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest017", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest017---------------------------');
+        let workInfo = {
+            workId: 17,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        let begin = getTime();
+        let end = 0;
+        let times = 0;
+        for (var i = 0 ; i < 20 ; i++) {
+            var res = workScheduler.startWork(workInfo);
+            end = getTime();
+            times = end - begin;
+        }
+        if (times/20 < 50){
+            expect(true).assertEqual(true)
+        }
+        done();
+    })
+    
+    /*
+     * @tc.name: WorkSchedulerJsTest018
+     * @tc.desc: test spent time by stopWork.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest018", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest018---------------------------');
+        let workInfo = {
+            workId: 18,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let begin = getTime();
+            var stopRes = workScheduler.stopWork(workInfo, false);
+            if (stopRes == true) {
+                let end = getTime();
+                let times = end - begin;
+                if (times < 50) {
+                    expect(stopRes).assertEqual(true)
+                }
+            }
+        }
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest019
+     * @tc.desc: test spent time by stopWork.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest019", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest019---------------------------');
+        let workInfo = {
+            workId: 19,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let begin = getTime();
+            var stopRes = workScheduler.stopWork(workInfo, true);
+            if (stopRes == true) {
+                let end = getTime();
+                let times = end - begin;
+                if (times < 50) {
+                    expect(stopRes).assertEqual(true)
+                }
+            }
+        }
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest020
+     * @tc.desc: test spent time by stopWork takes 20 times.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest020", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest020---------------------------');
+        let workInfo = {
+            workId: 20,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let begin = getTime();
+            let end = 0;
+            let times = 0;
+            for (var i = 0 ; i < 20 ; i++) {
+                var stopRes = workScheduler.stopWork(workInfo, true);
+                end = getTime();
+                times = end - begin;
+            }
+            if (times/20 < 50){
+                expect(true).assertEqual(true)
+            }
+        }
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest021
+     * @tc.desc: test spent time by getWorkStatus with callback.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest021", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest021---------------------------');
+        let workInfo = {
+            workId: 21,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function workSchedulerCallback(err, res){
+            let end = getTime();
+            let times = end - begin;
+            if (times < 50) {
+                expect(true).assertTrue();
+            } else {
+                expect(false).assertTrue();
+            }
+            setTimeout(() => {
+                done();
+            }, 500);
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        let begin =0;
+        if (res == true) {
+            begin = getTime();
+            workScheduler.getWorkStatus(21,workSchedulerCallback);
+        }
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest022
+     * @tc.desc: test spent time by getWorkStatus with promise.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest022", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest022---------------------------');
+        let workInfo = {
+            workId: 22,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let begin = getTime();
+            workScheduler.getWorkStatus(22).then((res) => {
+                let end = getTime();
+                let times = end - begin;
+                if (times < 50) {
+                    expect(true).assertTrue();
+                } else {
+                    expect(false).assertTrue();
+                }
+                setTimeout(() => {
+                    done();
+                }, 500);
+                for (let item in res) {
+                    console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
+                }
+            })
+        }
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest023
+     * @tc.desc: test spent time by stopWork takes 20 times.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest023", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest023---------------------------');
+        let workInfo = {
+            workId: 23,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        let begin = 0;
+        let end = 0;
+        let times = 0;
+        if (res == true) {
+            begin = getTime();
+            for (var i = 0 ; i < 20 ; i++) {
+                workScheduler.getWorkStatus(23, (err, res) => {
+                    end = getTime();
+                    times = end - begin;
+                });
+            }
+            if (times/20 < 50) {
+                expect(true).assertTrue();
+            } else {
+                expect(false).assertTrue();
+            }
+        }
+        setTimeout(() => {
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest024
+     * @tc.desc: test spent time by obtainAllWorks with callback.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest024", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest024---------------------------');
+        let workInfo = {
+            workId: 24,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let startTime = (new Date()).valueOf()
+            workScheduler.obtainAllWorks((err, res) =>{
+                let endTime = (new Date()).valueOf()
+                let workTime = endTime - startTime;
+                if (workTime < 50) {
+                    expect(true).assertTrue()
+                } else {
+                    expect(false).assertTrue()
+                }
+            });
+        }
+        setTimeout(() => {
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest025
+     * @tc.desc: test spent time by obtainAllWorks with promise.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest025", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest025---------------------------');
+        let workInfo = {
+            workId: 25,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let begin = getTime();
+            workScheduler.obtainAllWorks().then((res) => {
+                let end = getTime();
+                let times = end - begin;
+                if (times < 50) {
+                    expect(true).assertTrue()
+                } else {
+                    expect(false).assertTrue()
+                }
+                console.info('WORK_SCHEDULER obtainAllWorks promise success, data is:' + JSON.stringify(res));
+            }).catch((err) => {
+                console.info('workschedulerLog obtainAllWorks promise failed, because:' + err.data);
+            })
+        }
+        setTimeout(() => {
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest026
+     * @tc.desc: test spent time by obtainAllWorks takes 20 times.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest026", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest026---------------------------');
+        let workInfo = {
+            workId: 26,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let startTime = (new Date()).valueOf()
+            for (var i = 0 ; i < 20 ; i++) {
+                workScheduler.obtainAllWorks((err, res) => {
+                    let endTime = (new Date()).valueOf()
+                    let workTime = endTime - startTime;
+                    if (workTime/20 < 50) {
+                        expect(true).assertTrue()
+                    } else {
+                        expect(false).assertTrue()
+                    }
+                });
+            }
+        }
+        setTimeout(() => {
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest027
+     * @tc.desc: test spent time by stopAndClearWorks.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest027", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest027---------------------------');
+        let workInfo = {
+            workId: 27,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let begin = getTime();
+            var stopRes = workScheduler.stopAndClearWorks();
+            if (stopRes == true) {
+                let end = getTime();
+                let times = end - begin;
+                if (times < 50) {
+                    expect(stopRes).assertEqual(true)
+                }
+            }
+        }
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest028
+     * @tc.desc: test spent time by stopWork takes 20 times.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest028", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest028---------------------------');
+        let workInfo = {
+            workId: 28,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            let begin = getTime();
+            let end = 0;
+            let times = 0;
+            for (var i = 0 ; i < 20 ; i++) {
+                var stopRes = workScheduler.stopAndClearWorks();
+                end = getTime();
+                times = end - begin;
+            }
+            if (times/20 < 50){
+                expect(true).assertEqual(true)
+            }
+        }
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest029
+     * @tc.desc: test spent time by isLastWorkTimeOut with callback.
+     * @tc.type: FUNC
+     * @tc.require: SR000GGTN7 AR000GH89D
+     */
+    it("WorkSchedulerJsTest029", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest029---------------------------');
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        let begin = getTime();
+        workScheduler.isLastWorkTimeOut(29, (err, res) =>{
+            let end = getTime();
+            let times = end - begin;
+            if (times < 50) {
+                expect(true).assertTrue();
+            } else {
+                expect(false).assertTrue();
+            }
+        });
+        setTimeout(() => {
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest030
+     * @tc.desctest spent time by isLastWorkTimeOut with promise.
+     * @tc.type: FUNC
+     * @tc.require: SR000GGTN7 AR000GH89D
+     */
+    it("WorkSchedulerJsTest030", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest030---------------------------');
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        let begin = getTime();
+        workScheduler.isLastWorkTimeOut(30)
+            .then(res => {
+                let end = getTime();
+                let times = end - begin;
+                if (times < 50) {
+                    expect(true).assertTrue();
+                } else {
+                    expect(false).assertTrue();
+                }
+                console.info('WORK_SCHEDULER isLastWorkTimeOut promise success, data is:' + res);
+            })
+            .catch(err =>  {
+                expect(false).assertEqual(true)
+        });
+        setTimeout(() => {
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest031
+     * @tc.desc: test spent time by isLastWorkTimeOut takes 20 times.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest031", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest031---------------------------');
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        let begin = getTime();
+        for (var i = 0 ; i < 20 ; i++) {
+            workScheduler.isLastWorkTimeOut(31, (err, res) =>{
+                var end = getTime();
+                var times = end - begin;
+                if (times < 50) {
+                    expect(true).assertTrue();
+                } else {
+                    expect(false).assertTrue();
+                }
+            });
+        }
+        setTimeout(() => {
+            done();
+        }, 500);
+    })
 })
