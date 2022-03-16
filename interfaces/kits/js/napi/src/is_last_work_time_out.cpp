@@ -20,10 +20,10 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t WORK_ID_INDEX = 0;
-const int32_t CALLBACK_INDEX = 1;
-const int32_t IS_LAST_WORK_TIME_OUT_MIN_PARAMS = 1;
-const int32_t IS_LAST_WORK_TIME_OUT_MAX_PARAMS = 2;
+const size_t WORK_ID_INDEX = 0;
+const size_t CALLBACK_INDEX = 1;
+const size_t IS_LAST_WORK_TIME_OUT_MIN_PARAMS = 1;
+const size_t IS_LAST_WORK_TIME_OUT_MAX_PARAMS = 2;
 
 struct IsLastWorkTimeOutParamsInfo {
     int32_t workId;
@@ -40,7 +40,7 @@ struct AsyncCallbackIsLastWorkTimeOut {
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, IsLastWorkTimeOutParamsInfo &params)
 {
-    int32_t argc = IS_LAST_WORK_TIME_OUT_MAX_PARAMS;
+    size_t argc = IS_LAST_WORK_TIME_OUT_MAX_PARAMS;
     napi_value argv[IS_LAST_WORK_TIME_OUT_MAX_PARAMS] = {nullptr};
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
     bool paramsCheck = (argc == IS_LAST_WORK_TIME_OUT_MAX_PARAMS) || (argc == IS_LAST_WORK_TIME_OUT_MIN_PARAMS);

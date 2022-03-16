@@ -20,15 +20,15 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t WORK_INFO_INDEX = 0;
-const int32_t START_WORK_PARAMS = 1;
+const size_t WORK_INFO_INDEX = 0;
+const size_t START_WORK_PARAMS = 1;
 
 napi_value StartWork(napi_env env, napi_callback_info info)
 {
     WS_HILOGD("Start work napi begin.");
 
     // Check params.
-    int32_t argc = START_WORK_PARAMS;
+    size_t argc = START_WORK_PARAMS;
     napi_value argv[START_WORK_PARAMS] = {0};
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
     NAPI_ASSERT(env, argc == START_WORK_PARAMS, "parameter error!");
