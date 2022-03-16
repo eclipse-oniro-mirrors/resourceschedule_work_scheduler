@@ -20,10 +20,10 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t WORK_ID_INDEX = 0;
-const int32_t CALLBACK_INDEX = 1;
-const int32_t GET_WORK_STATUS_MIN_PARAMS = 1;
-const int32_t GET_WORK_STATUS_MAX_PARAMS = 2;
+const size_t WORK_ID_INDEX = 0;
+const size_t CALLBACK_INDEX = 1;
+const size_t GET_WORK_STATUS_MIN_PARAMS = 1;
+const size_t GET_WORK_STATUS_MAX_PARAMS = 2;
 
 struct GetWorkStatusParamsInfo {
     int32_t workId;

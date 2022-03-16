@@ -257,7 +257,6 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
         currentAccountId, bundleName.c_str());
     if (bundleMgr->GetBundleInfo(bundleName, BundleFlag::GET_BUNDLE_WITH_ABILITIES,
         bundleInfo, currentAccountId)) {
-        shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, bundleInfo.uid);
         WS_HILOGD("bundleUid : %{public}d , uid : %{public}d.", bundleInfo.uid, uid);
         return bundleInfo.uid == uid;
     }
@@ -382,16 +381,6 @@ bool WorkSchedulerService::StopWorkInner(std::shared_ptr<WorkStatus> workStatus,
 void WorkSchedulerService::WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatus)
 {
     StopWorkInner(workStatus, workStatus->uid_, false, true);
-}
-
-bool IsInList(list<std::string> &list, std::string myWork)
-{
-    for (auto work : list) {
-        if (work.compare(myWork) == 0) {
-            return true;
-        }
-    }
-    return false;
 }
 
 bool WorkSchedulerService::StopAndClearWorks()
@@ -602,11 +591,14 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
     if (access(filePath.c_str(), 0) != 0) {
         fd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
         if (fd < ERR_OK) {
-            WS_HILOGE("%{public}s: open failed to file.", __func__);
+            WS_HILOGE("Open file fail.");
             return fd;
+        } else {
+            WS_HILOGE("Open file success.");
+            close(fd);
         }
     } else {
-        WS_HILOGD("%{public}s: the file already exists.", __func__);
+        WS_HILOGE("The file already exists.");
     }
     return ERR_OK;
 }

@@ -121,10 +121,10 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
     sptr<WorkSchedulerConnection> conn = GetConnInfo(workStatus->workId_);
     if (conn != nullptr) {
         conn->StopWork();
+        ret = DisConnect(conn);
     } else {
         WS_HILOGD("connection is null");
     }
-    ret = DisConnect(conn);
     RemoveConnInfo(workStatus->workId_);
     return ret;
 }
