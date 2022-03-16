@@ -69,7 +69,6 @@ void WorkQueue::Push(shared_ptr<WorkStatus> workStatus)
     if (this->Contains(make_shared<string>(workStatus->workId_))) {
         for (auto it : workList_) {
             if (it->workId_.compare(workStatus->workId_) == 0) {
-                it = workStatus;
                 return;
             }
         }
