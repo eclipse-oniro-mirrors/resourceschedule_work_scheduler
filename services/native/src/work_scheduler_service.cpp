@@ -591,11 +591,14 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
     if (access(filePath.c_str(), 0) != 0) {
         fd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
         if (fd < ERR_OK) {
-            WS_HILOGE("%{public}s: open failed to file.", __func__);
+            WS_HILOGE("Open file fail.");
             return fd;
+        } else {
+            WS_HILOGE("Open file success.");
+            close(fd);
         }
     } else {
-        WS_HILOGD("%{public}s: the file already exists.", __func__);
+        WS_HILOGE("The file already exists.");
     }
     return ERR_OK;
 }
