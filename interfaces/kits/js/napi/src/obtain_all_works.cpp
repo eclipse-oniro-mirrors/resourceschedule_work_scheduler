@@ -33,7 +33,7 @@ struct AsyncCallbackInfoObtainAllWorks {
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, napi_ref &callback)
 {
-    size_t argc = OBTAIN_ALL_WORKS_MAX_PARAMS;
+    int32_t argc = OBTAIN_ALL_WORKS_MAX_PARAMS;
     napi_value argv[OBTAIN_ALL_WORKS_MAX_PARAMS] = {nullptr};
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
     bool paramsCheck = (argc == OBTAIN_ALL_WORKS_MIN_PARAMS) || (argc == OBTAIN_ALL_WORKS_MAX_PARAMS);

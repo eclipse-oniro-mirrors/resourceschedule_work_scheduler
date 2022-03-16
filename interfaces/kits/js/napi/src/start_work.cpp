@@ -28,7 +28,7 @@ napi_value StartWork(napi_env env, napi_callback_info info)
     WS_HILOGD("Start work napi begin.");
 
     // Check params.
-    size_t argc = START_WORK_PARAMS;
+    int32_t argc = START_WORK_PARAMS;
     napi_value argv[START_WORK_PARAMS] = {0};
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
     NAPI_ASSERT(env, argc == START_WORK_PARAMS, "parameter error!");

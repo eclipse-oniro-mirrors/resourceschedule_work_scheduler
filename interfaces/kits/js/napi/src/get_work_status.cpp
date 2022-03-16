@@ -40,7 +40,7 @@ struct AsyncCallbackInfoGetWorkStatus {
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, GetWorkStatusParamsInfo &params)
 {
-    size_t argc = GET_WORK_STATUS_MAX_PARAMS;
+    int32_t argc = GET_WORK_STATUS_MAX_PARAMS;
     napi_value argv[GET_WORK_STATUS_MAX_PARAMS] = {nullptr};
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
     bool paramsCheck = (argc == GET_WORK_STATUS_MIN_PARAMS) || (argc == GET_WORK_STATUS_MAX_PARAMS);

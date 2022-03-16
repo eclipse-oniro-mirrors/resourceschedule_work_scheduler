@@ -29,7 +29,7 @@ napi_value StopWork(napi_env env, napi_callback_info info)
     WS_HILOGD("Stop Work napi begin.");
 
     // Check params.
-    size_t argc = STOP_WORK_PARAMS;
+    int32_t argc = STOP_WORK_PARAMS;
     napi_value argv[STOP_WORK_PARAMS] = {0};
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
     NAPI_ASSERT(env, argc == STOP_WORK_PARAMS, "parameter error!");
