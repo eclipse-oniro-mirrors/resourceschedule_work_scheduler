@@ -21,7 +21,7 @@ using namespace std;
 namespace OHOS {
 namespace WorkScheduler {
 const int32_t BUF_LIMIT = 128;
-const int32_t NAME_SIZE = 20;
+const int32_t NAME_SIZE = 128;
 
 MemoryPolicy::MemoryPolicy(shared_ptr<WorkPolicyManager> workPolicyManager)
 {
