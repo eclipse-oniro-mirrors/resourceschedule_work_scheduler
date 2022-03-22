@@ -200,5 +200,5 @@ void EventPublisher::PublishbatteryLevelEvent(const std::vector<std::string> &du
     bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
     dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

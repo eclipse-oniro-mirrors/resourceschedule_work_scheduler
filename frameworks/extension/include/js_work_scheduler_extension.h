@@ -26,8 +26,8 @@ namespace OHOS {
 namespace WorkScheduler {
 class JsWorkSchedulerExtension : public WorkSchedulerExtension {
 public:
-    JsWorkSchedulerExtension(AbilityRuntime::JsRuntime &jsRuntime);
-    virtual ~JsWorkSchedulerExtension() override;
+    explicit JsWorkSchedulerExtension(AbilityRuntime::JsRuntime &jsRuntime);
+    ~JsWorkSchedulerExtension() override;
 
     static JsWorkSchedulerExtension* Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime);
 
@@ -47,6 +47,7 @@ public:
     void OnWorkStart(WorkInfo& workInfo) override;
 
     void OnWorkStop(WorkInfo& workInfo) override;
+
 private:
     void GetSrcPath(std::string &srcPath);
     AbilityRuntime::JsRuntime &jsRuntime_;

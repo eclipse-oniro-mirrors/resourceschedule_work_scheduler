@@ -25,4 +25,4 @@ namespace WorkScheduler {
     napi_value GetWorkStatus(napi_env env, napi_callback_info info);
 }
 }
-#endif
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_GET_WORK_STATUS

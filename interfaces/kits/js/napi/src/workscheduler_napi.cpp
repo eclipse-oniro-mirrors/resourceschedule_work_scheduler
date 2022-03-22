@@ -94,9 +94,6 @@ napi_value InitNetworkType(napi_env env, napi_value exports)
     napi_define_class(env, "NetworkType", NAPI_AUTO_LENGTH, EnumNetworkTypeConstructor,
         nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
     napi_create_reference(env, result, refCount, &networkTypeConstructor_);
-    napi_define_class(env, "NetworkType", NAPI_AUTO_LENGTH, EnumNetworkTypeConstructor,
-        nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
-    napi_create_reference(env, result, refCount, &networkTypeConstructor_);
     napi_set_named_property(env, exports, "NetworkType", result);
     return exports;
 }
@@ -211,7 +208,7 @@ napi_value InitStorageRequest(napi_env env, napi_value exports)
     napi_value storage_level_okay;
     napi_value storage_level_low_or_okay;
     int32_t refCount = 1;
-    
+
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_LOW),
         &storage_level_low);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_OKAY),
@@ -256,5 +253,5 @@ __attribute__((constructor)) void RegisterModule(void)
     napi_module_register(&_module);
 }
 EXTERN_C_END
-}  // namespace WorkScheduler
-}  // namespace OHOS
+} // namespace WorkScheduler
+} // namespace OHOS

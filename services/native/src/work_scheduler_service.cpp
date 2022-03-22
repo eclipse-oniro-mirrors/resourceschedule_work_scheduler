@@ -194,7 +194,7 @@ void WorkSchedulerService::WorkQueueManagerInit()
     if (workQueueManager_ == nullptr) {
         workQueueManager_ = make_shared<WorkQueueManager>(wss);
     }
-    
+
     auto networkListener = make_shared<NetworkListener>(workQueueManager_);
     auto chargerListener = make_shared<ChargerListener>(workQueueManager_);
     auto batteryStatusListener = make_shared<BatteryStatusListener>(workQueueManager_);

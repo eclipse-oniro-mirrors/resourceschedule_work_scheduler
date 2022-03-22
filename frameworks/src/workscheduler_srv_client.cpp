@@ -184,5 +184,5 @@ bool WorkSchedulerSrvClient::ShellDump(const std::vector<std::string> &dumpOptio
     iWorkSchedService_->ShellDump(dumpOption, dumpInfo);
     return true;
 }
-} // OHOS
-} // WorkScheduler
+} // namespace WorkScheduler
+} // namespace OHOS

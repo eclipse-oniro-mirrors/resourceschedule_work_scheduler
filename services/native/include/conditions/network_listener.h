@@ -25,7 +25,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class NetworkListener : public IConditionListener {
 public:
-    NetworkListener(std::shared_ptr<WorkQueueManager> workQueueManager);
+    explicit NetworkListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~NetworkListener();
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;

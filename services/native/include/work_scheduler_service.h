@@ -43,8 +43,8 @@ class WorkSchedulerService final : public SystemAbility, public WorkSchedService
     DECLARE_SYSTEM_ABILITY(WorkSchedulerService);
     DECLARE_DELAYED_SP_SINGLETON(WorkSchedulerService);
 public:
-    virtual void OnStart() override;
-    virtual void OnStop() override;
+    void OnStart() override;
+    void OnStop() override;
     bool StartWork(WorkInfo& workInfo) override;
     bool StopWork(WorkInfo& workInfo) override;
     bool StopAndCancelWork(WorkInfo& workInfo) override;

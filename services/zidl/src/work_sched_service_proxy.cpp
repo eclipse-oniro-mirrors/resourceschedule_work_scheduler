@@ -38,7 +38,7 @@ bool WorkSchedServiceProxy::StartWork(WorkInfo& workInfo)
     }
 
     WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
-    
+
     int ret = remote->SendRequest(static_cast<int>(IWorkSchedService::START_WORK), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("WorkSchedServiceProxy::%{public}s SendRequest is failed, error code: %{public}d",

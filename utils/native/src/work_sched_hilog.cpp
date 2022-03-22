@@ -40,5 +40,5 @@ std::string WorkSchedHilog::GetBriefFileName(const char *str)
     }
     return fullPath.substr(pos + 1);
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

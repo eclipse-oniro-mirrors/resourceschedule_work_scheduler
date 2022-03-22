@@ -23,4 +23,4 @@ namespace WorkScheduler {
     napi_value StopAndClearWorks(napi_env env, napi_callback_info info);
 }
 }
-#endif
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_STOP_AND_CLEAR_WORKS

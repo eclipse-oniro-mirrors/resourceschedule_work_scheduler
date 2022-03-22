@@ -29,7 +29,7 @@ void ChargerEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
 {
     const std::string action = data.GetWant().GetAction();
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
-    
+
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED) {
         int code = data.GetCode();
         if (code == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE) {

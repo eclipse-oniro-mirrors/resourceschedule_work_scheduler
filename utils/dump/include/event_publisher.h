@@ -32,6 +32,6 @@ public:
     void PublishbatteryStatusEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
     void PublishbatteryLevelEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
 };
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS
 #endif // WORK_SCHED_UTILS_DUMP_EVENT_PUBLISHER_H

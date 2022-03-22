@@ -38,7 +38,7 @@ public:
     ~WorkStatus();
 
     static std::string MakeWorkId(int32_t workId, int32_t uid);
-    
+
     std::string workId_;
     std::string bundleName_;
     std::string abilityName_;
@@ -48,7 +48,7 @@ public:
     int32_t priority_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
     std::shared_ptr<WorkInfo> workInfo_;
-    
+
     bool IsReady();
     bool IsReadyStatus();
     bool IsRunning();
@@ -64,6 +64,7 @@ public:
     bool NeedRemove();
 
     bool lastTimeout_ {false};
+
 private:
     Status currentStatus_;
     time_t baseTime_;

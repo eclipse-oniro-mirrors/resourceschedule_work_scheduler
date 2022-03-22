@@ -27,7 +27,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class TimerListener : public IConditionListener {
 public:
-    TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
+    explicit TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~TimerListener() = default;
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;

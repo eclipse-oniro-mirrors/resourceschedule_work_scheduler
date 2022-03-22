@@ -61,5 +61,5 @@ napi_value StopWork(napi_env env, napi_callback_info info)
     WS_HILOGD("Stop Work napi end.");
     return napiValue;
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

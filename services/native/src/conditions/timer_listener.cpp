@@ -57,5 +57,5 @@ bool TimerListener::Stop()
     }
     return true;
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

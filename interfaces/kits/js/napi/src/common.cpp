@@ -444,5 +444,5 @@ void Common::ReturnCallbackPromise(const napi_env &env, const CallbackPromiseInf
         SetPromise(env, info, result);
     }
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS
