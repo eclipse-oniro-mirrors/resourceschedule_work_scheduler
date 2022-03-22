@@ -24,7 +24,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class MemoryPolicy : public IPolicyFilter {
 public:
-    MemoryPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
+    explicit MemoryPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~MemoryPolicy();
     int32_t getPolicyMaxRunning() override;
 
@@ -38,6 +38,6 @@ private:
     int32_t GetMemAvailable();
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
 };
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_MEMORY_POLICY_H

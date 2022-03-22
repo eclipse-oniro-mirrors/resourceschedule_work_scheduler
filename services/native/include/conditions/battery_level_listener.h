@@ -27,7 +27,7 @@ namespace WorkScheduler {
 class WorkQueueManager;
 class BatteryLevelListener : public IConditionListener {
 public:
-    BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager);
+    explicit BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~BatteryLevelListener();
 
     void OnConditionChanged(WorkCondition::Type conditionType,

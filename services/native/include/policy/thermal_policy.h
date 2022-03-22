@@ -22,7 +22,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class ThermalPolicy : public IPolicyFilter {
 public:
-    ThermalPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
+    explicit ThermalPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~ThermalPolicy();
     int32_t getPolicyMaxRunning() override;
 private:

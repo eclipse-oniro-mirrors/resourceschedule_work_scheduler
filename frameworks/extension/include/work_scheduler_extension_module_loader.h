@@ -30,7 +30,7 @@ public:
      * @param runtime The runtime.
      * @return The Extension instance.
      */
-    virtual AbilityRuntime::Extension *Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime) const override;
+    AbilityRuntime::Extension *Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime) const override;
 };
-}
+}  // namespace OHOS::WorkScheduler
 #endif // FOUNDATION_WORKSCHED_EXTENSION_MODULE_LOADER_H

@@ -107,7 +107,7 @@ private:
     int32_t dumpSetMemory_;
     int watchdogTime_;
 };
-}
+} // namespace WorkScheduler
 } // namespace OHOS
 
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_SCHED_SERVICES_POLICY_MANAGER_H

@@ -24,7 +24,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerConnection : public AAFwk::AbilityConnectionStub {
 public:
-    WorkSchedulerConnection(std::shared_ptr<WorkInfo> workInfo);
+    explicit WorkSchedulerConnection(std::shared_ptr<WorkInfo> workInfo);
     void StopWork();
     void OnAbilityConnectDone(
         const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int resultCode) override;
@@ -34,6 +34,6 @@ private:
     sptr<WorkSchedulerProxy> proxy_ = nullptr;
     std::shared_ptr<WorkInfo> workInfo_;
 };
-} // namespace
+} // namespace WorkScheduler
 } // namespace OHOS
 #endif // FOUNDATION_EVENT_CESFWK_SERVICES_INCLUDE_STATIC_SUBSCRIBER_CONNECTION_H

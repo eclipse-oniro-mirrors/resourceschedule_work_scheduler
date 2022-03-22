@@ -225,5 +225,5 @@ HWTEST_F (WorkInfoTest, WorkInfoTest014, Function | MediumTest | Level0)
     EXPECT_EQ(workInfo.GetTimeInterval(), timeInterval);
     EXPECT_EQ(workInfo.IsRepeat(), true);
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

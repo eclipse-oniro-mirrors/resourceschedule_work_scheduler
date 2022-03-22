@@ -112,5 +112,5 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
         return promise;
     }
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

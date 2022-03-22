@@ -44,7 +44,7 @@ namespace WorkScheduler {
             return;                                                                 \
         }                                                                           \
     } while (0)
-}
+} // namespace WorkScheduler
 
 #define READ_PARCEL_WITHOUT_RET(parcel, type, out)                                       \
     do {                                                                            \
@@ -52,7 +52,7 @@ namespace WorkScheduler {
             WS_HILOGE("%{public}s read"#out" failed", __func__);     \
         }                                                                           \
     } while (0)
-}
+} // namespace OHOS
 
 #define WRITE_PARCEL_NO_RET(parcel, type, data)                                     \
     do {                                                                            \

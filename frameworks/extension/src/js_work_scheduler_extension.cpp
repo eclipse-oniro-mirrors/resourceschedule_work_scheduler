@@ -286,5 +286,5 @@ void JsWorkSchedulerExtension::GetSrcPath(std::string &srcPath)
         srcPath.append(".abc");
     }
 }
-} // namespace AbilityRuntime
+} // namespace WorkScheduler
 } // namespace OHOS

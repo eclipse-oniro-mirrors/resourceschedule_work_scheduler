@@ -30,14 +30,14 @@ public:
     ~WorkSchedServiceProxy() = default;
     DISALLOW_COPY_AND_MOVE(WorkSchedServiceProxy);
 
-    virtual bool StartWork(WorkInfo& workInfo) override;
-    virtual bool StopWork(WorkInfo& workInfo) override;
-    virtual bool StopAndCancelWork(WorkInfo& workInfo) override;
-    virtual bool StopAndClearWorks() override;
-    virtual bool IsLastWorkTimeout(int32_t workId) override;
-    virtual std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
-    virtual std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
-    virtual bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
+    bool StartWork(WorkInfo& workInfo) override;
+    bool StopWork(WorkInfo& workInfo) override;
+    bool StopAndCancelWork(WorkInfo& workInfo) override;
+    bool StopAndClearWorks() override;
+    bool IsLastWorkTimeout(int32_t workId) override;
+    std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
+    std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
+    bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
 private:
     static inline BrokerDelegator<WorkSchedServiceProxy> delegator_;
 };

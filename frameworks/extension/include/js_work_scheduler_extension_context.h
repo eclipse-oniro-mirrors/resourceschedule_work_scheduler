@@ -28,4 +28,4 @@ NativeValue* CreateJsWorkSchedulerExtensionContext(NativeEngine& engine,
     std::shared_ptr<WorkSchedulerExtensionContext> context);
 } // namespace WorkScheduler
 } // namespace OHOS
-#endif // JS_WORKSCHED_EXTENSION_H
+#endif // JS_WORKSCHED_EXTENSION_CONTEXT_H

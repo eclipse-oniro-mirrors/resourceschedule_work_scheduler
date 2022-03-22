@@ -53,6 +53,6 @@ private:
     void ResetProxy(const wptr<IRemoteObject>& remote);
     std::mutex mutex_;
 };
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORKSCHEDDULER_SRV_CLIENT_H

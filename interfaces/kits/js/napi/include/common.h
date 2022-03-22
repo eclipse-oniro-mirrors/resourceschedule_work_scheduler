@@ -56,6 +56,6 @@ private:
     static bool GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
     static bool GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
 };
-}
-}
-#endif
+} // namespace WorkScheduler
+} // namespace OHOS
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_COMMON

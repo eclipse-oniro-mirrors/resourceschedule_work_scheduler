@@ -54,4 +54,4 @@ napi_module _module = {
 };
 }  // namespace WorkScheduler
 }  // namespace OHOS
-#endif
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHED_NAPI_H

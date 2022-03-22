@@ -89,5 +89,5 @@ bool WorkSchedUtils::ConvertFullPath(const std::string& partialPath, std::string
     fullPath = tmpPath;
     return true;
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

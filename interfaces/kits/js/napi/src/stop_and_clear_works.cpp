@@ -28,5 +28,5 @@ napi_value StopAndClearWorks(napi_env env, napi_callback_info info)
     WS_HILOGD("StopAndClearWorks napi end. result: %{public}s", result ? "true" : "false");
     return napiValue;
 }
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

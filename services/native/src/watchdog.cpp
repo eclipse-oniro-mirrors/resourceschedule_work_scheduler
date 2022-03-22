@@ -55,5 +55,5 @@ void Watchdog::ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event)
         WS_HILOGD("service is null");
     }
 }
-}  // namespace BackgroundTaskMgr
-}  // namespace OHOS
+} // namespace WorkScheduler
+} // namespace OHOS

@@ -26,9 +26,9 @@ namespace WorkScheduler {
 class WorkQueueManager;
 class ChargerListener : public IConditionListener {
 public:
-    ChargerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
+    explicit ChargerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~ChargerListener();
-    
+
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;
     bool Start() override;

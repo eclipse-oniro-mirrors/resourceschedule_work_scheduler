@@ -60,5 +60,5 @@ void WorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo) {
 
 void WorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo) {
 }
-} // namespace AbilityRuntime
+} // namespace WorkScheduler
 } // namespace OHOS

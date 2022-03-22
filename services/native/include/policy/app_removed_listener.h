@@ -25,7 +25,7 @@ namespace WorkScheduler {
 class WorkPolicyManager;
 class AppRemovedListener : public IPolicyListener {
 public:
-    AppRemovedListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
+    explicit AppRemovedListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~AppRemovedListener();
 
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal) override;
