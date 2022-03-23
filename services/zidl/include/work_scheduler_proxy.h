@@ -29,8 +29,18 @@ public:
 
     virtual ~WorkSchedulerProxy() {}
 
+    /**
+     * @brief The OnWorkStart callback.
+     *
+     * @param WorkInfo The info of work.
+     */
     void OnWorkStart(WorkInfo& workInfo) override;
 
+    /**
+     * @brief The OnWorkStop callback.
+     *
+     * @param WorkInfo The info of work.
+     */
     void OnWorkStop(WorkInfo& workInfo) override;
 
 private:

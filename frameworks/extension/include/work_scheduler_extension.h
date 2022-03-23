@@ -43,10 +43,26 @@ public:
         std::shared_ptr<AppExecFwk::AbilityHandler>& handler,
         const sptr<IRemoteObject>& token) override;
 
+    /**
+     * @brief Create WorkSchedulerExtension.
+     *
+     * @param runtime The runtime.
+     * @return The WorkSchedulerExtension instance.
+     */
     static WorkSchedulerExtension* Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime);
 
+    /**
+     * @brief The OnWorkStart callback.
+     *
+     * @param WorkInfo The info of work.
+     */
     virtual void OnWorkStart(WorkInfo& workInfo);
 
+    /**
+     * @brief The OnWorkStop callback.
+     *
+     * @param WorkInfo The info of work.
+     */
     virtual void OnWorkStop(WorkInfo& workInfo);
 };
 }  // namespace WorkScheduler

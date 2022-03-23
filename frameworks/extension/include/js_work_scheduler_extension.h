@@ -29,6 +29,12 @@ public:
     explicit JsWorkSchedulerExtension(AbilityRuntime::JsRuntime &jsRuntime);
     ~JsWorkSchedulerExtension() override;
 
+    /**
+     * @brief Create JsWorkSchedulerExtension.
+     *
+     * @param runtime The runtime.
+     * @return The JsWorkSchedulerExtension instance.
+     */
     static JsWorkSchedulerExtension* Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime);
 
     void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord> &record,
@@ -42,10 +48,24 @@ public:
 
     void OnDisconnect(const AAFwk::Want &want) override;
 
+    /**
+     * @brief The OnStop callback.
+     *
+     */
     void OnStop() override;
 
+    /**
+     * @brief The OnWorkStart callback.
+     *
+     * @param WorkInfo The info of work.
+     */
     void OnWorkStart(WorkInfo& workInfo) override;
 
+    /**
+     * @brief The OnWorkStop callback.
+     *
+     * @param WorkInfo The info of work.
+     */
     void OnWorkStop(WorkInfo& workInfo) override;
 
 private:
