@@ -31,40 +31,48 @@ public:
 
     /**
      * @brief Create JsWorkSchedulerExtension.
-     *
      * @param runtime The runtime.
      * @return The JsWorkSchedulerExtension instance.
      */
     static JsWorkSchedulerExtension* Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime);
 
+    /**
+     * @brief The Init.
+     * @param want The want.
+     */
     void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord> &record,
               const std::shared_ptr<AppExecFwk::OHOSApplication> &application,
               std::shared_ptr<AppExecFwk::AbilityHandler> &handler,
               const sptr<IRemoteObject> &token) override;
 
+    /**
+     * @brief The OnStart callback.
+     * @param want The want.
+     */
     void OnStart(const AAFwk::Want &want) override;
 
     sptr<IRemoteObject> OnConnect(const AAFwk::Want &want) override;
 
+    /**
+     * @brief The OnDisconnect callback.
+     * @param want The want.
+     */
     void OnDisconnect(const AAFwk::Want &want) override;
 
     /**
      * @brief The OnStop callback.
-     *
      */
     void OnStop() override;
 
     /**
      * @brief The OnWorkStart callback.
-     *
-     * @param WorkInfo The info of work.
+     * @param workInfo The info of work.
      */
     void OnWorkStart(WorkInfo& workInfo) override;
 
     /**
      * @brief The OnWorkStop callback.
-     *
-     * @param WorkInfo The info of work.
+     * @param workInfo The info of work.
      */
     void OnWorkStop(WorkInfo& workInfo) override;
 

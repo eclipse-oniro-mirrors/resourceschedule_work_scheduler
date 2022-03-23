@@ -45,12 +45,10 @@ class WorkSchedulerService final : public SystemAbility, public WorkSchedService
 public:
     /**
      * @brief The OnStart callback.
-     *
      */
     void OnStart() override;
     /**
      * @brief The OnStop callback.
-     *
      */
     void OnStop() override;
     bool StartWork(WorkInfo& workInfo) override;

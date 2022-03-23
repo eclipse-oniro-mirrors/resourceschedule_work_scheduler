@@ -41,29 +41,87 @@ public:
     const size_t MAX_WORK_COUNT_PER_UID = 10;
     explicit WorkPolicyManager(const wptr<WorkSchedulerService>& wss);
     ~WorkPolicyManager() = default;
+    /**
+     * @brief The Init.
+     * @return True if success,else false
+     */
     bool Init();
+    /**
+     * @brief The Add listener.
+     * @return True if success,else false
+     */
     bool AddListener();
+    /**
+     * @brief The Add policy filter.
+     */
     void AddPolicyFilter(std::shared_ptr<IPolicyFilter> filter);
+    /**
+     * @brief The Add work.
+     * @return True if success,else false
+     */
     bool AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
+    /**
+     * @brief The Remove work.
+     * @return True if success,else false
+     */
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
+    /**
+     * @brief The Stop work.
+     * @return True if success,else false
+     */
     bool StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
+    /**
+     * @brief The Stop and clear works.
+     * @return True if success,else false
+     */
     bool StopAndClearWorks(int32_t uid);
+    /**
+     * @brief The Is last work timeout.
+     * @return True if success,else false
+     */
     bool IsLastWorkTimeout(int32_t workId, int32_t uid);
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
+    /**
+     * @brief The OnConditionReady callback.
+     */
     void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
+    /**
+     * @brief The OnPolicyChanged callback.
+     */
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal);
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid);
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workInfo);
     std::list<std::shared_ptr<WorkStatus>> GetAllWorkStatus(int32_t &uid);
     void Dump(std::string& result);
     int32_t currentRunningCount = 0;
+    /**
+     * @brief The Check work to run.
+     */
     void CheckWorkToRun();
+    /**
+     * @brief The Send retrigger.
+     */
     void SendRetrigger(int64_t delayTime);
+    /**
+     * @brief The Add app remove listener.
+     */
     void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
+    /**
+     * @brief The Add app data clear listener.
+     */
     void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
+    /**
+     * @brief The Watchdog timeout.
+     */
     void WatchdogTimeOut(uint32_t watchdogId);
+    /**
+     * @brief The Set memory by dump.
+     */
     void SetMemoryByDump(int32_t memory);
     int32_t GetDumpSetMemory();
+    /**
+     * @brief The Set watchdog time.
+     */
     void SetWatchdogTime(int time);
     int GetWatchdogTime();
 

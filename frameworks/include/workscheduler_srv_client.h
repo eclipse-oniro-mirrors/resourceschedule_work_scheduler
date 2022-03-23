@@ -28,9 +28,28 @@ class WorkSchedulerSrvClient final : public DelayedRefSingleton<WorkSchedulerSrv
 public:
     DISALLOW_COPY_AND_MOVE(WorkSchedulerSrvClient);
 
+    /**
+     * @brief The Start work.
+     * @param workInfo The info of work.
+     * @return True if success,else false
+     */
     bool StartWork(WorkInfo& workInfo);
+    /**
+     * @brief The Stop work.
+     * @param workInfo The info of work.
+     * @return True if success,else false
+     */
     bool StopWork(WorkInfo& workInfo);
+    /**
+     * @brief The Stop and cancel work.
+     * @param workInfo The info of work.
+     * @return True if success,else false
+     */
     bool StopAndCancelWork(WorkInfo& workInfo);
+    /**
+     * @brief The Stop and clear works.
+     * @return True if success,else false
+     */
     bool StopAndClearWorks();
     ErrCode IsLastWorkTimeout(int32_t workId, bool &result);
     ErrCode GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo);

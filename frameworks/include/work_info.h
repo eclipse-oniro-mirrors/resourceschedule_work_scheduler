@@ -47,12 +47,20 @@ public:
     int32_t GetWorkId();
     std::string GetBundleName();
     std::string GetAbilityName();
+    /**
+     * @brief The Is persisted.
+     * @return True if success,else false
+     */
     bool IsPersisted();
     WorkCondition::Network GetNetworkType();
     WorkCondition::Charger GetChargerType();
     int32_t GetBatteryLevel();
     WorkCondition::BatteryStatus GetBatteryStatus();
     WorkCondition::Storage GetStorageLevel();
+    /**
+     * @brief The Is repeat.
+     * @return True if success,else false
+     */
     bool IsRepeat();
     uint32_t GetTimeInterval();
     int32_t GetCycleCount();

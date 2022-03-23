@@ -26,7 +26,6 @@ class WorkSchedulerExtensionModuleLoader : public AbilityRuntime::ExtensionModul
 public:
     /**
      * @brief Create Extension.
-     *
      * @param runtime The runtime.
      * @return The Extension instance.
      */

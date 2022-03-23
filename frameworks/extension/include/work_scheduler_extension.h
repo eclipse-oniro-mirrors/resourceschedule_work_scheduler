@@ -45,7 +45,6 @@ public:
 
     /**
      * @brief Create WorkSchedulerExtension.
-     *
      * @param runtime The runtime.
      * @return The WorkSchedulerExtension instance.
      */
@@ -53,15 +52,13 @@ public:
 
     /**
      * @brief The OnWorkStart callback.
-     *
-     * @param WorkInfo The info of work.
+     * @param workInfo The info of work.
      */
     virtual void OnWorkStart(WorkInfo& workInfo);
 
     /**
      * @brief The OnWorkStop callback.
-     *
-     * @param WorkInfo The info of work.
+     * @param workInfo The info of work.
      */
     virtual void OnWorkStop(WorkInfo& workInfo);
 };
