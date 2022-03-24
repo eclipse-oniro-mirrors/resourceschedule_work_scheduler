@@ -34,7 +34,7 @@ public:
 
     /**
      * @brief Create and init context.
-     * 
+     *
      * @param record The record info.
      * @param application The application info.
      * @param handler The handler.
@@ -49,7 +49,7 @@ public:
 
     /**
      * @brief The Init.
-     * 
+     *
      * @param record The record.
      * @param application The application.
      * @param handler The handler.
@@ -62,7 +62,7 @@ public:
 
     /**
      * @brief Create WorkSchedulerExtension.
-     * 
+     *
      * @param runtime The runtime.
      * @return The WorkSchedulerExtension instance.
      */
@@ -70,14 +70,14 @@ public:
 
     /**
      * @brief The OnWorkStart callback.
-     * 
+     *
      * @param workInfo The info of work.
      */
     virtual void OnWorkStart(WorkInfo& workInfo);
 
     /**
      * @brief The OnWorkStop callback.
-     * 
+     *
      * @param workInfo The info of work.
      */
     virtual void OnWorkStop(WorkInfo& workInfo);

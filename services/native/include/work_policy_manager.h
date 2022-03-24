@@ -43,25 +43,25 @@ public:
     ~WorkPolicyManager() = default;
     /**
      * @brief Init.
-     * 
+     *
      * @return True if success,else false
      */
     bool Init();
     /**
      * @brief Add listener.
-     * 
+     *
      * @return True if success,else false
      */
     bool AddListener();
     /**
      * @brief Add policy filter.
-     * 
+     *
      * @param filter The filter.
      */
     void AddPolicyFilter(std::shared_ptr<IPolicyFilter> filter);
     /**
      * @brief Add work.
-     * 
+     *
      * @param workStatus The work status.
      * @param uid The uid.
      * @return True if success,else false
@@ -69,7 +69,7 @@ public:
     bool AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     /**
      * @brief Remove work.
-     * 
+     *
      * @param workStatus The work status.
      * @param uid The uid.
      * @return True if success,else false
@@ -77,7 +77,7 @@ public:
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     /**
      * @brief Stop work.
-     * 
+     *
      * @param workStatus The work status.
      * @param uid The uid.
      * @param needCancel The need cancel.
@@ -87,14 +87,14 @@ public:
     bool StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
     /**
      * @brief Stop and clear works.
-     * 
+     *
      * @param uid The uid.
      * @return True if success,else false
      */
     bool StopAndClearWorks(int32_t uid);
     /**
      * @brief The last work timeout.
-     * 
+     *
      * @param workId The workId.
      * @param uid The uid.
      * @return True if success,else false
@@ -103,13 +103,13 @@ public:
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
     /**
      * @brief The OnConditionReady callback.
-     * 
+     *
      * @param workStatusVector The work status vector.
      */
     void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     /**
      * @brief The OnPolicyChanged callback.
-     * 
+     *
      * @param policyType The policy type.
      * @param detectorVal The detectorVal.
      */
@@ -119,7 +119,7 @@ public:
     std::list<std::shared_ptr<WorkStatus>> GetAllWorkStatus(int32_t &uid);
     /**
      * @brief The Dump.
-     * 
+     *
      * @param result The result.
      */
     void Dump(std::string& result);
@@ -130,38 +130,38 @@ public:
     void CheckWorkToRun();
     /**
      * @brief Send retrigger.
-     * 
+     *
      * @param delayTime The delayTime.
      */
     void SendRetrigger(int64_t delayTime);
     /**
      * @brief Add app remove listener.
-     * 
+     *
      * @param listener The listener.
      */
     void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
     /**
      * @brief Add app data clear listener.
-     * 
+     *
      * @param listener The listener.
      */
     void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
     /**
      * @brief Watchdog timeout.
-     * 
+     *
      * @param watchdogId The watchdogId.
      */
     void WatchdogTimeOut(uint32_t watchdogId);
     /**
      * @brief Set memory by dump.
-     * 
+     *
      * @param memory The memory.
      */
     void SetMemoryByDump(int32_t memory);
     int32_t GetDumpSetMemory();
     /**
      * @brief Set watchdog time.
-     * 
+     *
      * @param time The time.
      */
     void SetWatchdogTime(int time);

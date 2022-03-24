@@ -33,7 +33,7 @@ public:
     static napi_value NapiGetNull(napi_env env);
     /**
      * @brief Get work info.
-     * 
+     *
      * @param env The env.
      * @param objValue The obj value.
      * @param workInfo The info of work.
@@ -42,7 +42,7 @@ public:
     static bool GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
     /**
      * @brief Get int property.
-     * 
+     *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
@@ -51,7 +51,7 @@ public:
     static int32_t GetIntProperty(napi_env env, napi_value object, const std::string &propertyName);
     /**
      * @brief Get bool property.
-     * 
+     *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
@@ -62,7 +62,7 @@ public:
     static std::string GetStringProperty(napi_env env, napi_value object, const std::string &propertyName);
     /**
      * @brief Match value type.
-     * 
+     *
      * @param env The env.
      * @param value The value.
      * @param targetType The target type.
@@ -72,7 +72,7 @@ public:
     static napi_value JSParaError(const napi_env &env, const napi_ref &callback);
     /**
      * @brief Padding callback promise info.
-     * 
+     *
      * @param env The env
      * @param callback The callback.
      * @param info The info.
@@ -84,7 +84,7 @@ public:
     static napi_value GetCallbackErrorValue(napi_env env, int errCode);
     /**
      * @brief Set callback.
-     * 
+     *
      * @param env The env.
      * @param callbackIn The callbackIn.
      * @param errorCode The errorCode.
@@ -95,7 +95,7 @@ public:
     static napi_value SetPromise(const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result);
     /**
      * @brief Return callback promise.
-     * 
+     *
      * @param env The env.
      * @param info The info.
      * @param result The result.

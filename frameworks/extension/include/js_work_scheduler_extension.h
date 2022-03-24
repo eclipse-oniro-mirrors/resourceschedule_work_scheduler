@@ -31,7 +31,7 @@ public:
 
     /**
      * @brief Create JsWorkSchedulerExtension.
-     * 
+     *
      * @param runtime The runtime.
      * @return The JsWorkSchedulerExtension instance.
      */
@@ -39,7 +39,7 @@ public:
 
     /**
      * @brief The Init.
-     * 
+     *
      * @param record The record info.
      * @param application The application info.
      * @param handler The handler.
@@ -52,14 +52,14 @@ public:
 
     /**
      * @brief The OnStart callback.
-     * 
+     *
      * @param want The want.
      */
     void OnStart(const AAFwk::Want &want) override;
 
     /**
      * @brief The OnConnect callback.
-     * 
+     *
      * @param want The want.
      * @return remote object.
      */
@@ -67,7 +67,7 @@ public:
 
     /**
      * @brief The OnDisconnect callback.
-     * 
+     *
      * @param want The want.
      */
     void OnDisconnect(const AAFwk::Want &want) override;
@@ -79,14 +79,14 @@ public:
 
     /**
      * @brief The OnWorkStart callback.
-     * 
+     *
      * @param workInfo The info of work.
      */
     void OnWorkStart(WorkInfo& workInfo) override;
 
     /**
      * @brief The OnWorkStop callback.
-     * 
+     *
      * @param workInfo The info of work.
      */
     void OnWorkStop(WorkInfo& workInfo) override;

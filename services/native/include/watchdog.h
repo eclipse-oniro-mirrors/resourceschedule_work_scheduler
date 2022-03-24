@@ -29,7 +29,7 @@ public:
     ~Watchdog() override = default;
     /**
      * @brief Add watchdog.
-     * 
+     *
      * @param watchdogId The id of watchdog.
      * @param interval The interval.
      * @return True if success,else false
@@ -37,13 +37,13 @@ public:
     bool AddWatchdog(const uint32_t watchdogId, int32_t interval);
     /**
      * @brief Remove watchdog.
-     * 
+     *
      * @param watchdogId The id of watchdog.
      */
     void RemoveWatchdog(uint32_t watchdogId);
     /**
      * @brief Process event.
-     * 
+     *
      * @param event The event.
      */
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;

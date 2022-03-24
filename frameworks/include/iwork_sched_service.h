@@ -40,41 +40,41 @@ public:
 
     /**
      * @brief Start work.
-     * 
+     *
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     virtual bool StartWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop work.
-     * 
+     *
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     virtual bool StopWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and cancel work.
-     * 
+     *
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     virtual bool StopAndCancelWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and clear works.
-     * 
+     *
      * @return True if success,else false
      */
     virtual bool StopAndClearWorks() = 0;
     /**
      * @brief Check whether last work executed time out.
-     * 
+     *
      * @param workId The workId.
      * @return True if the work executed time out, else false.
      */
     virtual bool IsLastWorkTimeout(int32_t workId) = 0;
     /**
      * @brief Obtain all works.
-     * 
+     *
      * @param uid The uid.
      * @param pid The pid.
      * @return True if the work executed time out, else false.
@@ -82,14 +82,14 @@ public:
     virtual std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) = 0;
     /**
      * @brief Check whether last work executed time out.
-     * 
+     *
      * @param workId The workId.
      * @return True if the work executed time out, else false.
      */
     virtual std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) = 0;
     /**
      * @brief Shell dump.
-     * 
+     *
      * @param workInfo The dump option.
      * @param dumpInfo The dump info.
      * @return True if success,else false

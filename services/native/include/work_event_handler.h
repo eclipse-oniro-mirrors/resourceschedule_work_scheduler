@@ -34,7 +34,7 @@ public:
     ~WorkEventHandler() = default;
     /**
      * @brief Process event.
-     * 
+     *
      * @param event The event.
      */
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;

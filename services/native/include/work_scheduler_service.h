@@ -53,41 +53,41 @@ public:
     void OnStop() override;
     /**
      * @brief Start work.
-     * 
+     *
      * @param workInfo The info of work.
      * @return True if success,else false.
      */
     bool StartWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop work.
-     * 
+     *
      * @param workInfo The info of work.
      * @return True if success,else false.
      */
     bool StopWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and cancel work.
-     * 
+     *
      * @param workInfo The info of work.
      * @return True if success,else false.
      */
     bool StopAndCancelWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and clear works.
-     * 
+     *
      * @return True if success,else false.
      */
     bool StopAndClearWorks() override;
     /**
      * @brief The last work timeout.
-     * 
+     *
      * @param workId The workId.
      * @return True if success,else false.
      */
     bool IsLastWorkTimeout(int32_t workId) override;
     /**
      * @brief Obtain all works.
-     * 
+     *
      * @param uid The uid.
      * @param pid The pid.
      * @return work policy manager.
@@ -95,7 +95,7 @@ public:
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
     /**
      * @brief Get work status.
-     * 
+     *
      * @param uid The uid.
      * @param workId The workId.
      * @return work policy manager.
@@ -103,7 +103,7 @@ public:
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
     /**
      * @brief Shell dump.
-     * 
+     *
      * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
      * @return True if success,else false.
@@ -115,46 +115,46 @@ public:
     void InitPersisted();
     /**
      * @brief Stop and clear works by uid.
-     * 
+     *
      * @param uid The uid.
      * @return True if success,else false.
      */
     bool StopAndClearWorksByUid(int32_t uid);
     /**
      * @brief Create node dir.
-     * 
+     *
      * @param dir The dir.
      * @return ERR_OK.
      */
     int32_t CreateNodeDir(std::string dir);
     /**
      * @brief Create node file.
-     * 
+     *
      * @param filePath The file path.
      * @return ERR_OK.
      */
     int32_t CreateNodeFile(std::string filePath);
     /**
      * @brief Update work before real start.
-     * 
+     *
      * @param work The work.
      */
     void UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus> work);
     /**
      * @brief The OnConditionReady callback.
-     * 
+     *
      * @param workStatusVector The work status vector.
      */
     void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     /**
      * @brief Watchdog timeout.
-     * 
+     *
      * @param workStatus The work status.
      */
     void WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Init.
-     * 
+     *
      * @return True if success,else false.
      */
     bool Init();

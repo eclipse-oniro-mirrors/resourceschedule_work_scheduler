@@ -26,7 +26,7 @@ public:
     ~ThermalPolicy();
     /**
      * @brief Get policy max running.
-     * 
+     *
      * @return res.
      */
     int32_t getPolicyMaxRunning() override;
