@@ -32,37 +32,39 @@ public:
     explicit WorkInfo();
     ~WorkInfo();
     /**
-     * @brief The Set workId.
+     * @brief Set the id of workId.
      * @param workId The workId.
      */
     void SetWorkId(int32_t workId);
     /**
-     * @brief The Set element.
-     * @param bundleName The bundleName,abilityName The abilityName.
+     * @brief Set element.
+     * @param bundleName The bundleName.
+     * @param abilityName The abilityName
      */
     void SetElement(std::string bundleName, std::string abilityName);
     /**
-     * @brief The Request persisted.
+     * @brief Request persisted.
      * @param persisted The persisted.
      */
     void RequestPersisted(bool persisted);
     /**
-     * @brief The Request network type.
+     * @brief Request network type.
      * @param condition The condition.
      */
     void RequestNetworkType(WorkCondition::Network condition);
     /**
-     * @brief The Request charger type.
-     * @param isCharging The isCharging,condition The condition.
+     * @brief Request charger type.
+     * @param isCharging The isCharging.
+     * @param condition The condition.
      */
     void RequestChargerType(bool isCharging, WorkCondition::Charger condition);
     /**
-     * @brief The Request battery level.
+     * @brief Request battery level.
      * @param battLevel The battLevel.
      */
     void RequestBatteryLevel(int32_t battLevel);
     /**
-     * @brief The Request batteryStatus.
+     * @brief Request batteryStatus.
      * @param condition The condition.
      */
     void RequestBatteryStatus(WorkCondition::BatteryStatus condition);
@@ -72,17 +74,18 @@ public:
      */
     void RequestStorageLevel(WorkCondition::Storage condition);
     /**
-     * @brief The Request repeat cycle.
-     * @param timeInterval The timeInterval,cycle The cycle.
+     * @brief Request repeat cycle.
+     * @param timeInterval The timeInterval.
+     * @param cycle The cycle.
      */
     void RequestRepeatCycle(uint32_t timeInterval, int32_t cycle);
     /**
-     * @brief The Request repeat cycle.
+     * @brief Request repeat cycle.
      * @param timeInterval The timeInterval.
      */
     void RequestRepeatCycle(uint32_t timeInterval);
     /**
-     * @brief The Refresh uid.
+     * @brief Refresh uid.
      * @param uid The uid.
      */
     void RefreshUid(int32_t uid);
@@ -92,7 +95,7 @@ public:
     std::string GetBundleName();
     std::string GetAbilityName();
     /**
-     * @brief The Is persisted.
+     * @brief Is persisted.
      * @return True if success,else false
      */
     bool IsPersisted();
@@ -102,7 +105,7 @@ public:
     WorkCondition::BatteryStatus GetBatteryStatus();
     WorkCondition::Storage GetStorageLevel();
     /**
-     * @brief The Is repeat.
+     * @brief Is repeat.
      * @return True if success,else false
      */
     bool IsRepeat();
@@ -110,7 +113,7 @@ public:
     int32_t GetCycleCount();
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**
-     * @brief The Marshalling.
+     * @brief Marshalling.
      * @param parcel The parcel.
      * @return True if success,else false
      */
@@ -119,7 +122,7 @@ public:
     void Dump(std::string &result);
     std::string ParseToJsonStr();
     /**
-     * @brief The Parse from json.
+     * @brief Parse from json.
      * @param value The value.
      * @return True if success,else false
      */

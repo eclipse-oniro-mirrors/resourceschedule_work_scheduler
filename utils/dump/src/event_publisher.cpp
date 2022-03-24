@@ -15,9 +15,6 @@
 
 #include "event_publisher.h"
 
-#include <fstream>
-#include <iostream>
-
 #include "battery_srv_client.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"

@@ -40,32 +40,34 @@ public:
 
     virtual  StartWork(WorkInfo& workInfo) = 0;
     /**
-     * @brief The Stop work.
+     * @brief Stop work.
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     virtual bool StopWork(WorkInfo& workInfo) = 0;
     /**
-     * @brief The Stop and cancel work.
+     * @brief Stop and cancel work.
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     virtual bool StopAndCancelWork(WorkInfo& workInfo) = 0;
     /**
-     * @brief The Stop and clear works.
+     * @brief Stop and clear works.
      * @return True if success,else false
      */
     virtual bool StopAndClearWorks() = 0;
     /**
-     * @brief The Is last work timeout.
+     * @brief Last work timeout.
+     * @param workId The workId.
      * @return True if success,else false
      */
     virtual bool IsLastWorkTimeout(int32_t workId) = 0;
     virtual std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) = 0;
     virtual std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) = 0;
     /**
-     * @brief The Shell dump.
-     * @param workInfo The dumpOption,dumpInfo The dumpInfo.
+     * @brief Shell dump.
+     * @param workInfo The dumpOption.
+     * @param dumpInfo The dumpInfo.
      * @return True if success,else false
      */
     virtual bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) = 0;

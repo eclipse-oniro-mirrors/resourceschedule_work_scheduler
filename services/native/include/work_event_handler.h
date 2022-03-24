@@ -33,7 +33,7 @@ public:
         const wptr<WorkSchedulerService>& service);
     ~WorkEventHandler() = default;
     /**
-     * @brief The Process event.
+     * @brief Process event.
      * @param event The event.
      */
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;

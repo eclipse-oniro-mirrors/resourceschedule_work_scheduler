@@ -38,7 +38,10 @@ public:
 
     /**
      * @brief The Init.
-     * @param record The record,application The application,handler The handler,token The token.
+     * @param record The record info.
+     * @param application The application info.
+     * @param handler The handler.
+     * @param token The remmote object token.
      */
     void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord> &record,
               const std::shared_ptr<AppExecFwk::OHOSApplication> &application,
