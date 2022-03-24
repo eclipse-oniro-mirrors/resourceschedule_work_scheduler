@@ -31,20 +31,14 @@ class WorkConnManager {
 public:
     /**
      * @brief Start work.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param workStatus The work status.
      * @return True if success,else false
      */
     bool StartWork(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Stop work.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param workStatus The work status.
      * @return True if success,else false
      */

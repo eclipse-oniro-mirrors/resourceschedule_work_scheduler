@@ -33,10 +33,7 @@ public:
     static napi_value NapiGetNull(napi_env env);
     /**
      * @brief Get work info.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param env The env.
      * @param objValue The obj value.
      * @param workInfo The info of work.
@@ -54,16 +51,10 @@ public:
     static int32_t GetIntProperty(napi_env env, napi_value object, const std::string &propertyName);
     /**
      * @brief Get bool property.
-<<<<<<< HEAD
      * 
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
-=======
-     * @param env The env.
-     * @param object The object.
-     * @param propertyName The property name.
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @return True if success,else false
      */
     static bool GetBoolProperty(napi_env env, napi_value object, const std::string &propertyName);
@@ -71,10 +62,7 @@ public:
     static std::string GetStringProperty(napi_env env, napi_value object, const std::string &propertyName);
     /**
      * @brief Match value type.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param env The env.
      * @param value The value.
      * @param targetType The target type.
@@ -84,10 +72,7 @@ public:
     static napi_value JSParaError(const napi_env &env, const napi_ref &callback);
     /**
      * @brief Padding callback promise info.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param env The env
      * @param callback The callback.
      * @param info The info.
@@ -99,10 +84,7 @@ public:
     static napi_value GetCallbackErrorValue(napi_env env, int errCode);
     /**
      * @brief Set callback.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param env The env.
      * @param callbackIn The callbackIn.
      * @param errorCode The errorCode.
@@ -113,10 +95,7 @@ public:
     static napi_value SetPromise(const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result);
     /**
      * @brief Return callback promise.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param env The env.
      * @param info The info.
      * @param result The result.

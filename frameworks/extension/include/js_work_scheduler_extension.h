@@ -39,10 +39,7 @@ public:
 
     /**
      * @brief The Init.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param record The record info.
      * @param application The application info.
      * @param handler The handler.

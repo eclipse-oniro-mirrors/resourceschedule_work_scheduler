@@ -26,32 +26,21 @@ class IPolicyListener {
 public:
     virtual ~IPolicyListener() = default;
     /**
-<<<<<<< HEAD
      * @brief The OnPolicyChanged callback.
      * 
      * @param policyType The policy type.
-=======
-     * @brief The OnPolicyChanged.
-     * @param policyType The policyType.
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param detectorVal The detectorVal.
      */
     virtual void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal) = 0;
     /**
      * @brief Start.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @return True if success,else false
      */
     virtual bool Start();
     /**
      * @brief Stop.
-<<<<<<< HEAD
      * 
-=======
->>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @return True if success,else false
      */
     virtual bool Stop();
