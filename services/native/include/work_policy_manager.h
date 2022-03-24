@@ -43,58 +43,87 @@ public:
     ~WorkPolicyManager() = default;
     /**
      * @brief Init.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @return True if success,else false
      */
     bool Init();
     /**
      * @brief Add listener.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @return True if success,else false
      */
     bool AddListener();
     /**
      * @brief Add policy filter.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param filter The filter.
      */
     void AddPolicyFilter(std::shared_ptr<IPolicyFilter> filter);
     /**
      * @brief Add work.
+<<<<<<< HEAD
      * 
      * @param workStatus The work status.
+=======
+     * @param workStatus The workStatus.
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param uid The uid.
      * @return True if success,else false
      */
     bool AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     /**
      * @brief Remove work.
+<<<<<<< HEAD
      * 
      * @param workStatus The work status.
+=======
+     * @param workStatus The workStatus.
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param uid The uid.
      * @return True if success,else false
      */
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     /**
      * @brief Stop work.
+<<<<<<< HEAD
      * 
      * @param workStatus The work status.
      * @param uid The uid.
      * @param needCancel The need cancel.
+=======
+     * @param workStatus The work status.
+     * @param uid The uid.
+     * @param needCancel The needCancel.
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param isTimeOut The isTimeOut.
      * @return True if success,else false
      */
     bool StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
     /**
      * @brief Stop and clear works.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param uid The uid.
      * @return True if success,else false
      */
     bool StopAndClearWorks(int32_t uid);
     /**
      * @brief The last work timeout.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param workId The workId.
      * @param uid The uid.
      * @return True if success,else false
@@ -130,38 +159,56 @@ public:
     void CheckWorkToRun();
     /**
      * @brief Send retrigger.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param delayTime The delayTime.
      */
     void SendRetrigger(int64_t delayTime);
     /**
      * @brief Add app remove listener.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param listener The listener.
      */
     void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
     /**
      * @brief Add app data clear listener.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param listener The listener.
      */
     void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
     /**
      * @brief Watchdog timeout.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param watchdogId The watchdogId.
      */
     void WatchdogTimeOut(uint32_t watchdogId);
     /**
      * @brief Set memory by dump.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param memory The memory.
      */
     void SetMemoryByDump(int32_t memory);
     int32_t GetDumpSetMemory();
     /**
      * @brief Set watchdog time.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param time The time.
      */
     void SetWatchdogTime(int time);

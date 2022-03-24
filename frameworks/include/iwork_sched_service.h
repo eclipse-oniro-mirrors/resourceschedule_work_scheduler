@@ -39,6 +39,7 @@ public:
     };
 
     /**
+<<<<<<< HEAD
      * @brief Start work.
      * 
      * @param workInfo The info of work.
@@ -48,28 +49,43 @@ public:
     /**
      * @brief Stop work.
      * 
+=======
+     * @brief Stop work.
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     virtual bool StopWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and cancel work.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     virtual bool StopAndCancelWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and clear works.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @return True if success,else false
      */
     virtual bool StopAndClearWorks() = 0;
     /**
+<<<<<<< HEAD
      * @brief Check whether last work executed time out.
      * 
      * @param workId The workId.
      * @return True if the work executed time out, else false.
+=======
+     * @brief Last work timeout.
+     * @param workId The workId.
+     * @return True if success,else false
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      */
     virtual bool IsLastWorkTimeout(int32_t workId) = 0;
     /**
@@ -89,9 +105,14 @@ public:
     virtual std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) = 0;
     /**
      * @brief Shell dump.
+<<<<<<< HEAD
      * 
      * @param workInfo The dump option.
      * @param dumpInfo The dump info.
+=======
+     * @param workInfo The dumpOption.
+     * @param dumpInfo The dumpInfo.
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @return True if success,else false
      */
     virtual bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) = 0;

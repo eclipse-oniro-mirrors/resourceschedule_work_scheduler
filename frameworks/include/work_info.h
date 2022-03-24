@@ -33,38 +33,56 @@ public:
     ~WorkInfo();
     /**
      * @brief Set the id of workId.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param workId The workId.
      */
     void SetWorkId(int32_t workId);
     /**
      * @brief Set element.
+<<<<<<< HEAD
      * 
      * @param bundleName The name of bundle.
      * @param abilityName The name of ability
+=======
+     * @param bundleName The bundleName.
+     * @param abilityName The abilityName
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      */
     void SetElement(std::string bundleName, std::string abilityName);
     /**
      * @brief Request persisted.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param persisted The persisted.
      */
     void RequestPersisted(bool persisted);
     /**
      * @brief Request network type.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param condition The condition.
      */
     void RequestNetworkType(WorkCondition::Network condition);
     /**
      * @brief Request charger type.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param isCharging The isCharging.
      * @param condition The condition.
      */
     void RequestChargerType(bool isCharging, WorkCondition::Charger condition);
     /**
      * @brief Request battery level.
+<<<<<<< HEAD
      * 
      * @param battLevel The battery level.
      */
@@ -72,6 +90,13 @@ public:
     /**
      * @brief Request battery status.
      * 
+=======
+     * @param battLevel The battLevel.
+     */
+    void RequestBatteryLevel(int32_t battLevel);
+    /**
+     * @brief Request batteryStatus.
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param condition The condition.
      */
     void RequestBatteryStatus(WorkCondition::BatteryStatus condition);
@@ -83,20 +108,29 @@ public:
     void RequestStorageLevel(WorkCondition::Storage condition);
     /**
      * @brief Request repeat cycle.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param timeInterval The timeInterval.
      * @param cycle The cycle.
      */
     void RequestRepeatCycle(uint32_t timeInterval, int32_t cycle);
     /**
      * @brief Request repeat cycle.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param timeInterval The timeInterval.
      */
     void RequestRepeatCycle(uint32_t timeInterval);
     /**
      * @brief Refresh uid.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param uid The uid.
      */
     void RefreshUid(int32_t uid);
@@ -106,9 +140,14 @@ public:
     std::string GetBundleName();
     std::string GetAbilityName();
     /**
+<<<<<<< HEAD
      * @brief Check whether the work is persist.
      * 
      * @return Persist or not.
+=======
+     * @brief Is persisted.
+     * @return True if success,else false
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      */
     bool IsPersisted();
     WorkCondition::Network GetNetworkType();
@@ -117,9 +156,14 @@ public:
     WorkCondition::BatteryStatus GetBatteryStatus();
     WorkCondition::Storage GetStorageLevel();
     /**
+<<<<<<< HEAD
      * @brief Check whether the work is repeat.
      * 
      * @return Repeat or not.
+=======
+     * @brief Is repeat.
+     * @return True if success,else false
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      */
     bool IsRepeat();
     uint32_t GetTimeInterval();
@@ -127,7 +171,10 @@ public:
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**
      * @brief Marshalling.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param parcel The parcel.
      * @return True if success,else false.
      */
@@ -142,7 +189,10 @@ public:
     std::string ParseToJsonStr();
     /**
      * @brief Parse from json.
+<<<<<<< HEAD
      * 
+=======
+>>>>>>> a1ec5cf7e2cafb2e244c65d752ea1fc3d76af61e
      * @param value The value.
      * @return True if success,else false.
      */
