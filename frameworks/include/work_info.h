@@ -31,16 +31,60 @@ class WorkInfo : public Parcelable {
 public:
     explicit WorkInfo();
     ~WorkInfo();
+    /**
+     * @brief The Set workId.
+     * @param workId The workId.
+     */
     void SetWorkId(int32_t workId);
+    /**
+     * @brief The Set element.
+     * @param bundleName The bundleName,abilityName The abilityName.
+     */
     void SetElement(std::string bundleName, std::string abilityName);
+    /**
+     * @brief The Request persisted.
+     * @param persisted The persisted.
+     */
     void RequestPersisted(bool persisted);
+    /**
+     * @brief The Request network type.
+     * @param condition The condition.
+     */
     void RequestNetworkType(WorkCondition::Network condition);
+    /**
+     * @brief The Request charger type.
+     * @param isCharging The isCharging,condition The condition.
+     */
     void RequestChargerType(bool isCharging, WorkCondition::Charger condition);
+    /**
+     * @brief The Request battery level.
+     * @param battLevel The battLevel.
+     */
     void RequestBatteryLevel(int32_t battLevel);
+    /**
+     * @brief The Request batteryStatus.
+     * @param condition The condition.
+     */
     void RequestBatteryStatus(WorkCondition::BatteryStatus condition);
+    /**
+     * @brief Request storage level.
+     * @param condition The condition.
+     */
     void RequestStorageLevel(WorkCondition::Storage condition);
+    /**
+     * @brief The Request repeat cycle.
+     * @param timeInterval The timeInterval,cycle The cycle.
+     */
     void RequestRepeatCycle(uint32_t timeInterval, int32_t cycle);
+    /**
+     * @brief The Request repeat cycle.
+     * @param timeInterval The timeInterval.
+     */
     void RequestRepeatCycle(uint32_t timeInterval);
+    /**
+     * @brief The Refresh uid.
+     * @param uid The uid.
+     */
     void RefreshUid(int32_t uid);
     int32_t GetUid();
 
@@ -65,10 +109,20 @@ public:
     uint32_t GetTimeInterval();
     int32_t GetCycleCount();
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
+    /**
+     * @brief The Marshalling.
+     * @param parcel The parcel.
+     * @return True if success,else false
+     */
     bool Marshalling(Parcel &parcel) const override;
     static sptr<WorkInfo> Unmarshalling(Parcel &parcel);
     void Dump(std::string &result);
     std::string ParseToJsonStr();
+    /**
+     * @brief The Parse from json.
+     * @param value The value.
+     * @return True if success,else false
+     */
     bool ParseFromJson(const Json::Value value);
 
 private:

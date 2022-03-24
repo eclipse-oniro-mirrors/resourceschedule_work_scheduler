@@ -31,20 +31,47 @@ struct CallbackPromiseInfo {
 class Common {
 public:
     static napi_value NapiGetNull(napi_env env);
+    /**
+     * @brief The Get work info.
+     * @param env The env,objValue The objValue,workInfo The info of work.
+     * @return True if success,else false
+     */
     static bool GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
     static int32_t GetIntProperty(napi_env env, napi_value object, const std::string &propertyName);
+    /**
+     * @brief The Get bool property.
+     * @param env The env,object The object,propertyName The propertyName.
+     * @return True if success,else false
+     */
     static bool GetBoolProperty(napi_env env, napi_value object, const std::string &propertyName);
     static int32_t GetBoolToIntProperty(napi_env env, napi_value object, const std::string &propertyName);
     static std::string GetStringProperty(napi_env env, napi_value object, const std::string &propertyName);
+    /**
+     * @brief The Match valueType.
+     * @param env The env,value The value,targetType The targetType.
+     * @return True if success,else false
+     */
     static bool MatchValueType(napi_env env, napi_value value, napi_valuetype targetType);
     static napi_value JSParaError(const napi_env &env, const napi_ref &callback);
+    /**
+     * @brief The Padding callback promise info.
+     * @param env The env,callback The callback,info The info,promise The promise.
+     */
     static void PaddingCallbackPromiseInfo(
         const napi_env &env, const napi_ref &callback, CallbackPromiseInfo &info, napi_value &promise);
     static napi_value GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo);
     static napi_value GetCallbackErrorValue(napi_env env, int errCode);
+    /**
+     * @brief The Set callback.
+     * @param env The env,callbackIn The callbackIn,errorCode The errorCode,result The result.
+     */
     static void SetCallback(const napi_env &env, const napi_ref &callbackIn, const int &errorCode,
         const napi_value &result);
     static napi_value SetPromise(const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result);
+    /**
+     * @brief The Return callback promise.
+     * @param env The env,info The info,result The result.
+     */
     static void ReturnCallbackPromise(const napi_env &env, const CallbackPromiseInfo &info,
         const napi_value &result);
 

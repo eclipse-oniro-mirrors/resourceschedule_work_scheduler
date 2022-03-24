@@ -25,8 +25,20 @@ namespace WorkScheduler {
 class IPolicyListener {
 public:
     virtual ~IPolicyListener() = default;
+    /**
+     * @brief The On policy changed.
+     * @param policyType The policyType,detectorVal The detectorVal.
+     */
     virtual void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal) = 0;
+    /**
+     * @brief The Start.
+     * @return True if success,else false
+     */
     virtual bool Start();
+    /**
+     * @brief The Stop.
+     * @return True if success,else false
+     */
     virtual bool Stop();
 };
 } // namesapce WorkScheduler

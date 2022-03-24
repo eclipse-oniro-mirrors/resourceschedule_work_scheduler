@@ -38,6 +38,10 @@ public:
         std::shared_ptr<AppExecFwk::AbilityHandler>& handler,
         const sptr<IRemoteObject>& token) override;
 
+    /**
+     * @brief The Init.
+     * @param record The record,application The application,handler The handler,token The token.
+     */
     void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord>& record,
         const std::shared_ptr<AppExecFwk::OHOSApplication>& application,
         std::shared_ptr<AppExecFwk::AbilityHandler>& handler,

@@ -38,7 +38,7 @@ public:
 
     /**
      * @brief The Init.
-     * @param want The want.
+     * @param record The record,application The application,handler The handler,token The token.
      */
     void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord> &record,
               const std::shared_ptr<AppExecFwk::OHOSApplication> &application,
