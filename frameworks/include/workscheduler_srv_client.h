@@ -29,49 +29,60 @@ public:
     DISALLOW_COPY_AND_MOVE(WorkSchedulerSrvClient);
 
     /**
-     * @brief The Start work.
+     * @brief Start work.
+     * 
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     bool StartWork(WorkInfo& workInfo);
     /**
-     * @brief The Stop work.
+     * @brief Stop work.
+     * 
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     bool StopWork(WorkInfo& workInfo);
     /**
-     * @brief The Stop and cancel work.
+     * @brief Stop and cancel work.
+     * 
      * @param workInfo The info of work.
      * @return True if success,else false
      */
     bool StopAndCancelWork(WorkInfo& workInfo);
     /**
-     * @brief The Stop and clear works.
+     * @brief Stop and clear works.
+     * 
      * @return True if success,else false
      */
     bool StopAndClearWorks();
     /**
-     * @brief The Is last work timeout.
-     * @param workId The workId,result The result.
+     * @brief The last work timeout.
+     * 
+     * @param workId The workId.
+     * @param result The result.
      * @return Returns ERR_OK on success, others on failure.
      */
     ErrCode IsLastWorkTimeout(int32_t workId, bool &result);
     /**
-     * @brief The Get work status.
-     * @param workId The workId,workInfo The info of work.
+     * @brief Get work status.
+     * 
+     * @param workId The workId.
+     * @param workInfo The info of work.
      * @return Returns ERR_OK on success, others on failure.
      */
     ErrCode GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo);
     /**
-     * @brief The Obtain all works.
+     * @brief Obtain all works.
+     * 
      * @param workInfos The infos of work.
      * @return Returns ERR_OK on success, others on failure.
      */
     ErrCode ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos);
     /**
-     * @brief The Shell dump.
-     * @param dumpOption The dumpOption,dumpInfo The dumpInfo.
+     * @brief Shell dump.
+     * 
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
      * @return True if success,else false
      */
     bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);

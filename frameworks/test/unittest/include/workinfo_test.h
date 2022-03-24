@@ -22,19 +22,19 @@ namespace WorkScheduler {
 class WorkInfoTest : public testing::Test {
 public:
     /**
-     * @brief The SetUp test case.
+     * @brief Set up test case.
      */
     static void SetUpTestCase(void);
     /**
-     * @brief The Tear down tes case.
+     * @brief Tear down test case.
      */
     static void TearDownTestCase(void);
     /**
-     * @brief The Set up.
+     * @brief Set up.
      */
     void SetUp();
     /**
-     * @brief The Tear down.
+     * @brief Tear down.
      */
     void TearDown();
 };

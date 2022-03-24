@@ -278,7 +278,9 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
         auto condition = std::make_shared<Condition>();
         switch (key) {
             case WorkCondition::Type::NETWORK:
+            // fall-through
             case WorkCondition::Type::BATTERY_STATUS:
+            // fall-through
             case WorkCondition::Type::STORAGE: {
                 condition->enumVal = parcel.ReadInt32();
                 break;

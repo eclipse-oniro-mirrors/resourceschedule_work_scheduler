@@ -254,6 +254,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
     WS_HILOGI("WorkPolicyManager::%{public}s enter", __func__);
     switch (policyType) {
         case PolicyType::APP_REMOVED:
+        // fall-through
         case PolicyType::APP_DATA_CLEAR: {
             auto ws = wss_.promote();
             ws->StopAndClearWorksByUid(detectorVal->intVal);

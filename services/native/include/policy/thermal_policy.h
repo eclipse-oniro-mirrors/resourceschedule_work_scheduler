@@ -24,6 +24,11 @@ class ThermalPolicy : public IPolicyFilter {
 public:
     explicit ThermalPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~ThermalPolicy();
+    /**
+     * @brief Get policy max running.
+     * 
+     * @return res.
+     */
     int32_t getPolicyMaxRunning() override;
 private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;

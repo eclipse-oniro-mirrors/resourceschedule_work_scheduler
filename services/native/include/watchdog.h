@@ -28,18 +28,22 @@ public:
     explicit Watchdog(const std::shared_ptr<WorkPolicyManager>& service);
     ~Watchdog() override = default;
     /**
-     * @brief The Add watchdog.
-     * @param watchdogId The watchdogId,interval The interval.
+     * @brief Add watchdog.
+     * 
+     * @param watchdogId The id of watchdog.
+     * @param interval The interval.
      * @return True if success,else false
      */
     bool AddWatchdog(const uint32_t watchdogId, int32_t interval);
     /**
-     * @brief The Remove watchdog.
-     * @param watchdogId The watchdogId.
+     * @brief Remove watchdog.
+     * 
+     * @param watchdogId The id of watchdog.
      */
     void RemoveWatchdog(uint32_t watchdogId);
     /**
-     * @brief The Process event.
+     * @brief Process event.
+     * 
      * @param event The event.
      */
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;
