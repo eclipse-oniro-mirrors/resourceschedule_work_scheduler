@@ -28,13 +28,63 @@ class WorkSchedulerSrvClient final : public DelayedRefSingleton<WorkSchedulerSrv
 public:
     DISALLOW_COPY_AND_MOVE(WorkSchedulerSrvClient);
 
+    /**
+     * @brief Start work.
+     *
+     * @param workInfo The info of work.
+     * @return True if success,else false
+     */
     bool StartWork(WorkInfo& workInfo);
+    /**
+     * @brief Stop work.
+     *
+     * @param workInfo The info of work.
+     * @return True if success,else false
+     */
     bool StopWork(WorkInfo& workInfo);
+    /**
+     * @brief Stop and cancel work.
+     *
+     * @param workInfo The info of work.
+     * @return True if success,else false
+     */
     bool StopAndCancelWork(WorkInfo& workInfo);
+    /**
+     * @brief Stop and clear works.
+     *
+     * @return True if success,else false
+     */
     bool StopAndClearWorks();
+    /**
+     * @brief The last work timeout.
+     *
+     * @param workId The workId.
+     * @param result The result.
+     * @return Returns ERR_OK on success, others on failure.
+     */
     ErrCode IsLastWorkTimeout(int32_t workId, bool &result);
+    /**
+     * @brief Get work status.
+     *
+     * @param workId The workId.
+     * @param workInfo The info of work.
+     * @return Returns ERR_OK on success, others on failure.
+     */
     ErrCode GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo);
+    /**
+     * @brief Obtain all works.
+     *
+     * @param workInfos The infos of work.
+     * @return Returns ERR_OK on success, others on failure.
+     */
     ErrCode ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos);
+    /**
+     * @brief Shell dump.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     * @return True if success,else false
+     */
     bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
 
 private:

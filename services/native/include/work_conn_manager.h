@@ -29,7 +29,19 @@ using namespace Utils;
 namespace WorkScheduler {
 class WorkConnManager {
 public:
+    /**
+     * @brief Start work.
+     *
+     * @param workStatus The work status.
+     * @return True if success,else false
+     */
     bool StartWork(std::shared_ptr<WorkStatus> workStatus);
+    /**
+     * @brief Stop work.
+     *
+     * @param workStatus The work status.
+     * @return True if success,else false
+     */
     bool StopWork(std::shared_ptr<WorkStatus> workStatus);
 private:
     void RemoveConnInfo(std::string &workId);

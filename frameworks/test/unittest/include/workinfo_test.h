@@ -21,9 +21,21 @@ namespace OHOS {
 namespace WorkScheduler {
 class WorkInfoTest : public testing::Test {
 public:
+    /**
+     * @brief Set up test case.
+     */
     static void SetUpTestCase(void);
+    /**
+     * @brief Tear down test case.
+     */
     static void TearDownTestCase(void);
+    /**
+     * @brief Set up.
+     */
     void SetUp();
+    /**
+     * @brief Tear down.
+     */
     void TearDown();
 };
 } // namespace WorkScheduler

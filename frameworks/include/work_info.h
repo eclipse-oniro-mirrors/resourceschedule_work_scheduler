@@ -31,36 +31,121 @@ class WorkInfo : public Parcelable {
 public:
     explicit WorkInfo();
     ~WorkInfo();
+    /**
+     * @brief Set the id of workId.
+     *
+     * @param workId The workId.
+     */
     void SetWorkId(int32_t workId);
+    /**
+     * @brief Set element.
+     *
+     * @param bundleName The name of bundle.
+     * @param abilityName The name of ability
+     */
     void SetElement(std::string bundleName, std::string abilityName);
+    /**
+     * @brief Request persisted.
+     *
+     * @param persisted The persisted.
+     */
     void RequestPersisted(bool persisted);
+    /**
+     * @brief Request network type.
+     *
+     * @param condition The condition.
+     */
     void RequestNetworkType(WorkCondition::Network condition);
+    /**
+     * @brief Request charger type.
+     *
+     * @param isCharging The isCharging.
+     * @param condition The condition.
+     */
     void RequestChargerType(bool isCharging, WorkCondition::Charger condition);
+    /**
+     * @brief Request battery level.
+     *
+     * @param battLevel The battery level.
+     */
     void RequestBatteryLevel(int32_t battLevel);
+    /**
+     * @brief Request battery status.
+     *
+     * @param condition The condition.
+     */
     void RequestBatteryStatus(WorkCondition::BatteryStatus condition);
+    /**
+     * @brief Request storage level.
+     *
+     * @param condition The condition.
+     */
     void RequestStorageLevel(WorkCondition::Storage condition);
+    /**
+     * @brief Request repeat cycle.
+     *
+     * @param timeInterval The timeInterval.
+     * @param cycle The cycle.
+     */
     void RequestRepeatCycle(uint32_t timeInterval, int32_t cycle);
+    /**
+     * @brief Request repeat cycle.
+     *
+     * @param timeInterval The timeInterval.
+     */
     void RequestRepeatCycle(uint32_t timeInterval);
+    /**
+     * @brief Refresh uid.
+     *
+     * @param uid The uid.
+     */
     void RefreshUid(int32_t uid);
     int32_t GetUid();
 
     int32_t GetWorkId();
     std::string GetBundleName();
     std::string GetAbilityName();
+    /**
+     * @brief Check whether the work is persist.
+     *
+     * @return Persist or not.
+     */
     bool IsPersisted();
     WorkCondition::Network GetNetworkType();
     WorkCondition::Charger GetChargerType();
     int32_t GetBatteryLevel();
     WorkCondition::BatteryStatus GetBatteryStatus();
     WorkCondition::Storage GetStorageLevel();
+    /**
+     * @brief Check whether the work is repeat.
+     *
+     * @return Repeat or not.
+     */
     bool IsRepeat();
     uint32_t GetTimeInterval();
     int32_t GetCycleCount();
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
+    /**
+     * @brief Marshalling.
+     *
+     * @param parcel The parcel.
+     * @return True if success,else false.
+     */
     bool Marshalling(Parcel &parcel) const override;
     static sptr<WorkInfo> Unmarshalling(Parcel &parcel);
+    /**
+     * @brief Dump.
+     *
+     * @param result The result.
+     */
     void Dump(std::string &result);
     std::string ParseToJsonStr();
+    /**
+     * @brief Parse from json.
+     *
+     * @param value The value.
+     * @return True if success,else false.
+     */
     bool ParseFromJson(const Json::Value value);
 
 private:

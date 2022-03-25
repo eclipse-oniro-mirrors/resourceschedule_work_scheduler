@@ -41,29 +41,129 @@ public:
     const size_t MAX_WORK_COUNT_PER_UID = 10;
     explicit WorkPolicyManager(const wptr<WorkSchedulerService>& wss);
     ~WorkPolicyManager() = default;
+    /**
+     * @brief Init.
+     *
+     * @return True if success,else false
+     */
     bool Init();
+    /**
+     * @brief Add listener.
+     *
+     * @return True if success,else false
+     */
     bool AddListener();
+    /**
+     * @brief Add policy filter.
+     *
+     * @param filter The filter.
+     */
     void AddPolicyFilter(std::shared_ptr<IPolicyFilter> filter);
+    /**
+     * @brief Add work.
+     *
+     * @param workStatus The work status.
+     * @param uid The uid.
+     * @return True if success,else false
+     */
     bool AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
+    /**
+     * @brief Remove work.
+     *
+     * @param workStatus The work status.
+     * @param uid The uid.
+     * @return True if success,else false
+     */
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
+    /**
+     * @brief Stop work.
+     *
+     * @param workStatus The work status.
+     * @param uid The uid.
+     * @param needCancel The need cancel.
+     * @param isTimeOut The isTimeOut.
+     * @return True if success,else false
+     */
     bool StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
+    /**
+     * @brief Stop and clear works.
+     *
+     * @param uid The uid.
+     * @return True if success,else false
+     */
     bool StopAndClearWorks(int32_t uid);
+    /**
+     * @brief The last work timeout.
+     *
+     * @param workId The workId.
+     * @param uid The uid.
+     * @return True if success,else false
+     */
     bool IsLastWorkTimeout(int32_t workId, int32_t uid);
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
+    /**
+     * @brief The OnConditionReady callback.
+     *
+     * @param workStatusVector The work status vector.
+     */
     void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
+    /**
+     * @brief The OnPolicyChanged callback.
+     *
+     * @param policyType The policy type.
+     * @param detectorVal The detectorVal.
+     */
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal);
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid);
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workInfo);
     std::list<std::shared_ptr<WorkStatus>> GetAllWorkStatus(int32_t &uid);
+    /**
+     * @brief The Dump.
+     *
+     * @param result The result.
+     */
     void Dump(std::string& result);
     int32_t currentRunningCount = 0;
+    /**
+     * @brief Check work to run.
+     */
     void CheckWorkToRun();
+    /**
+     * @brief Send retrigger.
+     *
+     * @param delayTime The delayTime.
+     */
     void SendRetrigger(int64_t delayTime);
+    /**
+     * @brief Add app remove listener.
+     *
+     * @param listener The listener.
+     */
     void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
+    /**
+     * @brief Add app data clear listener.
+     *
+     * @param listener The listener.
+     */
     void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
+    /**
+     * @brief Watchdog timeout.
+     *
+     * @param watchdogId The watchdogId.
+     */
     void WatchdogTimeOut(uint32_t watchdogId);
+    /**
+     * @brief Set memory by dump.
+     *
+     * @param memory The memory.
+     */
     void SetMemoryByDump(int32_t memory);
     int32_t GetDumpSetMemory();
+    /**
+     * @brief Set watchdog time.
+     *
+     * @param time The time.
+     */
     void SetWatchdogTime(int time);
     int GetWatchdogTime();
 

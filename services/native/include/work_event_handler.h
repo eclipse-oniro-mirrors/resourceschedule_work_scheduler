@@ -32,6 +32,11 @@ public:
     WorkEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner,
         const wptr<WorkSchedulerService>& service);
     ~WorkEventHandler() = default;
+    /**
+     * @brief Process event.
+     *
+     * @param event The event.
+     */
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;
 
 private:

@@ -31,20 +31,75 @@ struct CallbackPromiseInfo {
 class Common {
 public:
     static napi_value NapiGetNull(napi_env env);
+    /**
+     * @brief Get work info.
+     *
+     * @param env The env.
+     * @param objValue The obj value.
+     * @param workInfo The info of work.
+     * @return True if success,else false
+     */
     static bool GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
+    /**
+     * @brief Get int property.
+     *
+     * @param env The env.
+     * @param object The object.
+     * @param propertyName The name of property.
+     * @return int value.
+     */
     static int32_t GetIntProperty(napi_env env, napi_value object, const std::string &propertyName);
+    /**
+     * @brief Get bool property.
+     *
+     * @param env The env.
+     * @param object The object.
+     * @param propertyName The name of property.
+     * @return True if success,else false
+     */
     static bool GetBoolProperty(napi_env env, napi_value object, const std::string &propertyName);
     static int32_t GetBoolToIntProperty(napi_env env, napi_value object, const std::string &propertyName);
     static std::string GetStringProperty(napi_env env, napi_value object, const std::string &propertyName);
+    /**
+     * @brief Match value type.
+     *
+     * @param env The env.
+     * @param value The value.
+     * @param targetType The target type.
+     * @return True if success,else false
+     */
     static bool MatchValueType(napi_env env, napi_value value, napi_valuetype targetType);
     static napi_value JSParaError(const napi_env &env, const napi_ref &callback);
+    /**
+     * @brief Padding callback promise info.
+     *
+     * @param env The env
+     * @param callback The callback.
+     * @param info The info.
+     * @param promise The promise.
+     */
     static void PaddingCallbackPromiseInfo(
         const napi_env &env, const napi_ref &callback, CallbackPromiseInfo &info, napi_value &promise);
     static napi_value GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo);
     static napi_value GetCallbackErrorValue(napi_env env, int errCode);
+    /**
+     * @brief Set callback.
+     *
+     * @param env The env.
+     * @param callbackIn The callbackIn.
+     * @param errorCode The errorCode.
+     * @param result The result.
+     */
     static void SetCallback(const napi_env &env, const napi_ref &callbackIn, const int &errorCode,
         const napi_value &result);
     static napi_value SetPromise(const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result);
+    /**
+     * @brief Return callback promise.
+     *
+     * @param env The env.
+     * @param info The info.
+     * @param result The result.
+     */
     static void ReturnCallbackPromise(const napi_env &env, const CallbackPromiseInfo &info,
         const napi_value &result);
 

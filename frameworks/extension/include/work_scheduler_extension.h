@@ -32,21 +32,54 @@ public:
     WorkSchedulerExtension() = default;
     virtual ~WorkSchedulerExtension() = default;
 
+    /**
+     * @brief Create and init context.
+     *
+     * @param record The record info.
+     * @param application The application info.
+     * @param handler The handler.
+     * @param token The remote object token.
+     * @return context
+     */
     std::shared_ptr<WorkSchedulerExtensionContext> CreateAndInitContext(
         const std::shared_ptr<AppExecFwk::AbilityLocalRecord>& record,
         const std::shared_ptr<AppExecFwk::OHOSApplication>& application,
         std::shared_ptr<AppExecFwk::AbilityHandler>& handler,
         const sptr<IRemoteObject>& token) override;
 
+    /**
+     * @brief The Init.
+     *
+     * @param record The record.
+     * @param application The application.
+     * @param handler The handler.
+     * @param token The remmote object token.
+     */
     void Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord>& record,
         const std::shared_ptr<AppExecFwk::OHOSApplication>& application,
         std::shared_ptr<AppExecFwk::AbilityHandler>& handler,
         const sptr<IRemoteObject>& token) override;
 
+    /**
+     * @brief Create WorkSchedulerExtension.
+     *
+     * @param runtime The runtime.
+     * @return The WorkSchedulerExtension instance.
+     */
     static WorkSchedulerExtension* Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime);
 
+    /**
+     * @brief The OnWorkStart callback.
+     *
+     * @param workInfo The info of work.
+     */
     virtual void OnWorkStart(WorkInfo& workInfo);
 
+    /**
+     * @brief The OnWorkStop callback.
+     *
+     * @param workInfo The info of work.
+     */
     virtual void OnWorkStop(WorkInfo& workInfo);
 };
 }  // namespace WorkScheduler

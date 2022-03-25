@@ -25,7 +25,17 @@ namespace WorkScheduler {
 class IWorkScheduler : public IRemoteBroker {
 public:
     DECLARE_INTERFACE_DESCRIPTOR(u"OHOS.WorkScheduler.IWorkScheduler");
+    /**
+     * @brief The OnWorkStart callback.
+     *
+     * @param workInfo The info of work.
+     */
     virtual void OnWorkStart(WorkInfo& workInfo) = 0;
+    /**
+     * @brief The OnWorkStop callback.
+     *
+     * @param workInfo The info of work.
+     */
     virtual void OnWorkStop(WorkInfo& workInfo) = 0;
 };
 } // namespace WorkScheduler

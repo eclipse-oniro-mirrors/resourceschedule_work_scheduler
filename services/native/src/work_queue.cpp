@@ -27,8 +27,11 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
     shared_ptr<Condition> value = make_shared<Condition>();
     switch (type) {
         case WorkCondition::Type::NETWORK:
+        // fall-through
         case WorkCondition::Type::CHARGER:
+        // fall-through
         case WorkCondition::Type::BATTERY_STATUS:
+        // fall-through
         case WorkCondition::Type::STORAGE: {
             value->enumVal = conditionVal->intVal;
             break;
