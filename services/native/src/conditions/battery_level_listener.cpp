@@ -32,7 +32,7 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
         if (data.GetCode() == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY) {
-            int battCap = atoi(data.GetData().c_str());
+            int battCap = stoi(data.GetData());
             listener_.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL,
                 std::make_shared<DetectorValue>(battCap, 0, 0, std::string()));
         }

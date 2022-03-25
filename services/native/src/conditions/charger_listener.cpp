@@ -33,7 +33,7 @@ void ChargerEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED) {
         int code = data.GetCode();
         if (code == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE) {
-            int type = atoi(data.GetData().c_str());
+            int type = stoi(data.GetData());
             switch (type) {
                 case static_cast<int>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC):
                     WS_HILOGI("Condition changed: CHARGER_PLUGGED_AC");
@@ -60,7 +60,7 @@ void ChargerEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED) {
         int code = data.GetCode();
         if (code == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE) {
-            int type = atoi(data.GetData().c_str());
+            int type = stoi(data.GetData());
             switch (type) {
                 case static_cast<int>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE):
                 case static_cast<int>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_BUTT):
