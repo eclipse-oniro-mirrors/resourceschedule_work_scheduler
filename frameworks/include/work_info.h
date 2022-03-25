@@ -59,7 +59,7 @@ public:
     /**
      * @brief Request charger type.
      *
-     * @param isCharging The isCharging.
+     * @param isCharging Charging or not.
      * @param condition The condition.
      */
     void RequestChargerType(bool isCharging, WorkCondition::Charger condition);
