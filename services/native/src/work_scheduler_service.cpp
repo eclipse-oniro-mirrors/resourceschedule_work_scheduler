@@ -144,6 +144,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     Json::CharReaderBuilder readerBuilder;
     const unique_ptr<Json::CharReader> jsonReader(readerBuilder.newCharReader());
     bool res = jsonReader->parse(data.c_str(), data.c_str() + data.length(), &root, &errs);
+    fin.close();
     if (!res || !errs.empty()) {
         return workInfos;
     }

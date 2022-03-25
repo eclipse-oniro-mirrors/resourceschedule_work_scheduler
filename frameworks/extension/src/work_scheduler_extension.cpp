@@ -23,13 +23,13 @@ namespace WorkScheduler {
 WorkSchedulerExtension* WorkSchedulerExtension::Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime)
 {
     if (!runtime) {
-        return new WorkSchedulerExtension();
+        return (new (std::nothrow) WorkSchedulerExtension());
     }
     switch (runtime->GetLanguage()) {
         case AbilityRuntime::Runtime::Language::JS:
             return JsWorkSchedulerExtension::Create(runtime);
         default:
-            return new WorkSchedulerExtension();
+            return (new (std::nothrow) WorkSchedulerExtension());
     }
 }
 
