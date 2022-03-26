@@ -44,19 +44,19 @@ public:
     /**
      * @brief Push.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      */
     void Push(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Get work to run by priority.
      *
-     * @return Work status.
+     * @return status of work.
      */
     std::shared_ptr<WorkStatus> GetWorkToRunByPriority();
     /**
      * @brief Remove.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @return ERR_OK on success, others on failure.
      */
     bool Remove(std::shared_ptr<WorkStatus> workStatus);
@@ -83,14 +83,14 @@ public:
     /**
      * @brief Cancel work.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @return ERR_OK on success, others on failure.
      */
     bool CancelWork(std::shared_ptr<WorkStatus> workStatus);
     /**
-     * @brief Get the list off work.
+     * @brief Get the list of work.
      *
-     * @return work list.
+     * @return The list of work.
      */
     std::list<std::shared_ptr<WorkStatus>> GetWorkList();
     /**
@@ -100,7 +100,7 @@ public:
     /**
      * @brief Get the count of running.
      *
-     * @return Running count.
+     * @return The count of running.
      */
     int32_t GetRunningCount();
     /**

@@ -34,7 +34,7 @@ public:
     /**
      * @brief Set the id of workId.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      */
     void SetWorkId(int32_t workId);
     /**
@@ -110,19 +110,19 @@ public:
     /**
      * @brief Get the id of work.
      *
-     * @return workId.
+     * @return The id of work.
      */
     int32_t GetWorkId();
     /**
      * @brief Get the name of bundle.
      *
-     * @return bundle name.
+     * @return The name of bundle.
      */
     std::string GetBundleName();
     /**
      * @brief Get the name of ability.
      *
-     * @return ability name.
+     * @return The name of ability.
      */
     std::string GetAbilityName();
     /**
@@ -134,31 +134,31 @@ public:
     /**
      * @brief Get the type of network.
      *
-     * @return Network type.
+     * @return The type of network.
      */
     WorkCondition::Network GetNetworkType();
     /**
      * @brief Get the type of charger.
      *
-     * @return Charger type.
+     * @return The type of charger.
      */
     WorkCondition::Charger GetChargerType();
     /**
      * @brief Get the level of battery.
      *
-     * @return Battery level.
+     * @return The level of battery.
      */
     int32_t GetBatteryLevel();
     /**
      * @brief Get the status of battery.
      *
-     * @return Battery status.
+     * @return The status of battery.
      */
     WorkCondition::BatteryStatus GetBatteryStatus();
     /**
      * @brief Get the level of storage.
      *
-     * @return Storage level.
+     * @return The level of storage.
      */
     WorkCondition::Storage GetStorageLevel();
     /**
@@ -176,13 +176,13 @@ public:
     /**
      * @brief Get the count of cycle.
      *
-     * @return Cycle count.
+     * @return The count of cycle.
      */
     int32_t GetCycleCount();
     /**
      * @brief Get the map of condition.
      *
-     * @return Condition map.
+     * @return The map of condition.
      */
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**

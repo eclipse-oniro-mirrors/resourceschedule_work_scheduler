@@ -60,7 +60,7 @@ public:
     /**
      * @brief The last work timeout.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @return ERR_OK on success, others on failure.
      */
     bool IsLastWorkTimeout(int32_t workId) override;
@@ -77,7 +77,7 @@ public:
      *
      * @param uid The uid.
      * @param pid The pid.
-     * @return Work status.
+     * @return The status of work.
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
     /**

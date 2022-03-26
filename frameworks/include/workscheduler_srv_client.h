@@ -58,7 +58,7 @@ public:
     /**
      * @brief The last work timeout.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @param result The result.
      * @return ERR_OK on success, others on failure.
      */
@@ -66,7 +66,7 @@ public:
     /**
      * @brief Get the status of work.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @param workInfo The info of work.
      * @return ERR_OK on success, others on failure.
      */

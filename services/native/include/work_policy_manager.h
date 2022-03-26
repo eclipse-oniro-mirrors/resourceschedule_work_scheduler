@@ -62,7 +62,7 @@ public:
     /**
      * @brief Add work.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @param uid The uid.
      * @return True if success,else false
      */
@@ -70,7 +70,7 @@ public:
     /**
      * @brief Remove work.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @param uid The uid.
      * @return True if success,else false
      */
@@ -78,7 +78,7 @@ public:
     /**
      * @brief Stop work.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @param uid The uid.
      * @param needCancel The need cancel.
      * @param isTimeOut The isTimeOut.
@@ -95,7 +95,7 @@ public:
     /**
      * @brief The last work timeout.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @param uid The uid.
      * @return True if success,else false
      */
@@ -133,14 +133,14 @@ public:
      *
      * @param uid The uid.
      * @param workInfo The info of work.
-     * @return Work status.
+     * @return The status of work.
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workInfo);
     /**
      * @brief Get all status of work.
      *
      * @param uid The uid.
-     * @return All work status.
+     * @return All status of work.
      */
     std::list<std::shared_ptr<WorkStatus>> GetAllWorkStatus(int32_t &uid);
     /**
@@ -199,7 +199,7 @@ public:
     /**
      * @brief Get the time of watchdog.
      *
-     * @return Watchdog time.
+     * @return The time of watchdog.
      */
     int GetWatchdogTime();
 

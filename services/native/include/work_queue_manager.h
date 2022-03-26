@@ -51,21 +51,21 @@ public:
     /**
      * @brief Add work.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @return ERR_OK on success, others on failure.
      */
     bool AddWork(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Remove work.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @return ERR_OK on success, others on failure.
      */
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Cancel work.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      * @return ERR_OK on success, others on failure.
      */
     bool CancelWork(std::shared_ptr<WorkStatus> workStatus);
@@ -94,7 +94,7 @@ public:
     /**
      * @brief Get the cycle of time.
      *
-     * @return Time cycle.
+     * @return The cycle of time.
      */
     uint32_t GetTimeCycle();
     /**

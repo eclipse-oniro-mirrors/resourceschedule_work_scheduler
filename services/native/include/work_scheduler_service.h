@@ -81,7 +81,7 @@ public:
     /**
      * @brief The last work timeout.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @return True if success,else false.
      */
     bool IsLastWorkTimeout(int32_t workId) override;
@@ -97,7 +97,7 @@ public:
      * @brief Get the status of work.
      *
      * @param uid The uid.
-     * @param workId The workId.
+     * @param workId The id of work.
      * @return work policy manager.
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
@@ -149,7 +149,7 @@ public:
     /**
      * @brief Watchdog timeout.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      */
     void WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatus);
     /**
