@@ -105,7 +105,7 @@ public:
      *
      * @param workInfo The info of work.
      * @param uid The uid.
-     * @return uid queue map.
+     * @return The uid queue map.
      */
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
     /**
@@ -125,7 +125,7 @@ public:
      * @brief Obtain all works.
      *
      * @param uid The uid.
-     * @return all works.
+     * @return All works.
      */
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid);
     /**

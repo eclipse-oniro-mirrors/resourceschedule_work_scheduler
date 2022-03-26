@@ -34,7 +34,7 @@ public:
      * @brief Napi get null.
      *
      * @param env The env.
-     * @return result.
+     * @return The result.
      */
     static napi_value NapiGetNull(napi_env env);
     /**
@@ -52,7 +52,7 @@ public:
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
-     * @return int value.
+     * @return Int value.
      */
     static int32_t GetIntProperty(napi_env env, napi_value object, const std::string &propertyName);
     /**
@@ -141,7 +141,7 @@ public:
      * @param env The env.
      * @param info The info.
      * @param result The result.
-     * @return result.
+     * @return The result.
      */
     static napi_value SetPromise(const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result);
     /**

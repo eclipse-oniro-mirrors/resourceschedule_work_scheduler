@@ -103,7 +103,7 @@ public:
     /**
      * @brief Get uid.
      *
-     * @return uid.
+     * @return The uid.
      */
     int32_t GetUid();
 

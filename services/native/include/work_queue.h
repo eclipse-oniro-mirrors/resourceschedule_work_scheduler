@@ -50,7 +50,7 @@ public:
     /**
      * @brief Get work to run by priority.
      *
-     * @return status of work.
+     * @return The status of work.
      */
     std::shared_ptr<WorkStatus> GetWorkToRunByPriority();
     /**
@@ -71,13 +71,13 @@ public:
      * @brief Find.
      *
      * @param workId The id of work.
-     * @return id of work.
+     * @return The id of work.
      */
     std::shared_ptr<WorkStatus> Find(std::string workId);
     /**
      * @brief Get size.
      *
-     * @return work list size.
+     * @return The work list size.
      */
     size_t GetSize();
     /**

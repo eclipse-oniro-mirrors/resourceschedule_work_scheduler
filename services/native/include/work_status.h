@@ -110,7 +110,7 @@ public:
     /**
      * @brief Get status.
      *
-     * @return current status.
+     * @return The current status.
      */
     Status GetStatus();
     /**
