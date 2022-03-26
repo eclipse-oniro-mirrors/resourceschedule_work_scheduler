@@ -108,19 +108,19 @@ public:
     int32_t GetUid();
 
     /**
-     * @brief Get workId.
+     * @brief Get the id of work.
      *
      * @return workId.
      */
     int32_t GetWorkId();
     /**
-     * @brief Get bundle name.
+     * @brief Get the name of bundle.
      *
      * @return bundle name.
      */
     std::string GetBundleName();
     /**
-     * @brief Get ability name.
+     * @brief Get the name of ability.
      *
      * @return ability name.
      */
@@ -132,31 +132,31 @@ public:
      */
     bool IsPersisted();
     /**
-     * @brief Get network type.
+     * @brief Get the type of network.
      *
      * @return Network type.
      */
     WorkCondition::Network GetNetworkType();
     /**
-     * @brief Get charger type.
+     * @brief Get the type of charger.
      *
      * @return Charger type.
      */
     WorkCondition::Charger GetChargerType();
     /**
-     * @brief Get battery level.
+     * @brief Get the level of battery.
      *
      * @return Battery level.
      */
     int32_t GetBatteryLevel();
     /**
-     * @brief Get battery status.
+     * @brief Get the status of battery.
      *
      * @return Battery status.
      */
     WorkCondition::BatteryStatus GetBatteryStatus();
     /**
-     * @brief Get storage level.
+     * @brief Get the level of storage.
      *
      * @return Storage level.
      */
@@ -174,13 +174,13 @@ public:
      */
     uint32_t GetTimeInterval();
     /**
-     * @brief Get cycle count.
+     * @brief Get the count of cycle.
      *
      * @return Cycle count.
      */
     int32_t GetCycleCount();
     /**
-     * @brief Get condition map.
+     * @brief Get the map of condition.
      *
      * @return Condition map.
      */

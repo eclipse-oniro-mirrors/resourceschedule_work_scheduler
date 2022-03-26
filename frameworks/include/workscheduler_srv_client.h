@@ -64,7 +64,7 @@ public:
      */
     ErrCode IsLastWorkTimeout(int32_t workId, bool &result);
     /**
-     * @brief Get work status.
+     * @brief Get the status of work.
      *
      * @param workId The workId.
      * @param workInfo The info of work.

@@ -88,7 +88,7 @@ public:
      */
     bool CancelWork(std::shared_ptr<WorkStatus> workStatus);
     /**
-     * @brief Get work list.
+     * @brief Get the list off work.
      *
      * @return work list.
      */
@@ -98,7 +98,7 @@ public:
      */
     void RemoveUnReady();
     /**
-     * @brief Get running count.
+     * @brief Get the count of running.
      *
      * @return Running count.
      */

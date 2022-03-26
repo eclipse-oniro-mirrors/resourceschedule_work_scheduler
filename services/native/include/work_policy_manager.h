@@ -129,7 +129,7 @@ public:
      */
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid);
     /**
-     * @brief Get work status.
+     * @brief Get the status of work.
      *
      * @param uid The uid.
      * @param workInfo The info of work.
@@ -137,7 +137,7 @@ public:
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workInfo);
     /**
-     * @brief Get all work status.
+     * @brief Get all status of work.
      *
      * @param uid The uid.
      * @return All work status.
@@ -197,7 +197,7 @@ public:
      */
     void SetWatchdogTime(int time);
     /**
-     * @brief Get watchdog time.
+     * @brief Get the time of watchdog.
      *
      * @return Watchdog time.
      */

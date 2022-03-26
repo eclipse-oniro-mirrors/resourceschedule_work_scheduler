@@ -38,7 +38,7 @@ public:
      */
     static napi_value NapiGetNull(napi_env env);
     /**
-     * @brief Get work info.
+     * @brief Get the info of work.
      *
      * @param env The env.
      * @param objValue The obj value.
@@ -110,7 +110,7 @@ public:
     static void PaddingCallbackPromiseInfo(
         const napi_env &env, const napi_ref &callback, CallbackPromiseInfo &info, napi_value &promise);
     /**
-     * @brief Get napi work info.
+     * @brief Get the workInfo of napi.
      *
      * @param env The env.
      * @param workInfo The info of work.

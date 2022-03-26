@@ -94,7 +94,7 @@ public:
      */
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
     /**
-     * @brief Get work status.
+     * @brief Get the status of work.
      *
      * @param uid The uid.
      * @param workId The workId.

@@ -92,7 +92,7 @@ public:
      */
     void SetTimeCycle(uint32_t time);
     /**
-     * @brief Get time cycle.
+     * @brief Get the cycle of time.
      *
      * @return Time cycle.
      */
