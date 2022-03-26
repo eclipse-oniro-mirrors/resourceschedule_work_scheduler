@@ -29,12 +29,42 @@ class ShellCommand {
 public:
     ShellCommand(int argc, char *argv[], std::string name);
 
+    /**
+     * @brief The OnCommand callback.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     ErrCode OnCommand();
+    /**
+     * @brief Exec command.
+     *
+     * @return Result receiver.
+     */
     std::string ExecCommand();
+    /**
+     * @brief Get command error msg.
+     *
+     * @return Command error msg.
+     */
     std::string GetCommandErrorMsg() const;
 
+    /**
+     * @brief Create command map.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     virtual ErrCode CreateCommandMap() = 0;
+    /**
+     * @brief Create message map.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     virtual ErrCode CreateMessageMap() = 0;
+    /**
+     * @brief Init.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     virtual ErrCode init() = 0;
 
 protected:

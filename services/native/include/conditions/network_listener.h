@@ -27,9 +27,25 @@ class NetworkListener : public IConditionListener {
 public:
     explicit NetworkListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~NetworkListener();
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param conditionType The condition type.
+     * @param conditionVal The condition val.
+     */
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;
+    /**
+     * @brief Start.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     bool Start() override;
+    /**
+     * @brief Stop.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     bool Stop() override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
@@ -40,6 +56,11 @@ class NetworkEventSubscriber : public EventFwk::CommonEventSubscriber {
 public:
     NetworkEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo, NetworkListener &listener);
     ~NetworkEventSubscriber() override = default;
+    /**
+     * @brief The OnReceiveEvent callback.
+     *
+     * @param data The dump data.
+     */
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
 private:
     NetworkListener &listener_;

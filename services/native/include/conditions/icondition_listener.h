@@ -25,9 +25,25 @@ namespace WorkScheduler {
 class IConditionListener {
 public:
     virtual ~IConditionListener() = default;
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param conditionType The condition type.
+     * @param conditionVal The condition val.
+     */
     virtual void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) = 0;
+    /**
+     * @brief Start.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     virtual bool Start();
+    /**
+     * @brief Stop.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     virtual bool Stop();
 };
 } // namespace WorkScheduler

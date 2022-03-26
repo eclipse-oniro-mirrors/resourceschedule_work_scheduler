@@ -27,27 +27,110 @@ class WorkQueue {
 public:
     explicit WorkQueue() = default;
     ~WorkQueue() = default;
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param type The type.
+     * @param conditionVal The condition val.
+     */
     std::vector<std::shared_ptr<WorkStatus>> OnConditionChanged(
         WorkCondition::Type type, std::shared_ptr<DetectorValue> conditionVal);
+    /**
+     * @brief Push.
+     *
+     * @param workStatusVector The work status vector.
+     */
     void Push(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
+    /**
+     * @brief Push.
+     *
+     * @param workStatus The work status.
+     */
     void Push(std::shared_ptr<WorkStatus> workStatus);
+    /**
+     * @brief Get work to run by priority.
+     *
+     * @return Work status.
+     */
     std::shared_ptr<WorkStatus> GetWorkToRunByPriority();
+    /**
+     * @brief Remove.
+     *
+     * @param workStatus The work status.
+     * @return ERR_OK on success, others on failure.
+     */
     bool Remove(std::shared_ptr<WorkStatus> workStatus);
+    /**
+     * @brief Contains.
+     *
+     * @param workId The id of work.
+     * @return ERR_OK on success, others on failure.
+     */
     bool Contains(std::shared_ptr<std::string> workId);
+    /**
+     * @brief Find.
+     *
+     * @param workId The id of work.
+     * @return id of work.
+     */
     std::shared_ptr<WorkStatus> Find(std::string workId);
+    /**
+     * @brief Get size.
+     *
+     * @return work list size.
+     */
     size_t GetSize();
+    /**
+     * @brief Cancel work.
+     *
+     * @param workStatus The work status.
+     * @return ERR_OK on success, others on failure.
+     */
     bool CancelWork(std::shared_ptr<WorkStatus> workStatus);
+    /**
+     * @brief Get work list.
+     *
+     * @return work list.
+     */
     std::list<std::shared_ptr<WorkStatus>> GetWorkList();
+    /**
+     * @brief Remove unready.
+     */
     void RemoveUnReady();
+    /**
+     * @brief Get running count.
+     *
+     * @return Running count.
+     */
     int32_t GetRunningCount();
+    /**
+     * @brief Get work id str.
+     *
+     * @param result The result.
+     */
     void GetWorkIdStr(std::string& result);
+    /**
+     * @brief Dump.
+     *
+     * @param result The result.
+     */
     void Dump(std::string& result);
+    /**
+     * @brief Clear all.
+     */
     void ClearAll();
 private:
     std::list<std::shared_ptr<WorkStatus>> workList_;
 };
 class WorkComp {
 public:
+    /**
+     * @brief operator.
+     *
+     * @param w1 The w1.
+     * @param w2 The w2.
+     * @return ERR_OK on success, others on failure.
+     */
     bool operator () (const std::shared_ptr<WorkStatus> w1, const std::shared_ptr<WorkStatus> w2);
 };
 } // namespace WorkScheduler

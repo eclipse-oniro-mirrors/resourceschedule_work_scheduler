@@ -39,18 +39,40 @@ public:
     WorkSchedHilog() = delete;
     ~WorkSchedHilog() = delete;
 
+    /**
+     * @brief Judge level.
+     *
+     * @param level The level.
+     * @return ERR_OK on success, others on failure.
+     */
     static bool JudgeLevel(const WorkSchedLogLevel &level);
 
+    /**
+     * @brief Set log level.
+     *
+     * @param level The level.
+     */
     static void SetLogLevel(const WorkSchedLogLevel &level)
     {
         level_ = level;
     }
 
+    /**
+     * @brief Get log level.
+     *
+     * @return Level.
+     */
     static const WorkSchedLogLevel &GetLogLevel()
     {
         return level_;
     }
 
+    /**
+     * @brief Get brief file name.
+     *
+     * @param str The str.
+     * @return Brief file name.
+     */
     static std::string GetBriefFileName(const char *str);
 
 private:

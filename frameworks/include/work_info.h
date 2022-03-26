@@ -100,10 +100,30 @@ public:
      * @param uid The uid.
      */
     void RefreshUid(int32_t uid);
+    /**
+     * @brief Get uid.
+     *
+     * @return uid.
+     */
     int32_t GetUid();
 
+    /**
+     * @brief Get workId.
+     *
+     * @return workId.
+     */
     int32_t GetWorkId();
+    /**
+     * @brief Get bundle name.
+     *
+     * @return bundle name.
+     */
     std::string GetBundleName();
+    /**
+     * @brief Get ability name.
+     *
+     * @return ability name.
+     */
     std::string GetAbilityName();
     /**
      * @brief Check whether the work is persist.
@@ -111,10 +131,35 @@ public:
      * @return Persist or not.
      */
     bool IsPersisted();
+    /**
+     * @brief Get network type.
+     *
+     * @return Network type.
+     */
     WorkCondition::Network GetNetworkType();
+    /**
+     * @brief Get charger type.
+     *
+     * @return Charger type.
+     */
     WorkCondition::Charger GetChargerType();
+    /**
+     * @brief Get battery level.
+     *
+     * @return Battery level.
+     */
     int32_t GetBatteryLevel();
+    /**
+     * @brief Get battery status.
+     *
+     * @return Battery status.
+     */
     WorkCondition::BatteryStatus GetBatteryStatus();
+    /**
+     * @brief Get storage level.
+     *
+     * @return Storage level.
+     */
     WorkCondition::Storage GetStorageLevel();
     /**
      * @brief Check whether the work is repeat.
@@ -122,8 +167,23 @@ public:
      * @return Repeat or not.
      */
     bool IsRepeat();
+    /**
+     * @brief Get timeInterval.
+     *
+     * @return TimeInterval.
+     */
     uint32_t GetTimeInterval();
+    /**
+     * @brief Get cycle count.
+     *
+     * @return Cycle count.
+     */
     int32_t GetCycleCount();
+    /**
+     * @brief Get condition map.
+     *
+     * @return Condition map.
+     */
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**
      * @brief Marshalling.
@@ -132,6 +192,12 @@ public:
      * @return True if success,else false.
      */
     bool Marshalling(Parcel &parcel) const override;
+    /**
+     * @brief Unmarshalling.
+     *
+     * @param parcel The parcel.
+     * @return Read.
+     */
     static sptr<WorkInfo> Unmarshalling(Parcel &parcel);
     /**
      * @brief Dump.
@@ -139,6 +205,11 @@ public:
      * @param result The result.
      */
     void Dump(std::string &result);
+    /**
+     * @brief Parse to json str.
+     *
+     * @return Result.
+     */
     std::string ParseToJsonStr();
     /**
      * @brief Parse from json.

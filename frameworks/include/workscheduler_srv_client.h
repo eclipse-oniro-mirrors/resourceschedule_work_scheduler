@@ -60,7 +60,7 @@ public:
      *
      * @param workId The workId.
      * @param result The result.
-     * @return Returns ERR_OK on success, others on failure.
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode IsLastWorkTimeout(int32_t workId, bool &result);
     /**
@@ -68,14 +68,14 @@ public:
      *
      * @param workId The workId.
      * @param workInfo The info of work.
-     * @return Returns ERR_OK on success, others on failure.
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo);
     /**
      * @brief Obtain all works.
      *
      * @param workInfos The infos of work.
-     * @return Returns ERR_OK on success, others on failure.
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos);
     /**

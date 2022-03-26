@@ -26,9 +26,33 @@ public:
     WorkSchedUtils() = delete;
     ~WorkSchedUtils() = delete;
 
+    /**
+     * @brief Get current account id.
+     *
+     * @return Current account id.
+     */
     static int GetCurrentAccountId();
+    /**
+     * @brief The id active.
+     *
+     * @param id The id.
+     * @return ERR_OK on success, others on failure.
+     */
     static bool IsIdActive(int id);
+    /**
+     * @brief Get user id by uid.
+     *
+     * @param uid The uid.
+     * @return User id by uid.
+     */
     static int32_t GetUserIdByUid(int32_t uid);
+    /**
+     * @brief Convert full path.
+     *
+     * @param inOriPath The inOriPath.
+     * @param outRealPath The outRealPath.
+     * @return ERR_OK on success, others on failure.
+     */
     static bool ConvertFullPath(const std::string &inOriPath, std::string &outRealPath);
     static const int INVALID_DATA = -1;
 };

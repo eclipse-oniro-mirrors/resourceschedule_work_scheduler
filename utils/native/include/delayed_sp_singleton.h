@@ -33,7 +33,15 @@ private: \
 template<typename T>
 class DelayedSpSingleton : public NoCopyable {
 public:
+    /**
+     * @brief Get instance.
+     *
+     * @return Instance.
+     */
     static sptr<T> GetInstance();
+    /**
+     * @brief Destroy instance.
+     */
     static void DestroyInstance();
 
 private:

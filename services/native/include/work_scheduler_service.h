@@ -159,16 +159,31 @@ public:
      */
     bool Init();
 
+    /**
+     * @brief Get handler.
+     *
+     * @return Handler.
+     */
     std::shared_ptr<WorkEventHandler> GetHandler()
     {
         return handler_;
     }
 
+    /**
+     * @brief Get work queue manager.
+     *
+     * @return Work queue manager.
+     */
     std::shared_ptr<WorkQueueManager> GetWorkQueueManager()
     {
         return workQueueManager_;
     }
 
+    /**
+     * @brief Get work policy manager.
+     *
+     * @return work policy manager.
+     */
     std::shared_ptr<WorkPolicyManager> GetWorkPolicyManager()
     {
         return workPolicyManager_;

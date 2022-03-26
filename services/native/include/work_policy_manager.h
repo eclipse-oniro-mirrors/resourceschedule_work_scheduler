@@ -100,6 +100,13 @@ public:
      * @return True if success,else false
      */
     bool IsLastWorkTimeout(int32_t workId, int32_t uid);
+    /**
+     * @brief Find work status.
+     *
+     * @param workInfo The info of work.
+     * @param uid The uid.
+     * @return uid queue map.
+     */
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
     /**
      * @brief The OnConditionReady callback.
@@ -114,8 +121,27 @@ public:
      * @param detectorVal The detectorVal.
      */
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal);
+    /**
+     * @brief Obtain all works.
+     *
+     * @param uid The uid.
+     * @return all works.
+     */
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid);
+    /**
+     * @brief Get work status.
+     *
+     * @param uid The uid.
+     * @param workInfo The info of work.
+     * @return Work status.
+     */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workInfo);
+    /**
+     * @brief Get all work status.
+     *
+     * @param uid The uid.
+     * @return All work status.
+     */
     std::list<std::shared_ptr<WorkStatus>> GetAllWorkStatus(int32_t &uid);
     /**
      * @brief The Dump.
@@ -158,6 +184,11 @@ public:
      * @param memory The memory.
      */
     void SetMemoryByDump(int32_t memory);
+    /**
+     * @brief Get dump set memory.
+     *
+     * @return Dump set memory.
+     */
     int32_t GetDumpSetMemory();
     /**
      * @brief Set watchdog time.
@@ -165,6 +196,11 @@ public:
      * @param time The time.
      */
     void SetWatchdogTime(int time);
+    /**
+     * @brief Get watchdog time.
+     *
+     * @return Watchdog time.
+     */
     int GetWatchdogTime();
 
 private:

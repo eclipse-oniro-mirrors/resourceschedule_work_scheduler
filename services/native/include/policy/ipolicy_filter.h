@@ -22,6 +22,11 @@ namespace WorkScheduler {
 class IPolicyFilter {
 public:
     virtual ~IPolicyFilter() = default;
+    /**
+     * @brief Get policy max running.
+     *
+     * @return Res.
+     */
     virtual int32_t getPolicyMaxRunning();
     static const int32_t CANNOT_RUNNING_MORE = -1;
     static const int32_t MAX_RUNNING_COUNT = 3;

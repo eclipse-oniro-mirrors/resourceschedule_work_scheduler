@@ -25,10 +25,26 @@ namespace WorkScheduler {
 class WorkSchedulerConnection : public AAFwk::AbilityConnectionStub {
 public:
     explicit WorkSchedulerConnection(std::shared_ptr<WorkInfo> workInfo);
+    /**
+     * @brief Stop work.
+     */
     void StopWork();
+    /**
+     * @brief The OnAbilityConnectDone callback.
+     *
+     * @param element The element.
+     * @param remoteObject The remote object.
+     * @param resultCode The result code.
+     */
     void OnAbilityConnectDone(
         const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int resultCode) override;
 
+    /**
+     * @brief The OnAbilityDisconnectDone callback.
+     *
+     * @param element The element.
+     * @param resultCode The result code.
+     */
     void OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int resultCode) override;
 private:
     sptr<WorkSchedulerProxy> proxy_ = nullptr;

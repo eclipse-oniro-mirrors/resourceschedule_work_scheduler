@@ -28,8 +28,24 @@ public:
     explicit AppRemovedListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~AppRemovedListener();
 
+    /**
+     * @brief The OnPolicyChanged callback.
+     *
+     * @param policyType The policy type.
+     * @param detectorVal The detector val.
+     */
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal) override;
+    /**
+     * @brief Start.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     bool Start() override;
+    /**
+     * @brief Stop.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     bool Stop() override;
 private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
@@ -40,6 +56,11 @@ class AppRemovedSubscriber : public CommonEventSubscriber {
 public:
     AppRemovedSubscriber(const CommonEventSubscribeInfo &subscribeInfo, AppRemovedListener &listener);
     ~AppRemovedSubscriber() override = default;
+    /**
+     * @brief The OnReceiveEvent callback.
+     *
+     * @param data The data.
+     */
     void OnReceiveEvent(const CommonEventData &data) override;
 private:
     AppRemovedListener &listener_;

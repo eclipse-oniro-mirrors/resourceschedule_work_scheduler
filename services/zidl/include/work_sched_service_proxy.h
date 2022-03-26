@@ -30,13 +30,63 @@ public:
     ~WorkSchedServiceProxy() = default;
     DISALLOW_COPY_AND_MOVE(WorkSchedServiceProxy);
 
+    /**
+     * @brief Start work.
+     *
+     * @param workInfo The info of work.
+     * @return ERR_OK on success, others on failure.
+     */
     bool StartWork(WorkInfo& workInfo) override;
+    /**
+     * @brief Stop work.
+     *
+     * @param workInfo The info of work.
+     * @return ERR_OK on success, others on failure.
+     */
     bool StopWork(WorkInfo& workInfo) override;
+    /**
+     * @brief Stop and cancel work.
+     *
+     * @param workInfo The info of work.
+     * @return ERR_OK on success, others on failure.
+     */
     bool StopAndCancelWork(WorkInfo& workInfo) override;
+    /**
+     * @brief Stop and clear works.
+     *
+     * @return ERR_OK on success, others on failure.
+     */
     bool StopAndClearWorks() override;
+    /**
+     * @brief The last work timeout.
+     *
+     * @param workId The workId.
+     * @return ERR_OK on success, others on failure.
+     */
     bool IsLastWorkTimeout(int32_t workId) override;
+    /**
+     * @brief Obtain all works.
+     *
+     * @param uid The uid.
+     * @param pid The pid.
+     * @return Infos of work.
+     */
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
+    /**
+     * @brief Get work status.
+     *
+     * @param uid The uid.
+     * @param pid The pid.
+     * @return Work status.
+     */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
+    /**
+     * @brief Shell dump.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     * @return ERR_OK on success, others on failure.
+     */
     bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
 private:
     static inline BrokerDelegator<WorkSchedServiceProxy> delegator_;
