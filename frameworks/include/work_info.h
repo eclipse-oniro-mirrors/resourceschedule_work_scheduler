@@ -168,7 +168,7 @@ public:
      */
     bool IsRepeat();
     /**
-     * @brief Get time interval.
+     * @brief Get the time interval.
      *
      * @return The time interval.
      */
