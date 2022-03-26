@@ -33,14 +33,14 @@ public:
      * @brief Start work.
      *
      * @param workStatus The status of work.
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool StartWork(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Stop work.
      *
      * @param workStatus The status of work.
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool StopWork(std::shared_ptr<WorkStatus> workStatus);
 private:

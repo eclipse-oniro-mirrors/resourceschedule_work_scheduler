@@ -79,7 +79,7 @@ public:
      */
     bool StopAndClearWorks() override;
     /**
-     * @brief The last work timeout.
+     * @brief The last work time out.
      *
      * @param workId The id of work.
      * @return True if success,else false.
@@ -147,7 +147,7 @@ public:
      */
     void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     /**
-     * @brief Watchdog timeout.
+     * @brief Watchdog time out.
      *
      * @param workStatus The status of work.
      */

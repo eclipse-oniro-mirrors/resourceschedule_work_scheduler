@@ -40,13 +40,13 @@ public:
     /**
      * @brief Start.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool Start() override;
     /**
      * @brief Stop.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool Stop() override;
 private:
@@ -62,7 +62,7 @@ public:
     /**
      * @brief The OnReceiveEvent callback.
      *
-     * @param data The dump data.
+     * @param data The data.
      */
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
 private:

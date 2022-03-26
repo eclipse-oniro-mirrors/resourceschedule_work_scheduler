@@ -57,14 +57,14 @@ public:
      * @brief Remove.
      *
      * @param workStatus The status of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool Remove(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Contains.
      *
      * @param workId The id of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool Contains(std::shared_ptr<std::string> workId);
     /**
@@ -84,7 +84,7 @@ public:
      * @brief Cancel work.
      *
      * @param workStatus The status of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool CancelWork(std::shared_ptr<WorkStatus> workStatus);
     /**
@@ -129,7 +129,7 @@ public:
      *
      * @param w1 The w1.
      * @param w2 The w2.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool operator () (const std::shared_ptr<WorkStatus> w1, const std::shared_ptr<WorkStatus> w2);
 };

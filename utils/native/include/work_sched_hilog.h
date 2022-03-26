@@ -43,7 +43,7 @@ public:
      * @brief Judge level.
      *
      * @param level The level.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     static bool JudgeLevel(const WorkSchedLogLevel &level);
 

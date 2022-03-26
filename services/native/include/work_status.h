@@ -59,37 +59,37 @@ public:
     /**
      * @brief Judge state whether is ready.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool IsReady();
     /**
      * @brief Judge state whether is ready status.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool IsReadyStatus();
     /**
      * @brief Judge state whether is running.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool IsRunning();
     /**
      * @brief Judge state whether is removed.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool IsRemoved();
     /**
      * @brief Judge state whether is repeating.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool IsRepeating();
     /**
      * @brief Judge state whether is last work timeout.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool IsLastWorkTimeout();
     /**
@@ -126,7 +126,7 @@ public:
     /**
      * @brief Need remove.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool NeedRemove();
 

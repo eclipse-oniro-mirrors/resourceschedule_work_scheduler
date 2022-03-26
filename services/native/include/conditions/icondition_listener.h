@@ -36,13 +36,13 @@ public:
     /**
      * @brief Start.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     virtual bool Start();
     /**
      * @brief Stop.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     virtual bool Stop();
 };

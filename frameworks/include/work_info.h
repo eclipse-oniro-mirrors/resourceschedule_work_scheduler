@@ -84,14 +84,14 @@ public:
     /**
      * @brief Request repeat cycle.
      *
-     * @param timeInterval The timeInterval.
+     * @param timeInterval The time interval.
      * @param cycle The cycle.
      */
     void RequestRepeatCycle(uint32_t timeInterval, int32_t cycle);
     /**
      * @brief Request repeat cycle.
      *
-     * @param timeInterval The timeInterval.
+     * @param timeInterval The time interval.
      */
     void RequestRepeatCycle(uint32_t timeInterval);
     /**
@@ -168,9 +168,9 @@ public:
      */
     bool IsRepeat();
     /**
-     * @brief Get timeInterval.
+     * @brief Get time interval.
      *
-     * @return TimeInterval.
+     * @return The time interval.
      */
     uint32_t GetTimeInterval();
     /**

@@ -36,7 +36,7 @@ public:
      * @brief The id active.
      *
      * @param id The id.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     static bool IsIdActive(int id);
     /**
@@ -51,7 +51,7 @@ public:
      *
      * @param inOriPath The inOriPath.
      * @param outRealPath The outRealPath.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     static bool ConvertFullPath(const std::string &inOriPath, std::string &outRealPath);
     static const int INVALID_DATA = -1;

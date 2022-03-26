@@ -34,34 +34,34 @@ public:
      * @brief Start work.
      *
      * @param workInfo The info of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool StartWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool StopWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool StopAndCancelWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and clear works.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool StopAndClearWorks() override;
     /**
-     * @brief The last work timeout.
+     * @brief The last work time out.
      *
      * @param workId The id of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool IsLastWorkTimeout(int32_t workId) override;
     /**
@@ -85,7 +85,7 @@ public:
      *
      * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
 private:

@@ -44,13 +44,13 @@ public:
     /**
      * @brief Init.
      *
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool Init();
     /**
      * @brief Add listener.
      *
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool AddListener();
     /**
@@ -64,7 +64,7 @@ public:
      *
      * @param workStatus The status of work.
      * @param uid The uid.
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     /**
@@ -72,7 +72,7 @@ public:
      *
      * @param workStatus The status of work.
      * @param uid The uid.
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     /**
@@ -81,23 +81,23 @@ public:
      * @param workStatus The status of work.
      * @param uid The uid.
      * @param needCancel The need cancel.
-     * @param isTimeOut The isTimeOut.
-     * @return True if success,else false
+     * @param isTimeOut The is time out.
+     * @return True if success,else false.
      */
     bool StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
     /**
      * @brief Stop and clear works.
      *
      * @param uid The uid.
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool StopAndClearWorks(int32_t uid);
     /**
-     * @brief The last work timeout.
+     * @brief The last work time out.
      *
      * @param workId The id of work.
      * @param uid The uid.
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool IsLastWorkTimeout(int32_t workId, int32_t uid);
     /**
@@ -118,7 +118,7 @@ public:
      * @brief The OnPolicyChanged callback.
      *
      * @param policyType The policy type.
-     * @param detectorVal The detectorVal.
+     * @param detectorVal The detector val.
      */
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal);
     /**
@@ -157,7 +157,7 @@ public:
     /**
      * @brief Send retrigger.
      *
-     * @param delayTime The delayTime.
+     * @param delayTime The delay time.
      */
     void SendRetrigger(int64_t delayTime);
     /**
@@ -173,9 +173,9 @@ public:
      */
     void AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener);
     /**
-     * @brief Watchdog timeout.
+     * @brief Watchdog time out.
      *
-     * @param watchdogId The watchdogId.
+     * @param watchdogId The id of watchdog.
      */
     void WatchdogTimeOut(uint32_t watchdogId);
     /**

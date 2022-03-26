@@ -69,7 +69,7 @@ public:
      */
     int32_t StopAndClearWorksStub(MessageParcel& data);
     /**
-     * @brief The last work timeout stub.
+     * @brief The last work time out stub.
      *
      * @param data The data.
      * @return ERR_OK on success, E_IS_LAST_WORK_TIMEOUT_FALSE on failure.

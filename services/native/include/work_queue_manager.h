@@ -37,7 +37,7 @@ public:
     /**
      * @brief Init.
      *
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool Init();
     /**
@@ -45,28 +45,28 @@ public:
      *
      * @param type The type.
      * @param listener The listener.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool AddListener(WorkCondition::Type type, std::shared_ptr<IConditionListener> listener);
     /**
      * @brief Add work.
      *
      * @param workStatus The status of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool AddWork(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Remove work.
      *
      * @param workStatus The status of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Cancel work.
      *
      * @param workStatus The status of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool CancelWork(std::shared_ptr<WorkStatus> workStatus);
 
@@ -82,7 +82,7 @@ public:
      * @brief Stop and clear works.
      *
      * @param workList The list of work.
-     * @return ERR_OK on success, others on failure.
+     * @return True if success,else false.
      */
     bool StopAndClearWorks(std::list<std::shared_ptr<WorkStatus>> workList);
     /**

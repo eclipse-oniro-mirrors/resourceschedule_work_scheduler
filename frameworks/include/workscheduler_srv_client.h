@@ -56,7 +56,7 @@ public:
      */
     bool StopAndClearWorks();
     /**
-     * @brief The last work timeout.
+     * @brief The last work time out.
      *
      * @param workId The id of work.
      * @param result The result.
