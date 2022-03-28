@@ -32,7 +32,7 @@ public:
      *
      * @param watchdogId The id of watchdog.
      * @param interval The interval.
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     bool AddWatchdog(const uint32_t watchdogId, int32_t interval);
     /**

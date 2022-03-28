@@ -29,9 +29,25 @@ class TimerListener : public IConditionListener {
 public:
     explicit TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~TimerListener() = default;
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param conditionType The condition type.
+     * @param conditionVal The condition val.
+     */
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;
+    /**
+     * @brief Start.
+     *
+     * @return True if success,else false.
+     */
     bool Start() override;
+    /**
+     * @brief Stop.
+     *
+     * @return True if success,else false.
+     */
     bool Stop() override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;

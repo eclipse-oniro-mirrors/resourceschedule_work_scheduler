@@ -34,7 +34,7 @@ public:
     /**
      * @brief Set the id of workId.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      */
     void SetWorkId(int32_t workId);
     /**
@@ -84,14 +84,14 @@ public:
     /**
      * @brief Request repeat cycle.
      *
-     * @param timeInterval The timeInterval.
+     * @param timeInterval The time interval.
      * @param cycle The cycle.
      */
     void RequestRepeatCycle(uint32_t timeInterval, int32_t cycle);
     /**
      * @brief Request repeat cycle.
      *
-     * @param timeInterval The timeInterval.
+     * @param timeInterval The time interval.
      */
     void RequestRepeatCycle(uint32_t timeInterval);
     /**
@@ -100,10 +100,30 @@ public:
      * @param uid The uid.
      */
     void RefreshUid(int32_t uid);
+    /**
+     * @brief Get uid.
+     *
+     * @return The uid.
+     */
     int32_t GetUid();
 
+    /**
+     * @brief Get the id of work.
+     *
+     * @return The id of work.
+     */
     int32_t GetWorkId();
+    /**
+     * @brief Get the name of bundle.
+     *
+     * @return The name of bundle.
+     */
     std::string GetBundleName();
+    /**
+     * @brief Get the name of ability.
+     *
+     * @return The name of ability.
+     */
     std::string GetAbilityName();
     /**
      * @brief Check whether the work is persist.
@@ -111,10 +131,35 @@ public:
      * @return Persist or not.
      */
     bool IsPersisted();
+    /**
+     * @brief Get the type of network.
+     *
+     * @return The type of network.
+     */
     WorkCondition::Network GetNetworkType();
+    /**
+     * @brief Get the type of charger.
+     *
+     * @return The type of charger.
+     */
     WorkCondition::Charger GetChargerType();
+    /**
+     * @brief Get the level of battery.
+     *
+     * @return The level of battery.
+     */
     int32_t GetBatteryLevel();
+    /**
+     * @brief Get the status of battery.
+     *
+     * @return The status of battery.
+     */
     WorkCondition::BatteryStatus GetBatteryStatus();
+    /**
+     * @brief Get the level of storage.
+     *
+     * @return The level of storage.
+     */
     WorkCondition::Storage GetStorageLevel();
     /**
      * @brief Check whether the work is repeat.
@@ -122,8 +167,23 @@ public:
      * @return Repeat or not.
      */
     bool IsRepeat();
+    /**
+     * @brief Get the time interval.
+     *
+     * @return The time interval.
+     */
     uint32_t GetTimeInterval();
+    /**
+     * @brief Get the count of cycle.
+     *
+     * @return The count of cycle.
+     */
     int32_t GetCycleCount();
+    /**
+     * @brief Get the map of condition.
+     *
+     * @return The map of condition.
+     */
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**
      * @brief Marshalling.
@@ -132,6 +192,12 @@ public:
      * @return True if success,else false.
      */
     bool Marshalling(Parcel &parcel) const override;
+    /**
+     * @brief Unmarshalling.
+     *
+     * @param parcel The parcel.
+     * @return Read.
+     */
     static sptr<WorkInfo> Unmarshalling(Parcel &parcel);
     /**
      * @brief Dump.
@@ -139,6 +205,11 @@ public:
      * @param result The result.
      */
     void Dump(std::string &result);
+    /**
+     * @brief Parse to json str.
+     *
+     * @return Result.
+     */
     std::string ParseToJsonStr();
     /**
      * @brief Parse from json.

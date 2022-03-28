@@ -68,7 +68,7 @@ public:
     /**
      * @brief Check whether last work executed time out.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @return True if the work executed time out, else false.
      */
     virtual bool IsLastWorkTimeout(int32_t workId) = 0;
@@ -83,14 +83,14 @@ public:
     /**
      * @brief Check whether last work executed time out.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @return True if the work executed time out, else false.
      */
     virtual std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) = 0;
     /**
      * @brief Shell dump.
      *
-     * @param workInfo The dump option.
+     * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
      * @return True if success,else false
      */

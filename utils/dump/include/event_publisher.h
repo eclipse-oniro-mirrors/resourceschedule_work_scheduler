@@ -25,11 +25,47 @@ class EventPublisher {
 public:
     explicit EventPublisher() = default;
     ~EventPublisher() = default;
+    /**
+     * @brief Publish event.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     */
     void PublishEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    /**
+     * @brief Publish network event.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     */
     void PublishNetworkEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    /**
+     * @brief Publish charging event.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     */
     void PublishChargingEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    /**
+     * @brief Publish storage event.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     */
     void PublishStorageEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    /**
+     * @brief Publishbattery status event.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     */
     void PublishbatteryStatusEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    /**
+     * @brief Publishbattery level event.
+     *
+     * @param dumpOption The dump option.
+     * @param dumpInfo The dump info.
+     */
     void PublishbatteryLevelEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
 };
 } // namespace WorkScheduler

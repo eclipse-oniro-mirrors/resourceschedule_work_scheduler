@@ -79,9 +79,9 @@ public:
      */
     bool StopAndClearWorks() override;
     /**
-     * @brief The last work timeout.
+     * @brief The last work time out.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @return True if success,else false.
      */
     bool IsLastWorkTimeout(int32_t workId) override;
@@ -94,10 +94,10 @@ public:
      */
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
     /**
-     * @brief Get work status.
+     * @brief Get the status of work.
      *
      * @param uid The uid.
-     * @param workId The workId.
+     * @param workId The id of work.
      * @return work policy manager.
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
@@ -147,9 +147,9 @@ public:
      */
     void OnConditionReady(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     /**
-     * @brief Watchdog timeout.
+     * @brief Watchdog time out.
      *
-     * @param workStatus The work status.
+     * @param workStatus The status of work.
      */
     void WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatus);
     /**
@@ -159,16 +159,31 @@ public:
      */
     bool Init();
 
+    /**
+     * @brief Get handler.
+     *
+     * @return Handler.
+     */
     std::shared_ptr<WorkEventHandler> GetHandler()
     {
         return handler_;
     }
 
+    /**
+     * @brief Get work queue manager.
+     *
+     * @return Work queue manager.
+     */
     std::shared_ptr<WorkQueueManager> GetWorkQueueManager()
     {
         return workQueueManager_;
     }
 
+    /**
+     * @brief Get work policy manager.
+     *
+     * @return work policy manager.
+     */
     std::shared_ptr<WorkPolicyManager> GetWorkPolicyManager()
     {
         return workPolicyManager_;

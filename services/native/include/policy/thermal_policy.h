@@ -27,7 +27,7 @@ public:
     /**
      * @brief Get policy max running.
      *
-     * @return res.
+     * @return Res.
      */
     int32_t getPolicyMaxRunning() override;
 private:

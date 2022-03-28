@@ -61,7 +61,7 @@ public:
      * @brief The OnConnect callback.
      *
      * @param want The want.
-     * @return remote object.
+     * @return Remote object.
      */
     sptr<IRemoteObject> OnConnect(const AAFwk::Want &want) override;
 

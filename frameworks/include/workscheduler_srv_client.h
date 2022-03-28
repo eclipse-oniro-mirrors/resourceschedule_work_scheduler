@@ -56,26 +56,26 @@ public:
      */
     bool StopAndClearWorks();
     /**
-     * @brief The last work timeout.
+     * @brief The last work time out.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @param result The result.
-     * @return Returns ERR_OK on success, others on failure.
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode IsLastWorkTimeout(int32_t workId, bool &result);
     /**
-     * @brief Get work status.
+     * @brief Get the status of work.
      *
-     * @param workId The workId.
+     * @param workId The id of work.
      * @param workInfo The info of work.
-     * @return Returns ERR_OK on success, others on failure.
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo);
     /**
      * @brief Obtain all works.
      *
      * @param workInfos The infos of work.
-     * @return Returns ERR_OK on success, others on failure.
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos);
     /**

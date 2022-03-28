@@ -39,7 +39,7 @@ public:
      * @param application The application info.
      * @param handler The handler.
      * @param token The remote object token.
-     * @return context
+     * @return The context
      */
     std::shared_ptr<WorkSchedulerExtensionContext> CreateAndInitContext(
         const std::shared_ptr<AppExecFwk::AbilityLocalRecord>& record,

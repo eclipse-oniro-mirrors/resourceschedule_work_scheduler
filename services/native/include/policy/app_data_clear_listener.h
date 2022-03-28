@@ -28,8 +28,24 @@ public:
     explicit AppDataClearListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~AppDataClearListener();
 
+    /**
+     * @brief The OnPolicyChanged callback.
+     *
+     * @param policyType The policy type.
+     * @param detectorVal The detector val.
+     */
     void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal) override;
+    /**
+     * @brief Start.
+     *
+     * @return True if success,else false.
+     */
     bool Start() override;
+    /**
+     * @brief Stop.
+     *
+     * @return True if success,else false.
+     */
     bool Stop() override;
 private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
@@ -40,6 +56,11 @@ class AppDataClearSubscriber : public CommonEventSubscriber {
 public:
     AppDataClearSubscriber(const CommonEventSubscribeInfo &subscribeInfo, AppDataClearListener &listener);
     ~AppDataClearSubscriber() override = default;
+    /**
+     * @brief The OnReceiveEvent callback.
+     *
+     * @param data The data.
+     */
     void OnReceiveEvent(const CommonEventData &data) override;
 private:
     AppDataClearListener &listener_;

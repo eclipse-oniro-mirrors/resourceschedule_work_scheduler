@@ -29,19 +29,19 @@ public:
      * @brief The OnPolicyChanged callback.
      *
      * @param policyType The policy type.
-     * @param detectorVal The detectorVal.
+     * @param detectorVal The detector val.
      */
     virtual void OnPolicyChanged(PolicyType policyType, std::shared_ptr<DetectorValue> detectorVal) = 0;
     /**
      * @brief Start.
      *
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     virtual bool Start();
     /**
      * @brief Stop.
      *
-     * @return True if success,else false
+     * @return True if success,else false.
      */
     virtual bool Stop();
 };

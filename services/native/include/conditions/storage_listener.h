@@ -29,6 +29,11 @@ class StorageEventSubscriber : public EventFwk::CommonEventSubscriber {
 public:
     StorageEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo, StorageListener &listener);
     ~StorageEventSubscriber() override = default;
+    /**
+     * @brief The OnReceiveEvent callback.
+     *
+     * @param data The data.
+     */
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
 private:
     StorageListener &listener_;
@@ -38,9 +43,25 @@ public:
     explicit StorageListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~StorageListener();
 
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param conditionType The condition type.
+     * @param conditionVal The condition val.
+     */
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;
+    /**
+     * @brief Start.
+     *
+     * @return True if success,else false.
+     */
     bool Start() override;
+    /**
+     * @brief Stop.
+     *
+     * @return True if success,else false.
+     */
     bool Stop() override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;

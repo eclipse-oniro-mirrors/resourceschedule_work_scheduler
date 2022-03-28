@@ -28,15 +28,66 @@ class WorkSchedServiceStub : public IRemoteStub<IWorkSchedService> {
 public:
     WorkSchedServiceStub() = default;
     virtual ~WorkSchedServiceStub() = default;
+    /**
+     * @brief The OnRemoteRequest callback.
+     *
+     * @param code The code.
+     * @param data The data.
+     * @param reply The reply.
+     * @param option The option.
+     * @return ERR_OK on success, others on failure.
+     */
     int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
     DISALLOW_COPY_AND_MOVE(WorkSchedServiceStub);
 
+    /**
+     * @brief Start work stub.
+     *
+     * @param data The data.
+     * @return ERR_OK on success, E_STOP_WORK_FAILED on failure.
+     */
     int32_t StartWorkStub(MessageParcel& data);
+    /**
+     * @brief Stop work stub.
+     *
+     * @param data The data.
+     * @return ERR_OK on success, E_STOP_WORK_FAILED on failure.
+     */
     int32_t StopWorkStub(MessageParcel& data);
+    /**
+     * @brief Stop and cancel work stub.
+     *
+     * @param data The data.
+     * @return ERR_OK on success, E_STOP_AND_CANCEL_WORK_FAILED on failure.
+     */
     int32_t StopAndCancelWorkStub(MessageParcel& data);
+    /**
+     * @brief Stop and clear works stub.
+     *
+     * @param data The data.
+     * @return ERR_OK on success, E_STOP_AND_CLEAR_WORKS_FAILED on failure.
+     */
     int32_t StopAndClearWorksStub(MessageParcel& data);
+    /**
+     * @brief The last work time out stub.
+     *
+     * @param data The data.
+     * @return ERR_OK on success, E_IS_LAST_WORK_TIMEOUT_FALSE on failure.
+     */
     int32_t IsLastWorkTimeoutStub(MessageParcel& data);
+    /**
+     * @brief Obtain all works stub.
+     *
+     * @param data The data.
+     * @return Infos of work.
+     */
     std::list<std::shared_ptr<WorkInfo>> ObtainAllWorksStub(MessageParcel& data);
+    /**
+     * @brief Get work status stub.
+     *
+     * @param data The data.
+     * @return Work status stub.
+     */
     std::shared_ptr<WorkInfo> GetWorkStatusStub(MessageParcel& data);
 private:
     ErrCode ShellDumpStub(MessageParcel& data, MessageParcel& reply);

@@ -29,9 +29,25 @@ public:
     explicit ChargerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~ChargerListener();
 
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param conditionType The condition type.
+     * @param conditionVal The condition val.
+     */
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;
+    /**
+     * @brief Start.
+     *
+     * @return True if success,else false.
+     */
     bool Start() override;
+    /**
+     * @brief Stop.
+     *
+     * @return True if success,else false.
+     */
     bool Stop() override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
@@ -43,6 +59,11 @@ public:
     ChargerEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
         ChargerListener &listener);
     ~ChargerEventSubscriber() override = default;
+    /**
+     * @brief The OnReceiveEvent callback.
+     *
+     * @param data The data.
+     */
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
 private:
     ChargerListener &listener_;

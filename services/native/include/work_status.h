@@ -37,6 +37,13 @@ public:
     WorkStatus(WorkInfo &workInfo, int32_t uid);
     ~WorkStatus();
 
+    /**
+     * @brief Make work id.
+     *
+     * @param workId The id of work.
+     * @param uid The uid.
+     * @return Workid and uid.
+     */
     static std::string MakeWorkId(int32_t workId, int32_t uid);
 
     std::string workId_;
@@ -49,18 +56,78 @@ public:
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
     std::shared_ptr<WorkInfo> workInfo_;
 
+    /**
+     * @brief Judge state whether is ready.
+     *
+     * @return True if success,else false.
+     */
     bool IsReady();
+    /**
+     * @brief Judge state whether is ready status.
+     *
+     * @return True if success,else false.
+     */
     bool IsReadyStatus();
+    /**
+     * @brief Judge state whether is running.
+     *
+     * @return True if success,else false.
+     */
     bool IsRunning();
+    /**
+     * @brief Judge state whether is removed.
+     *
+     * @return True if success,else false.
+     */
     bool IsRemoved();
+    /**
+     * @brief Judge state whether is repeating.
+     *
+     * @return True if success,else false.
+     */
     bool IsRepeating();
+    /**
+     * @brief Judge state whether is last work timeout.
+     *
+     * @return True if success,else false.
+     */
     bool IsLastWorkTimeout();
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param type The type.
+     * @param value The value.
+     */
     void OnConditionChanged(WorkCondition::Type &type, std::shared_ptr<Condition> value);
+    /**
+     * @brief Mark round.
+     */
     void MarkRound();
+    /**
+     * @brief Mark status.
+     */
     void MarkStatus(Status status);
+    /**
+     * @brief Get status.
+     *
+     * @return The current status.
+     */
     Status GetStatus();
+    /**
+     * @brief Dump.
+     *
+     * @param result The result.
+     */
     void Dump(std::string& result);
+    /**
+     * @brief Update timer if need.
+     */
     void UpdateTimerIfNeed();
+    /**
+     * @brief Need remove.
+     *
+     * @return True if success,else false.
+     */
     bool NeedRemove();
 
     bool lastTimeout_ {false};

@@ -34,17 +34,74 @@ class WorkQueueManager : std::enable_shared_from_this<WorkQueueManager> {
 public:
     explicit WorkQueueManager(const wptr<WorkSchedulerService>& wss);
     ~WorkQueueManager() = default;
+    /**
+     * @brief Init.
+     *
+     * @return True if success,else false.
+     */
     bool Init();
+    /**
+     * @brief Add listener.
+     *
+     * @param type The type.
+     * @param listener The listener.
+     * @return True if success,else false.
+     */
     bool AddListener(WorkCondition::Type type, std::shared_ptr<IConditionListener> listener);
+    /**
+     * @brief Add work.
+     *
+     * @param workStatus The status of work.
+     * @return True if success,else false.
+     */
     bool AddWork(std::shared_ptr<WorkStatus> workStatus);
+    /**
+     * @brief Remove work.
+     *
+     * @param workStatus The status of work.
+     * @return True if success,else false.
+     */
     bool RemoveWork(std::shared_ptr<WorkStatus> workStatus);
+    /**
+     * @brief Cancel work.
+     *
+     * @param workStatus The status of work.
+     * @return True if success,else false.
+     */
     bool CancelWork(std::shared_ptr<WorkStatus> workStatus);
 
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param conditionType The condition type.
+     * @param conditionVal The condition val.
+     */
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
+    /**
+     * @brief Stop and clear works.
+     *
+     * @param workList The list of work.
+     * @return True if success,else false.
+     */
     bool StopAndClearWorks(std::list<std::shared_ptr<WorkStatus>> workList);
+    /**
+     * @brief Set time cycle.
+     *
+     * @param time The time.
+     */
     void SetTimeCycle(uint32_t time);
+    /**
+     * @brief Get the cycle of time.
+     *
+     * @return The cycle of time.
+     */
     uint32_t GetTimeCycle();
+    /**
+     * @brief Dump.
+     *
+     * @param result The result.
+     */
     void Dump(std::string& result);
 
 private:

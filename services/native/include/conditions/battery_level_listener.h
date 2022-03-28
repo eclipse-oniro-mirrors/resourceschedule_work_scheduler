@@ -30,9 +30,25 @@ public:
     explicit BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager);
     ~BatteryLevelListener();
 
+    /**
+     * @brief The OnConditionChanged callback.
+     *
+     * @param conditionType The condition type.
+     * @param conditionVal The condition val.
+     */
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override;
+    /**
+     * @brief Start.
+     *
+     * @return True if success,else false.
+     */
     bool Start() override;
+    /**
+     * @brief Stop.
+     *
+     * @return True if success,else false.
+     */
     bool Stop() override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
@@ -44,6 +60,11 @@ public:
     BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
         BatteryLevelListener &listener);
     ~BatteryLevelEventSubscriber() override = default;
+    /**
+     * @brief The OnReceiveEvent callback.
+     *
+     * @param data The data.
+     */
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
 private:
     BatteryLevelListener &listener_;

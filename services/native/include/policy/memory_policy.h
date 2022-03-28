@@ -26,6 +26,11 @@ class MemoryPolicy : public IPolicyFilter {
 public:
     explicit MemoryPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~MemoryPolicy();
+    /**
+     * @brief Get policy max running.
+     *
+     * @return Res.
+     */
     int32_t getPolicyMaxRunning() override;
 
     const int32_t INVALID_MEM = -1;

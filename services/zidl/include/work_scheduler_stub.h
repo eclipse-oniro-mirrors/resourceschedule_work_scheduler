@@ -29,6 +29,15 @@ public:
 
     virtual ~WorkSchedulerStub() {}
 
+    /**
+     * @brief The OnRemoteRequest callback.
+     *
+     * @param code The code.
+     * @param data The data.
+     * @param reply The reply.
+     * @param option The option.
+     * @return ERR_OK on success, others on failure.
+     */
     int OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply, MessageOption& option) override;
 private:
     static constexpr int COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;
