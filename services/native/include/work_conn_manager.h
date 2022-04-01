@@ -48,6 +48,7 @@ private:
     void AddConnInfo(std::string &workId, sptr<WorkSchedulerConnection> &connection);
     sptr<WorkSchedulerConnection> GetConnInfo(std::string &workId);
     bool DisConnect(sptr<WorkSchedulerConnection> connect);
+    void WriteStartWorkEvent(std::shared_ptr<WorkStatus> workStatus);
     std::mutex connMapMutex_;
     std::map<std::string, sptr<WorkSchedulerConnection>> connMap_;
     std::map<std::string, int32_t> eventIdMap_;

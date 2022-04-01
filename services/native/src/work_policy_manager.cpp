@@ -16,6 +16,7 @@
 #include "work_policy_manager.h"
 
 #include <string>
+#include <hisysevent.h>
 #include <if_system_ability_manager.h>
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
@@ -29,6 +30,7 @@
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
+using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -103,6 +105,44 @@ bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
         uidQueueMap_.emplace(uid, make_shared<WorkQueue>());
         uidQueueMap_.at(uid)->Push(workStatus);
     }
+
+    // Notify work add event to battery statistics
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    string conditions = "";
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::NETWORK) > 0) {
+        conditions.append("NETWORK-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::CHARGER) > 0) {
+        conditions.append("CHARGER-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::BATTERY_STATUS) > 0) {
+        conditions.append("BATTERY_STATUS-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::BATTERY_LEVEL) > 0) {
+        conditions.append("BATTERY_LEVEL-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::STORAGE) > 0) {
+        conditions.append("STORAGE-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
+        conditions.append("TIMER-");
+    }
+    conditions.pop_back();
+
+    string type = "Repeat";
+    if (!workStatus->workInfo_->IsRepeat()) {
+        type = "Not Repeat";
+    }
+
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_ADD", HiSysEvent::EventType::STATISTIC, "uid", uid,
+        "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_, "trigger", conditions, "type",
+        type, "interval", workStatus->workInfo_->GetTimeInterval());
+
     WS_HILOGI("push workStatus ID: %{public}s to uidQueue(%{public}d)", workStatus->workId_.c_str(), uid);
     return true;
 }
@@ -119,6 +159,12 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
             uidQueueMap_.erase(uid);
         }
     }
+
+    // Notify work remove event to battery statistics
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_REMOVE", HiSysEvent::EventType::STATISTIC, "uid", uid,
+        "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_);
+
     return ret;
 }
 

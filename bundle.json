@@ -57,6 +57,9 @@
         "test": [
             "//foundation/resourceschedule/work_scheduler/frameworks/test/unittest:workinfotest",
             "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest/work_scheduler_jsunittest:js_unittest"
+        ],
+        "hisysevent_config": [
+          "//foundation/resourceschedule/work_scheduler/hisysevent.yaml"
         ]
       }
     }

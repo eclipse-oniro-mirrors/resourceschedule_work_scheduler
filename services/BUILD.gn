@@ -67,6 +67,7 @@ ohos_shared_library("workschedservice") {
     "bundle_framework:appexecfwk_core",
     "ces_standard:cesfwk_innerkits",
     "eventhandler:libeventhandler",
+    "hisysevent_native:libhisysevent",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
     "netmanager_base:net_conn_manager_if",
