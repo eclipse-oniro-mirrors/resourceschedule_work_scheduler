@@ -19,6 +19,9 @@
 #include "common_event_support.h"
 #include "matching_skills.h"
 #include "want.h"
+#include <string>
+#include <iostream>
+using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -32,9 +35,12 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
         if (data.GetCode() == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY) {
-            int battCap = stoi(data.GetData());
+            std::string KEY_CAPACITY = ToString(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
+            int defaultCapacity = -1;
+            auto capacity = data.GetWant().GetIntParam(KEY_CAPACITY, defaultCapacity);
+            WS_HILOGI("OnReceiveEvent  capacity %{public}d",capacity);
             listener_.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL,
-                std::make_shared<DetectorValue>(battCap, 0, 0, std::string()));
+                std::make_shared<DetectorValue>(capacity, 0, 0, std::string()));
         }
     } else {
         WS_HILOGI("OnReceiveEvent action is invalid");
