@@ -14,12 +14,13 @@
  */
 #include "conditions/battery_level_listener.h"
 
+#include <string>
+
 #include "battery_info.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "matching_skills.h"
 #include "want.h"
-#include <string>
 
 namespace OHOS {
 namespace WorkScheduler {
