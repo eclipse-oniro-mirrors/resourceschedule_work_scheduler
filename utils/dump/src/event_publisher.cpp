@@ -36,7 +36,6 @@ namespace {
     static const std::string EV_CHARGING_TYPE_WIRELESS = "wireless";
     static const std::string EV_CHARGING_TYPE_NONE = "none";
     static const std::string BATTERY_STATUS = "batteryStatus";
-    static const std::string BATTERY_LEVEL = "batteryLevel";
     static const std::string STORAGE = "storage";
     static const std::string EV_STORAGE_LOW = "low";
     static const std::string EV_STORAGE_OKAY = "ok";
@@ -54,8 +53,7 @@ namespace {
         "  storage low            publish COMMON_EVENT_DEVICE_STORAGE_LOW event\n"
         "  storage ok             publish COMMON_EVENT_DEVICE_STORAGE_OKAY event\n"
         "  batteryStatus low      publish COMMON_EVENT_BATTERY_LOW\n"
-        "  batteryStatus ok       publish COMMON_EVENT_BATTERY_OKAY\n"
-        "  batteryLevel (number)  publish COMMON_EVENT_BATTERY_CHANGED\n";
+        "  batteryStatus ok       publish COMMON_EVENT_BATTERY_OKAY\n";
 }
 
 void EventPublisher::PublishEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
@@ -68,8 +66,6 @@ void EventPublisher::PublishEvent(const std::vector<std::string> &dumpOption, st
         PublishStorageEvent(dumpOption, dumpInfo);
     } else if (dumpOption[TYPE_PARAM] == BATTERY_STATUS) {
         PublishbatteryStatusEvent(dumpOption, dumpInfo);
-    } else if (dumpOption[TYPE_PARAM] == BATTERY_LEVEL) {
-        PublishbatteryLevelEvent(dumpOption, dumpInfo);
     } else if (dumpOption[TYPE_PARAM] == HELP) {
         dumpInfo.push_back(HELP_MSG);
     } else {
@@ -183,19 +179,6 @@ void EventPublisher::PublishbatteryStatusEvent(const std::vector<std::string> &d
         dumpInfo.push_back(std::string("dump need right param."));
         return;
     }
-}
-
-void EventPublisher::PublishbatteryLevelEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
-{
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
-    dumpInfo.push_back(std::string("publishing COMMON_EVENT_BATTERY_CHANGED"));
-    EventFwk::CommonEventData data;
-    data.SetWant(want);
-    data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
-    data.SetData(dumpOption[DETAIL_PARAM]);
-    bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-    dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
 }
 } // namespace WorkScheduler
 } // namespace OHOS
