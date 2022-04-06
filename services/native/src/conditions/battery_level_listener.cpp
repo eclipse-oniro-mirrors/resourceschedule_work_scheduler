@@ -20,8 +20,6 @@
 #include "matching_skills.h"
 #include "want.h"
 #include <string>
-#include <iostream>
-using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -38,7 +36,7 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
             std::string KEY_CAPACITY = ToString(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
             int defaultCapacity = -1;
             auto capacity = data.GetWant().GetIntParam(KEY_CAPACITY, defaultCapacity);
-            WS_HILOGI("OnReceiveEvent  capacity %{public}d",capacity);
+            WS_HILOGI("OnReceiveEvent  capacity %{public}d", capacity);
             listener_.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL,
                 std::make_shared<DetectorValue>(capacity, 0, 0, std::string()));
         }
