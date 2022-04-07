@@ -187,7 +187,7 @@ std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceProxy::ObtainAllWorks(int32
         WS_HILOGD("WP read from parcel, workInfo ID: %{public}d", workInfo->GetWorkId());
         workInfos.emplace_back(std::make_shared<WorkInfo>(*workInfo));
     }
-    WS_HILOGD("WorkSchedServiceProxy::%{public}s return list size: %{public}d", __func__, workInfos.size());
+    WS_HILOGD("WorkSchedServiceProxy::%{public}s return list size: %{public}zu", __func__, workInfos.size());
     return workInfos;
 }
 

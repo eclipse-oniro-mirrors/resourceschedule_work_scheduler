@@ -94,7 +94,7 @@ bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
             WS_HILOGE("Workid has been added, should remove first.");
             return false;
         } else if (uidQueueMap_.at(uid)->GetSize() >= MAX_WORK_COUNT_PER_UID) {
-            WS_HILOGE("each uid only can be added %{public}d works", MAX_WORK_COUNT_PER_UID);
+            WS_HILOGE("each uid only can be added %{public}zu works", MAX_WORK_COUNT_PER_UID);
             return false;
         }
         uidQueueMap_.at(uid)->Push(workStatus);
@@ -284,7 +284,7 @@ void WorkPolicyManager::CheckWorkToRun()
         RealStartWork(topWork);
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
-        WS_HILOGD("trigger delay: %{public}lld", DELAY_TIME_LONG);
+        WS_HILOGD("trigger delay: %{public}lld", (long long)DELAY_TIME_LONG);
         SendRetrigger(DELAY_TIME_LONG);
     }
     WS_HILOGD("WorkPolicyManager::%{public}s out", __func__);
@@ -342,7 +342,7 @@ void WorkPolicyManager::SendRetrigger(int64_t delaytime)
         return;
     }
     WS_HILOGD("WorkPolicyManager::%{public}s ,delay = %{public}lld", __func__,
-        delaytime);
+        (long long)delaytime);
     handler_->SendEvent(InnerEvent::Get(WorkEventHandler::RETRIGGER_MSG, 0), delaytime);
 }
 
