@@ -25,7 +25,7 @@ struct CallbackPromiseInfo {
     napi_ref callback = nullptr;
     napi_deferred deferred = nullptr;
     bool isCallback = false;
-    int errorCode = 0;
+    int32_t errorCode = 0;
 };
 
 class Common {
@@ -124,7 +124,7 @@ public:
      * @param errCode The errCode.
      * @return Callback error value.
      */
-    static napi_value GetCallbackErrorValue(napi_env env, int errCode);
+    static napi_value GetCallbackErrorValue(napi_env env, int32_t errCode);
     /**
      * @brief Set callback.
      *
@@ -133,7 +133,7 @@ public:
      * @param errorCode The errorCode.
      * @param result The result.
      */
-    static void SetCallback(const napi_env &env, const napi_ref &callbackIn, const int &errorCode,
+    static void SetCallback(const napi_env &env, const napi_ref &callbackIn, const int32_t &errorCode,
         const napi_value &result);
     /**
      * @brief Set promise.

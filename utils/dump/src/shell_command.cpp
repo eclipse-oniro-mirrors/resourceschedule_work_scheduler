@@ -19,7 +19,7 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-ShellCommand::ShellCommand(int argc, char *argv[], std::string name)
+ShellCommand::ShellCommand(int32_t argc, char *argv[], std::string name)
 {
     argc_ = argc;
     argv_ = argv;
@@ -30,14 +30,14 @@ ShellCommand::ShellCommand(int argc, char *argv[], std::string name)
         return;
     }
     cmd_ = argv[1];
-    for (int i = 2; i < argc; i++) {
+    for (int32_t i = 2; i < argc; i++) {
         argList_.push_back(argv[i]);
     }
 }
 
 ErrCode ShellCommand::OnCommand()
 {
-    int result = OHOS::ERR_OK;
+    int32_t result = OHOS::ERR_OK;
 
     auto respond = commandMap_[cmd_];
     if (respond == nullptr) {
@@ -56,7 +56,7 @@ ErrCode ShellCommand::OnCommand()
 
 std::string ShellCommand::ExecCommand()
 {
-    int result = CreateCommandMap();
+    ErrCode result = CreateCommandMap();
     if (result != OHOS::ERR_OK) {
         WS_HILOGE("failed to create command map.");
     }

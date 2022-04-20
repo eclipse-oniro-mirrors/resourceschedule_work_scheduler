@@ -49,12 +49,12 @@ int32_t MemoryPolicy::GetMemAvailable()
         return memAvailable;
     }
     char buf[BUF_LIMIT];
-    int buff_len = BUF_LIMIT;
+    int32_t buff_len = BUF_LIMIT;
     const char mem_name[] = "MemAvailable";
     char name[NAME_SIZE];
     int32_t value = -1;
     while (fgets(buf, buff_len, fp) != nullptr) {
-        int res = sscanf_s(buf, "%s%d", name, sizeof(name), &value);
+        int32_t res = sscanf_s(buf, "%s%d", name, sizeof(name), &value);
         if (res < 0) {
             WS_HILOGE("sscanf_s failed");
             break;

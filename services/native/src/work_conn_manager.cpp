@@ -80,7 +80,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 
     Want want;
     want.SetElementName(workStatus->bundleName_, workStatus->abilityName_);
-    int ret = abilityMgr_->ConnectAbility(want, connection, nullptr, workStatus->userId_);
+    int32_t ret = abilityMgr_->ConnectAbility(want, connection, nullptr, workStatus->userId_);
     if (ret != ERR_OK) {
         WS_HILOGE("connect failed");
         return false;
@@ -107,7 +107,7 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
         WS_HILOGI("Failed to  get ability manager services object.");
         return false;
     }
-    int ret = abilityMgr_->DisconnectAbility(connect);
+    int32_t ret = abilityMgr_->DisconnectAbility(connect);
     if (ret != ERR_OK) {
         WS_HILOGE("disconnect failed");
         return false;

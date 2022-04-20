@@ -38,10 +38,10 @@ public:
      * @param option The option.
      * @return ERR_OK on success, others on failure.
      */
-    int OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply, MessageOption& option) override;
+    int32_t OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply, MessageOption& option) override;
 private:
-    static constexpr int COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;
-    static constexpr int COMMAND_ON_WORK_STOP = MIN_TRANSACTION_ID + 1;
+    static constexpr int32_t COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;
+    static constexpr int32_t COMMAND_ON_WORK_STOP = MIN_TRANSACTION_ID + 1;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

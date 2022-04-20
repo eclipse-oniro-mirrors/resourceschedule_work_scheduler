@@ -42,7 +42,7 @@ bool WorkQueueManager::AddListener(WorkCondition::Type type, shared_ptr<IConditi
 
 bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
 {
-    WS_HILOGD("WorkQueueManager::%{public}s workStatus ID: %{public}s", __func__, workStatus->workId_.c_str());
+    WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     auto map = workStatus->workInfo_->GetConditionMap();
     for (auto it : *map) {
@@ -58,7 +58,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
 bool WorkQueueManager::RemoveWork(shared_ptr<WorkStatus> workStatus)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    WS_HILOGD("WorkQueueManager::%{public}s workStatus ID: %{public}s", __func__, workStatus->workId_.c_str());
+    WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
     auto map = workStatus->workInfo_->GetConditionMap();
     for (auto it : *map) {
         if (queueMap_.count(it.first) > 0) {
@@ -74,7 +74,7 @@ bool WorkQueueManager::RemoveWork(shared_ptr<WorkStatus> workStatus)
 bool WorkQueueManager::CancelWork(shared_ptr<WorkStatus> workStatus)
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    WS_HILOGD("WorkQueueManager::%{public}s workStatus ID: %{public}s", __func__, workStatus->workId_.c_str());
+    WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
     for (auto it : queueMap_) {
         it.second->CancelWork(workStatus);
         if (queueMap_.count(it.first) == 0) {
@@ -123,7 +123,7 @@ void WorkQueueManager::Dump(string& result)
     std::lock_guard<std::mutex> lock(mutex_);
     string conditionType[] = {"network", "charger", "battery_status", "battery_level",
         "storage", "timer", "unknown"};
-    size_t size = sizeof(conditionType);
+    uint32_t size = sizeof(conditionType);
     for (auto it : queueMap_) {
         if (it.first < size) {
             result.append(conditionType[it.first]);

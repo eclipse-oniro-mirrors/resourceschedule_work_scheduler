@@ -38,7 +38,7 @@ class AppDataClearListener;
 class Watchdog;
 class WorkPolicyManager {
 public:
-    const size_t MAX_WORK_COUNT_PER_UID = 10;
+    const uint32_t MAX_WORK_COUNT_PER_UID = 10;
     explicit WorkPolicyManager(const wptr<WorkSchedulerService>& wss);
     ~WorkPolicyManager() = default;
     /**
@@ -159,7 +159,7 @@ public:
      *
      * @param delayTime The delay time.
      */
-    void SendRetrigger(int64_t delayTime);
+    void SendRetrigger(int32_t delayTime);
     /**
      * @brief Add app remove listener.
      *
@@ -195,13 +195,13 @@ public:
      *
      * @param time The time.
      */
-    void SetWatchdogTime(int time);
+    void SetWatchdogTime(int32_t time);
     /**
      * @brief Get the time of watchdog.
      *
      * @return The time of watchdog.
      */
-    int GetWatchdogTime();
+    int32_t GetWatchdogTime();
 
 private:
     int32_t GetMaxRunningCount();
@@ -241,7 +241,7 @@ private:
 
     uint32_t watchdogId_;
     int32_t dumpSetMemory_;
-    int watchdogTime_;
+    int32_t watchdogTime_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

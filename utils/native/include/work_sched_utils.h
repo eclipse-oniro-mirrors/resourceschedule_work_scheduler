@@ -31,14 +31,14 @@ public:
      *
      * @return Current account id.
      */
-    static int GetCurrentAccountId();
+    static int32_t GetCurrentAccountId();
     /**
      * @brief The id active.
      *
      * @param id The id.
      * @return True if success,else false.
      */
-    static bool IsIdActive(int id);
+    static bool IsIdActive(int32_t id);
     /**
      * @brief Get user id by uid.
      *
@@ -54,7 +54,7 @@ public:
      * @return True if success,else false.
      */
     static bool ConvertFullPath(const std::string &inOriPath, std::string &outRealPath);
-    static const int INVALID_DATA = -1;
+    static const int32_t INVALID_DATA = -1;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -68,11 +68,9 @@ public:
 };
 
 struct Condition {
-    int enumVal;
+    int32_t enumVal;
     int32_t intVal;
-    int64_t longVal;
     uint32_t uintVal;
-    time_t timeVal;
     bool boolVal;
 };
 } // namespace WorkScheduler

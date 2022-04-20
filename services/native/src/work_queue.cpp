@@ -91,7 +91,7 @@ bool WorkQueue::Remove(shared_ptr<WorkStatus> workStatus)
     return true;
 }
 
-size_t WorkQueue::GetSize()
+uint32_t WorkQueue::GetSize()
 {
     return workList_.size();
 }

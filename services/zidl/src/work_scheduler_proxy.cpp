@@ -23,7 +23,7 @@ void WorkSchedulerProxy::OnWorkStart(WorkInfo& workInfo)
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        WS_HILOGE("WorkSchedulerProxy::%{public}s write descriptor failed!", __func__);
+        WS_HILOGE("write descriptor failed!");
         return;
     }
     data.WriteParcelable(&workInfo);
@@ -36,7 +36,7 @@ void WorkSchedulerProxy::OnWorkStop(WorkInfo& workInfo)
     MessageParcel reply;
     MessageOption option(MessageOption::TF_SYNC);
     if (!data.WriteInterfaceToken(GetDescriptor())) {
-        WS_HILOGE("WorkSchedulerProxy::%{public}s write descriptor failed!", __func__);
+        WS_HILOGE("write descriptor failed!");
         return;
     }
     data.WriteParcelable(&workInfo);

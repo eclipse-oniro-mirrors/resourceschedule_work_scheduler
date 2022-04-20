@@ -20,9 +20,9 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const size_t CALLBACK_INDEX = 0;
-const size_t OBTAIN_ALL_WORKS_MIN_PARAMS = 0;
-const size_t OBTAIN_ALL_WORKS_MAX_PARAMS = 1;
+const uint32_t CALLBACK_INDEX = 0;
+const uint32_t OBTAIN_ALL_WORKS_MIN_PARAMS = 0;
+const uint32_t OBTAIN_ALL_WORKS_MAX_PARAMS = 1;
 
 struct AsyncCallbackInfoObtainAllWorks {
     napi_env env = nullptr;
@@ -83,7 +83,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
                     result = Common::NapiGetNull(env);
                 } else {
                     napi_create_array(env, &result);
-                    int count = 0;
+                    uint32_t count = 0;
                     for (auto workInfo : asynccallbackinfo->workInfoList) {
                         napi_value napiWork = Common::GetNapiWorkInfo(env, workInfo);
                         napi_set_element(env, result, count, napiWork);

@@ -17,12 +17,12 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-int WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply,
+int32_t WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
     auto remoteDescriptor = data.ReadInterfaceToken();
     if (GetDescriptor() != remoteDescriptor) {
-        WS_HILOGE("WorkSchedulerStub::OnRemoteRequest failed, descriptor is not matched!");
+        WS_HILOGE("failed, descriptor is not matched!");
         return ERR_INVALID_STATE;
     }
     switch (code) {

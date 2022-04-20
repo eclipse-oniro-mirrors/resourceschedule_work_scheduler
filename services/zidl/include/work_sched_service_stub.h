@@ -37,7 +37,7 @@ public:
      * @param option The option.
      * @return ERR_OK on success, others on failure.
      */
-    int OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
+    int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
     DISALLOW_COPY_AND_MOVE(WorkSchedServiceStub);
 
     /**

@@ -26,19 +26,18 @@ namespace WorkScheduler {
 WorkEventHandler::WorkEventHandler(const shared_ptr<EventRunner>& runner,
     const wptr<WorkSchedulerService>& service) : EventHandler(runner), service_(service)
 {
-    WS_HILOGD("WorkEventHandler::WorkEventHandler instance created.");
+    WS_HILOGD("instance created.");
 }
 
 void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& event)
 {
-    WS_HILOGD("WorkEventHandler::%{public}s in", __func__);
+    WS_HILOGD("begin");
     auto wssptr = service_.promote();
     if (wssptr == nullptr) {
         WS_HILOGE("service.promote() returns nullptr");
         return;
     }
-    WS_HILOGD("WorkEventHandler::%{public}s, eventid = %{public}d", __func__,
-        event->GetInnerEventId());
+    WS_HILOGD("eventid = %{public}u", event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
         case RETRIGGER_MSG: {
             wssptr->GetWorkPolicyManager()->CheckWorkToRun();

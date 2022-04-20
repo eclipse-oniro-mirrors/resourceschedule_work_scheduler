@@ -37,7 +37,7 @@ public:
      * @param resultCode The result code.
      */
     void OnAbilityConnectDone(
-        const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int resultCode) override;
+        const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int32_t resultCode) override;
 
     /**
      * @brief The OnAbilityDisconnectDone callback.
@@ -45,7 +45,7 @@ public:
      * @param element The element.
      * @param resultCode The result code.
      */
-    void OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int resultCode) override;
+    void OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int32_t resultCode) override;
 private:
     sptr<WorkSchedulerProxy> proxy_ = nullptr;
     std::shared_ptr<WorkInfo> workInfo_;

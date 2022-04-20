@@ -48,7 +48,8 @@ namespace {
         "  -E help                              show publish common event help menu\n";
 } // namespace
 
-WorkSchedulerShellCommand::WorkSchedulerShellCommand(int argc, char *argv[]) : ShellCommand(argc, argv, "workscheduler")
+WorkSchedulerShellCommand::WorkSchedulerShellCommand(int32_t argc, char *argv[])
+    : ShellCommand(argc, argv, "workscheduler")
 {}
 
 ErrCode WorkSchedulerShellCommand::CreateCommandMap()
@@ -72,8 +73,8 @@ ErrCode WorkSchedulerShellCommand::init()
 
 ErrCode WorkSchedulerShellCommand::RunAsDumpCommand()
 {
-    int ind = 0;
-    int option = getopt_long(argc_, argv_, "hAE", OPTIONS, &ind);
+    int32_t ind = 0;
+    int32_t option = getopt_long(argc_, argv_, "hAE", OPTIONS, &ind);
     std::vector<std::string> infos;
     switch (option) {
         case 'h':
