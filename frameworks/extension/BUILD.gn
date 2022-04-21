@@ -17,7 +17,7 @@ config("worksched_private_config") {
   include_dirs = [
     "${worksched_service_path}/zidl/include",
     "//foundation/aafwk/standard/frameworks/kits/ability/native/src/",
-    "//foundation/ace/napi/native_engine",
+    "//foundation/arkui/napi/native_engine",
   ]
 }
 
@@ -45,7 +45,7 @@ ohos_shared_library("workschedextension") {
     "${worksched_utils_path}:workschedutils",
     "//foundation/aafwk/standard/frameworks/kits/ability/ability_runtime:ability_context_native",
     "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
-    "//foundation/ace/napi:ace_napi",
+    "//foundation/arkui/napi:ace_napi",
     "//third_party/jsoncpp",
   ]
 
