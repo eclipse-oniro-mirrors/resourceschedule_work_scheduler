@@ -79,7 +79,7 @@ public:
      *
      * @return The work list size.
      */
-    size_t GetSize();
+    uint32_t GetSize();
     /**
      * @brief Cancel work.
      *

@@ -21,63 +21,63 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-int WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    WS_HILOGD("WorkSchedServiceStub::OnRemoteRequest, cmd = %{public}u, flags = %{public}d", code, option.GetFlags());
+    WS_HILOGD("cmd = %{public}u, flags = %{public}d", code, option.GetFlags());
     std::u16string descriptor = WorkSchedServiceStub::GetDescriptor();
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
     if (descriptor != remoteDescriptor) {
-        WS_HILOGE("WorkSchedServiceStub::OnRemoteRequest failed, descriptor is not matched!");
+        WS_HILOGE("failed, descriptor is not matched!");
         return E_GET_WORKSCHED_SERVICE_FALIED;
     }
     switch (code) {
-        case static_cast<int>(IWorkSchedService::START_WORK): {
+        case static_cast<int32_t>(IWorkSchedService::START_WORK): {
             int32_t ret = StartWorkStub(data);
             reply.WriteBool(ret == ERR_OK);
             return ret;
         }
-        case static_cast<int>(IWorkSchedService::STOP_WORK): {
+        case static_cast<int32_t>(IWorkSchedService::STOP_WORK): {
             int32_t ret = StopWorkStub(data);
             reply.WriteBool(ret == ERR_OK);
             return ret;
         }
-        case static_cast<int>(IWorkSchedService::STOP_AND_CANCEL_WORK): {
+        case static_cast<int32_t>(IWorkSchedService::STOP_AND_CANCEL_WORK): {
             int32_t ret = StopAndCancelWorkStub(data);
             reply.WriteBool(ret == ERR_OK);
             return ret;
         }
-        case static_cast<int>(IWorkSchedService::STOP_AND_CLEAR_WORKS): {
+        case static_cast<int32_t>(IWorkSchedService::STOP_AND_CLEAR_WORKS): {
             int32_t ret = StopAndClearWorksStub(data);
-            WS_HILOGD("%{public}s ret is ERR_OK ? %{public}s", __func__, (ret == ERR_OK) ? "true" : "false");
+            WS_HILOGD("ret is ERR_OK ? %{public}s", (ret == ERR_OK) ? "true" : "false");
             reply.WriteBool(ret == ERR_OK);
             return ret;
         }
-        case static_cast<int>(IWorkSchedService::IS_LAST_WORK_TIMEOUT): {
+        case static_cast<int32_t>(IWorkSchedService::IS_LAST_WORK_TIMEOUT): {
             int32_t ret = IsLastWorkTimeoutStub(data);
             reply.WriteBool(ret == ERR_OK);
             return ret;
         }
-        case static_cast<int>(IWorkSchedService::OBTAIN_ALL_WORKS): {
+        case static_cast<int32_t>(IWorkSchedService::OBTAIN_ALL_WORKS): {
             std::list<std::shared_ptr<WorkInfo>> workInfos = ObtainAllWorksStub(data);
-            size_t worksize = workInfos.size();
+            uint32_t worksize = workInfos.size();
             reply.WriteInt32(worksize);
             for (auto workInfo : workInfos) {
                 reply.WriteParcelable(&*workInfo);
             }
             return ERR_OK;
         }
-        case static_cast<int>(IWorkSchedService::GET_WORK_STATUS): {
+        case static_cast<int32_t>(IWorkSchedService::GET_WORK_STATUS): {
             WS_HILOGI("call GetWorkStatus");
             auto workInfo = GetWorkStatusStub(data);
             reply.WriteParcelable(&*workInfo);
             return ERR_OK;
         }
-        case static_cast<int>(IWorkSchedService::DUMP_INFO): {
+        case static_cast<int32_t>(IWorkSchedService::DUMP_INFO): {
             return ShellDumpStub(data, reply);
         }
         default: {
-            WS_HILOGD("BUGOAWF OnRemoteRequest switch default, code: %{public}u", code);
+            WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
         }
     }
@@ -170,11 +170,11 @@ ErrCode WorkSchedServiceStub::ShellDumpStub(MessageParcel& data, MessageParcel& 
     std::vector<std::string> workSchedulerInfo;
     bool result = ShellDump(dumpOption, workSchedulerInfo);
     if (!reply.WriteBool(result)) {
-        WS_HILOGD("WorkSchedServiceStub::%{public}s write result fail.", __func__);
+        WS_HILOGD("write result fail.");
         return ERR_INVALID_DATA;
     }
     if (!reply.WriteStringVector(workSchedulerInfo)) {
-        WS_HILOGD("WorkSchedServiceStub::%{public}s write workscheduler fail.", __func__);
+        WS_HILOGD("write workscheduler fail.");
         return ERR_INVALID_DATA;
     }
     return ERR_OK;

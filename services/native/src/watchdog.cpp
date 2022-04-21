@@ -33,13 +33,13 @@ Watchdog::Watchdog(const std::shared_ptr<WorkPolicyManager>& service) : service_
 
 bool Watchdog::AddWatchdog(uint32_t watchdogId, int32_t interval)
 {
-    WS_HILOGD("AddWatchdog %{public}d", watchdogId);
+    WS_HILOGD("AddWatchdog %{public}u", watchdogId);
     return SendEvent(watchdogId, 0, interval);
 }
 
 void Watchdog::RemoveWatchdog(uint32_t watchdogId)
 {
-    WS_HILOGD("RemoveWatchdog %{public}d", watchdogId);
+    WS_HILOGD("RemoveWatchdog %{public}u", watchdogId);
     RemoveEvent(watchdogId);
 }
 

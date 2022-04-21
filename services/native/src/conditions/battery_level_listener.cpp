@@ -35,9 +35,9 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
         if (data.GetCode() == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY) {
             std::string KEY_CAPACITY = ToString(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
-            int defaultCapacity = -1;
+            int32_t defaultCapacity = -1;
             auto capacity = data.GetWant().GetIntParam(KEY_CAPACITY, defaultCapacity);
-            WS_HILOGI("OnReceiveEvent  capacity %{public}d", capacity);
+            WS_HILOGI("OnReceiveEvent capacity %{public}d", capacity);
             if (capacity == defaultCapacity) {
                 return;
             }

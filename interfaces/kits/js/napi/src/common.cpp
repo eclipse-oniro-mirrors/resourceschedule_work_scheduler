@@ -19,14 +19,14 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const int NAME_MAXIMUM_LIMIT = 128;
-const int RESULT_PARAMS_NUM = 2;
-const int UNSET_INT_PARAM = -1;
+const int32_t NAME_MAXIMUM_LIMIT = 128;
+const int32_t RESULT_PARAMS_NUM = 2;
+const int32_t UNSET_INT_PARAM = -1;
 const std::string UNSET_STRING_PARAM = "";
-const int TRUE_PARAM = 1;
-const int FALSE_PARAM = 0;
-const int BATTERY_LEVEL_MIN = 0;
-const int BATTERY_LEVEL_MAX = 100;
+const int32_t TRUE_PARAM = 1;
+const int32_t FALSE_PARAM = 0;
+const int32_t BATTERY_LEVEL_MIN = 0;
+const int32_t BATTERY_LEVEL_MAX = 100;
 
 napi_value Common::NapiGetNull(napi_env env)
 {
@@ -38,7 +38,7 @@ napi_value Common::NapiGetNull(napi_env env)
 bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     // Get workid.
-    int workId = Common::GetIntProperty(env, objValue, "workId");
+    int32_t workId = Common::GetIntProperty(env, objValue, "workId");
     if (workId == UNSET_INT_PARAM || workId < 0) {
         WS_HILOGE("Work id is invalid, failed.");
         return false;
@@ -383,7 +383,7 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
             napi_set_named_property(env, napiWork, "isRepeat", napiIsRepeat);
         } else {
             napi_value napiCount = nullptr;
-            napi_create_int32(env, static_cast<int32_t>(workInfo->GetCycleCount()), &napiCount);
+            napi_create_int32(env, workInfo->GetCycleCount(), &napiCount);
             napi_set_named_property(env, napiWork, "repeatCount", napiCount);
         }
     }
@@ -391,7 +391,7 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     return napiWork;
 }
 
-napi_value Common::GetCallbackErrorValue(napi_env env, int errCode)
+napi_value Common::GetCallbackErrorValue(napi_env env, int32_t errCode)
 {
     if (errCode == ERR_OK) {
         return NapiGetNull(env);
@@ -405,7 +405,7 @@ napi_value Common::GetCallbackErrorValue(napi_env env, int errCode)
 }
 
 void Common::SetCallback(
-    const napi_env &env, const napi_ref &callbackIn, const int &errorCode, const napi_value &result)
+    const napi_env &env, const napi_ref &callbackIn, const int32_t &errorCode, const napi_value &result)
 {
     napi_value undefined = nullptr;
     napi_get_undefined(env, &undefined);

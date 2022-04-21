@@ -18,9 +18,9 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const int INVALID_VALUE = -1;
-const int INVALID_TIME_VALUE = 0;
-const size_t MAX_SIZE = 1024;
+const int32_t INVALID_VALUE = -1;
+const int32_t INVALID_TIME_VALUE = 0;
+const uint32_t MAX_SIZE = 1024;
 
 WorkInfo::WorkInfo()
 {
@@ -50,7 +50,7 @@ void WorkInfo::RequestPersisted(bool persisted)
 void WorkInfo::RequestNetworkType(WorkCondition::Network condition)
 {
     std::shared_ptr<Condition> networkCondition = std::make_shared<Condition>();
-    networkCondition->enumVal = static_cast<int>(condition);
+    networkCondition->enumVal = static_cast<int32_t>(condition);
     conditionMap_.emplace(WorkCondition::Type::NETWORK, networkCondition);
 }
 
@@ -58,7 +58,7 @@ void WorkInfo::RequestChargerType(bool isCharging, WorkCondition::Charger condit
 {
     std::shared_ptr<Condition> chargerCondition = std::make_shared<Condition>();
     chargerCondition->boolVal = isCharging;
-    chargerCondition->enumVal = static_cast<int>(condition);
+    chargerCondition->enumVal = static_cast<int32_t>(condition);
     conditionMap_.emplace(WorkCondition::Type::CHARGER, chargerCondition);
 }
 
@@ -72,14 +72,14 @@ void WorkInfo::RequestBatteryLevel(int32_t battLevel)
 void WorkInfo::RequestBatteryStatus(WorkCondition::BatteryStatus condition)
 {
     std::shared_ptr<Condition> batteryCondition = std::make_shared<Condition>();
-    batteryCondition->enumVal = static_cast<int>(condition);
+    batteryCondition->enumVal = static_cast<int32_t>(condition);
     conditionMap_.emplace(WorkCondition::Type::BATTERY_STATUS, batteryCondition);
 }
 
 void WorkInfo::RequestStorageLevel(WorkCondition::Storage condition)
 {
     std::shared_ptr<Condition> storageCondition = std::make_shared<Condition>();
-    storageCondition->enumVal = static_cast<int>(condition);
+    storageCondition->enumVal = static_cast<int32_t>(condition);
     conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
 }
 
@@ -133,7 +133,7 @@ bool WorkInfo::IsPersisted()
 WorkCondition::Network WorkInfo::GetNetworkType()
 {
     if (conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
-        int enumVal = conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal;
+        int32_t enumVal = conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal;
         WorkCondition::Network network = WorkCondition::Network(enumVal);
         return WorkCondition::Network(network);
     }
@@ -143,7 +143,7 @@ WorkCondition::Network WorkInfo::GetNetworkType()
 WorkCondition::Charger WorkInfo::GetChargerType()
 {
     if (conditionMap_.count(WorkCondition::Type::CHARGER) > 0) {
-        int enumVal = conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;
+        int32_t enumVal = conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;
         WorkCondition::Charger charger = WorkCondition::Charger(enumVal);
         return WorkCondition::Charger(charger);
     }
@@ -161,7 +161,7 @@ int32_t WorkInfo::GetBatteryLevel()
 WorkCondition::BatteryStatus WorkInfo::GetBatteryStatus()
 {
     if (conditionMap_.count(WorkCondition::Type::BATTERY_STATUS) > 0) {
-        int enumVal = conditionMap_.at(WorkCondition::Type::BATTERY_STATUS)->enumVal;
+        int32_t enumVal = conditionMap_.at(WorkCondition::Type::BATTERY_STATUS)->enumVal;
         WorkCondition::BatteryStatus battery = WorkCondition::BatteryStatus(enumVal);
         return WorkCondition::BatteryStatus(battery);
     }
@@ -171,7 +171,7 @@ WorkCondition::BatteryStatus WorkInfo::GetBatteryStatus()
 WorkCondition::Storage WorkInfo::GetStorageLevel()
 {
     if (conditionMap_.count(WorkCondition::Type::STORAGE) > 0) {
-        int enumVal = conditionMap_.at(WorkCondition::Type::STORAGE)->enumVal;
+        int32_t enumVal = conditionMap_.at(WorkCondition::Type::STORAGE)->enumVal;
         WorkCondition::Storage storage = WorkCondition::Storage(enumVal);
         return WorkCondition::Storage(storage);
     }
@@ -266,14 +266,14 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     read->bundleName_ = parcel.ReadString();
     read->abilityName_ = parcel.ReadString();
     read->persisted_ = parcel.ReadBool();
-    size_t mapsize = parcel.ReadUint32();
+    uint32_t mapsize = parcel.ReadUint32();
     if (mapsize >= MAX_SIZE) {
         WS_HILOGD("mapsize is too big.");
         return nullptr;
     }
 
     read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
-    for (size_t i = 0; i < mapsize; i++) {
+    for (uint32_t i = 0; i < mapsize; i++) {
         int32_t key = parcel.ReadInt32();
         auto condition = std::make_shared<Condition>();
         switch (key) {

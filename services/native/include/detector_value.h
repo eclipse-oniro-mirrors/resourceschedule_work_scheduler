@@ -22,10 +22,10 @@ namespace OHOS {
 namespace WorkScheduler {
 struct DetectorValue {
     int32_t intVal;
-    time_t timeVal;
+    int32_t timeVal;
     bool boolVal;
     std::string strVal;
-    DetectorValue(int32_t intVal, time_t timeVal, bool boolVal, const std::string &strVal)
+    DetectorValue(int32_t intVal, int32_t timeVal, bool boolVal, const std::string &strVal)
         : intVal(intVal), timeVal(timeVal), boolVal(boolVal), strVal(strVal) {}
 };
 } // namespace WorkScheduler

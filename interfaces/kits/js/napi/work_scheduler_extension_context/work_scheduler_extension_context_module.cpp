@@ -33,7 +33,7 @@ void NAPI_WorkSchedulerExtensionContext_AutoRegister()
 }
 
 extern "C" __attribute__((visibility("default")))
-void NAPI_WorkSchedulerExtensionContext_GetJSCode(const char **buf, int *bufLen)
+void NAPI_WorkSchedulerExtensionContext_GetJSCode(const char **buf, int32_t *bufLen)
 {
     if (buf != nullptr) {
         *buf = _binary_work_scheduler_extension_context_js_start;
@@ -47,7 +47,7 @@ void NAPI_WorkSchedulerExtensionContext_GetJSCode(const char **buf, int *bufLen)
 
 // WorkSchedulerExtensionContext JS register
 extern "C" __attribute__((visibility("default")))
-void NAPI_WorkSchedulerExtensionContext_GetABCCode(const char **buf, int *buflen)
+void NAPI_WorkSchedulerExtensionContext_GetABCCode(const char **buf, int32_t *buflen)
 {
     if (buf != nullptr) {
         *buf = _binary_work_scheduler_extension_context_abc_start;

@@ -34,7 +34,7 @@ void WorkSchedulerConnection::StopWork()
 }
 
 void WorkSchedulerConnection::OnAbilityConnectDone(
-    const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int resultCode)
+    const AppExecFwk::ElementName &element, const sptr<IRemoteObject> &remoteObject, int32_t resultCode)
 {
     proxy_ = (new (std::nothrow) WorkSchedulerProxy(remoteObject));
     if (proxy_ == nullptr) {
@@ -45,7 +45,7 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
     WS_HILOGI("OnAbilityConnectDone.%{public}d", workInfo_->GetWorkId());
 }
 
-void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int resultCode)
+void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int32_t resultCode)
 {
     WS_HILOGI("OnAbilityDisconnectDone");
 }

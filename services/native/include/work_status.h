@@ -50,7 +50,7 @@ public:
     std::string bundleName_;
     std::string abilityName_;
     int32_t uid_;
-    int userId_;
+    int32_t userId_;
     bool persisted_;
     int32_t priority_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;

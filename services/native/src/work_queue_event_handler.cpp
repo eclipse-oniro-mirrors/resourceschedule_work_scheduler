@@ -25,12 +25,12 @@ WorkQueueEventHandler::WorkQueueEventHandler(const shared_ptr<AppExecFwk::EventR
     shared_ptr<WorkQueueManager> manager) : AppExecFwk::EventHandler(runner)
 {
     manager_ = manager;
-    WS_HILOGD("WorkQueueEventHandler::WorkQueueEventHandler instance created.");
+    WS_HILOGD("instance created.");
 }
 
 void WorkQueueEventHandler::ProcessEvent([[maybe_unused]] const AppExecFwk::InnerEvent::Pointer& event)
 {
-    WS_HILOGD("WorkQueueEventHandler::%{public}s, eventId: %{public}d", __func__, event->GetInnerEventId());
+    WS_HILOGD("eventId: %{public}u", event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
         case TIMER_TICK: {
             if (manager_ == nullptr) {

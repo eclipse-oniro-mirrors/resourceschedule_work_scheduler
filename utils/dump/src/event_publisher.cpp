@@ -25,8 +25,8 @@
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
-    static const int TYPE_PARAM = 1;
-    static const int DETAIL_PARAM = 2;
+    static const int32_t TYPE_PARAM = 1;
+    static const int32_t DETAIL_PARAM = 2;
     static const std::string NETWORK = "network";
     static const std::string EV_NETWORK_TYPE_WIFI = "wifi";
     static const std::string EV_NETWORK_TYPE_DISCONNECT = "disconnect";

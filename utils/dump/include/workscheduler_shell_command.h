@@ -23,7 +23,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerShellCommand : public ShellCommand {
 public:
-    WorkSchedulerShellCommand(int argc, char *argv[]);
+    WorkSchedulerShellCommand(int32_t argc, char *argv[]);
 
 private:
     ErrCode CreateCommandMap() override;

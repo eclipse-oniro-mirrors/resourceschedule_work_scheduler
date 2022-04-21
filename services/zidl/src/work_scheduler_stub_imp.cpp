@@ -21,21 +21,21 @@ namespace OHOS {
 namespace WorkScheduler {
 void WorkSchedulerStubImp::OnWorkStart(WorkInfo& workInfo)
 {
-    WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
+    WS_HILOGI("begin.");
     auto extension = extension_.lock();
     if (extension != nullptr) {
         extension->OnWorkStart(workInfo);
-        WS_HILOGI("WorkSchedulerExtension %{public}s end successfully.", __func__);
+        WS_HILOGI("end successfully.");
     }
 }
 
 void WorkSchedulerStubImp::OnWorkStop(WorkInfo& workInfo)
 {
-    WS_HILOGI("WorkSchedulerExtension %{public}s begin.", __func__);
+    WS_HILOGI("begin.");
     auto extension = extension_.lock();
     if (extension != nullptr) {
         extension->OnWorkStop(workInfo);
-        WS_HILOGI("WorkSchedulerExtension %{public}s end successfully.", __func__);
+        WS_HILOGI("end successfully.");
     }
 }
 } // namespace WorkScheduler

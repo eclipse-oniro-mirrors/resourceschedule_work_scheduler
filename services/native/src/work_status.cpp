@@ -24,7 +24,7 @@ using namespace OHOS::PowerMgr;
 
 namespace OHOS {
 namespace WorkScheduler {
-static const int ONE_SECOND = 1000;
+static const double ONE_SECOND = 1000.0;
 
 time_t getCurrentTime()
 {
@@ -97,7 +97,7 @@ void WorkStatus::UpdateTimerIfNeed()
         if (conditionMap_.at(WorkCondition::Type::TIMER)->boolVal) {
             return;
         }
-        int cycleLeft = conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
+        int32_t cycleLeft = conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
         conditionMap_.at(WorkCondition::Type::TIMER)->intVal = cycleLeft - 1;
     }
 }
@@ -151,7 +151,7 @@ bool WorkStatus::IsReady()
                 break;
             }
             case WorkCondition::Type::BATTERY_STATUS: {
-                int batteryReq = workConditionMap->at(it.first)->enumVal;
+                int32_t batteryReq = workConditionMap->at(it.first)->enumVal;
                 if (batteryReq != WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY &&
                     batteryReq != conditionMap_.at(it.first)->enumVal) {
                     return false;
@@ -191,7 +191,7 @@ bool WorkStatus::IsReady()
             case WorkCondition::Type::TIMER: {
                 uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
                 double del = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
-                WS_HILOGD("del time:%{public}f, intervalTime:%{public}d", del, intervalTime);
+                WS_HILOGD("del time:%{public}lf, intervalTime:%{public}u", del, intervalTime);
                 if (del < intervalTime) {
                     return false;
                 }

@@ -83,7 +83,7 @@ void WorkSchedulerSrvClient::ResetProxy(const wptr<IRemoteObject>& remote)
 void WorkSchedulerSrvClient::WorkSchedulerDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
 {
     if (remote == nullptr) {
-        WS_HILOGE("WorkSchedulerDeathRecipient::OnRemoteDied failed, remote is nullptr");
+        WS_HILOGE("failed, remote is nullptr");
         return;
     }
     WorkSchedulerSrvClient::GetInstance().ResetProxy(remote);
@@ -94,7 +94,7 @@ bool WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
 {
     WS_HILOGD("StartWork");
     if (Connect() != ERR_OK) {
-        WS_HILOGE("%{public}s Connect() failed, errno: %{public}d", __func__, Connect());
+        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
     }
     return iWorkSchedService_->StartWork(workInfo);
@@ -104,7 +104,7 @@ bool WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
 {
     WS_HILOGD("StopWork");
     if (Connect() != ERR_OK) {
-        WS_HILOGE("%{public}s Connect() failed, errno: %{public}d", __func__, Connect());
+        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
     }
     return iWorkSchedService_->StopWork(workInfo);
@@ -114,7 +114,7 @@ bool WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)
 {
     WS_HILOGD("StopAndCancelWork");
     if (Connect() != ERR_OK) {
-        WS_HILOGE("%{public}s Connect() failed, errno: %{public}d", __func__, Connect());
+        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
     }
     return iWorkSchedService_->StopAndCancelWork(workInfo);
@@ -124,7 +124,7 @@ bool WorkSchedulerSrvClient::StopAndClearWorks()
 {
     WS_HILOGD("StopAndClearWorks");
     if (Connect() != ERR_OK) {
-        WS_HILOGE("StopAndClearWorks connect service failed!");
+        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
     }
     return iWorkSchedService_->StopAndClearWorks();
@@ -177,7 +177,7 @@ bool WorkSchedulerSrvClient::ShellDump(const std::vector<std::string> &dumpOptio
 {
     WS_HILOGD("ShellDump");
     if (Connect() != ERR_OK) {
-        WS_HILOGE("%{public}s Connect() failed, errno: %{public}d", __func__, Connect());
+        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         dumpInfo.push_back("Connect() failed, errno:" + std::to_string(Connect()));
         return false;
     }

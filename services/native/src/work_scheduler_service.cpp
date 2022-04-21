@@ -112,7 +112,7 @@ void WorkSchedulerService::InitPersisted()
     WS_HILOGE("WorkSchedulerService::InitPersisted");
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
     for (auto it : persistedWorks) {
-        WS_HILOGE("%{public}s get persisted work, id: %{public}d", __func__, it->GetWorkId());
+        WS_HILOGE("get persisted work, id: %{public}d", it->GetWorkId());
         InitPersistedWork(*it);
     }
 }
@@ -252,7 +252,7 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     }
     sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
     BundleInfo bundleInfo;
-    int currentAccountId = WorkSchedUtils::GetCurrentAccountId();
+    int32_t currentAccountId = WorkSchedUtils::GetCurrentAccountId();
     std::string bundleName = workInfo.GetBundleName();
     WS_HILOGD("check work info currentAccountId : %{public}d, bundleName : %{public}s.",
         currentAccountId, bundleName.c_str());
@@ -316,7 +316,7 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
 
 void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
 {
-    WS_HILOGD("%{public}s come in", __func__);
+    WS_HILOGD("come in");
     if (workInfo.GetUid() > 0) {
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
         if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid())) {
@@ -325,7 +325,7 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
     } else {
         WS_HILOGD("uid is invalid : %{public}d", workInfo.GetUid());
     }
-    WS_HILOGD("%{public}s come out", __func__);
+    WS_HILOGD("come out");
 }
 
 bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
@@ -566,22 +566,22 @@ void WorkSchedulerService::RefreshPersistedWorks()
     fout.open(realPath, ios::out);
     fout<<result.c_str()<<endl;
     fout.close();
-    WS_HILOGD("%{public}s come out", __func__);
+    WS_HILOGD("come out");
 }
 
 int32_t WorkSchedulerService::CreateNodeDir(std::string dir)
 {
-    WS_HILOGD("%{public}s: Enter", __func__);
+    WS_HILOGD("Enter");
     if (access(dir.c_str(), 0) != ERR_OK) {
-        int flag = mkdir(dir.c_str(), S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
+        int32_t flag = mkdir(dir.c_str(), S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
         if (flag == ERR_OK) {
-            WS_HILOGD("%{public}s: Create directory successfully.", __func__);
+            WS_HILOGD("Create directory successfully.");
         } else {
-            WS_HILOGE("%{public}s: Fail to create directory, flag: %{public}d", __func__, flag);
+            WS_HILOGE("Fail to create directory, flag: %{public}d", flag);
             return flag;
         }
     } else {
-        WS_HILOGD("%{public}s: This directory already exists.", __func__);
+        WS_HILOGD("This directory already exists.");
     }
     return ERR_OK;
 }

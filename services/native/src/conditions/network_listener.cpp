@@ -22,12 +22,12 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const int DEFAULT_VALUE = -1;
-const int BEARER_CELLULAR = 0;
-const int BEARER_WIFI = 1;
-const int BEARER_BLUETOOTH = 2;
-const int BEARER_ETHERNET = 3;
-const int BEARER_WIFI_AWARE = 5;
+const int32_t DEFAULT_VALUE = -1;
+const int32_t BEARER_CELLULAR = 0;
+const int32_t BEARER_WIFI = 1;
+const int32_t BEARER_BLUETOOTH = 2;
+const int32_t BEARER_ETHERNET = 3;
+const int32_t BEARER_WIFI_AWARE = 5;
 
 NetworkEventSubscriber::NetworkEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     NetworkListener &listener) : CommonEventSubscriber(subscribeInfo), listener_(listener) {}
@@ -38,8 +38,8 @@ void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
 
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE) {
-        int code = data.GetCode();
-        int netType = data.GetWant().GetIntParam("NetType", DEFAULT_VALUE);
+        int32_t code = data.GetCode();
+        int32_t netType = data.GetWant().GetIntParam("NetType", DEFAULT_VALUE);
         WS_HILOGI("Condition changed code:%{public}d, netType:%{public}d", code, netType);
         if (code == NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED) {
             if (netType == DEFAULT_VALUE) {

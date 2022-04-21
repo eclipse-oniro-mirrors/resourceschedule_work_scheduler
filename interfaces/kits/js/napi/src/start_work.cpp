@@ -20,8 +20,8 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-const size_t WORK_INFO_INDEX = 0;
-const size_t START_WORK_PARAMS = 1;
+const uint32_t WORK_INFO_INDEX = 0;
+const uint32_t START_WORK_PARAMS = 1;
 
 napi_value StartWork(napi_env env, napi_callback_info info)
 {
