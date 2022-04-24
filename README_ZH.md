@@ -90,7 +90,7 @@ function onWorkStop(work: WorkInfo): void; | 延迟调度任务回调结束
 
 **work\_scheduler**
 
-notification_ces_standard
+notification_common_event_service
 
 appexecfwk_standard
 
