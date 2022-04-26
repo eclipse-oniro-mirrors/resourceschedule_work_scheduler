@@ -88,10 +88,11 @@ function onWorkStop(work: WorkInfo): void; | 延迟调度任务回调结束
 
 资源调度子系统
 
-**work\_scheduler**
+[**resourceschedule_work_scheduler**](https://gitee.com/openharmony/resourceschedule_work_scheduler)
 
-notification_common_event_service
+[notification_ces_standard](https://gitee.com/openharmony/notification_ces_standard)
 
-appexecfwk_standard
+[appexecfwk_standard](https://gitee.com/openharmony/appexecfwk_standard)
 
-powermgr_battery_manager
+[powermgr_battery_manager](https://gitee.com/openharmony/powermgr_battery_manager)
+
