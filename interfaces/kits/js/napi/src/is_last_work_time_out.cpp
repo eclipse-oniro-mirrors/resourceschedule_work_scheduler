@@ -30,9 +30,8 @@ struct IsLastWorkTimeOutParamsInfo {
     napi_ref callback = nullptr;
 };
 
-struct AsyncCallbackIsLastWorkTimeOut {
-    napi_env env = nullptr;
-    napi_async_work asyncWork = nullptr;
+struct AsyncCallbackIsLastWorkTimeOut : public AsyncWorkData {
+    explicit AsyncCallbackIsLastWorkTimeOut(napi_env env) : AsyncWorkData(env) {}
     int32_t workId;
     bool result;
     CallbackPromiseInfo info;
@@ -72,52 +71,49 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
     }
 
     napi_value promise = nullptr;
-    AsyncCallbackIsLastWorkTimeOut *asynccallbackinfo =
-        new (std::nothrow) AsyncCallbackIsLastWorkTimeOut {.env = env, .asyncWork = nullptr};
-    if (!asynccallbackinfo) {
+    AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo =
+        new (std::nothrow) AsyncCallbackIsLastWorkTimeOut(env);
+    if (!asyncCallbackInfo) {
         return Common::JSParaError(env, params.callback);
     }
-    asynccallbackinfo->workId = params.workId;
-    WS_HILOGD("asynccallbackinfo->workId: %{public}d", asynccallbackinfo->workId);
-    Common::PaddingCallbackPromiseInfo(env, params.callback, asynccallbackinfo->info, promise);
+    std::unique_ptr<AsyncCallbackIsLastWorkTimeOut> callbackPtr {asyncCallbackInfo};
+    asyncCallbackInfo->workId = params.workId;
+    WS_HILOGD("asyncCallbackInfo->workId: %{public}d", asyncCallbackInfo->workId);
+    Common::PaddingCallbackPromiseInfo(env, params.callback, asyncCallbackInfo->info, promise);
 
     napi_value resourceName = nullptr;
-    napi_create_string_latin1(env, "IsLastWorkTimeOut", NAPI_AUTO_LENGTH, &resourceName);
+    NAPI_CALL(env, napi_create_string_latin1(env, "IsLastWorkTimeOut", NAPI_AUTO_LENGTH, &resourceName));
 
-    napi_create_async_work(env,
+    NAPI_CALL(env, napi_create_async_work(env,
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            AsyncCallbackIsLastWorkTimeOut *asynccallbackinfo = (AsyncCallbackIsLastWorkTimeOut *)data;
-            asynccallbackinfo->info.errorCode =
-                WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(asynccallbackinfo->workId,
-                asynccallbackinfo->result);
+            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = (AsyncCallbackIsLastWorkTimeOut *)data;
+            asyncCallbackInfo->info.errorCode =
+                WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(asyncCallbackInfo->workId,
+                asyncCallbackInfo->result);
         },
         [](napi_env env, napi_status status, void *data) {
-            AsyncCallbackIsLastWorkTimeOut *asynccallbackinfo = (AsyncCallbackIsLastWorkTimeOut *) data;
-            if (asynccallbackinfo != nullptr) {
+            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = (AsyncCallbackIsLastWorkTimeOut *) data;
+            std::unique_ptr<AsyncCallbackIsLastWorkTimeOut> callbackPtr {asyncCallbackInfo};
+            if (asyncCallbackInfo != nullptr) {
                 napi_value result = nullptr;
-                if (asynccallbackinfo->info.errorCode != ERR_OK) {
+                if (asyncCallbackInfo->info.errorCode != ERR_OK) {
                     result = Common::NapiGetNull(env);
                 } else {
-                    napi_get_boolean(env, asynccallbackinfo->result, &result);
+                    napi_get_boolean(env, asyncCallbackInfo->result, &result);
                 }
-                Common::ReturnCallbackPromise(env, asynccallbackinfo->info, result);
-                if (asynccallbackinfo->info.callback != nullptr) {
-                    napi_delete_reference(env, asynccallbackinfo->info.callback);
-                }
-                napi_delete_async_work(env, asynccallbackinfo->asyncWork);
-                delete asynccallbackinfo;
-                asynccallbackinfo = nullptr;
+                Common::ReturnCallbackPromise(env, asyncCallbackInfo->info, result);
             }
         },
-        (void *)asynccallbackinfo,
-        &asynccallbackinfo->asyncWork);
+        (void *)asyncCallbackInfo,
+        &asyncCallbackInfo->asyncWork));
 
-    NAPI_CALL(env, napi_queue_async_work(env, asynccallbackinfo->asyncWork));
+    NAPI_CALL(env, napi_queue_async_work(env, asyncCallbackInfo->asyncWork));
+    callbackPtr.release();
 
     WS_HILOGD("IsLastWorkTimeOut napi end.");
-    if (asynccallbackinfo->info.isCallback) {
+    if (asyncCallbackInfo->info.isCallback) {
         return Common::NapiGetNull(env);
     } else {
         return promise;

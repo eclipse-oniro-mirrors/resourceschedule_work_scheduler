@@ -24,9 +24,8 @@ const uint32_t CALLBACK_INDEX = 0;
 const uint32_t OBTAIN_ALL_WORKS_MIN_PARAMS = 0;
 const uint32_t OBTAIN_ALL_WORKS_MAX_PARAMS = 1;
 
-struct AsyncCallbackInfoObtainAllWorks {
-    napi_env env = nullptr;
-    napi_async_work asyncWork = nullptr;
+struct AsyncCallbackInfoObtainAllWorks : public AsyncWorkData {
+    explicit AsyncCallbackInfoObtainAllWorks(napi_env env) : AsyncWorkData(env) {}
     std::list<std::shared_ptr<WorkInfo>> workInfoList;
     CallbackPromiseInfo info;
 };
@@ -57,56 +56,51 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
     }
 
     napi_value promise = nullptr;
-    AsyncCallbackInfoObtainAllWorks *asynccallbackinfo =
-        new (std::nothrow) AsyncCallbackInfoObtainAllWorks {.env = env, .asyncWork = nullptr};
-    if (!asynccallbackinfo) {
+    AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo =
+        new (std::nothrow) AsyncCallbackInfoObtainAllWorks(env);
+    if (!asyncCallbackInfo) {
         return Common::JSParaError(env, callback);
     }
-    Common::PaddingCallbackPromiseInfo(env, callback, asynccallbackinfo->info, promise);
+    std::unique_ptr<AsyncCallbackInfoObtainAllWorks> callbackPtr {asyncCallbackInfo};
+    Common::PaddingCallbackPromiseInfo(env, callback, asyncCallbackInfo->info, promise);
 
     napi_value resourceName = nullptr;
-    napi_create_string_latin1(env, "ObtainAllWorks", NAPI_AUTO_LENGTH, &resourceName);
+    NAPI_CALL(env, napi_create_string_latin1(env, "ObtainAllWorks", NAPI_AUTO_LENGTH, &resourceName));
 
-    napi_create_async_work(env,
+    NAPI_CALL(env, napi_create_async_work(env,
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            AsyncCallbackInfoObtainAllWorks *asynccallbackinfo = (AsyncCallbackInfoObtainAllWorks *)data;
-            asynccallbackinfo->info.errorCode =
-                WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(asynccallbackinfo->workInfoList);
+            AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = (AsyncCallbackInfoObtainAllWorks *)data;
+            asyncCallbackInfo->info.errorCode =
+                WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(asyncCallbackInfo->workInfoList);
         },
         [](napi_env env, napi_status status, void *data) {
-            AsyncCallbackInfoObtainAllWorks *asynccallbackinfo = (AsyncCallbackInfoObtainAllWorks *)data;
-            if (asynccallbackinfo != nullptr) {
+            AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = (AsyncCallbackInfoObtainAllWorks *)data;
+            std::unique_ptr<AsyncCallbackInfoObtainAllWorks> callbackPtr {asyncCallbackInfo};
+            if (asyncCallbackInfo != nullptr) {
                 napi_value result = nullptr;
-                if (asynccallbackinfo->info.errorCode != ERR_OK) {
+                if (asyncCallbackInfo->info.errorCode != ERR_OK) {
                     result = Common::NapiGetNull(env);
                 } else {
                     napi_create_array(env, &result);
                     uint32_t count = 0;
-                    for (auto workInfo : asynccallbackinfo->workInfoList) {
+                    for (auto workInfo : asyncCallbackInfo->workInfoList) {
                         napi_value napiWork = Common::GetNapiWorkInfo(env, workInfo);
                         napi_set_element(env, result, count, napiWork);
                         count++;
                     }
                 }
-                Common::ReturnCallbackPromise(env, asynccallbackinfo->info, result);
-
-                if (asynccallbackinfo->info.callback != nullptr) {
-                    napi_delete_reference(env, asynccallbackinfo->info.callback);
-                }
-
-                napi_delete_async_work(env, asynccallbackinfo->asyncWork);
-                delete asynccallbackinfo;
-                asynccallbackinfo = nullptr;
+                Common::ReturnCallbackPromise(env, asyncCallbackInfo->info, result);
             }
         },
-        (void *)asynccallbackinfo,
-        &asynccallbackinfo->asyncWork);
+        (void *)asyncCallbackInfo,
+        &asyncCallbackInfo->asyncWork));
 
-    NAPI_CALL(env, napi_queue_async_work(env, asynccallbackinfo->asyncWork));
+    NAPI_CALL(env, napi_queue_async_work(env, asyncCallbackInfo->asyncWork));
+    callbackPtr.release();
     WS_HILOGD("ObtainAllWorks napi end.");
-    if (asynccallbackinfo->info.isCallback) {
+    if (asyncCallbackInfo->info.isCallback) {
         return Common::NapiGetNull(env);
     } else {
         return promise;
