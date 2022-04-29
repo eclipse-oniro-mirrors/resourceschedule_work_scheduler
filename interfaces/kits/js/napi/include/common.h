@@ -28,6 +28,15 @@ struct CallbackPromiseInfo {
     int32_t errorCode = 0;
 };
 
+struct AsyncWorkData {
+    explicit AsyncWorkData(napi_env napiEnv);
+    virtual ~AsyncWorkData();
+    napi_env env;
+    napi_async_work asyncWork = nullptr;
+    napi_deferred deferred = nullptr;
+    napi_ref callback = nullptr;
+};
+
 class Common {
 public:
     /**

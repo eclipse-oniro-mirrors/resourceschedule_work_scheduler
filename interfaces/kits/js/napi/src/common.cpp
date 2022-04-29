@@ -28,6 +28,25 @@ const int32_t FALSE_PARAM = 0;
 const int32_t BATTERY_LEVEL_MIN = 0;
 const int32_t BATTERY_LEVEL_MAX = 100;
 
+AsyncWorkData::AsyncWorkData(napi_env napiEnv)
+{
+    env = napiEnv;
+}
+
+AsyncWorkData::~AsyncWorkData()
+{
+    if (callback) {
+        WS_HILOGD("AsyncWorkData::~AsyncWorkData delete callback");
+        napi_delete_reference(env, callback);
+        callback = nullptr;
+    }
+    if (asyncWork) {
+        WS_HILOGD("AsyncWorkData::~AsyncWorkData delete asyncWork");
+        napi_delete_async_work(env, asyncWork);
+        asyncWork = nullptr;
+    }
+}
+
 napi_value Common::NapiGetNull(napi_env env)
 {
     napi_value result = nullptr;
