@@ -14,6 +14,7 @@
  */
 #include "work_conn_manager.h"
 
+#include <hisysevent.h>
 #include <if_system_ability_manager.h>
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
@@ -25,6 +26,7 @@
 
 using namespace std;
 using namespace OHOS::AAFwk;
+using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -86,6 +88,10 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
         return false;
     }
     AddConnInfo(workStatus->workId_, connection);
+
+    // Notify work add event to battery statistics
+    WriteStartWorkEvent(workStatus);
+
     return true;
 }
 
@@ -126,7 +132,52 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
         WS_HILOGD("connection is null");
     }
     RemoveConnInfo(workStatus->workId_);
+
+    // Notify work remove event to battery statistics
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_STOP", HiSysEvent::EventType::STATISTIC, "uid",
+        workStatus->uid_, "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_);
+
     return ret;
+}
+
+void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
+{
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    string conditions = "";
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::NETWORK) > 0) {
+        conditions.append("NETWORK-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::CHARGER) > 0) {
+        conditions.append("CHARGER-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::BATTERY_STATUS) > 0) {
+        conditions.append("BATTERY_STATUS-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::BATTERY_LEVEL) > 0) {
+        conditions.append("BATTERY_LEVEL-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::STORAGE) > 0) {
+        conditions.append("STORAGE-");
+    }
+
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
+        conditions.append("TIMER-");
+    }
+    conditions.pop_back();
+
+    string type = "Repeat";
+    if (!workStatus->workInfo_->IsRepeat()) {
+        type = "Not Repeat";
+    }
+
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_START", HiSysEvent::EventType::STATISTIC, "uid",
+        workStatus->uid_, "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_, "trigger",
+        conditions, "type", type, "interval", workStatus->workInfo_->GetTimeInterval());
 }
 } // namespace WorkScheduler
 } // namespace OHOS
