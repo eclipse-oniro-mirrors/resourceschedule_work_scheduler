@@ -21,13 +21,6 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-struct CallbackPromiseInfo {
-    napi_ref callback = nullptr;
-    napi_deferred deferred = nullptr;
-    bool isCallback = false;
-    int32_t errorCode = 0;
-};
-
 struct AsyncWorkData {
     explicit AsyncWorkData(napi_env napiEnv);
     virtual ~AsyncWorkData();
@@ -35,6 +28,8 @@ struct AsyncWorkData {
     napi_async_work asyncWork = nullptr;
     napi_deferred deferred = nullptr;
     napi_ref callback = nullptr;
+    bool isCallback = false;
+    int32_t errorCode = 0;
 };
 
 class Common {
@@ -116,8 +111,8 @@ public:
      * @param info The info.
      * @param promise The promise.
      */
-    static void PaddingCallbackPromiseInfo(
-        const napi_env &env, const napi_ref &callback, CallbackPromiseInfo &info, napi_value &promise);
+    static void PaddingAsyncWorkData(
+        const napi_env &env, const napi_ref &callback, AsyncWorkData &info, napi_value &promise);
     /**
      * @brief Get the workInfo of napi.
      *
@@ -152,7 +147,7 @@ public:
      * @param result The result.
      * @return The result.
      */
-    static napi_value SetPromise(const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result);
+    static napi_value SetPromise(const napi_env &env, const AsyncWorkData &info, const napi_value &result);
     /**
      * @brief Return callback promise.
      *
@@ -160,7 +155,7 @@ public:
      * @param info The info.
      * @param result The result.
      */
-    static void ReturnCallbackPromise(const napi_env &env, const CallbackPromiseInfo &info,
+    static void ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &info,
         const napi_value &result);
 
 private:
