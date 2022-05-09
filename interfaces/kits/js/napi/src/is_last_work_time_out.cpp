@@ -26,13 +26,13 @@ const uint32_t IS_LAST_WORK_TIME_OUT_MIN_PARAMS = 1;
 const uint32_t IS_LAST_WORK_TIME_OUT_MAX_PARAMS = 2;
 
 struct IsLastWorkTimeOutParamsInfo {
-    int32_t workId;
+    int32_t workId = -1;
     napi_ref callback = nullptr;
 };
 
 struct AsyncCallbackIsLastWorkTimeOut : public AsyncWorkData {
     explicit AsyncCallbackIsLastWorkTimeOut(napi_env env) : AsyncWorkData(env) {}
-    int32_t workId;
+    int32_t workId {-1};
     bool result;
 };
 

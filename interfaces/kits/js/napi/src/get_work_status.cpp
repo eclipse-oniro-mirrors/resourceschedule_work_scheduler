@@ -26,14 +26,14 @@ const uint32_t GET_WORK_STATUS_MIN_PARAMS = 1;
 const uint32_t GET_WORK_STATUS_MAX_PARAMS = 2;
 
 struct GetWorkStatusParamsInfo {
-    int32_t workId;
+    int32_t workId = -1;
     napi_ref callback = nullptr;
 };
 
 struct AsyncCallbackInfoGetWorkStatus : public AsyncWorkData {
     explicit AsyncCallbackInfoGetWorkStatus(napi_env env) : AsyncWorkData(env) {}
-    int32_t workId;
-    std::shared_ptr<WorkInfo> workInfo;
+    int32_t workId {-1};
+    std::shared_ptr<WorkInfo> workInfo {nullptr};
 };
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, GetWorkStatusParamsInfo &params)
