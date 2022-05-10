@@ -26,15 +26,14 @@ const uint32_t GET_WORK_STATUS_MIN_PARAMS = 1;
 const uint32_t GET_WORK_STATUS_MAX_PARAMS = 2;
 
 struct GetWorkStatusParamsInfo {
-    int32_t workId;
+    int32_t workId = -1;
     napi_ref callback = nullptr;
 };
 
 struct AsyncCallbackInfoGetWorkStatus : public AsyncWorkData {
     explicit AsyncCallbackInfoGetWorkStatus(napi_env env) : AsyncWorkData(env) {}
-    int32_t workId;
-    std::shared_ptr<WorkInfo> workInfo;
-    CallbackPromiseInfo info;
+    int32_t workId {-1};
+    std::shared_ptr<WorkInfo> workInfo {nullptr};
 };
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, GetWorkStatusParamsInfo &params)
@@ -79,7 +78,7 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
     std::unique_ptr<AsyncCallbackInfoGetWorkStatus> callbackPtr {asyncCallbackInfo};
     asyncCallbackInfo->workId = params.workId;
     WS_HILOGD("asyncCallbackInfo->workId: %{public}d", asyncCallbackInfo->workId);
-    Common::PaddingCallbackPromiseInfo(env, params.callback, asyncCallbackInfo->info, promise);
+    Common::PaddingAsyncWorkData(env, params.callback, *asyncCallbackInfo, promise);
 
     napi_value resourceName = nullptr;
     NAPI_CALL(env, napi_create_string_latin1(env, "GetWorkStatus", NAPI_AUTO_LENGTH, &resourceName));
@@ -89,7 +88,7 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
         resourceName,
         [](napi_env env, void *data) {
             AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = (AsyncCallbackInfoGetWorkStatus *)data;
-            asyncCallbackInfo->info.errorCode =
+            asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().GetWorkStatus(asyncCallbackInfo->workId,
                 asyncCallbackInfo->workInfo);
         },
@@ -98,7 +97,7 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
             std::unique_ptr<AsyncCallbackInfoGetWorkStatus> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = Common::GetNapiWorkInfo(env, asyncCallbackInfo->workInfo);
-                Common::ReturnCallbackPromise(env, asyncCallbackInfo->info, result);
+                Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
         },
         (void *)asyncCallbackInfo,
@@ -108,7 +107,7 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
     callbackPtr.release();
 
     WS_HILOGD("Get work status napi end.");
-    if (asyncCallbackInfo->info.isCallback) {
+    if (asyncCallbackInfo->isCallback) {
         return Common::NapiGetNull(env);
     } else {
         return promise;

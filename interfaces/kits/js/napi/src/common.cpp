@@ -306,8 +306,8 @@ napi_value Common::JSParaError(const napi_env &env, const napi_ref &callback)
     }
 }
 
-void Common::PaddingCallbackPromiseInfo(
-    const napi_env &env, const napi_ref &callback, CallbackPromiseInfo &info, napi_value &promise)
+void Common::PaddingAsyncWorkData(
+    const napi_env &env, const napi_ref &callback, AsyncWorkData &info, napi_value &promise)
 {
     if (callback) {
         info.callback = callback;
@@ -440,7 +440,7 @@ void Common::SetCallback(
 }
 
 napi_value Common::SetPromise(
-    const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result)
+    const napi_env &env, const AsyncWorkData &info, const napi_value &result)
 {
     if (info.errorCode == ERR_OK) {
         napi_resolve_deferred(env, info.deferred, result);
@@ -455,7 +455,7 @@ napi_value Common::SetPromise(
     return result;
 }
 
-void Common::ReturnCallbackPromise(const napi_env &env, const CallbackPromiseInfo &info, const napi_value &result)
+void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &info, const napi_value &result)
 {
     if (info.isCallback) {
         SetCallback(env, info.callback, info.errorCode, result);
