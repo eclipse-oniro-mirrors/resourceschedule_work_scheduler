@@ -51,8 +51,8 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
-auto wss = DelayedSpSingleton<WorkSchedulerService>::GetInstance();
-const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss.GetRefPtr());
+auto wss = DelayedSingleton<WorkSchedulerService>::GetInstance().get();
+const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
 const string ALL_INFO = "All";
 const string WORK_QUEUE_INFO = "WorkQueue";
 const string WORK_POLICY_INFO = "WorkPolicy";
@@ -179,7 +179,7 @@ bool WorkSchedulerService::Init()
         return false;
     }
     InitPersisted();
-    if (!Publish(DelayedSpSingleton<WorkSchedulerService>::GetInstance())) {
+    if (!Publish(DelayedSingleton<WorkSchedulerService>::GetInstance().get())) {
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }

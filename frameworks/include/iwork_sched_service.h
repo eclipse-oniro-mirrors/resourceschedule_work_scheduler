@@ -27,6 +27,10 @@ namespace OHOS {
 namespace WorkScheduler {
 class IWorkSchedService : public IRemoteBroker {
 public:
+    IWorkSchedService() = default;
+    ~IWorkSchedService() override = default;
+    DISALLOW_COPY_AND_MOVE(IWorkSchedService);
+
     enum {
         START_WORK = 0,
         STOP_WORK,
