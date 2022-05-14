@@ -89,10 +89,10 @@ Adhere to the following constraints and rules when using work scheduler:
 
 Resource Schedule subsystem
 
-**work\_scheduler**
+[**resourceschedule_work_scheduler**](https://gitee.com/openharmony/resourceschedule_work_scheduler)
 
-notification_common_event_service
+[notification_ces_standard](https://gitee.com/openharmony/notification_ces_standard)
 
-appexecfwk_standard
+[appexecfwk_standard](https://gitee.com/openharmony/appexecfwk_standard)
 
-powermgr_battery_manager
+[powermgr_battery_manager](https://gitee.com/openharmony/powermgr_battery_manager)
