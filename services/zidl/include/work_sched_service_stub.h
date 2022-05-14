@@ -28,6 +28,8 @@ class WorkSchedServiceStub : public IRemoteStub<IWorkSchedService> {
 public:
     WorkSchedServiceStub() = default;
     virtual ~WorkSchedServiceStub() = default;
+    DISALLOW_COPY_AND_MOVE(WorkSchedServiceStub);
+
     /**
      * @brief The OnRemoteRequest callback.
      *
@@ -38,7 +40,6 @@ public:
      * @return ERR_OK on success, others on failure.
      */
     int32_t OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option) override;
-    DISALLOW_COPY_AND_MOVE(WorkSchedServiceStub);
 
     /**
      * @brief Start work stub.
