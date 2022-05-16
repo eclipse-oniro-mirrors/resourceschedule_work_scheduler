@@ -56,7 +56,8 @@
         "inner_kits": [],
         "test": [
             "//foundation/resourceschedule/work_scheduler/frameworks/test/unittest:workinfotest",
-            "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest/work_scheduler_jsunittest:js_unittest"
+            "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest/work_scheduler_jsunittest:js_unittest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workscheduleservice_fuzzer:fuzztest"
         ],
         "hisysevent_config": [
           "//foundation/resourceschedule/work_scheduler/hisysevent.yaml"

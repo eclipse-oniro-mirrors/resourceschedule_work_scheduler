@@ -1,0 +1,78 @@
+# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+#####################hydra-fuzz###################
+import("//build/config/features.gni")
+import("//build/test.gni")
+module_output_path = "work_scheduler/workscheduleservice"
+
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
+config("worksched_private_config") {
+  include_dirs = [
+    "${worksched_service_path}/zidl/include",
+    "${worksched_service_path}/native/include",
+  ]
+}
+
+##############################fuzztest##########################################
+ohos_fuzztest("WorkScheduleServiceFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "//foundation/resourceschedule/work_scheduler/test/fuzztest/workscheduleservice_fuzzer"
+
+  configs = [ ":worksched_private_config" ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  sources = [ "workscheduleservice_fuzzer.cpp" ]
+
+  deps = [
+    "${worksched_frameworks_path}:workschedclient",
+    "${worksched_frameworks_path}/extension:workschedextension",
+    "${worksched_service_path}:workschedservice",
+    "${worksched_utils_path}:workschedutils",
+    "//third_party/jsoncpp",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
+    "battery_manager_native:batterysrv_client",
+    "bundle_framework:appexecfwk_base",
+    "bundle_framework:appexecfwk_core",
+    "common_event_service:cesfwk_innerkits",
+    "eventhandler:libeventhandler",
+    "hisysevent_native:libhisysevent",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+    "netmanager_base:net_conn_manager_if",
+    "safwk:system_ability_fwk",
+    "samgr_standard:samgr_proxy",
+    "thermal_manager:thermalsrv_client",
+    "utils_base:utils",
+  ]
+}
+
+###############################################################################
+group("fuzztest") {
+  testonly = true
+  deps = []
+  deps += [
+    # deps file
+    ":WorkScheduleServiceFuzzTest",
+  ]
+}
+###############################################################################
