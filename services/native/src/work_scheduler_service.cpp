@@ -456,6 +456,11 @@ bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<st
         dumpInfo.push_back(string("service is not ready."));
         return false;
     }
+    if (dumpOption.size() < DUMP_PARAM_INDEX + 1) {
+        WS_HILOGI("Dump need at least two param.");
+        dumpInfo.push_back(string("dump need at least two param."));
+        return false;
+    }
     if (dumpOption[DUMP_PARAM_INDEX] == ALL_INFO) {
         DumpAllInfo(dumpInfo);
     } else if (dumpOption[DUMP_PARAM_INDEX] == CHECK_BUNDLE) {
