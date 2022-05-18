@@ -13,6 +13,8 @@
 
 import("//build/ohos.gni")
 
+aafwk_kits_path = "//foundation/aafwk/standard/frameworks/kits"
+
 worksched_native_part_name = "work_scheduler"
 
 worksched_root_path = "//foundation/resourceschedule/work_scheduler"
