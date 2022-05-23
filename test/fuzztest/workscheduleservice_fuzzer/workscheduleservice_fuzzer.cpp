@@ -15,6 +15,7 @@
 
 #include "workscheduleservice_fuzzer.h"
 
+#include "work_event_handler.h"
 #define private public
 #include "work_scheduler_service.h"
 #include "work_sched_service_stub.h"
@@ -23,20 +24,33 @@ namespace OHOS {
 namespace WorkScheduler {
     constexpr int32_t MIN_LEN = 4;
     constexpr int32_t MAX_CODE_TEST = 15; // current max code is 7
-    constexpr int32_t CODE_OF_SHELL_DUMP = 7;
+    constexpr int32_t INIT_DELAY = 2 * 1000;
+    static bool isInited = false;
 
-    void DoInit()
+    bool DoInit()
     {
         auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
         if (!instance->eventRunner_) {
             instance->eventRunner_ = AppExecFwk::EventRunner::Create("WorkSchedulerService");
         }
         if (!instance->eventRunner_) {
-            return;
+            return false;
         }
 
         instance->handler_ = std::make_shared<WorkEventHandler>(instance->eventRunner_, instance.get());
-        instance->Init();
+        if (!instance->IsBaseAbilityReady()) {
+            instance->GetHandler()->SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0),
+                INIT_DELAY);
+            return false;
+        }
+        instance->WorkQueueManagerInit();
+        if (!instance->WorkPolicyManagerInit()) {
+            return false;
+        }
+        instance->InitPersisted();
+        instance->checkBundle_ = false;
+        instance->ready_ = true;
+        return true;
     }
 
     int32_t OnRemoteRequest(uint32_t code, MessageParcel& data)
@@ -62,18 +76,17 @@ namespace WorkScheduler {
         if (code > MAX_CODE_TEST) {
             return;
         }
-        // skip shellDump
-        if (code == CODE_OF_SHELL_DUMP) {
-            return;
-        }
         size -= sizeof(uint32_t);
 
         dataMessageParcel.WriteBuffer(data + sizeof(uint32_t), size);
         dataMessageParcel.RewindRead(0);
 
-        DoInit();
-        OnRemoteRequest(code, dataMessageParcel);
-        DelayedSingleton<WorkSchedulerService>::GetInstance()->OnStop();
+        if (!isInited) {
+            isInited = DoInit();
+        }
+        if (isInited) {
+            OnRemoteRequest(code, dataMessageParcel);
+        }
     }
 } // namespace WorkScheduler
 } // namespace OHOS
