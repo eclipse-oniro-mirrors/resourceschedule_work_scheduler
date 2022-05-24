@@ -457,8 +457,8 @@ bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<st
         return false;
     }
     if (dumpOption.size() < DUMP_PARAM_INDEX + 1) {
-        WS_HILOGI("Dump need at least three params.");
-        dumpInfo.push_back(string("dump need at least three params."));
+        WS_HILOGI("Dump need at least two params.");
+        dumpInfo.push_back(string("dump need at least two params."));
         return false;
     }
     if (dumpOption[DUMP_PARAM_INDEX] == ALL_INFO) {
