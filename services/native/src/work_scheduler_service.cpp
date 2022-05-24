@@ -456,7 +456,7 @@ bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<st
         dumpInfo.push_back(string("service is not ready."));
         return false;
     }
-    if (dumpOption.size() < DUMP_VALUE_INDEX + 1) {
+    if (dumpOption.size() < DUMP_PARAM_INDEX + 1) {
         WS_HILOGI("Dump need at least three params.");
         dumpInfo.push_back(string("dump need at least three params."));
         return false;
@@ -464,6 +464,11 @@ bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<st
     if (dumpOption[DUMP_PARAM_INDEX] == ALL_INFO) {
         DumpAllInfo(dumpInfo);
     } else if (dumpOption[DUMP_PARAM_INDEX] == CHECK_BUNDLE) {
+        if (dumpOption.size() < DUMP_VALUE_INDEX + 1) {
+            WS_HILOGI("Dump checkbundle need at least three params.");
+            dumpInfo.push_back(string("dump checkbundle need at least three params."));
+            return false;
+        }
         if (dumpOption[DUMP_VALUE_INDEX] == "true") {
             checkBundle_ = true;
         } else if (dumpOption[DUMP_VALUE_INDEX] == "false") {

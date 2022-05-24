@@ -51,7 +51,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
-            if (listenerMap_.count(it.first)) {
+            if (listenerMap_.count(it.first) != 0) {
                 listenerMap_.at(it.first)->Start();
             }
         }
