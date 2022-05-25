@@ -44,7 +44,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
 {
     if (!workStatus || !workStatus->workInfo_ || !workStatus->workInfo_->GetConditionMap()) {
         return false;
-    } 
+    }
     WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     auto map = workStatus->workInfo_->GetConditionMap();
