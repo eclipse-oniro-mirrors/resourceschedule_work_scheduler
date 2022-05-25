@@ -42,13 +42,18 @@ bool WorkQueueManager::AddListener(WorkCondition::Type type, shared_ptr<IConditi
 
 bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
 {
+    if (!workStatus || !workStatus->workInfo_ || !workStatus->workInfo_->GetConditionMap()) {
+        return false;
+    }
     WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
     std::lock_guard<std::mutex> lock(mutex_);
     auto map = workStatus->workInfo_->GetConditionMap();
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
-            listenerMap_.at(it.first)->Start();
+            if (listenerMap_.count(it.first) != 0) {
+                listenerMap_.at(it.first)->Start();
+            }
         }
         queueMap_.at(it.first)->Push(workStatus);
     }
