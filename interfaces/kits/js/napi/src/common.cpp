@@ -420,6 +420,7 @@ napi_value Common::GetCallbackErrorValue(napi_env env, int32_t errCode)
     NAPI_CALL(env, napi_create_int32(env, errCode, &eCode));
     NAPI_CALL(env, napi_create_object(env, &result));
     NAPI_CALL(env, napi_set_named_property(env, result, "data", eCode));
+    NAPI_CALL(env, napi_set_named_property(env, result, "code", eCode));
     return result;
 }
 
@@ -450,6 +451,7 @@ napi_value Common::SetPromise(
         NAPI_CALL(env, napi_create_int32(env, info.errorCode, &eCode));
         NAPI_CALL(env, napi_create_object(env, &res));
         NAPI_CALL(env, napi_set_named_property(env, res, "data", eCode));
+        NAPI_CALL(env, napi_set_named_property(env, res, "code", eCode));
         napi_reject_deferred(env, info.deferred, res);
     }
     return result;
