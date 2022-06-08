@@ -29,6 +29,7 @@ ohos_shared_library("workschedservice") {
     "native/src/conditions/network_listener.cpp",
     "native/src/conditions/storage_listener.cpp",
     "native/src/conditions/timer_listener.cpp",
+    "native/src/event_publisher.cpp",
     "native/src/policy/app_data_clear_listener.cpp",
     "native/src/policy/app_removed_listener.cpp",
     "native/src/policy/memory_policy.cpp",

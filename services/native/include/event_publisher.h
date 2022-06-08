@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#ifndef WORK_SCHED_UTILS_DUMP_EVENT_PUBLISHER_H
-#define WORK_SCHED_UTILS_DUMP_EVENT_PUBLISHER_H
+#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_EVENT_PUBLISHER_H
+#define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_EVENT_PUBLISHER_H
 
 #include <string>
 #include <vector>
@@ -31,43 +31,38 @@ public:
      * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
      */
-    void PublishEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    void PublishEvent(std::string &result, std::string &eventType, std::string &eventValue);
     /**
      * @brief Publish network event.
      *
      * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
      */
-    void PublishNetworkEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    void PublishNetworkEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publish charging event.
      *
      * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
      */
-    void PublishChargingEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    void PublishChargingEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publish storage event.
      *
      * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
      */
-    void PublishStorageEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    void PublishStorageEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publishbattery status event.
      *
      * @param dumpOption The dump option.
      * @param dumpInfo The dump info.
      */
-    void PublishbatteryStatusEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
-    /**
-     * @brief Publishbattery level event.
-     *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
-     */
-    void PublishbatteryLevelEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
+    void PublishBatteryStatusEvent(std::string &result, std::string &eventValue);
+
+    void Dump(std::string &result, std::string &eventType, std::string &eventValue);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
-#endif // WORK_SCHED_UTILS_DUMP_EVENT_PUBLISHER_H
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_EVENT_PUBLISHER_H

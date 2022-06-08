@@ -25,8 +25,6 @@
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
-    static const int32_t TYPE_PARAM = 1;
-    static const int32_t DETAIL_PARAM = 2;
     static const std::string NETWORK = "network";
     static const std::string EV_NETWORK_TYPE_WIFI = "wifi";
     static const std::string EV_NETWORK_TYPE_DISCONNECT = "disconnect";
@@ -39,144 +37,147 @@ namespace {
     static const std::string STORAGE = "storage";
     static const std::string EV_STORAGE_LOW = "low";
     static const std::string EV_STORAGE_OKAY = "ok";
-    static const std::string HELP = "help";
-    static const std::string HELP_MSG =
-        "usage: workscheduler dump -E [<options>]\n"
-        "options list:\n"
-        "  help                   help menu\n"
-        "  network wifi           publish COMMON_EVENT_CONNECTIVITY_CHANGE event(wifi)\n"
-        "  network disconnect     publish COMMON_EVENT_CONNECTIVITY_CHANGE event(disconnect)\n"
-        "  charging usb           publish usb charging event\n"
-        "  charging ac            publish ac charging event\n"
-        "  charging wireless      publish wireless charging event\n"
-        "  charging none          publish unplugged event\n"
-        "  storage low            publish COMMON_EVENT_DEVICE_STORAGE_LOW event\n"
-        "  storage ok             publish COMMON_EVENT_DEVICE_STORAGE_OKAY event\n"
-        "  batteryStatus low      publish COMMON_EVENT_BATTERY_LOW\n"
-        "  batteryStatus ok       publish COMMON_EVENT_BATTERY_OKAY\n";
 }
 
-void EventPublisher::PublishEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
+void EventPublisher::Dump(std::string &result, std::string &eventType, std::string &eventValue)
 {
-    if (dumpOption[TYPE_PARAM] == NETWORK) {
-        PublishNetworkEvent(dumpOption, dumpInfo);
-    } else if (dumpOption[TYPE_PARAM] == CHARGING) {
-        PublishChargingEvent(dumpOption, dumpInfo);
-    } else if (dumpOption[TYPE_PARAM] == STORAGE) {
-        PublishStorageEvent(dumpOption, dumpInfo);
-    } else if (dumpOption[TYPE_PARAM] == BATTERY_STATUS) {
-        PublishbatteryStatusEvent(dumpOption, dumpInfo);
-    } else if (dumpOption[TYPE_PARAM] == HELP) {
-        dumpInfo.push_back(HELP_MSG);
+    if (eventType == "event" && eventValue == "info") {
+        result.append("event info:\n")
+            .append("    network wifi: publish COMMON_EVENT_CONNECTIVITY_CHANGE event(wifi).\n")
+            .append("    network disconnect: publish COMMON_EVENT_CONNECTIVITY_CHANGE event(disconnect).\n")
+            .append("    charging usb: publish usb charging event\n")
+            .append("    charging ac: publish ac charging event\n")
+            .append("    charging wireless: publish wireless charging event\n")
+            .append("    charging none: publish unplugged event\n")
+            .append("    storage low: publish COMMON_EVENT_DEVICE_STORAGE_LOW event\n")
+            .append("    storage ok: publish COMMON_EVENT_DEVICE_STORAGE_OKAY event\n")
+            .append("    batteryStatus low: publish COMMON_EVENT_BATTERY_LOW\n")
+            .append("    batteryStatus ok: publish COMMON_EVENT_BATTERY_OKAY\n");
     } else {
-        dumpInfo.push_back(std::string("dump -E need right param."));
-        dumpInfo.push_back(HELP_MSG);
+        PublishEvent(result, eventType, eventValue);
     }
 }
 
-void EventPublisher::PublishNetworkEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
+void EventPublisher::PublishEvent(std::string &result, std::string &eventType, std::string &eventValue)
+{
+    if (eventType == NETWORK) {
+        PublishNetworkEvent(result, eventValue);
+    } else if (eventType == CHARGING) {
+        PublishChargingEvent(result, eventValue);
+    } else if (eventType == STORAGE) {
+        PublishStorageEvent(result, eventValue);
+    } else if (eventType == BATTERY_STATUS) {
+        PublishBatteryStatusEvent(result, eventValue);
+    } else {
+        result.append(std::string("dump -d need right params."));
+    }
+}
+
+void EventPublisher::PublishNetworkEvent(std::string &result, std::string &eventValue)
 {
     EventFwk::Want want;
-    if (dumpOption[DETAIL_PARAM] == EV_NETWORK_TYPE_WIFI) {
+    if (eventValue == EV_NETWORK_TYPE_WIFI) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
         want.SetParam("NetType", 1);
-        dumpInfo.push_back(std::string("publishing COMMON_EVENT_WIFI_CONN_STATE"));
+        result.append("publishing COMMON_EVENT_WIFI_CONN_STATE\n");
         EventFwk::CommonEventData data;
         data.SetWant(want);
         data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
         bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-        dumpInfo.push_back(std::string("publish result: " + std::to_string(isSuccess)));
-    } else if (dumpOption[DETAIL_PARAM] == EV_NETWORK_TYPE_DISCONNECT) {
+        result.append("publish result: " + std::to_string(isSuccess));
+    } else if (eventValue == EV_NETWORK_TYPE_DISCONNECT) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-        dumpInfo.push_back(std::string("publishing COMMON_EVENT_WIFI_CONN_STATE"));
+        result.append("publishing COMMON_EVENT_WIFI_CONN_STATE\n");
         EventFwk::CommonEventData data;
         data.SetWant(want);
         data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_DISCONNECTED);
         bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-        dumpInfo.push_back(std::string("publish result: " + std::to_string(isSuccess)));
+        result.append("publish result: " + std::to_string(isSuccess));
     } else {
-        dumpInfo.push_back(std::string("dump need right param."));
+        result.append("dump need right param.");
         return;
     }
 }
 
-void EventPublisher::PublishChargingEvent(const std::vector<std::string> &dumpOption,
-    std::vector<std::string> &dumpInfo)
+void EventPublisher::PublishChargingEvent(std::string &result, std::string &eventValue)
 {
     EventFwk::Want want;
     EventFwk::CommonEventData data;
-    if (dumpOption[DETAIL_PARAM] == EV_CHARGING_TYPE_AC) {
+    if (eventValue == EV_CHARGING_TYPE_AC) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         data.SetWant(want);
         data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
         data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC)));
-    } else if (dumpOption[DETAIL_PARAM] == EV_CHARGING_TYPE_USB) {
+    } else if (eventValue == EV_CHARGING_TYPE_USB) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         data.SetWant(want);
         data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
         data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB)));
-    } else if (dumpOption[DETAIL_PARAM] == EV_CHARGING_TYPE_WIRELESS) {
+    } else if (eventValue == EV_CHARGING_TYPE_WIRELESS) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         data.SetWant(want);
         data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
         data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS)));
-    } else if (dumpOption[DETAIL_PARAM] == EV_CHARGING_TYPE_NONE) {
+    } else if (eventValue == EV_CHARGING_TYPE_NONE) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
         data.SetWant(want);
         data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
         data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE)));
     } else {
-        dumpInfo.push_back(std::string("dump need right param."));
+        result.append("dump need right param.");
         return;
     }
     EventFwk::CommonEventPublishInfo publishInfo;
     publishInfo.SetOrdered(false);
-    bool ret = EventFwk::CommonEventManager::PublishCommonEvent(data, publishInfo);
-    dumpInfo.push_back(std::string("publish charging event ret: ") + (ret ? "true" : "false"));
+    if (EventFwk::CommonEventManager::PublishCommonEvent(data, publishInfo)) {
+        result.append("publish charging event ret: true");
+    } else {
+        result.append("publish charging event ret: false");
+    }
 }
 
-void EventPublisher::PublishStorageEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
+void EventPublisher::PublishStorageEvent(std::string &result, std::string &eventValue)
 {
     EventFwk::Want want;
-    if (dumpOption[DETAIL_PARAM] == EV_STORAGE_LOW) {
+    if (eventValue == EV_STORAGE_LOW) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW);
-        dumpInfo.push_back(std::string("publishing COMMON_EVENT_DEVICE_STORAGE_LOW"));
-    } else if (dumpOption[DETAIL_PARAM] == EV_STORAGE_OKAY) {
+        result.append("publishing COMMON_EVENT_DEVICE_STORAGE_LOW\n");
+    } else if (eventValue == EV_STORAGE_OKAY) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_OK);
-        dumpInfo.push_back(std::string("publishing COMMON_EVENT_DEVICE_STORAGE_OKAY"));
+        result.append("publishing COMMON_EVENT_DEVICE_STORAGE_OKAY\n");
     } else {
-        dumpInfo.push_back(std::string("dump need right param."));
+        result.append("dump need right param.");
         return;
     }
     EventFwk::CommonEventData data;
     data.SetWant(want);
     bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-    dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
+    result.append("publish result: " + std::to_string(isSuccess));
 }
 
-void EventPublisher::PublishbatteryStatusEvent(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
+void EventPublisher::PublishBatteryStatusEvent(std::string &result, std::string &eventValue)
 {
     EventFwk::Want want;
-    if (dumpOption[DETAIL_PARAM] == EV_STORAGE_LOW) {
+    if (eventValue == EV_STORAGE_LOW) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_LOW);
-        dumpInfo.push_back(std::string("publishing COMMON_EVENT_BATTERY_LOW"));
+        result.append("publishing COMMON_EVENT_BATTERY_LOW\n");
         EventFwk::CommonEventData data;
         data.SetWant(want);
         data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
         data.SetData("0");
         bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-        dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
-    } else if (dumpOption[DETAIL_PARAM] == EV_STORAGE_OKAY) {
+        result.append("publish result: " + std::to_string(isSuccess));
+    } else if (eventValue == EV_STORAGE_OKAY) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_OKAY);
-        dumpInfo.push_back(std::string("publishing COMMON_EVENT_BATTERY_OKAY"));
+        result.append("publishing COMMON_EVENT_BATTERY_OKAY\n");
         EventFwk::CommonEventData data;
         data.SetWant(want);
         data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
         data.SetData("100");
         bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
-        dumpInfo.push_back(std::string("publish result: ") + std::to_string(isSuccess));
+        result.append("publish result: " + std::to_string(isSuccess));
     } else {
-        dumpInfo.push_back(std::string("dump need right param."));
+        result.append("dump need right param.");
         return;
     }
 }

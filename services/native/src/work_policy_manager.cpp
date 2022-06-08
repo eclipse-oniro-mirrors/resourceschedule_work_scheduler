@@ -475,7 +475,7 @@ void WorkPolicyManager::Dump(string& result)
     DumpUidQueueMap(result);
 
     result.append("3. GetMaxRunningCount:");
-    result.append(to_string(GetMaxRunningCount()));
+    result.append(to_string(GetMaxRunningCount()) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()
