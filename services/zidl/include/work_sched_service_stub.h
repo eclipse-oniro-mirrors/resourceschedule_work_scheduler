@@ -90,8 +90,6 @@ public:
      * @return Work status stub.
      */
     std::shared_ptr<WorkInfo> GetWorkStatusStub(MessageParcel& data);
-private:
-    ErrCode ShellDumpStub(MessageParcel& data, MessageParcel& reply);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

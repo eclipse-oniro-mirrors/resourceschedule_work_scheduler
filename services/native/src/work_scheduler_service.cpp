@@ -64,9 +64,8 @@ WorkSchedulerService::~WorkSchedulerService() {}
 
 void WorkSchedulerService::OnStart()
 {
-    WS_HILOGE("OnStart enter.");
     if (ready_) {
-        WS_HILOGE("OnStart is ready, nothing to do.");
+        WS_HILOGI("OnStart is ready, nothing to do.");
         return;
     }
 
@@ -82,7 +81,7 @@ void WorkSchedulerService::OnStart()
 
     // Try to init.
     Init();
-    WS_HILOGE("OnStart success.");
+    WS_HILOGD("On start success.");
 }
 
 bool WorkSchedulerService::IsBaseAbilityReady()
@@ -100,10 +99,10 @@ bool WorkSchedulerService::IsBaseAbilityReady()
 
 void WorkSchedulerService::InitPersisted()
 {
-    WS_HILOGE("WorkSchedulerService::InitPersisted");
+    WS_HILOGD("init persisted work");
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
     for (auto it : persistedWorks) {
-        WS_HILOGE("get persisted work, id: %{public}d", it->GetWorkId());
+        WS_HILOGD("get persisted work, id: %{public}d", it->GetWorkId());
         InitPersistedWork(*it);
     }
 }
@@ -160,7 +159,7 @@ void WorkSchedulerService::OnStop()
 bool WorkSchedulerService::Init()
 {
     if (!IsBaseAbilityReady()) {
-        WS_HILOGD("request system service is not ready yet!");
+        WS_HILOGE("request system service is not ready yet!");
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
         return false;
     }
@@ -182,7 +181,7 @@ bool WorkSchedulerService::Init()
 
 void WorkSchedulerService::WorkQueueManagerInit()
 {
-    WS_HILOGD("WorkQueueManagerInit come in");
+    WS_HILOGD("come in");
     if (workQueueManager_ == nullptr) {
         workQueueManager_ = make_shared<WorkQueueManager>(wss);
     }
@@ -204,7 +203,7 @@ void WorkSchedulerService::WorkQueueManagerInit()
 
 bool WorkSchedulerService::WorkPolicyManagerInit()
 {
-    WS_HILOGE("WorkPolicyManagerInit come in");
+    WS_HILOGD("come in");
     if (workPolicyManager_ == nullptr) {
         workPolicyManager_ = make_shared<WorkPolicyManager>(wss);
     }
@@ -252,7 +251,7 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
         WS_HILOGD("bundleUid : %{public}d , uid : %{public}d.", bundleInfo.uid, uid);
         return bundleInfo.uid == uid;
     }
-    WS_HILOGD("Get bundle info failed.");
+    WS_HILOGE("Get bundle info failed.");
     return false;
 }
 
@@ -285,7 +284,7 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
     if (!CheckCondition(workInfo)) {
         return false;
     }
-    WS_HILOGD("WorkSchedulerService::StartWork workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
+    WS_HILOGD("workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
         workInfo.GetBundleName().c_str(), workInfo.GetAbilityName().c_str(), workInfo.GetWorkId(), uid);
     shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
     bool ret = false;
@@ -300,7 +299,7 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
         }
         ret = true;
     } else {
-        WS_HILOGE("WorkPolicyManager->AddWork return false");
+        WS_HILOGE("Work Policy Manager AddWork return false");
     }
     return ret;
 }
@@ -314,9 +313,8 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
             workQueueManager_->AddWork(workStatus);
         }
     } else {
-        WS_HILOGD("uid is invalid : %{public}d", workInfo.GetUid());
+        WS_HILOGE("uid is invalid : %{public}d", workInfo.GetUid());
     }
-    WS_HILOGD("come out");
 }
 
 bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
@@ -331,7 +329,7 @@ bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
-        WS_HILOGD("StopWorkInner, workStatus is nullptr");
+        WS_HILOGE("workStatus is nullptr");
         return false;
     }
     return StopWorkInner(workStatus, uid, false, false);
@@ -349,7 +347,7 @@ bool WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
-        WS_HILOGD("StopWorkInner, workStatus is nullptr");
+        WS_HILOGE("workStatus is nullptr");
         return false;
     }
     StopWorkInner(workStatus, uid, true, false);
@@ -386,7 +384,7 @@ bool WorkSchedulerService::StopAndClearWorks()
 
 bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
 {
-    WS_HILOGD("StopAndClearWorksByUid:%{public}d", uid);
+    WS_HILOGD("Stop and clear works by Uid:%{public}d", uid);
     list<std::shared_ptr<WorkStatus>> allWorks = workPolicyManager_->GetAllWorkStatus(uid);
     list<std::string> workIdList;
     for (auto work : allWorks) {
@@ -438,11 +436,6 @@ shared_ptr<WorkInfo> WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &
         return nullptr;
     }
     return workPolicyManager_->GetWorkStatus(uid, workId);
-}
-
-bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<string> &dumpInfo)
-{
-    return true;
 }
 
 void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus> work)

@@ -171,18 +171,5 @@ ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<Wo
     }
     return ERR_OK;
 }
-
-bool WorkSchedulerSrvClient::ShellDump(const std::vector<std::string> &dumpOption,
-    std::vector<std::string> &dumpInfo)
-{
-    WS_HILOGD("ShellDump");
-    if (Connect() != ERR_OK) {
-        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
-        dumpInfo.push_back("Connect() failed, errno:" + std::to_string(Connect()));
-        return false;
-    }
-    iWorkSchedService_->ShellDump(dumpOption, dumpInfo);
-    return true;
-}
 } // namespace WorkScheduler
 } // namespace OHOS

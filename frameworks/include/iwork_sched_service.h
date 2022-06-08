@@ -39,7 +39,6 @@ public:
         IS_LAST_WORK_TIMEOUT,
         OBTAIN_ALL_WORKS,
         GET_WORK_STATUS,
-        DUMP_INFO
     };
 
     /**
@@ -91,14 +90,6 @@ public:
      * @return True if the work executed time out, else false.
      */
     virtual std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) = 0;
-    /**
-     * @brief Shell dump.
-     *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
-     * @return True if success,else false
-     */
-    virtual bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.workscheduler.iworkschedservice");
 };

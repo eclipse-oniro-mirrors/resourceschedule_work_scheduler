@@ -216,36 +216,5 @@ std::shared_ptr<WorkInfo> WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int
     }
     return std::make_shared<WorkInfo>(*workInfo);
 }
-
-bool WorkSchedServiceProxy::ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo)
-{
-    sptr<IRemoteObject> remote = Remote();
-    RETURN_IF_WITH_RET(remote == nullptr, false);
-    MessageParcel data;
-    MessageParcel reply;
-    MessageOption option;
-    if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
-        WS_HILOGE("write descriptor failed!");
-        return false;
-    }
-    if (!data.WriteStringVector(dumpOption)) {
-        WS_HILOGE("[ShellDump] fail: write option failed.");
-        return false;
-    }
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::DUMP_INFO), data, reply, option);
-    if (ret != ERR_OK) {
-        WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
-        return false;
-    }
-    if (!reply.ReadBool()) {
-        WS_HILOGE("[ShellDump] fail: read result failed.");
-        return false;
-    }
-    if (!reply.ReadStringVector(&dumpInfo)) {
-        WS_HILOGE("[ShellDump] fail: read dumpInfo failed.");
-        return false;
-    }
-    return true;
-}
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -106,14 +106,12 @@ public:
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
     /**
-     * @brief Shell dump.
+     * @brief Dump.
      *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
-     * @return True if success,else false.
+     * @param fd The file descriptor.
+     * @param args The dump args.
+     * @return Status code, ERR_OK if success.
      */
-    bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
-
     int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
 
     /**

@@ -78,14 +78,6 @@ public:
      * @return ERR_OK on success, others on failure.
      */
     ErrCode ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos);
-    /**
-     * @brief Shell dump.
-     *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
-     * @return True if success,else false
-     */
-    bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo);
 
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
