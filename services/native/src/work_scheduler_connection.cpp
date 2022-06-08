@@ -42,12 +42,12 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
         return;
     }
     proxy_->OnWorkStart(*workInfo_);
-    WS_HILOGI("OnAbilityConnectDone.%{public}d", workInfo_->GetWorkId());
+    WS_HILOGI("On ability connectDone, workId = %{public}d.", workInfo_->GetWorkId());
 }
 
 void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int32_t resultCode)
 {
-    WS_HILOGI("OnAbilityDisconnectDone");
+    WS_HILOGI("On ability disconnect done.");
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS

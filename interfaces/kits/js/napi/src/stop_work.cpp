@@ -47,7 +47,7 @@ napi_value StopWork(napi_env env, napi_callback_info info)
     // Check workInfo and call service.
     bool result;
     if (!getWorkRes) {
-        WS_HILOGD("Work info create failed.");
+        WS_HILOGE("Work info create failed.");
         result = false;
     } else {
         if (needCancel) {

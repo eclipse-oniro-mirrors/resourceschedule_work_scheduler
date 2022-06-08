@@ -35,7 +35,7 @@ NetworkEventSubscriber::NetworkEventSubscriber(const EventFwk::CommonEventSubscr
 void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data)
 {
     const std::string action = data.GetWant().GetAction();
-    WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
+    WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
 
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE) {
         int32_t code = data.GetCode();
@@ -122,7 +122,7 @@ void NetworkListener::OnConditionChanged(WorkCondition::Type conditionType,
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
     } else {
-        WS_HILOGD("workQueueManager_ is nullptr.");
+        WS_HILOGE("workQueueManager_ is nullptr.");
     }
 }
 } // namespace WorkScheduler

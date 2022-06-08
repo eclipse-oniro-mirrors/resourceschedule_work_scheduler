@@ -61,7 +61,7 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
 
 napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
 {
-    WS_HILOGD("IsLastWorkTimeOut napi begin.");
+    WS_HILOGD("Is LastWork TimeOut napi begin.");
 
     // Get params.
     IsLastWorkTimeOutParamsInfo params;
@@ -111,7 +111,7 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
     NAPI_CALL(env, napi_queue_async_work(env, asyncCallbackInfo->asyncWork));
     callbackPtr.release();
 
-    WS_HILOGD("IsLastWorkTimeOut napi end.");
+    WS_HILOGD("Is LastWork TimeOut napi end.");
     if (asyncCallbackInfo->isCallback) {
         return Common::NapiGetNull(env);
     } else {

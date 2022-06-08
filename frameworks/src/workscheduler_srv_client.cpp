@@ -87,12 +87,12 @@ void WorkSchedulerSrvClient::WorkSchedulerDeathRecipient::OnRemoteDied(const wpt
         return;
     }
     WorkSchedulerSrvClient::GetInstance().ResetProxy(remote);
-    WS_HILOGD("WorkSchedulerDeathRecipient::Recv death notice.");
+    WS_HILOGD("Work Scheduler Death Recipient Recv death notice.");
 }
 
 bool WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
 {
-    WS_HILOGD("StartWork");
+    WS_HILOGD("Start Work");
     if (Connect() != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
@@ -102,7 +102,7 @@ bool WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
 
 bool WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
 {
-    WS_HILOGD("StopWork");
+    WS_HILOGD("Stop Work");
     if (Connect() != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
@@ -112,7 +112,7 @@ bool WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
 
 bool WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)
 {
-    WS_HILOGD("StopAndCancelWork");
+    WS_HILOGD("Stop And Cancel Work");
     if (Connect() != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
@@ -122,7 +122,7 @@ bool WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)
 
 bool WorkSchedulerSrvClient::StopAndClearWorks()
 {
-    WS_HILOGD("StopAndClearWorks");
+    WS_HILOGD("Stop And Clear Works");
     if (Connect() != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
         return false;
@@ -132,7 +132,7 @@ bool WorkSchedulerSrvClient::StopAndClearWorks()
 
 ErrCode WorkSchedulerSrvClient::IsLastWorkTimeout(int32_t workId, bool &result)
 {
-    WS_HILOGD("IsLastWorkTimeout");
+    WS_HILOGD("Is LastWork Timeout");
     ErrCode errCode = Connect();
     if (errCode != ERR_OK) {
         return errCode;
@@ -143,7 +143,7 @@ ErrCode WorkSchedulerSrvClient::IsLastWorkTimeout(int32_t workId, bool &result)
 
 ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos)
 {
-    WS_HILOGD("ObtainAllWorks");
+    WS_HILOGD("Obtain All Works");
     ErrCode errCode = Connect();
     if (errCode != ERR_OK) {
         return errCode;
@@ -156,7 +156,7 @@ ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInf
 
 ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo)
 {
-    WS_HILOGD("GetWorkStatus");
+    WS_HILOGD("Get Work Status");
     if (workId <= 0) {
         return E_WORK_ID_INVALID;
     }

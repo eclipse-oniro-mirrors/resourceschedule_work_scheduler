@@ -28,7 +28,7 @@ ChargerEventSubscriber::ChargerEventSubscriber(const EventFwk::CommonEventSubscr
 void ChargerEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data)
 {
     const std::string action = data.GetWant().GetAction();
-    WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
+    WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
 
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED) {
         int32_t code = data.GetCode();
@@ -96,14 +96,14 @@ ChargerListener::~ChargerListener()
 
 bool ChargerListener::Start()
 {
-    WS_HILOGI("ChargerListener start");
+    WS_HILOGI("Charger listener start");
     this->commonEventSubscriber = CreateChargerEventSubscriber(*this);
     return EventFwk::CommonEventManager::SubscribeCommonEvent(this->commonEventSubscriber);
 }
 
 bool ChargerListener::Stop()
 {
-    WS_HILOGI("ChargerListener stop");
+    WS_HILOGI("Charger listener stop");
     if (this->commonEventSubscriber != nullptr) {
         bool result = EventFwk::CommonEventManager::UnSubscribeCommonEvent(this->commonEventSubscriber);
         if (result) {
@@ -120,7 +120,7 @@ void ChargerListener::OnConditionChanged(WorkCondition::Type conditionType,
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
     } else {
-        WS_HILOGD("workQueueManager_ is nullptr.");
+        WS_HILOGE("workQueueManager_ is nullptr.");
     }
 }
 } // namespace WorkScheduler
