@@ -56,6 +56,9 @@ auto wss = DelayedSingleton<WorkSchedulerService>::GetInstance().get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
 const int32_t INIT_DELAY = 2 * 1000;
 const int32_t MAX_BUFFER = 256;
+const int32_t DUMP_OPTION = 0;
+const int32_t DUMP_PARAM_INDEX = 1;
+const int32_t DUMP_VALUE_INDEX = 2;
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -472,23 +475,23 @@ int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>
             // hidumper -s said '-h'
             DumpUsage(result);
             break;
-        case 1:
+        case DUMP_OPTION + 1:
             // hidumper -s said '-h' or hidumper -s said '-a'
-            if (argsInStr[0] == "-h") {
+            if (argsInStr[DUMP_OPTION] == "-h") {
                 DumpUsage(result);
-            } else if (argsInStr[0] == "-a") {
+            } else if (argsInStr[DUMP_OPTION] == "-a") {
                 DumpAllInfo(result);
             } else {
                 result.append("Error params.");
             }
             break;
-        case 2:
-            DumpParamSet(argsInStr[0], argsInStr[1], result);
+        case DUMP_PARAM_INDEX + 1:
+            DumpParamSet(argsInStr[DUMP_OPTION], argsInStr[DUMP_PARAM_INDEX], result);
             break;
-        case 3:
-            if (argsInStr[0] == "-d") {
+        case DUMP_VALUE_INDEX + 1:
+            if (argsInStr[DUMP_OPTION] == "-d") {
                 EventPublisher eventPublisher;
-                eventPublisher.Dump(result, argsInStr[1], argsInStr[2]);
+                eventPublisher.Dump(result, argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX]);
             } else {
                 result.append("Error params.");
             }
