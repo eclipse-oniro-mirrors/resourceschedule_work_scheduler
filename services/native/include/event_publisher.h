@@ -28,39 +28,46 @@ public:
     /**
      * @brief Publish event.
      *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
+     * @param result The dump result.
+     * @param eventType The event type.
+     * @param eventValue The event value.
      */
     void PublishEvent(std::string &result, std::string &eventType, std::string &eventValue);
     /**
      * @brief Publish network event.
      *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
+     * @param result The dump result.
+     * @param eventValue The event value.
      */
     void PublishNetworkEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publish charging event.
      *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
+     * @param result The dump result.
+     * @param eventValue The event value.
      */
     void PublishChargingEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publish storage event.
      *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
+     * @param result The dump result.
+     * @param eventValue The event value.
      */
     void PublishStorageEvent(std::string &result, std::string &eventValue);
     /**
-     * @brief Publishbattery status event.
+     * @brief Publish battery status event.
      *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
+     * @param result The dump result.
+     * @param eventValue The event value.
      */
     void PublishBatteryStatusEvent(std::string &result, std::string &eventValue);
-
+    /**
+     * @brief Dump event info.
+     *
+     * @param result The dump result.
+     * @param eventType The event type.
+     * @param eventValue The event value.
+     */
     void Dump(std::string &result, std::string &eventType, std::string &eventValue);
 };
 } // namespace WorkScheduler
