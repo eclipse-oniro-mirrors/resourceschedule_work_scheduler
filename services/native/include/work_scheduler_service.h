@@ -106,13 +106,14 @@ public:
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
     /**
-     * @brief Shell dump.
+     * @brief Dump.
      *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
-     * @return True if success,else false.
+     * @param fd The file descriptor.
+     * @param args The dump args.
+     * @return Status code, ERR_OK if success.
      */
-    bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
+    int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
+
     /**
      * @brief Init persisted.
      */
@@ -212,14 +213,13 @@ private:
     void RefreshPersistedWorks();
     std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
     void InitPersistedWork(WorkInfo& workInfo);
-    void DumpAllInfo(std::vector<std::string> &dumpInfo);
-    void DumpWorkQueueInfo(std::vector<std::string> &dumpInfo);
-    void DumpWorkPolicyInfo(std::vector<std::string> &dumpInfo);
+    void DumpAllInfo(std::string &result);
     bool CheckWorkInfo(WorkInfo &workInfo, int32_t &uid);
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
     bool CheckCondition(WorkInfo& workInfo);
-    void DumpDebugInfo(std::vector<std::string> &dumpInfo);
     bool IsBaseAbilityReady();
+    void DumpUsage(std::string &result);
+    void DumpParamSet(std::string &key, std::string &value, std::string &result);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

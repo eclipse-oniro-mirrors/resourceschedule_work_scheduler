@@ -22,7 +22,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 #ifndef WORKSCHEDULER_DOMAIN_ID
-#define WORKSCHEDULER_DOMAIN_ID 0xD001900
+#define WORKSCHEDULER_DOMAIN_ID 0xD001712
 #endif
 
 #ifndef WORKSCHEDULER_MGR_LOG_TAG

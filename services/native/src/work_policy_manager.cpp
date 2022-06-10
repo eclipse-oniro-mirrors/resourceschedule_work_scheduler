@@ -54,7 +54,7 @@ WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : ws
 
 bool WorkPolicyManager::Init()
 {
-    WS_HILOGI("WorkPolicyManager::Init");
+    WS_HILOGD("Work policy manager init.");
     workConnManager_ = make_shared<WorkConnManager>();
     auto wmsptr = wss_.promote();
     if (wmsptr == nullptr) {
@@ -89,7 +89,7 @@ void WorkPolicyManager::AddAppDataClearListener(std::shared_ptr<AppDataClearList
 
 bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
 {
-    WS_HILOGI("WorkPolicyManager::AddWork");
+    WS_HILOGD("Add work");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         if (uidQueueMap_.at(uid)->Contains(make_shared<string>(workStatus->workId_))) {
@@ -149,7 +149,7 @@ bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
 
 bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
 {
-    WS_HILOGI("WorkPolicyManager::RemoveWork");
+    WS_HILOGD("Remove work.");
     bool ret = false;
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
@@ -170,7 +170,7 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
 
 shared_ptr<WorkStatus> WorkPolicyManager::FindWorkStatus(WorkInfo& workInfo, int32_t uid)
 {
-    WS_HILOGI("WorkPolicyManager::FindWorkStatus");
+    WS_HILOGD("Find work status start.");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         return uidQueueMap_.at(uid)->Find(WorkStatus::MakeWorkId(workInfo.GetWorkId(), uid));
@@ -198,7 +198,7 @@ void WorkPolicyManager::RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workSta
 bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
     const bool needCancel, bool isTimeOut)
 {
-    WS_HILOGI("WorkPolicyManager::StopWork");
+    WS_HILOGD("enter");
     bool hasCanceled = false;
     if (workStatus->IsRunning()) {
         workStatus->lastTimeout_ = isTimeOut;
@@ -225,7 +225,7 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
 
 bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
 {
-    WS_HILOGI("WorkPolicyManager::StopAndClearWorks");
+    WS_HILOGD("enter");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
@@ -256,7 +256,7 @@ bool WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid)
 
 void WorkPolicyManager::OnConditionReady(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)
 {
-    WS_HILOGI("enter");
+    WS_HILOGD("enter");
     if (workStatusVector == nullptr) {
         return;
     }
@@ -284,7 +284,7 @@ int32_t WorkPolicyManager::GetMaxRunningCount()
 
 int32_t WorkPolicyManager::GetRunningCount()
 {
-    WS_HILOGI("WorkPolicyManager::GetRunningCount");
+    WS_HILOGD("enter");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     int32_t count = 0;
     auto it = uidQueueMap_.begin();
@@ -297,7 +297,7 @@ int32_t WorkPolicyManager::GetRunningCount()
 
 void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<DetectorValue> detectorVal)
 {
-    WS_HILOGI("enter");
+    WS_HILOGD("enter");
     switch (policyType) {
         case PolicyType::APP_REMOVED:
         // fall-through
@@ -313,7 +313,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 
 void WorkPolicyManager::CheckWorkToRun()
 {
-    WS_HILOGI("CheckWorkToRun");
+    WS_HILOGD("Check work to run.");
     RemoveAllUnReady();
     if (handler_ == nullptr) {
         WS_HILOGE("handler lock() returns nullptr");
@@ -383,7 +383,7 @@ void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatu
 
 void WorkPolicyManager::SendRetrigger(int32_t delaytime)
 {
-    WS_HILOGI("enter");
+    WS_HILOGD("enter");
     if (handler_ == nullptr) {
         return;
     }
@@ -393,7 +393,7 @@ void WorkPolicyManager::SendRetrigger(int32_t delaytime)
 
 void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 {
-    WS_HILOGI("WatchdogTimeOut.");
+    WS_HILOGD("WatchdogTimeOut.");
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
     auto wmsptr = wss_.promote();
     if (wmsptr == nullptr) {
@@ -411,7 +411,7 @@ std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
 
 list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
 {
-    WS_HILOGI("Wenter");
+    WS_HILOGD("Wenter");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     list<shared_ptr<WorkInfo>> allWorks;
     if (uidQueueMap_.count(uid) > 0) {
@@ -426,7 +426,7 @@ list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
 
 shared_ptr<WorkInfo> WorkPolicyManager::GetWorkStatus(int32_t &uid, int32_t &workId)
 {
-    WS_HILOGI("enter");
+    WS_HILOGD("enter");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
@@ -440,7 +440,7 @@ shared_ptr<WorkInfo> WorkPolicyManager::GetWorkStatus(int32_t &uid, int32_t &wor
 
 list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllWorkStatus(int32_t &uid)
 {
-    WS_HILOGI("enter");
+    WS_HILOGD("enter");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     list<shared_ptr<WorkStatus>> allWorks;
     if (uidQueueMap_.count(uid) > 0) {
@@ -475,7 +475,7 @@ void WorkPolicyManager::Dump(string& result)
     DumpUidQueueMap(result);
 
     result.append("3. GetMaxRunningCount:");
-    result.append(to_string(GetMaxRunningCount()));
+    result.append(to_string(GetMaxRunningCount()) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()

@@ -34,7 +34,7 @@ bool TimerListener::Start()
     if (!eventRunner_) {
         eventRunner_ = AppExecFwk::EventRunner::Create(TIMER_LISTENER);
         if (eventRunner_ == nullptr) {
-            WS_HILOGD("Init failed due to create EventHandler");
+            WS_HILOGE("Init failed due to create EventHandler");
             return false;
         }
     }
@@ -42,7 +42,7 @@ bool TimerListener::Start()
         handler_ = std::make_shared<WorkQueueEventHandler>(eventRunner_, workQueueManager_);
     }
     if (workQueueManager_ == nullptr) {
-        WS_HILOGD("workQueueManager_ is null");
+        WS_HILOGE("workQueueManager_ is null");
         return false;
     }
     uint32_t time = workQueueManager_->GetTimeCycle();

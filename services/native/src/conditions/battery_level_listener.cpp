@@ -31,13 +31,13 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
 {
     const std::string action = data.GetWant().GetAction();
 
-    WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
+    WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
         if (data.GetCode() == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY) {
             std::string KEY_CAPACITY = ToString(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
             int32_t defaultCapacity = -1;
             auto capacity = data.GetWant().GetIntParam(KEY_CAPACITY, defaultCapacity);
-            WS_HILOGI("OnReceiveEvent capacity %{public}d", capacity);
+            WS_HILOGD("capacity: %{public}d", capacity);
             if (capacity == defaultCapacity) {
                 return;
             }
@@ -45,7 +45,7 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
                 std::make_shared<DetectorValue>(capacity, 0, 0, std::string()));
         }
     } else {
-        WS_HILOGI("OnReceiveEvent action is invalid");
+        WS_HILOGI("action is invalid");
     }
 }
 
@@ -69,14 +69,14 @@ BatteryLevelListener::~BatteryLevelListener()
 
 bool BatteryLevelListener::Start()
 {
-    WS_HILOGI("BatteryLevelListener Start");
+    WS_HILOGD("Battery level listener start.");
     this->commonEventSubscriber = CreateBatteryEventSubscriber(*this);
     return EventFwk::CommonEventManager::SubscribeCommonEvent(this->commonEventSubscriber);
 }
 
 bool BatteryLevelListener::Stop()
 {
-    WS_HILOGI("BatteryLevelListener Stop");
+    WS_HILOGD("Battery level listener stop.");
     if (this->commonEventSubscriber != nullptr) {
         bool result = EventFwk::CommonEventManager::UnSubscribeCommonEvent(this->commonEventSubscriber);
         if (result) {
@@ -93,7 +93,7 @@ void BatteryLevelListener::OnConditionChanged(WorkCondition::Type conditionType,
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
     } else {
-        WS_HILOGD("workQueueManager_ is nullptr.");
+        WS_HILOGE("workQueueManager_ is nullptr.");
     }
 }
 } // namespace WorkScheduler

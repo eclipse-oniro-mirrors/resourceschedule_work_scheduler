@@ -41,86 +41,82 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
     std::shared_ptr<AppExecFwk::AbilityHandler>& handler,
     const sptr<IRemoteObject>& token)
 {
-    WS_HILOGI("enter");
+    WS_HILOGD("enter");
     WorkSchedulerExtension::Init(record, application, handler, token);
     std::string srcPath = "";
     GetSrcPath(srcPath);
     if (srcPath.empty()) {
-        WS_HILOGI(" JsWorkSchedulerExtension Failed to get srcPath");
+        WS_HILOGE("JsWorkSchedulerExtension Failed to get srcPath");
         return;
     }
 
     std::string moduleName(Extension::abilityInfo_->moduleName);
     moduleName.append("::").append(abilityInfo_->name);
-    WS_HILOGI("moduleName:%{public}s, srcPath:%{public}s.", moduleName.c_str(), srcPath.c_str());
+    WS_HILOGD("moduleName:%{public}s, srcPath:%{public}s.", moduleName.c_str(), srcPath.c_str());
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
     auto& engine = jsRuntime_.GetNativeEngine();
 
     jsObj_ = jsRuntime_.LoadModule(moduleName, srcPath);
     if (jsObj_ == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get jsObj_");
+        WS_HILOGE("WorkSchedulerExtension Failed to get jsObj_");
         return;
     }
-    WS_HILOGI("ConvertNativeValueTo.");
     NativeObject* obj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(jsObj_->Get());
     if (obj == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get JsWorkSchedulerExtension object");
+        WS_HILOGE("WorkSchedulerExtension Failed to get JsWorkSchedulerExtension object");
         return;
     }
 
     auto context = GetContext();
     if (context == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get context");
+        WS_HILOGE("WorkSchedulerExtension Failed to get context");
         return;
     }
-    WS_HILOGI("CreateJsWorkSchedulerExtensionContext.");
     NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
     auto shellContextRef = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
         &contextObj, 1);
     contextObj = shellContextRef->Get();
-    WS_HILOGI("Bind.");
     context->Bind(jsRuntime_, shellContextRef.release());
-    WS_HILOGI("SetProperty.");
     obj->SetProperty("context", contextObj);
-    WS_HILOGI("end.");
+    WS_HILOGD("end.");
 }
 
 void JsWorkSchedulerExtension::OnStart(const AAFwk::Want& want)
 {
-    WS_HILOGI("begin");
+    WS_HILOGD("begin");
     AbilityRuntime::Extension::OnStart(want);
 }
 
 void JsWorkSchedulerExtension::OnStop()
 {
     AbilityRuntime::Extension::OnStop();
-    WS_HILOGI("end.");
+    WS_HILOGD("end.");
 }
 
 sptr<IRemoteObject> JsWorkSchedulerExtension::OnConnect(const AAFwk::Want& want)
 {
     AbilityRuntime::Extension::OnConnect(want);
-    WS_HILOGI("begin.");
+    WS_HILOGD("begin.");
     sptr<WorkSchedulerStubImp> remoteObject = new (std::nothrow) WorkSchedulerStubImp(
         std::static_pointer_cast<JsWorkSchedulerExtension>(shared_from_this()));
     if (remoteObject == nullptr) {
-        WS_HILOGI("OnConnect get null");
+        WS_HILOGE("OnConnect get null");
         return remoteObject;
     }
-    WS_HILOGI("end.");
+    WS_HILOGD("end.");
     return remoteObject->AsObject();
 }
 
 void JsWorkSchedulerExtension::OnDisconnect(const AAFwk::Want& want)
 {
-    WS_HILOGI("begin.");
+    WS_HILOGD("begin.");
     AbilityRuntime::Extension::OnDisconnect(want);
 }
 
 void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
 {
     WorkSchedulerExtension::OnWorkStart(workInfo);
-    WS_HILOGI("begin.");
+    WS_HILOGD("begin.");
 
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
     NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
@@ -171,30 +167,30 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
 
     NativeValue* argv[] = {jworkInfoData};
     if (!jsObj_) {
-        WS_HILOGI("WorkSchedulerExtension Not found js");
+        WS_HILOGE("WorkSchedulerExtension Not found js");
         return;
     }
 
     NativeValue* value = jsObj_->Get();
     NativeObject* obj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(value);
     if (obj == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get WorkSchedulerExtension object");
+        WS_HILOGE("WorkSchedulerExtension Failed to get WorkSchedulerExtension object");
         return;
     }
 
     NativeValue* method = obj->GetProperty("onWorkStart");
     if (method == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get onWorkStart from WorkSchedulerExtension object");
+        WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStart from WorkSchedulerExtension object");
         return;
     }
     nativeEngine.CallFunction(value, method, argv, 1);
-    WS_HILOGI("end.");
+    WS_HILOGD("end.");
 }
 
 void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
 {
     WorkSchedulerExtension::OnWorkStop(workInfo);
-    WS_HILOGI("begin.");
+    WS_HILOGD("begin.");
 
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
     NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
@@ -245,24 +241,24 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
 
     NativeValue* argv[] = {jworkInfoData};
     if (!jsObj_) {
-        WS_HILOGI("WorkSchedulerExtension Not found js");
+        WS_HILOGE("WorkSchedulerExtension Not found js");
         return;
     }
 
     NativeValue* value = jsObj_->Get();
     NativeObject* obj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(value);
     if (obj == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get object");
+        WS_HILOGE("WorkSchedulerExtension Failed to get object");
         return;
     }
 
     NativeValue* method = obj->GetProperty("onWorkStop");
     if (method == nullptr) {
-        WS_HILOGI("WorkSchedulerExtension Failed to get onWorkStop from object");
+        WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStop from object");
         return;
     }
     nativeEngine.CallFunction(value, method, argv, 1);
-    WS_HILOGI("end.");
+    WS_HILOGD("end.");
 }
 
 void JsWorkSchedulerExtension::GetSrcPath(std::string &srcPath)

@@ -37,6 +37,7 @@
 #include "conditions/network_listener.h"
 #include "conditions/storage_listener.h"
 #include "conditions/timer_listener.h"
+#include "event_publisher.h"
 #include "json/json.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
@@ -53,16 +54,9 @@ namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 auto wss = DelayedSingleton<WorkSchedulerService>::GetInstance().get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
-const string ALL_INFO = "All";
-const string WORK_QUEUE_INFO = "WorkQueue";
-const string WORK_POLICY_INFO = "WorkPolicy";
-const string SET_MEMORY = "SetMemory";
-const string SET_REPEAT_CYCLE_TIME_MIN = "SetRepeatCycleTimeMin";
-const string SET_WATCHDOG_TIME = "SetWatchdogTime";
-const string CHECK_BUNDLE = "CheckBundle";
-const string DEBUG_INFO = "DebugInfo";
 const int32_t INIT_DELAY = 2 * 1000;
 const int32_t MAX_BUFFER = 256;
+const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 }
@@ -73,9 +67,8 @@ WorkSchedulerService::~WorkSchedulerService() {}
 
 void WorkSchedulerService::OnStart()
 {
-    WS_HILOGE("OnStart enter.");
     if (ready_) {
-        WS_HILOGE("OnStart is ready, nothing to do.");
+        WS_HILOGI("OnStart is ready, nothing to do.");
         return;
     }
 
@@ -91,7 +84,7 @@ void WorkSchedulerService::OnStart()
 
     // Try to init.
     Init();
-    WS_HILOGE("OnStart success.");
+    WS_HILOGD("On start success.");
 }
 
 bool WorkSchedulerService::IsBaseAbilityReady()
@@ -109,10 +102,10 @@ bool WorkSchedulerService::IsBaseAbilityReady()
 
 void WorkSchedulerService::InitPersisted()
 {
-    WS_HILOGE("WorkSchedulerService::InitPersisted");
+    WS_HILOGD("init persisted work");
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
     for (auto it : persistedWorks) {
-        WS_HILOGE("get persisted work, id: %{public}d", it->GetWorkId());
+        WS_HILOGD("get persisted work, id: %{public}d", it->GetWorkId());
         InitPersistedWork(*it);
     }
 }
@@ -169,7 +162,7 @@ void WorkSchedulerService::OnStop()
 bool WorkSchedulerService::Init()
 {
     if (!IsBaseAbilityReady()) {
-        WS_HILOGD("request system service is not ready yet!");
+        WS_HILOGE("request system service is not ready yet!");
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
         return false;
     }
@@ -191,7 +184,7 @@ bool WorkSchedulerService::Init()
 
 void WorkSchedulerService::WorkQueueManagerInit()
 {
-    WS_HILOGD("WorkQueueManagerInit come in");
+    WS_HILOGD("come in");
     if (workQueueManager_ == nullptr) {
         workQueueManager_ = make_shared<WorkQueueManager>(wss);
     }
@@ -213,7 +206,7 @@ void WorkSchedulerService::WorkQueueManagerInit()
 
 bool WorkSchedulerService::WorkPolicyManagerInit()
 {
-    WS_HILOGE("WorkPolicyManagerInit come in");
+    WS_HILOGD("come in");
     if (workPolicyManager_ == nullptr) {
         workPolicyManager_ = make_shared<WorkPolicyManager>(wss);
     }
@@ -261,7 +254,7 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
         WS_HILOGD("bundleUid : %{public}d , uid : %{public}d.", bundleInfo.uid, uid);
         return bundleInfo.uid == uid;
     }
-    WS_HILOGD("Get bundle info failed.");
+    WS_HILOGE("Get bundle info failed.");
     return false;
 }
 
@@ -294,7 +287,7 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
     if (!CheckCondition(workInfo)) {
         return false;
     }
-    WS_HILOGD("WorkSchedulerService::StartWork workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
+    WS_HILOGD("workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
         workInfo.GetBundleName().c_str(), workInfo.GetAbilityName().c_str(), workInfo.GetWorkId(), uid);
     shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
     bool ret = false;
@@ -309,7 +302,7 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
         }
         ret = true;
     } else {
-        WS_HILOGE("WorkPolicyManager->AddWork return false");
+        WS_HILOGE("Work Policy Manager AddWork return false");
     }
     return ret;
 }
@@ -323,9 +316,8 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
             workQueueManager_->AddWork(workStatus);
         }
     } else {
-        WS_HILOGD("uid is invalid : %{public}d", workInfo.GetUid());
+        WS_HILOGE("uid is invalid : %{public}d", workInfo.GetUid());
     }
-    WS_HILOGD("come out");
 }
 
 bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
@@ -340,7 +332,7 @@ bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
-        WS_HILOGD("StopWorkInner, workStatus is nullptr");
+        WS_HILOGE("workStatus is nullptr");
         return false;
     }
     return StopWorkInner(workStatus, uid, false, false);
@@ -358,7 +350,7 @@ bool WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
-        WS_HILOGD("StopWorkInner, workStatus is nullptr");
+        WS_HILOGE("workStatus is nullptr");
         return false;
     }
     StopWorkInner(workStatus, uid, true, false);
@@ -395,7 +387,7 @@ bool WorkSchedulerService::StopAndClearWorks()
 
 bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
 {
-    WS_HILOGD("StopAndClearWorksByUid:%{public}d", uid);
+    WS_HILOGD("Stop and clear works by Uid:%{public}d", uid);
     list<std::shared_ptr<WorkStatus>> allWorks = workPolicyManager_->GetAllWorkStatus(uid);
     list<std::string> workIdList;
     for (auto work : allWorks) {
@@ -449,75 +441,6 @@ shared_ptr<WorkInfo> WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &
     return workPolicyManager_->GetWorkStatus(uid, workId);
 }
 
-bool WorkSchedulerService::ShellDump(const vector<string> &dumpOption, vector<string> &dumpInfo)
-{
-    if (!ready_) {
-        WS_HILOGE("service is not ready.");
-        dumpInfo.push_back(string("service is not ready."));
-        return false;
-    }
-    if (dumpOption.size() < DUMP_PARAM_INDEX + 1) {
-        WS_HILOGI("Dump need at least two params.");
-        dumpInfo.push_back(string("dump need at least two params."));
-        return false;
-    }
-    if (dumpOption[DUMP_PARAM_INDEX] == ALL_INFO) {
-        DumpAllInfo(dumpInfo);
-    } else if (dumpOption[DUMP_PARAM_INDEX] == CHECK_BUNDLE) {
-        if (dumpOption.size() < DUMP_VALUE_INDEX + 1) {
-            WS_HILOGI("Dump checkbundle need at least three params.");
-            dumpInfo.push_back(string("dump checkbundle need at least three params."));
-            return false;
-        }
-        if (dumpOption[DUMP_VALUE_INDEX] == "true") {
-            checkBundle_ = true;
-        } else if (dumpOption[DUMP_VALUE_INDEX] == "false") {
-            checkBundle_ = false;
-        }
-    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_MEMORY) {
-        workPolicyManager_->SetMemoryByDump(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
-        return true;
-    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_WATCHDOG_TIME) {
-        workPolicyManager_->SetWatchdogTime(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
-        return true;
-    } else if (dumpOption[DUMP_PARAM_INDEX] == SET_REPEAT_CYCLE_TIME_MIN) {
-        workQueueManager_->SetTimeCycle(std::stoi(dumpOption[DUMP_VALUE_INDEX]));
-        return true;
-    } else if (dumpOption[DUMP_PARAM_INDEX] == WORK_QUEUE_INFO) {
-        DumpWorkQueueInfo(dumpInfo);
-    } else if (dumpOption[DUMP_PARAM_INDEX] == WORK_POLICY_INFO) {
-        DumpWorkPolicyInfo(dumpInfo);
-    } else if (dumpOption[DUMP_PARAM_INDEX] == DEBUG_INFO) {
-        DumpDebugInfo(dumpInfo);
-        return true;
-    } else {
-        WS_HILOGI("Dump need right param.");
-        dumpInfo.push_back(string("dump need right param."));
-        return false;
-    }
-    return true;
-}
-
-void WorkSchedulerService::DumpWorkQueueInfo(vector<string> &dumpInfo)
-{
-    string workQueueInfo;
-    workQueueInfo.append("================Work Queue Infos================\n");
-    if (workQueueManager_ != nullptr) {
-        workQueueManager_->Dump(workQueueInfo);
-        dumpInfo.push_back(workQueueInfo);
-    }
-}
-
-void WorkSchedulerService::DumpWorkPolicyInfo(vector<string> &dumpInfo)
-{
-    string workPolicyInfo;
-    workPolicyInfo.append("================Work Policy Infos================\n");
-    if (workPolicyManager_ != nullptr) {
-        workPolicyManager_->Dump(workPolicyInfo);
-        dumpInfo.push_back(workPolicyInfo);
-    }
-}
-
 void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus> work)
 {
     if (work == nullptr) {
@@ -529,18 +452,103 @@ void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus>
     }
 }
 
-void WorkSchedulerService::DumpDebugInfo(std::vector<std::string> &dumpInfo)
+int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>& args)
 {
-    dumpInfo.push_back("Need check bundle:" + std::to_string(checkBundle_));
-    dumpInfo.push_back("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()));
-    dumpInfo.push_back("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()));
-    dumpInfo.push_back("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()));
+    std::string result;
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        result.append("service is not ready.");
+        if (!SaveStringToFd(fd, result)) {
+            WS_HILOGE("save to fd failed.");
+        }
+        return ERR_OK;
+    }
+
+    std::vector<std::string> argsInStr;
+    std::transform(args.begin(), args.end(), std::back_inserter(argsInStr),
+        [](const std::u16string &arg) {
+        return Str16ToStr8(arg);
+    });
+
+    switch (argsInStr.size()) {
+        case 0:
+            // hidumper -s said '-h'
+            DumpUsage(result);
+            break;
+        case DUMP_OPTION + 1:
+            // hidumper -s said '-h' or hidumper -s said '-a'
+            if (argsInStr[DUMP_OPTION] == "-h") {
+                DumpUsage(result);
+            } else if (argsInStr[DUMP_OPTION] == "-a") {
+                DumpAllInfo(result);
+            } else {
+                result.append("Error params.");
+            }
+            break;
+        case DUMP_PARAM_INDEX + 1:
+            DumpParamSet(argsInStr[DUMP_OPTION], argsInStr[DUMP_PARAM_INDEX], result);
+            break;
+        case DUMP_VALUE_INDEX + 1:
+            if (argsInStr[DUMP_OPTION] == "-d") {
+                EventPublisher eventPublisher;
+                eventPublisher.Dump(result, argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX]);
+            } else {
+                result.append("Error params.");
+            }
+            break;
+        default:
+            result.append("Error params.");
+    }
+
+    if (!SaveStringToFd(fd, result)) {
+        WS_HILOGE("save to fd failed.");
+    }
+    return ERR_OK;
 }
 
-void WorkSchedulerService::DumpAllInfo(vector<string> &dumpInfo)
+void WorkSchedulerService::DumpUsage(std::string &result)
 {
-    DumpWorkQueueInfo(dumpInfo);
-    DumpWorkPolicyInfo(dumpInfo);
+    result.append("usage: workscheduler dump [<options>]\n")
+        .append("    -h: show the help.\n")
+        .append("    -a: show all info.\n")
+        .append("    -d event info: show the event info.\n")
+        .append("    -d (eventType) (TypeValue): publish the event.\n")
+        .append("    -memory (number): set the available memory.\n")
+        .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
+        .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n");
+}
+
+void WorkSchedulerService::DumpAllInfo(std::string &result)
+{
+    result.append("================Work Queue Infos================\n");
+    if (workQueueManager_ != nullptr) {
+        workQueueManager_->Dump(result);
+    }
+    result.append("================Work Policy Infos================\n");
+    if (workPolicyManager_ != nullptr) {
+        workPolicyManager_->Dump(result);
+    }
+    result.append("================Other Infos================\n");
+    result.append("Need check bundle:" + std::to_string(checkBundle_) + "\n")
+        .append("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()) + "\n")
+        .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
+        .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n");
+}
+
+void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, std::string &result)
+{
+    if (key == "-memory") {
+        workPolicyManager_->SetMemoryByDump(std::stoi(value));
+        result.append("Set memory success.");
+    } else if (key == "-watchdog_time") {
+        workPolicyManager_->SetWatchdogTime(std::stoi(value));
+        result.append("Set watchdog time success.");
+    } else if (key == "-repeat_time_min") {
+        workQueueManager_->SetTimeCycle(std::stoi(value));
+        result.append("Set repeat time min value success.");
+    } else {
+        result.append("Error params.");
+    }
 }
 
 void WorkSchedulerService::RefreshPersistedWorks()

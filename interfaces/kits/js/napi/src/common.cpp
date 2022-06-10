@@ -36,12 +36,12 @@ AsyncWorkData::AsyncWorkData(napi_env napiEnv)
 AsyncWorkData::~AsyncWorkData()
 {
     if (callback) {
-        WS_HILOGD("AsyncWorkData::~AsyncWorkData delete callback");
+        WS_HILOGD("callback delete");
         napi_delete_reference(env, callback);
         callback = nullptr;
     }
     if (asyncWork) {
-        WS_HILOGD("AsyncWorkData::~AsyncWorkData delete asyncWork");
+        WS_HILOGD("asyncWork delete");
         napi_delete_async_work(env, asyncWork);
         asyncWork = nullptr;
     }
@@ -90,7 +90,7 @@ bool Common::GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         workInfo.RequestNetworkType(WorkCondition::Network(networkType));
         hasCondition = true;
     } else {
-        WS_HILOGI("NetworkType set is invalid, just ignore set.");
+        WS_HILOGE("NetworkType set is invalid, just ignore set.");
     }
     return hasCondition;
 }
@@ -113,7 +113,7 @@ bool Common::GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
             workInfo.RequestChargerType(true, WorkCondition::Charger(chargerType));
         } else {
             workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_ANY);
-            WS_HILOGI("ChargeType info is invalid, just ignore set.");
+            WS_HILOGE("ChargeType info is invalid, just ignore set.");
         }
         hasCondition = true;
     }
@@ -131,7 +131,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         workInfo.RequestBatteryLevel(batteryLevel);
         hasCondition = true;
     } else {
-        WS_HILOGI("BatteryLevel set is invalid, just ignore set.");
+        WS_HILOGE("BatteryLevel set is invalid, just ignore set.");
     }
 
     // Get battery status info.
@@ -143,7 +143,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus(batteryStatus));
         hasCondition = true;
     } else {
-        WS_HILOGI("BatteryStatus set is invalid, just ignore set.");
+        WS_HILOGE("BatteryStatus set is invalid, just ignore set.");
     }
     return hasCondition;
 }
@@ -159,7 +159,7 @@ bool Common::GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         workInfo.RequestStorageLevel(WorkCondition::Storage(storageRequest));
         hasCondition = true;
     } else {
-        WS_HILOGI("StorageRequest set is invalid, just ignore set.");
+        WS_HILOGE("StorageRequest set is invalid, just ignore set.");
     }
     return hasCondition;
 }
@@ -188,7 +188,7 @@ bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
         return true;
     } else {
         if (repeatCount < 0) {
-            WS_HILOGI("RepeatCount is invalid, ignore.");
+            WS_HILOGE("RepeatCount is invalid, ignore.");
             return false;
         }
         workInfo.RequestRepeatCycle(repeatCycleTime, repeatCount);

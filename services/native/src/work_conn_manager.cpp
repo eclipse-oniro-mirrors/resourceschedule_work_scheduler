@@ -53,22 +53,22 @@ sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
 
 bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 {
-    WS_HILOGD("StartWork, id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
+    WS_HILOGD("Start Work with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
         workStatus->workId_.c_str(), workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str());
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
-        WS_HILOGI("Failed to get system ability manager service.");
+        WS_HILOGE("Failed to get system ability manager service.");
         return false;
     }
     sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
     if (remoteObject == nullptr) {
-        WS_HILOGI("Failed to ability manager service.");
+        WS_HILOGE("Failed to ability manager service.");
         return false;
     }
     sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
     if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
-        WS_HILOGI("Failed to get ability manager services object");
+        WS_HILOGE("Failed to get ability manager services object");
         return false;
     }
 
@@ -76,7 +76,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
         workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str(), workStatus->userId_);
     sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
     if (connection == nullptr) {
-        WS_HILOGI("Failed to new connection.");
+        WS_HILOGE("Failed to new connection.");
         return false;
     }
 
@@ -100,17 +100,17 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
-        WS_HILOGI("Failed to get system ability manager service.");
+        WS_HILOGE("Failed to get system ability manager service.");
         return false;
     }
     sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
     if (remoteObject == nullptr) {
-        WS_HILOGI("Failed to ability manager service.");
+        WS_HILOGE("Failed to ability manager service.");
         return false;
     }
     sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
     if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
-        WS_HILOGI("Failed to  get ability manager services object.");
+        WS_HILOGE("Failed to  get ability manager services object.");
         return false;
     }
     int32_t ret = abilityMgr_->DisconnectAbility(connect);
@@ -129,7 +129,7 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
         conn->StopWork();
         ret = DisConnect(conn);
     } else {
-        WS_HILOGD("connection is null");
+        WS_HILOGE("connection is null");
     }
     RemoveConnInfo(workStatus->workId_);
 

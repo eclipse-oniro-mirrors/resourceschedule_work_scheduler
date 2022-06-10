@@ -28,7 +28,7 @@ BatteryStatusEventSubscriber::BatteryStatusEventSubscriber(const EventFwk::Commo
 void BatteryStatusEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data)
 {
     const std::string action = data.GetWant().GetAction();
-    WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
+    WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
 
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_LOW) {
         WS_HILOGI("Condition changed: BATTERY_STATUS_LOW");
@@ -64,14 +64,14 @@ BatteryStatusListener::~BatteryStatusListener()
 
 bool BatteryStatusListener::Start()
 {
-    WS_HILOGI("BatteryStatusListener Start");
+    WS_HILOGD("Battery status listener start.");
     this->commonEventSubscriber = CreateBatteryEventSubscriber(*this);
     return EventFwk::CommonEventManager::SubscribeCommonEvent(this->commonEventSubscriber);
 }
 
 bool BatteryStatusListener::Stop()
 {
-    WS_HILOGI("BatteryStatusListener Stop");
+    WS_HILOGD("Battery status listener stop.");
     if (this->commonEventSubscriber != nullptr) {
         bool result = EventFwk::CommonEventManager::UnSubscribeCommonEvent(this->commonEventSubscriber);
         if (result) {
@@ -88,7 +88,7 @@ void BatteryStatusListener::OnConditionChanged(WorkCondition::Type conditionType
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
     } else {
-        WS_HILOGD("workQueueManager_ is nullptr.");
+        WS_HILOGE("workQueueManager_ is nullptr.");
     }
 }
 } // namespace WorkScheduler

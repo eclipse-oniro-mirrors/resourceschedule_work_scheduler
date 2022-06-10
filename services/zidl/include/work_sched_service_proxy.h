@@ -80,14 +80,6 @@ public:
      * @return The status of work.
      */
     std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
-    /**
-     * @brief Shell dump.
-     *
-     * @param dumpOption The dump option.
-     * @param dumpInfo The dump info.
-     * @return True if success,else false.
-     */
-    bool ShellDump(const std::vector<std::string> &dumpOption, std::vector<std::string> &dumpInfo) override;
 private:
     static inline BrokerDelegator<WorkSchedServiceProxy> delegator_;
 };

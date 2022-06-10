@@ -33,13 +33,13 @@ Watchdog::Watchdog(const std::shared_ptr<WorkPolicyManager>& service) : service_
 
 bool Watchdog::AddWatchdog(uint32_t watchdogId, int32_t interval)
 {
-    WS_HILOGD("AddWatchdog %{public}u", watchdogId);
+    WS_HILOGD("Add watchdog with Id:%{public}u", watchdogId);
     return SendEvent(watchdogId, 0, interval);
 }
 
 void Watchdog::RemoveWatchdog(uint32_t watchdogId)
 {
-    WS_HILOGD("RemoveWatchdog %{public}u", watchdogId);
+    WS_HILOGD("Remove watchdog with Id:%{public}u", watchdogId);
     RemoveEvent(watchdogId);
 }
 
@@ -52,7 +52,7 @@ void Watchdog::ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event)
     if (service_ != nullptr) {
         service_->WatchdogTimeOut(watchdogId);
     } else {
-        WS_HILOGD("service is null");
+        WS_HILOGE("service is null");
     }
 }
 } // namespace WorkScheduler

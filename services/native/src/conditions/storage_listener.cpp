@@ -27,7 +27,7 @@ StorageEventSubscriber::StorageEventSubscriber(const EventFwk::CommonEventSubscr
 void StorageEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data)
 {
     const std::string action = data.GetWant().GetAction();
-    WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
+    WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW) {
         WS_HILOGI("Condition changed: STORAGE_LOW");
         listener_.OnConditionChanged(WorkCondition::Type::STORAGE,
@@ -37,7 +37,7 @@ void StorageEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
         listener_.OnConditionChanged(WorkCondition::Type::STORAGE,
             std::make_shared<DetectorValue>(WorkCondition::STORAGE_LEVEL_OKAY, 0, 0, std::string()));
     } else {
-        WS_HILOGI("OnReceiveEvent action is invalid");
+        WS_HILOGE("OnReceiveEvent action is invalid");
     }
 }
 
@@ -63,14 +63,14 @@ StorageListener::~StorageListener()
 
 bool StorageListener::Start()
 {
-    WS_HILOGI("StorageListener start");
+    WS_HILOGI("Storage listener start");
     this->commonEventSubscriber = CreateStorageEventSubscriber(*this);
     return EventFwk::CommonEventManager::SubscribeCommonEvent(this->commonEventSubscriber);
 }
 
 bool StorageListener::Stop()
 {
-    WS_HILOGI("StorageListener stop");
+    WS_HILOGI("Storage listener stop");
     if (this->commonEventSubscriber != nullptr) {
         bool result = EventFwk::CommonEventManager::UnSubscribeCommonEvent(this->commonEventSubscriber);
         if (result) {
@@ -87,7 +87,7 @@ void StorageListener::OnConditionChanged(WorkCondition::Type conditionType,
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
     } else {
-        WS_HILOGD("workQueueManager_ is nullptr.");
+        WS_HILOGE("workQueueManager_ is nullptr.");
     }
 }
 } // namespace WorkScheduler

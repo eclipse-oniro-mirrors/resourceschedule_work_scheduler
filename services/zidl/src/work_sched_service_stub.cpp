@@ -73,9 +73,6 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
             reply.WriteParcelable(&*workInfo);
             return ERR_OK;
         }
-        case static_cast<int32_t>(IWorkSchedService::DUMP_INFO): {
-            return ShellDumpStub(data, reply);
-        }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -158,26 +155,6 @@ std::shared_ptr<WorkInfo> WorkSchedServiceStub::GetWorkStatusStub(MessageParcel&
     READ_PARCEL_WITHOUT_RET(data, Int32, uid);
     READ_PARCEL_WITHOUT_RET(data, Int32, workId);
     return GetWorkStatus(uid, workId);
-}
-
-ErrCode WorkSchedServiceStub::ShellDumpStub(MessageParcel& data, MessageParcel& reply)
-{
-    std::vector<std::string> dumpOption;
-    if (!data.ReadStringVector(&dumpOption)) {
-        WS_HILOGD("[HandleShellDump] fail: read dumpOption failed.");
-        return ERR_INVALID_DATA;
-    }
-    std::vector<std::string> workSchedulerInfo;
-    bool result = ShellDump(dumpOption, workSchedulerInfo);
-    if (!reply.WriteBool(result)) {
-        WS_HILOGD("write result fail.");
-        return ERR_INVALID_DATA;
-    }
-    if (!reply.WriteStringVector(workSchedulerInfo)) {
-        WS_HILOGD("write workscheduler fail.");
-        return ERR_INVALID_DATA;
-    }
-    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
