@@ -43,6 +43,7 @@ ohos_shared_library("workschedextension") {
   deps = [
     "${aafwk_kits_path}/ability/ability_runtime:ability_context_native",
     "${aafwk_kits_path}/ability/native:abilitykit_native",
+    "${aafwk_kits_path}/appkit:app_context",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
     "//foundation/arkui/napi:ace_napi",
