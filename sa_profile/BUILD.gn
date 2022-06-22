@@ -14,12 +14,6 @@
 import("//build/ohos/sa_profile/sa_profile.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
-ohos_prebuilt_etc("work_scheduler_service_init") {
-  source = "etc/work_scheduler_service.cfg"
-  relative_install_dir = "init"
-  part_name = "${worksched_native_part_name}"
-}
-
 ohos_sa_profile("worksched_sa_profile") {
   sources = [ "1904.xml" ]
   part_name = "${worksched_native_part_name}"
