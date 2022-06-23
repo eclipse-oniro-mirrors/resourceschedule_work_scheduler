@@ -13,7 +13,7 @@
      limitations under the License.
 -->
 <info>
-    <process>work_scheduler_service</process>
+    <process>bgtaskmgr_service</process>
     <systemability>
         <name>1904</name>
         <libpath>libworkschedservice.z.so</libpath>

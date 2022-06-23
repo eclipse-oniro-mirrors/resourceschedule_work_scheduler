@@ -45,7 +45,6 @@
         "sub_component": [
           "//foundation/resourceschedule/work_scheduler/services:workschedservice",
           "//foundation/resourceschedule/work_scheduler/sa_profile:worksched_sa_profile",
-          "//foundation/resourceschedule/work_scheduler/sa_profile:work_scheduler_service_init",
           "//foundation/resourceschedule/work_scheduler/interfaces/kits/js:workscheduler",
           "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient",
           "//foundation/resourceschedule/work_scheduler/frameworks/extension:workschedextension",
