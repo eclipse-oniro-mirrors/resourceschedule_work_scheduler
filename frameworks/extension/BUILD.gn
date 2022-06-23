@@ -16,7 +16,7 @@ import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 config("worksched_private_config") {
   include_dirs = [
     "${worksched_service_path}/zidl/include",
-    "${aafwk_path}/frameworks/native/ability/native/",
+    "${ability_runtime_path}/frameworks/native/ability/native/",
     "//foundation/arkui/napi/native_engine",
   ]
 }
@@ -41,9 +41,9 @@ ohos_shared_library("workschedextension") {
   public_configs = [ ":worksched_public_config" ]
 
   deps = [
-    "${aafwk_path}/frameworks/native/ability:ability_context_native",
-    "${aafwk_path}/frameworks/native/ability/native:abilitykit_native",
-    "${aafwk_path}/frameworks/native/appkit:app_context",
+    "${ability_runtime_path}/frameworks/native/ability:ability_context_native",
+    "${ability_runtime_path}/frameworks/native/ability/native:abilitykit_native",
+    "${ability_runtime_path}/frameworks/native/appkit:app_context",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
     "//foundation/arkui/napi:ace_napi",
