@@ -139,9 +139,9 @@ bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
         type = "Not Repeat";
     }
 
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_ADD", HiSysEvent::EventType::STATISTIC, "uid", uid,
-        "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_, "trigger", conditions, "type",
-        type, "interval", workStatus->workInfo_->GetTimeInterval());
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_ADD", HiSysEvent::EventType::STATISTIC, "UID", uid,
+        "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER", conditions, "TYPE",
+        type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
 
     WS_HILOGI("push workStatus ID: %{public}s to uidQueue(%{public}d)", workStatus->workId_.c_str(), uid);
     return true;
@@ -162,8 +162,8 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
 
     // Notify work remove event to battery statistics
     int32_t pid = IPCSkeleton::GetCallingPid();
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_REMOVE", HiSysEvent::EventType::STATISTIC, "uid", uid,
-        "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_);
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_REMOVE", HiSysEvent::EventType::STATISTIC, "UID", uid,
+        "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
 
     return ret;
 }

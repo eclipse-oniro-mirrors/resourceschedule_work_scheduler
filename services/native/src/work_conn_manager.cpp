@@ -135,8 +135,8 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
 
     // Notify work remove event to battery statistics
     int32_t pid = IPCSkeleton::GetCallingPid();
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_STOP", HiSysEvent::EventType::STATISTIC, "uid",
-        workStatus->uid_, "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_);
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_STOP", HiSysEvent::EventType::STATISTIC, "UID",
+        workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
 
     return ret;
 }
@@ -175,9 +175,9 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
         type = "Not Repeat";
     }
 
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_START", HiSysEvent::EventType::STATISTIC, "uid",
-        workStatus->uid_, "pid", pid, "name", workStatus->bundleName_, "workID", workStatus->workId_, "trigger",
-        conditions, "type", type, "interval", workStatus->workInfo_->GetTimeInterval());
+    HiSysEvent::Write("WORKSCHEDULER", "WORK_START", HiSysEvent::EventType::STATISTIC, "UID",
+        workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER",
+        conditions, "TYPE", type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
 }
 } // namespace WorkScheduler
 } // namespace OHOS
