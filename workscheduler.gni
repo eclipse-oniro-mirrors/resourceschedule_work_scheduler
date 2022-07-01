@@ -13,9 +13,9 @@
 
 import("//build/ohos.gni")
 
-aafwk_kits_path = "//foundation/ability/ability_runtime/frameworks/kits"
+ability_runtime_path = "//foundation/ability/ability_runtime"
 
-aafwk_path = "//foundation/ability/ability_runtime"
+ability_runtime_kits_path = "${ability_runtime_path}/frameworks/kits"
 
 worksched_native_part_name = "work_scheduler"
 
