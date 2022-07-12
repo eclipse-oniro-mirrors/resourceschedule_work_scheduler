@@ -46,6 +46,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
         auto workTimerCondition = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER);
         shared_ptr<Condition> timeCondition = make_shared<Condition>();
         timeCondition->uintVal = workTimerCondition->uintVal;
+        timeCondition->boolVal = workTimerCondition->boolVal;
         if (!workTimerCondition->boolVal) {
             timeCondition->intVal = workTimerCondition->intVal;
         }
