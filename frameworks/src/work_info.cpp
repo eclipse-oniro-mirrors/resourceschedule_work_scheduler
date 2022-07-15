@@ -14,7 +14,7 @@
  */
 #include "work_info.h"
 
-#include "work_sched_common.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {

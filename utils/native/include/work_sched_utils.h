@@ -17,8 +17,6 @@
 
 #include <string>
 
-#include "hilog/log.h"
-
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedUtils {

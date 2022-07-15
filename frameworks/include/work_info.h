@@ -15,6 +15,7 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_INFO_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_INFO_H
 
+#include <cstdint>
 #include <list>
 #include <map>
 #include <memory>
@@ -22,6 +23,7 @@
 
 #include <parcel.h>
 #include "json/json.h"
+#include "refbase.h"
 
 #include "work_condition.h"
 

@@ -15,9 +15,12 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_SCHED_SERVICE_PROXY_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_SCHED_SERVICE_PROXY_H
 
+#include <list>
+#include <memory>
+
 #include <iremote_proxy.h>
 #include <nocopyable.h>
-#include <memory>
+#include "refbase.h"
 
 #include "iwork_sched_service.h"
 

@@ -15,6 +15,11 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_COMMON
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_COMMON
 
+#include <cstdint>
+#include <cstddef>
+#include <memory>
+#include <string>
+
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "work_info.h"

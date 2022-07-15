@@ -16,7 +16,6 @@
 
 #include <ipc_types.h>
 #include <message_parcel.h>
-#include <string_ex.h>
 
 #include "work_sched_common.h"
 
