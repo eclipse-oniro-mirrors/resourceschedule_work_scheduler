@@ -14,6 +14,11 @@
  */
 #include "work_sched_utils.h"
 
+#include <cstdlib>
+#include <limits.h>
+#include <string>
+#include <vector>
+
 #include "errors.h"
 #include "ohos_account_kits.h"
 #include "os_account_manager.h"

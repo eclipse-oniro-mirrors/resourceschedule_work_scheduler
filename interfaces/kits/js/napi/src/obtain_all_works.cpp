@@ -14,6 +14,9 @@
  */
 #include "obtain_all_works.h"
 
+#include <list>
+#include <new>
+
 #include "common.h"
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"

@@ -14,6 +14,8 @@
  */
 #include "get_work_status.h"
 
+#include <new>
+
 #include "common.h"
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"

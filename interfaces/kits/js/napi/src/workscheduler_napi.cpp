@@ -15,6 +15,8 @@
 
 #include "workscheduler_napi.h"
 
+#include <cstddef>
+
 #include "get_work_status.h"
 #include "is_last_work_time_out.h"
 #include "start_work.h"

@@ -14,14 +14,14 @@
  */
 #include "workscheduler_srv_client.h"
 
-#include <datetime_ex.h>
 #include <if_system_ability_manager.h>
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
-#include <string_ex.h>
+#include <new>
 #include <system_ability_definition.h>
 
-#include "work_sched_common.h"
+#include "work_sched_errors.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {

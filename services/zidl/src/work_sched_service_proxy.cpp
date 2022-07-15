@@ -15,8 +15,9 @@
 #include "work_sched_service_proxy.h"
 
 #include <ipc_types.h>
+#include <memory>
 #include <message_parcel.h>
-#include <string_ex.h>
+#include <string>
 
 #include "work_sched_common.h"
 
