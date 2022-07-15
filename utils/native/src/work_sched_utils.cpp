@@ -15,7 +15,6 @@
 #include "work_sched_utils.h"
 
 #include <cstdlib>
-#include <limits.h>
 #include <string>
 #include <vector>
 

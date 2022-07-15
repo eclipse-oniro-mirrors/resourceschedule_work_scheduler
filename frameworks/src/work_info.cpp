@@ -14,10 +14,6 @@
  */
 #include "work_info.h"
 
-#include <new>
-#include <sstream>
-#include <utility>
-
 #include "work_sched_hilog.h"
 
 namespace OHOS {

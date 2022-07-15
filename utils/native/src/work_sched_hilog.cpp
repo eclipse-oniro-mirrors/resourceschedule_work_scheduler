@@ -15,8 +15,6 @@
 
 #include "work_sched_hilog.h"
 
-#include <string>
-
 namespace OHOS {
 namespace WorkScheduler {
 WorkSchedLogLevel WorkSchedHilog::level_ = {WorkSchedLogLevel::DEBUG};
