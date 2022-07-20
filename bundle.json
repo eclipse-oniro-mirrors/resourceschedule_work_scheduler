@@ -37,7 +37,7 @@
           "samgr_standard",
           "hisysevent_native",
           "napi",
-          "battery_manager_native",
+          "battery_manager",
           "ability_base",
           "eventhandler"
         ],
