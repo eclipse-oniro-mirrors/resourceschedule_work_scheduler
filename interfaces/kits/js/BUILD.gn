@@ -48,7 +48,7 @@ ohos_shared_library("workscheduler") {
     "ipc:ipc_core",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
 
   relative_install_dir = "module"
