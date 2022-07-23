@@ -132,8 +132,7 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
     WorkSchedulerExtension::OnWorkStart(workInfo);
-    auto task = [this, &workId, &bundleName, &abilityName, &isPersisted, &networkType, &charger, &batteryLevel,
-        &batteryStatus, &storageLevel, &timeInterval, &isRepeat, &cycleCount]() {
+    auto task = [&]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
         NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
 
@@ -220,8 +219,7 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
     WorkSchedulerExtension::OnWorkStop(workInfo);
-    auto task = [this, &workId, &bundleName, &abilityName, &isPersisted, &networkType, &charger, &batteryLevel,
-        &batteryStatus, &storageLevel, &timeInterval, &isRepeat, &cycleCount]() {
+    auto task = [&]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
         NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
 
