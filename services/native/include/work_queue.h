@@ -119,6 +119,10 @@ public:
      * @brief Clear all.
      */
     void ClearAll();
+    /**
+     * @brief Set min interval by input.
+     */
+    void SetMinIntervalByInput(int64_t interval);
 private:
     std::list<std::shared_ptr<WorkStatus>> workList_;
 };

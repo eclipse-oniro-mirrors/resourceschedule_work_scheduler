@@ -18,6 +18,7 @@
 
 #include <memory>
 #include <string>
+#include <map>
 
 #include "timer.h"
 #include "work_info.h"
@@ -53,6 +54,8 @@ public:
     int32_t userId_;
     bool persisted_;
     int32_t priority_;
+    bool needRetrigger_ {false};
+    uint32_t timeRetrigger_ {UINT32_MAX};
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
     std::shared_ptr<WorkInfo> workInfo_;
 
@@ -131,12 +134,34 @@ public:
     bool NeedRemove();
 
     bool lastTimeout_ {false};
-
+    /**
+     * @brief Set min interval by group.
+     *
+     * @param group The new group.
+     * @return True if success,else false.
+     */
+    bool SetMinIntervalByGroup(int32_t group);
+    /**
+     * @brief Update map<uid, lastTime>.
+     */
+    void UpdateUidLastTimeMap();
+    /**
+     * @brief clear uidLastTimeMap by uid.
+     */
+    static void ClearUidLastTimeMap(int32_t uid);
+    /**
+     * @brief Set min interval by input.
+     */
+    void SetMinIntervalByInput(int64_t interval);
 private:
     Status currentStatus_;
     time_t baseTime_;
+    int64_t minInterval_;
+    bool callbackFlag_;
+    static std::map<int32_t, time_t> uidLastTimeMap_;
     void MarkTimeout();
     bool IsSameUser();
+    bool SetMinInterval();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

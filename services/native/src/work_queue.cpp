@@ -24,6 +24,7 @@ namespace WorkScheduler {
 vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type type,
     shared_ptr<DetectorValue> conditionVal)
 {
+    WS_HILOGD("Work queue condition changed.");
     shared_ptr<Condition> value = make_shared<Condition>();
     switch (type) {
         case WorkCondition::Type::NETWORK:
@@ -43,6 +44,13 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
         case WorkCondition::Type::TIMER: {
             break;
         }
+        case WorkCondition::Type::GROUP: {
+            value->enumVal = conditionVal->intVal;
+            value->intVal = conditionVal->timeVal;
+            value->boolVal = conditionVal->boolVal;
+            value->strVal = conditionVal->strVal;
+            break;
+        }
         default: {}
     }
     vector<shared_ptr<WorkStatus>> result;
@@ -54,6 +62,9 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
             if (it->IsReadyStatus()) {
                 it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
             }
+        }
+        if (it->needRetrigger_) {
+            result.emplace_back(it);
         }
     }
     return result;
@@ -182,6 +193,13 @@ void WorkQueue::ClearAll()
 bool WorkComp::operator () (const shared_ptr<WorkStatus> w1, const shared_ptr<WorkStatus> w2)
 {
     return w1->priority_ >= w2->priority_;
+}
+
+void WorkQueue::SetMinIntervalByInput(int64_t interval)
+{
+    for (auto it : workList_) {
+        it->SetMinIntervalByInput(interval);
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -18,6 +18,11 @@
 #include "battery_srv_client.h"
 #include "work_sched_common.h"
 #include "work_sched_utils.h"
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+#include "bundle_active_client.h"
+#include "bundle_active_group_map.h"
+#endif
+#include "work_scheduler_service.h"
 
 using namespace std;
 using namespace OHOS::PowerMgr;
@@ -25,6 +30,9 @@ using namespace OHOS::PowerMgr;
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
+static bool testFlag_ = false;
+static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
+std::map<int32_t, time_t> WorkStatus::uidLastTimeMap_;
 
 time_t getCurrentTime()
 {
@@ -55,18 +63,29 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
     this->persisted_ = workInfo.IsPersisted();
     this->priority_ = DEFAULT_PRIORITY;
     this->currentStatus_ = WAIT_CONDITION;
+    this->minInterval_ = MIN_INTERVAL_DEFAULT;
 }
 
 WorkStatus::~WorkStatus() {}
 
 void WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condition> value)
 {
+    WS_HILOGD("Work status condition changed.");
     if (workInfo_->GetConditionMap()->count(type) > 0
-        && type != WorkCondition::Type::TIMER) {
+        && type != WorkCondition::Type::TIMER
+        && type != WorkCondition::Type::GROUP) {
         if (conditionMap_.count(type) > 0) {
             conditionMap_.at(type) = value;
         } else {
             conditionMap_.emplace(type, value);
+        }
+    }
+    callbackFlag_ = false;
+    if (type == WorkCondition::Type::GROUP && value && value->boolVal) {
+        WS_HILOGD("Group changed, bundleName: %{public}s.", value->strVal);
+        callbackFlag_ = true;
+        if (value->intVal == userId_ && value->strVal == bundleName_) {
+            SetMinIntervalByGroup(value->enumVal);
         }
     }
     if (IsReady()) {
@@ -127,6 +146,7 @@ bool WorkStatus::IsSameUser()
 
 bool WorkStatus::IsReady()
 {
+    WS_HILOGD("IsReady");
     if (!IsSameUser()) {
         WS_HILOGD("Not same user. WorkId:%{public}s", workId_.c_str());
         return false;
@@ -135,6 +155,7 @@ bool WorkStatus::IsReady()
         WS_HILOGD("Work is running");
         return false;
     }
+
     auto workConditionMap = workInfo_->GetConditionMap();
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
@@ -202,7 +223,82 @@ bool WorkStatus::IsReady()
                 break;
         }
     }
+
+    if (!testFlag_ && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
+        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
+        return false;
+    }
+    auto itMap = uidLastTimeMap_.find(uid_);
+    if (itMap != uidLastTimeMap_.end()) {
+        return true;
+    }
+    time_t lastTime = uidLastTimeMap_[uid_];
+    double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
+    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}ld, del = %{public}f",
+        callbackFlag_, minInterval_, del);
+    if (del < minInterval_) {
+        if (workConditionMap->count(WorkCondition::Type::TIMER) == 0) {
+            needRetrigger_ = true;
+            timeRetrigger_ = int(minInterval_ - del) + 1000;
+        }
+        return false;
+    }
+
     return true;
+}
+
+bool WorkStatus::SetMinInterval()
+{
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    int32_t group = DeviceUsageStats::BundleActiveClient::GetInstance().QueryPackageGroup(bundleName_, userId_);
+    if (group == -1) {
+        WS_HILOGE ("Query package group failed. userId = %{public}d, bundleName = %{public}s",
+            userId_, bundleName_.c_str());
+        return false;
+    }
+#else
+    int32_t group = 10;
+#endif
+    return SetMinIntervalByGroup(group);
+}
+
+bool WorkStatus::SetMinIntervalByGroup(int32_t group)
+{
+    callbackFlag_ = true;
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
+    if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
+        minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
+    } else {
+        minInterval_ = -1;
+    }
+#else
+    minInterval_ = MIN_INTERVAL_DEFAULT;
+#endif
+    WS_HILOGD ("Set min interval to %{public}ld by group %{public}d", minInterval_, group);
+    return true;
+}
+
+void WorkStatus::SetMinIntervalByInput(int64_t interval)
+{
+    WS_HILOGD ("Set min interval by input to %{public}ld", interval);
+    if (interval == 0) {
+        testFlag_ = false;
+    } else {
+        minInterval_ = interval;
+        testFlag_ = true;
+    }
+}
+
+void WorkStatus::UpdateUidLastTimeMap()
+{
+    time_t lastTime = getCurrentTime();
+    uidLastTimeMap_[uid_] = lastTime;
+}
+
+void WorkStatus::ClearUidLastTimeMap(int32_t uid)
+{
+    uidLastTimeMap_.erase(uid);
 }
 
 bool WorkStatus::IsRunning()

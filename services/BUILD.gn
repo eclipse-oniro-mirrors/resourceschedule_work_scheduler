@@ -29,12 +29,14 @@ ohos_shared_library("workschedservice") {
     "native/src/conditions/network_listener.cpp",
     "native/src/conditions/storage_listener.cpp",
     "native/src/conditions/timer_listener.cpp",
+    "native/src/conditions/group_listener.cpp",
     "native/src/event_publisher.cpp",
     "native/src/policy/app_data_clear_listener.cpp",
     "native/src/policy/app_removed_listener.cpp",
     "native/src/policy/memory_policy.cpp",
     "native/src/policy/thermal_policy.cpp",
     "native/src/watchdog.cpp",
+    "native/src/work_bundle_group_change_callback.cpp",
     "native/src/work_conn_manager.cpp",
     "native/src/work_event_handler.cpp",
     "native/src/work_policy_manager.cpp",
@@ -77,6 +79,12 @@ ohos_shared_library("workschedservice") {
     "thermal_manager:thermalsrv_client",
     "utils_base:utils",
   ]
+
+  defines = []
+  if (bundle_active_enable) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
 
   part_name = "${worksched_native_part_name}"
 }

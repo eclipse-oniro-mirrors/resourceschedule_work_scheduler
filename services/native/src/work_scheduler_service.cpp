@@ -31,17 +31,22 @@
 #include <unistd.h>
 
 #include "bundle_mgr_proxy.h"
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+#include "bundle_active_client.h"
+#endif
 #include "conditions/battery_level_listener.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
 #include "conditions/network_listener.h"
 #include "conditions/storage_listener.h"
 #include "conditions/timer_listener.h"
+#include "conditions/group_listener.h"
 #include "event_publisher.h"
 #include "json/json.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
 #include "work_scheduler_connection.h"
+#include "work_bundle_group_change_callback.h"
 #include "work_sched_common.h"
 #include "work_sched_utils.h"
 
@@ -59,6 +64,9 @@ const int32_t MAX_BUFFER = 256;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+static int hasGroupObserver = -1;
+#endif
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -154,6 +162,11 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
 void WorkSchedulerService::OnStop()
 {
     WS_HILOGI("stop service.");
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    DeviceUsageStats::BundleActiveClient::GetInstance().UnregisterGroupCallBack(groupObserver_);
+    groupObserver_ = nullptr;
+    hasGroupObserver = -1;
+#endif
     eventRunner_.reset();
     handler_.reset();
     ready_ = false;
@@ -195,6 +208,7 @@ void WorkSchedulerService::WorkQueueManagerInit()
     auto batteryLevelListener = make_shared<BatteryLevelListener>(workQueueManager_);
     auto storageListener = make_shared<StorageListener>(workQueueManager_);
     auto timerListener = make_shared<TimerListener>(workQueueManager_);
+    auto groupListener = make_shared<GroupListener>(workQueueManager_);
 
     workQueueManager_->AddListener(WorkCondition::Type::NETWORK, networkListener);
     workQueueManager_->AddListener(WorkCondition::Type::CHARGER, chargerListener);
@@ -202,6 +216,11 @@ void WorkSchedulerService::WorkQueueManagerInit()
     workQueueManager_->AddListener(WorkCondition::Type::BATTERY_LEVEL, batteryLevelListener);
     workQueueManager_->AddListener(WorkCondition::Type::STORAGE, storageListener);
     workQueueManager_->AddListener(WorkCondition::Type::TIMER, timerListener);
+    workQueueManager_->AddListener(WorkCondition::Type::GROUP, groupListener);
+
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    GroupObserverInit();
+#endif
 }
 
 bool WorkSchedulerService::WorkPolicyManagerInit()
@@ -515,7 +534,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -d (eventType) (TypeValue): publish the event.\n")
         .append("    -memory (number): set the available memory.\n")
         .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
-        .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n");
+        .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
+        .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n");
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -546,6 +566,9 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
     } else if (key == "-repeat_time_min") {
         workQueueManager_->SetTimeCycle(std::stoi(value));
         result.append("Set repeat time min value success.");
+    } else if (key == "-min_interval") {
+        workQueueManager_->SetMinIntervalByInput(std::stoi(value));
+        result.append("Set min interval value success.");
     } else {
         result.append("Error params.");
     }
@@ -621,5 +644,27 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
     }
     return ERR_OK;
 }
+
+void WorkSchedulerService::SystemAbilityStatusChangeListener::OnAddSystemAbility
+    (int32_t systemAbilityId, const std::string& deviceId)
+{
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
+        DelayedSingleton<WorkSchedulerService>::GetInstance()->GroupObserverInit();
+    }
+#endif
+}
+
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+void WorkSchedulerService::GroupObserverInit()
+{
+    if (!groupObserver_) {
+        groupObserver_ = new (std::nothrow) WorkBundleGroupChangeCallback(workQueueManager_);
+    }
+    if (groupObserver_ && hasGroupObserver != ERR_OK) {
+        hasGroupObserver = DeviceUsageStats::BundleActiveClient::GetInstance().RegisterGroupCallBack(groupObserver_);
+    }
+}
+#endif
 } // namespace WorkScheduler
 } // namespace OHOS

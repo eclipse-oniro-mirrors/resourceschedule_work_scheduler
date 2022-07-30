@@ -41,6 +41,13 @@ void WorkQueueEventHandler::ProcessEvent([[maybe_unused]] const AppExecFwk::Inne
             SendEvent(AppExecFwk::InnerEvent::Get(TIMER_TICK, 0), time);
             break;
         }
+        case GROUP_TICK: {
+            if (manager_ == nullptr) {
+                return;
+            }
+            manager_->OnConditionChanged(WorkCondition::Type::GROUP, make_shared<DetectorValue>(-1, 0, 0, string()));
+            break;
+        }
         default: {
             return;
         }

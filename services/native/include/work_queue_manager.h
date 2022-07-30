@@ -97,12 +97,27 @@ public:
      */
     uint32_t GetTimeCycle();
     /**
+     * @brief Set time retrigger.
+     *
+     * @param time The time.
+     */
+    void SetTimeRetrigger(uint32_t time)
+    /**
+     * @brief Get time retrigger.
+     *
+     * @param time The time.
+     */
+    uint32_t GetTimeRetrigger()
+    /**
      * @brief Dump.
      *
      * @param result The result.
      */
     void Dump(std::string& result);
-
+    /**
+     * @brief Set min interval by input.
+     */
+    void SetMinIntervalByInput(int64_t interval);
 private:
     std::vector<std::shared_ptr<WorkStatus>> GetReayQueue(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
