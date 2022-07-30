@@ -239,7 +239,7 @@ bool WorkStatus::IsReady()
     if (del < minInterval_) {
         if (workConditionMap->count(WorkCondition::Type::TIMER) == 0) {
             needRetrigger_ = true;
-            timeRetrigger_ = int(minInterval_ - del) + 1000;
+            timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         }
         return false;
     }
