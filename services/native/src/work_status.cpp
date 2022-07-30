@@ -237,10 +237,8 @@ bool WorkStatus::IsReady()
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}ld, del = %{public}f",
         callbackFlag_, minInterval_, del);
     if (del < minInterval_) {
-        if (workConditionMap->count(WorkCondition::Type::TIMER) == 0) {
-            needRetrigger_ = true;
-            timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
-        }
+        needRetrigger_ = true;
+        timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;
     }
 

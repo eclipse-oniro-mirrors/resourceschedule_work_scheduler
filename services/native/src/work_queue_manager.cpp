@@ -107,11 +107,13 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
     }
     auto it = result.begin();
     while (it != result.end()) {
-        if ((*it)->needRetrigger_ && conditionType != WorkCondition::Type::TIMER
-            && conditionType != WorkCondition::Type::GROUP) {
-            WS_HILOGD("Need retrigger, start group listener.");
-            SetTimeRetrigger((*it)->timeRetrigger_);
-            listenerMap_.at(WorkCondition::Type::GROUP)->Start();
+        if ((*it)->needRetrigger_) {
+            if (conditionType != WorkCondition::Type::TIMER
+                && conditionType != WorkCondition::Type::GROUP) {
+                WS_HILOGD("Need retrigger, start group listener.");
+                SetTimeRetrigger((*it)->timeRetrigger_);
+                listenerMap_.at(WorkCondition::Type::GROUP)->Start();
+            }
             (*it)->needRetrigger_ = false;
             (*it)->timeRetrigger_ = UINT32_MAX;
             it = result.erase(it);
