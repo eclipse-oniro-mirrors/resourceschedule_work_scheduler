@@ -82,7 +82,7 @@ void WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condit
     }
     callbackFlag_ = false;
     if (type == WorkCondition::Type::GROUP && value && value->boolVal) {
-        WS_HILOGD("Group changed, bundleName: %{public}s.", value->strVal);
+        WS_HILOGD("Group changed, bundleName: %{public}s.", value->strVal.c_str());
         callbackFlag_ = true;
         if (value->intVal == userId_ && value->strVal == bundleName_) {
             SetMinIntervalByGroup(value->enumVal);

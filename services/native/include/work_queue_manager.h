@@ -101,13 +101,13 @@ public:
      *
      * @param time The time.
      */
-    void SetTimeRetrigger(uint32_t time)
+    void SetTimeRetrigger(uint32_t time);
     /**
      * @brief Get time retrigger.
      *
      * @param time The time.
      */
-    uint32_t GetTimeRetrigger()
+    uint32_t GetTimeRetrigger();
     /**
      * @brief Dump.
      *
