@@ -234,7 +234,7 @@ bool WorkStatus::IsReady()
     }
     time_t lastTime = uidLastTimeMap_[uid_];
     double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
-    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}ld, del = %{public}f",
+    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}lld, del = %{public}f",
         callbackFlag_, minInterval_, del);
     if (del < minInterval_) {
         needRetrigger_ = true;
@@ -273,13 +273,13 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
 #endif
-    WS_HILOGD ("Set min interval to %{public}ld by group %{public}d", minInterval_, group);
+    WS_HILOGD ("Set min interval to %{public}lld by group %{public}d", minInterval_, group);
     return true;
 }
 
 void WorkStatus::SetMinIntervalByInput(int64_t interval)
 {
-    WS_HILOGD ("Set min interval by input to %{public}ld", interval);
+    WS_HILOGD ("Set min interval by input to %{public}lld", interval);
     if (interval == 0) {
         testFlag_ = false;
     } else {
