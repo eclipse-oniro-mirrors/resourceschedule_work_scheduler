@@ -30,7 +30,7 @@ using namespace OHOS::PowerMgr;
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
-static bool testFlag_ = false;
+static bool debugMode_ = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::uidLastTimeMap_;
 
@@ -155,7 +155,30 @@ bool WorkStatus::IsReady()
         WS_HILOGD("Work is running");
         return false;
     }
+    if (!IsReadyInner()) {
+        return false;
+    }
+    if (!debugMode_ && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
+        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
+        return false;
+    }
+    auto itMap = uidLastTimeMap_.find(uid_);
+    if (itMap != uidLastTimeMap_.end()) {
+        return true;
+    }
+    time_t lastTime = uidLastTimeMap_[uid_];
+    double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
+    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}lld, del = %{public}f",
+        callbackFlag_, minInterval_, del);
+    if (del < minInterval_) {
+        needRetrigger_ = true;
+        timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
+        return false;
+    }
+    return true;
+}
 
+bool WorkStatus::IsReadyInner() {
     auto workConditionMap = workInfo_->GetConditionMap();
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
@@ -191,8 +214,7 @@ bool WorkStatus::IsReady()
                 auto conditionSet = workConditionMap->at(it.first);
                 auto conditionCurrent = conditionMap_.at(it.first);
                 if (conditionSet->boolVal) {
-                    if (conditionCurrent->enumVal != conditionSet->enumVal &&
-                        conditionSet->enumVal !=
+                    if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal != 
                         static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
                         return false;
                     }
@@ -223,25 +245,6 @@ bool WorkStatus::IsReady()
                 break;
         }
     }
-
-    if (!testFlag_ && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
-        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
-        return false;
-    }
-    auto itMap = uidLastTimeMap_.find(uid_);
-    if (itMap != uidLastTimeMap_.end()) {
-        return true;
-    }
-    time_t lastTime = uidLastTimeMap_[uid_];
-    double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
-    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}lld, del = %{public}f",
-        callbackFlag_, minInterval_, del);
-    if (del < minInterval_) {
-        needRetrigger_ = true;
-        timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
-        return false;
-    }
-
     return true;
 }
 
@@ -280,12 +283,8 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 void WorkStatus::SetMinIntervalByInput(int64_t interval)
 {
     WS_HILOGD ("Set min interval by input to %{public}lld", interval);
-    if (interval == 0) {
-        testFlag_ = false;
-    } else {
-        minInterval_ = interval;
-        testFlag_ = true;
-    }
+    debugMode_ = interval == 0 ? false : true;
+    minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 
 void WorkStatus::UpdateUidLastTimeMap()

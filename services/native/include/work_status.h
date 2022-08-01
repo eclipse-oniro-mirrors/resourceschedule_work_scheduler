@@ -162,6 +162,7 @@ private:
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
+    bool IsReadyInner();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

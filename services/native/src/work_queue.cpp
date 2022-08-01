@@ -24,7 +24,6 @@ namespace WorkScheduler {
 vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type type,
     shared_ptr<DetectorValue> conditionVal)
 {
-    WS_HILOGD("Work queue condition changed.");
     shared_ptr<Condition> value = make_shared<Condition>();
     switch (type) {
         case WorkCondition::Type::NETWORK:
