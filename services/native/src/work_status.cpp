@@ -168,7 +168,7 @@ bool WorkStatus::IsReady()
     }
     time_t lastTime = uidLastTimeMap_[uid_];
     double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
-    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}lld, del = %{public}f",
+    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
     if (del < minInterval_) {
         needRetrigger_ = true;
@@ -178,7 +178,8 @@ bool WorkStatus::IsReady()
     return true;
 }
 
-bool WorkStatus::IsReadyInner() {
+bool WorkStatus::IsReadyInner()
+{
     auto workConditionMap = workInfo_->GetConditionMap();
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
@@ -214,7 +215,7 @@ bool WorkStatus::IsReadyInner() {
                 auto conditionSet = workConditionMap->at(it.first);
                 auto conditionCurrent = conditionMap_.at(it.first);
                 if (conditionSet->boolVal) {
-                    if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal != 
+                    if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal !=
                         static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
                         return false;
                     }
@@ -276,13 +277,13 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
 #endif
-    WS_HILOGD ("Set min interval to %{public}lld by group %{public}d", minInterval_, group);
+    WS_HILOGD ("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
     return true;
 }
 
 void WorkStatus::SetMinIntervalByInput(int64_t interval)
 {
-    WS_HILOGD ("Set min interval by input to %{public}lld", interval);
+    WS_HILOGD ("Set min interval by input to %{public}" PRId64 "", interval);
     debugMode_ = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
