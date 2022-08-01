@@ -132,7 +132,7 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
     WorkSchedulerExtension::OnWorkStart(workInfo);
-    auto task = [&]() {
+    auto task = [=]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
         NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
 
@@ -197,7 +197,6 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
         nativeEngine.CallFunction(value, method, argv, 1);
     };
     handler_->PostTask(task);
-    WS_HILOGD("end.");
 }
 
 void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
@@ -219,7 +218,7 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
     WorkSchedulerExtension::OnWorkStop(workInfo);
-    auto task = [&]() {
+    auto task = [=]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
         NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
 
@@ -284,7 +283,6 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
         nativeEngine.CallFunction(value, method, argv, 1);
     };
     handler_->PostTask(task);
-    WS_HILOGD("end.");
 }
 
 void JsWorkSchedulerExtension::GetSrcPath(std::string &srcPath)
