@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <unistd.h>
 #include "work_scheduler_connection.h"
 
 #include "work_sched_hilog.h"
