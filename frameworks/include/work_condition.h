@@ -30,6 +30,7 @@ public:
         BATTERY_LEVEL,
         STORAGE,
         TIMER, // uint32_t intervalTime, int32_t cycle, bool repeat
+        GROUP, // int32_t newGroup, int32_t userId, bool groupChange, string bundleName
         UNKNOWN,
     };
 
@@ -72,6 +73,7 @@ struct Condition {
     int32_t intVal;
     uint32_t uintVal;
     bool boolVal;
+    std::string strVal;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

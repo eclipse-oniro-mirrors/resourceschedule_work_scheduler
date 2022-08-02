@@ -299,8 +299,11 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 {
     WS_HILOGD("enter");
     switch (policyType) {
-        case PolicyType::APP_REMOVED:
-        // fall-through
+        case PolicyType::APP_REMOVED: {
+            int32_t uid = detectorVal->intVal;
+            WorkStatus::ClearUidLastTimeMap(uid);
+            break;
+        }
         case PolicyType::APP_DATA_CLEAR: {
             auto ws = wss_.promote();
             ws->StopAndClearWorksByUid(detectorVal->intVal);
@@ -363,6 +366,7 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
         AddWatchdogForWork(topWork);
+        topWork->UpdateUidLastTimeMap();
     } else {
         if (!topWork->IsRepeating()) {
             topWork->MarkStatus(WorkStatus::Status::REMOVED);

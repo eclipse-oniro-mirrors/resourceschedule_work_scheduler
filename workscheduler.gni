@@ -32,3 +32,11 @@ worksched_interfaces_path = "${worksched_root_path}/interfaces"
 worksched_frameworks_path = "${worksched_root_path}/frameworks"
 
 system_type = "default"
+
+declare_args() {
+  bundle_active_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.resourceschedule_device_usage_statistics)) {
+    bundle_active_enable = false
+  }
+}

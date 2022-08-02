@@ -27,6 +27,7 @@ class WorkQueueEventHandler : public AppExecFwk::EventHandler {
 public:
     enum {
         TIMER_TICK = 0,
+        GROUP_TICK
     };
     WorkQueueEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner,
         std::shared_ptr<WorkQueueManager> manager);

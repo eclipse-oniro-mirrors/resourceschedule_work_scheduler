@@ -19,6 +19,7 @@ using namespace std;
 namespace OHOS {
 namespace WorkScheduler {
 const uint32_t TIME_CYCLE = 20 * 60 * 1000; // 20min
+static uint32_t timeRetrigger_ = UINT32_MAX;
 
 WorkQueueManager::WorkQueueManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
 {
@@ -94,9 +95,31 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
 {
     vector<shared_ptr<WorkStatus>> result;
     std::lock_guard<std::mutex> lock(mutex_);
-    if (queueMap_.count(conditionType) > 0) {
+    if (conditionType != WorkCondition::Type::GROUP && queueMap_.count(conditionType) > 0) {
         shared_ptr<WorkQueue> workQueue = queueMap_.at(conditionType);
         result = workQueue->OnConditionChanged(conditionType, conditionVal);
+    }
+    if (conditionType == WorkCondition::Type::GROUP) {
+        for (auto it : queueMap_) {
+            shared_ptr<WorkQueue> workQueue = it.second;
+            result = workQueue->OnConditionChanged(conditionType, conditionVal);
+        }
+    }
+    auto it = result.begin();
+    while (it != result.end()) {
+        if ((*it)->needRetrigger_) {
+            if (conditionType != WorkCondition::Type::TIMER
+                && conditionType != WorkCondition::Type::GROUP) {
+                WS_HILOGD("Need retrigger, start group listener.");
+                SetTimeRetrigger((*it)->timeRetrigger_);
+                listenerMap_.at(WorkCondition::Type::GROUP)->Start();
+            }
+            (*it)->needRetrigger_ = false;
+            (*it)->timeRetrigger_ = UINT32_MAX;
+            it = result.erase(it);
+        } else {
+            ++it;
+        }
     }
     return result;
 }
@@ -152,6 +175,23 @@ void WorkQueueManager::SetTimeCycle(uint32_t time)
 uint32_t WorkQueueManager::GetTimeCycle()
 {
     return timeCycle_;
+}
+
+void WorkQueueManager::SetTimeRetrigger(uint32_t time)
+{
+    timeRetrigger_ = time;
+}
+
+uint32_t WorkQueueManager::GetTimeRetrigger()
+{
+    return timeRetrigger_;
+}
+
+void WorkQueueManager::SetMinIntervalByInput(int64_t interval)
+{
+    for (auto it : queueMap_) {
+        it.second->SetMinIntervalByInput(interval);
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

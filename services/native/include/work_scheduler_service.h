@@ -30,6 +30,7 @@
 #include "policy/app_data_clear_listener.h"
 #include "policy/app_removed_listener.h"
 #include "singleton.h"
+#include "system_ability_status_change_stub.h"
 #include "work_info.h"
 #include "work_sched_service_stub.h"
 #include "work_status.h"
@@ -39,6 +40,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class WorkQueueManager;
 class WorkPolicyManager;
+class WorkBundleGroupChangeCallback;
 class WorkSchedulerService final : public SystemAbility, public WorkSchedServiceStub,
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
@@ -195,6 +197,13 @@ public:
     }
 
 private:
+    class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
+    public:
+        SystemAbilityStatusChangeListener() {};
+        virtual void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+    };
+
+private:
     const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
     const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
     const char* PERSISTED_FILE = "persisted_work";
@@ -207,9 +216,15 @@ private:
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    sptr<WorkBundleGroupChangeCallback> groupObserver_;
+#endif
 
     void WorkQueueManagerInit();
     bool WorkPolicyManagerInit();
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    void GroupObserverInit();
+#endif
     void RefreshPersistedWorks();
     std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
     void InitPersistedWork(WorkInfo& workInfo);
