@@ -163,7 +163,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     auto itMap = uidLastTimeMap_.find(uid_);
-    if (itMap != uidLastTimeMap_.end()) {
+    if (itMap == uidLastTimeMap_.end()) {
         return true;
     }
     time_t lastTime = uidLastTimeMap_[uid_];
