@@ -291,6 +291,11 @@ void WorkStatus::SetMinIntervalByInput(int64_t interval)
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 
+int64_t WorkStatus::GetMinInterval()
+{
+    return minInterval_;
+}
+
 void WorkStatus::UpdateUidLastTimeMap()
 {
     time_t lastTime = getCurrentTime();

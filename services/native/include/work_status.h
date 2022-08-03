@@ -153,6 +153,10 @@ public:
      * @brief Set min interval by input.
      */
     void SetMinIntervalByInput(int64_t interval);
+    /**
+     * @brief get min interval.
+     */
+    int64_t GetMinInterval();
 private:
     Status currentStatus_;
     time_t baseTime_;

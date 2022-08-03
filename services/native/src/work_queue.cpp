@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <set>
 #include "work_queue.h"
 
 #include "work_condition.h"
@@ -53,10 +54,15 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
         default: {}
     }
     vector<shared_ptr<WorkStatus>> result;
+    std::set<int32_t> uidList;
     for (auto it : workList_) {
         if (it->OnConditionChanged(type, value) == E_NOT_MATCH_HAP) {
             continue;
         }
+        if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0) {
+            continue;
+        }
+        uidList.insert(it->uid_);
         if (it->IsReady()) {
             result.emplace_back(it);
         } else {
