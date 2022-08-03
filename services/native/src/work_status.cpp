@@ -87,7 +87,7 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
         if (value->intVal == userId_ && value->strVal == bundleName_) {
             SetMinIntervalByGroup(value->enumVal);
         } else {
-            return E_NOT_MATCH_HAP;
+            return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
     }
     if (IsReady()) {

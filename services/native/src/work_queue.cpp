@@ -56,7 +56,7 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
     vector<shared_ptr<WorkStatus>> result;
     std::set<int32_t> uidList;
     for (auto it : workList_) {
-        if (it->OnConditionChanged(type, value) == E_NOT_MATCH_HAP) {
+        if (it->OnConditionChanged(type, value) == E_GROUP_CHANGE_NOT_MATCH_HAP) {
             continue;
         }
         if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0) {
