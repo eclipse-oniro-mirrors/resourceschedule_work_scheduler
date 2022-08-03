@@ -302,7 +302,6 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
         case PolicyType::APP_REMOVED: {
             int32_t uid = detectorVal->intVal;
             WorkStatus::ClearUidLastTimeMap(uid);
-            break;
         }
         case PolicyType::APP_DATA_CLEAR: {
             auto ws = wss_.promote();
