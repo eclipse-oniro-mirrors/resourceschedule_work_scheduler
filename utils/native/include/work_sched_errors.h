@@ -35,7 +35,8 @@ enum {
     E_STOP_WORK_FAILED,
     E_STOP_AND_CANCEL_WORK_FAILED,
     E_STOP_AND_CLEAR_WORKS_FAILED,
-    E_IS_LAST_WORK_TIMEOUT_FALSE
+    E_IS_LAST_WORK_TIMEOUT_FALSE,
+    E_NOT_MATCH_HAP
 };
 } // namespace WorkScheduler
 } // namespace OHOS

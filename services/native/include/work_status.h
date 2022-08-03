@@ -101,7 +101,7 @@ public:
      * @param type The type.
      * @param value The value.
      */
-    void OnConditionChanged(WorkCondition::Type &type, std::shared_ptr<Condition> value);
+    int32_t OnConditionChanged(WorkCondition::Type &type, std::shared_ptr<Condition> value);
     /**
      * @brief Mark round.
      */

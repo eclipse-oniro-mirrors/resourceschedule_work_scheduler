@@ -54,7 +54,9 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
     }
     vector<shared_ptr<WorkStatus>> result;
     for (auto it : workList_) {
-        it->OnConditionChanged(type, value);
+        if (it->OnConditionChanged(type, value) == E_NOT_MATCH_HAP) {
+            continue;
+        }
         if (it->IsReady()) {
             result.emplace_back(it);
         } else {
