@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <unistd.h>
 #include "work_scheduler_connection.h"
 
 #include "work_sched_hilog.h"
@@ -41,6 +42,7 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
         WS_HILOGE("proxy is null");
         return;
     }
+    sleep(1);
     proxy_->OnWorkStart(*workInfo_);
     WS_HILOGI("On ability connectDone, workId = %{public}d.", workInfo_->GetWorkId());
 }
