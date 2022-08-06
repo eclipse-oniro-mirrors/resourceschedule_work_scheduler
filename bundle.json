@@ -34,7 +34,7 @@
           "utils_base",
           "ability_runtime",
           "hiviewdfx_hilog_native",
-          "samgr_standard",
+          "samgr",
           "hisysevent_native",
           "napi",
           "battery_manager",

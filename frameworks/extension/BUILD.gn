@@ -60,7 +60,7 @@ ohos_shared_library("workschedextension") {
     "ipc:ipc_core",
     "napi:ace_napi",
     "safwk:system_ability_fwk",
-    "samgr_standard:samgr_proxy",
+    "samgr:samgr_proxy",
   ]
 
   part_name = "${worksched_native_part_name}"
