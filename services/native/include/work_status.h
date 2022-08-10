@@ -101,7 +101,7 @@ public:
      * @param type The type.
      * @param value The value.
      */
-    void OnConditionChanged(WorkCondition::Type &type, std::shared_ptr<Condition> value);
+    int32_t OnConditionChanged(WorkCondition::Type &type, std::shared_ptr<Condition> value);
     /**
      * @brief Mark round.
      */
@@ -153,6 +153,10 @@ public:
      * @brief Set min interval by input.
      */
     void SetMinIntervalByInput(int64_t interval);
+    /**
+     * @brief get min interval.
+     */
+    int64_t GetMinInterval();
 private:
     Status currentStatus_;
     time_t baseTime_;

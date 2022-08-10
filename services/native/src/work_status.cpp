@@ -68,7 +68,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
 
 WorkStatus::~WorkStatus() {}
 
-void WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condition> value)
+int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condition> value)
 {
     WS_HILOGD("Work status condition changed.");
     if (workInfo_->GetConditionMap()->count(type) > 0
@@ -86,11 +86,14 @@ void WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condit
         callbackFlag_ = true;
         if (value->intVal == userId_ && value->strVal == bundleName_) {
             SetMinIntervalByGroup(value->enumVal);
+        } else {
+            return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
     }
     if (IsReady()) {
         MarkStatus(Status::CONDITION_READY);
     }
+    return ERR_OK;
 }
 
 string WorkStatus::MakeWorkId(int32_t workId, int32_t uid)
@@ -286,6 +289,11 @@ void WorkStatus::SetMinIntervalByInput(int64_t interval)
     WS_HILOGD ("Set min interval by input to %{public}" PRId64 "", interval);
     debugMode_ = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
+}
+
+int64_t WorkStatus::GetMinInterval()
+{
+    return minInterval_;
 }
 
 void WorkStatus::UpdateUidLastTimeMap()
