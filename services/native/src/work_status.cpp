@@ -30,7 +30,7 @@ using namespace OHOS::PowerMgr;
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
-static bool debugMode_ = false;
+static bool debugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::uidLastTimeMap_;
 
@@ -64,6 +64,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
     this->priority_ = DEFAULT_PRIORITY;
     this->currentStatus_ = WAIT_CONDITION;
     this->minInterval_ = MIN_INTERVAL_DEFAULT;
+    this->callbackFlag_ = false;
 }
 
 WorkStatus::~WorkStatus() {}
@@ -161,7 +162,7 @@ bool WorkStatus::IsReady()
     if (!IsReadyInner()) {
         return false;
     }
-    if (!debugMode_ && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
+    if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
     }
@@ -287,7 +288,7 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 void WorkStatus::SetMinIntervalByInput(int64_t interval)
 {
     WS_HILOGD ("Set min interval by input to %{public}" PRId64 "", interval);
-    debugMode_ = interval == 0 ? false : true;
+    debugMode = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 

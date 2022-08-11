@@ -19,7 +19,7 @@ using namespace std;
 namespace OHOS {
 namespace WorkScheduler {
 const uint32_t TIME_CYCLE = 20 * 60 * 1000; // 20min
-static uint32_t timeRetrigger_ = UINT32_MAX;
+static int32_t timeRetrigger_ = INT32_MAX;
 
 WorkQueueManager::WorkQueueManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
 {
@@ -115,7 +115,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
                 listenerMap_.at(WorkCondition::Type::GROUP)->Start();
             }
             (*it)->needRetrigger_ = false;
-            (*it)->timeRetrigger_ = UINT32_MAX;
+            (*it)->timeRetrigger_ = INT32_MAX;
             it = result.erase(it);
         } else {
             ++it;
@@ -177,12 +177,12 @@ uint32_t WorkQueueManager::GetTimeCycle()
     return timeCycle_;
 }
 
-void WorkQueueManager::SetTimeRetrigger(uint32_t time)
+void WorkQueueManager::SetTimeRetrigger(int32_t time)
 {
     timeRetrigger_ = time;
 }
 
-uint32_t WorkQueueManager::GetTimeRetrigger()
+int32_t WorkQueueManager::GetTimeRetrigger()
 {
     return timeRetrigger_;
 }
