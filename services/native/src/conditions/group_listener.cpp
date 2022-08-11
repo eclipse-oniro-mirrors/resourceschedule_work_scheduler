@@ -34,7 +34,7 @@ bool GroupListener::Start()
     if (!eventRunner_) {
         eventRunner_ = AppExecFwk::EventRunner::Create(GROUP_LISTENER);
         if (eventRunner_ == nullptr) {
-            WS_HILOGE("Init failed due to create EventHandler");
+            WS_HILOGE("Failed to create EventHandler");
             return false;
         }
     }
@@ -42,7 +42,7 @@ bool GroupListener::Start()
         handler_ = std::make_shared<WorkQueueEventHandler>(eventRunner_, workQueueManager_);
     }
     if (workQueueManager_ == nullptr) {
-        WS_HILOGE("workQueueManager_ is null");
+        WS_HILOGE("workQueueManager is null");
         return false;
     }
     uint32_t time = workQueueManager_->GetTimeRetrigger();

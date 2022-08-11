@@ -30,9 +30,9 @@ using namespace OHOS::PowerMgr;
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
-static bool debugMode_ = false;
+static bool debugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
-std::map<int32_t, time_t> WorkStatus::uidLastTimeMap_;
+std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 
 time_t getCurrentTime()
 {
@@ -64,6 +64,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
     this->priority_ = DEFAULT_PRIORITY;
     this->currentStatus_ = WAIT_CONDITION;
     this->minInterval_ = MIN_INTERVAL_DEFAULT;
+    this->callbackFlag_ = false;
 }
 
 WorkStatus::~WorkStatus() {}
@@ -161,15 +162,15 @@ bool WorkStatus::IsReady()
     if (!IsReadyInner()) {
         return false;
     }
-    if (!debugMode_ && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
+    if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
     }
-    auto itMap = uidLastTimeMap_.find(uid_);
-    if (itMap == uidLastTimeMap_.end()) {
+    auto itMap = s_uid_last_time_map.find(uid_);
+    if (itMap == s_uid_last_time_map.end()) {
         return true;
     }
-    time_t lastTime = uidLastTimeMap_[uid_];
+    time_t lastTime = s_uid_last_time_map[uid_];
     double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
@@ -257,7 +258,7 @@ bool WorkStatus::SetMinInterval()
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = DeviceUsageStats::BundleActiveClient::GetInstance().QueryPackageGroup(bundleName_, userId_);
     if (group == -1) {
-        WS_HILOGE ("Query package group failed. userId = %{public}d, bundleName = %{public}s",
+        WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
             userId_, bundleName_.c_str());
         return false;
     }
@@ -280,14 +281,14 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
 #endif
-    WS_HILOGD ("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
+    WS_HILOGD("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
     return true;
 }
 
 void WorkStatus::SetMinIntervalByInput(int64_t interval)
 {
-    WS_HILOGD ("Set min interval by input to %{public}" PRId64 "", interval);
-    debugMode_ = interval == 0 ? false : true;
+    WS_HILOGD("Set min interval by input to %{public}" PRId64 "", interval);
+    debugMode = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 
@@ -299,12 +300,12 @@ int64_t WorkStatus::GetMinInterval()
 void WorkStatus::UpdateUidLastTimeMap()
 {
     time_t lastTime = getCurrentTime();
-    uidLastTimeMap_[uid_] = lastTime;
+    s_uid_last_time_map[uid_] = lastTime;
 }
 
 void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
-    uidLastTimeMap_.erase(uid);
+    s_uid_last_time_map.erase(uid);
 }
 
 bool WorkStatus::IsRunning()
