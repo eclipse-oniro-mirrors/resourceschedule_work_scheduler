@@ -68,6 +68,7 @@ ohos_shared_library("workschedservice") {
     "battery_manager:batterysrv_client",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
+    "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
     "eventhandler:libeventhandler",
     "hisysevent_native:libhisysevent",
@@ -77,7 +78,6 @@ ohos_shared_library("workschedservice") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "thermal_manager:thermalsrv_client",
-    "utils_base:utils",
   ]
 
   defines = []
