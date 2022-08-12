@@ -45,7 +45,7 @@ bool GroupListener::Start()
         WS_HILOGE("workQueueManager is null");
         return false;
     }
-    uint32_t time = workQueueManager_->GetTimeRetrigger();
+    int32_t time = workQueueManager_->GetTimeRetrigger();
     handler_->SendEvent(AppExecFwk::InnerEvent::Get(WorkQueueEventHandler::GROUP_TICK, 0), time);
     return true;
 }

@@ -149,9 +149,9 @@ public:
      */
     static void ClearUidLastTimeMap(int32_t uid);
     /**
-     * @brief Set min interval by input.
+     * @brief Set min interval by dump.
      */
-    void SetMinIntervalByInput(int64_t interval);
+    void SetMinIntervalByDump(int64_t interval);
     /**
      * @brief get min interval.
      */
@@ -165,7 +165,8 @@ private:
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
-    bool IsReadyInner();
+    bool IsBatteryAndNetworkReady(WorkCondition::Type type);
+    bool IsStorageAndChargerAndTimerReady(WorkCondition::Type type);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

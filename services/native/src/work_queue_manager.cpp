@@ -187,10 +187,10 @@ int32_t WorkQueueManager::GetTimeRetrigger()
     return timeRetrigger_;
 }
 
-void WorkQueueManager::SetMinIntervalByInput(int64_t interval)
+void WorkQueueManager::SetMinIntervalByDump(int64_t interval)
 {
     for (auto it : queueMap_) {
-        it.second->SetMinIntervalByInput(interval);
+        it.second->SetMinIntervalByDump(interval);
     }
 }
 } // namespace WorkScheduler
