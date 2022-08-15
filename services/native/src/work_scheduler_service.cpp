@@ -49,6 +49,8 @@
 #include "work_bundle_group_change_callback.h"
 #include "work_sched_common.h"
 #include "work_sched_utils.h"
+#include "scheduler_bg_task_subscriber.h"
+#include "background_task_mgr_helper.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -167,6 +169,10 @@ void WorkSchedulerService::OnStop()
     groupObserver_ = nullptr;
     hasGroupObserver = -1;
 #endif
+    ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::UnsubscribeBackgroundTask(*subscriber_);
+    if (ret != ERR_OK) {
+        WS_HILOGE("UnSubscribeBackgroundTask failed.");
+    }
     eventRunner_.reset();
     handler_.reset();
     ready_ = false;
@@ -189,9 +195,32 @@ bool WorkSchedulerService::Init()
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
+    if (!InitBgTaskSubscriber()) {
+        WS_HILOGE("subscribe background task failed!");
+        return false;
+    }
     checkBundle_ = true;
     ready_ = true;
     WS_HILOGI("init success.");
+    return true;
+}
+
+bool WorkSchedulerService::InitBgTaskSubscriber()
+{
+    sptr<ISystemAbilityManager> systemAbilityManager
+        = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager->CheckSystemAbility(BACKGROUND_TASK_MANAGER_SERVICE_ID)) {
+        WS_HILOGE("GetBackgroundTaskManagerProxy GetSystemAbility failed.");
+        return false;
+    }
+    if (subscriber_ == nullptr) {
+        subscriber_ = make_shared<SchedulerBgTaskSubscriber>(shared_from_this());
+    }
+    ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
+    if (ret != ERR_OK) {
+        WS_HILOGE("SubscribeBackgroundTask failed.");
+        return false;
+    }
     return true;
 }
 
@@ -643,6 +672,20 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
         WS_HILOGE("The file already exists.");
     }
     return ERR_OK;
+}
+
+void WorkSchedulerService::UpdateWhiteList(int32_t uid, bool isAdd)
+{
+    if (isAdd) {
+        whitelist.emplace(uid);
+    } else {
+        whitelist.erase(uid);
+    }
+}
+
+bool WorkSchedulerService::CheckWhitelist(int32_t uid)
+{
+    return whitelist.find(uid) != whitelist.end();
 }
 
 void WorkSchedulerService::SystemAbilityStatusChangeListener::OnAddSystemAbility

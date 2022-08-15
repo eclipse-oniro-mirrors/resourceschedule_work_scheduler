@@ -18,11 +18,11 @@
 #include "battery_srv_client.h"
 #include "work_sched_common.h"
 #include "work_sched_utils.h"
+#include "work_scheduler_service.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #include "bundle_active_group_map.h"
 #endif
-#include "work_scheduler_service.h"
 
 using namespace std;
 using namespace OHOS::PowerMgr;
@@ -173,7 +173,8 @@ bool WorkStatus::IsReady()
     double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
-    if (del < minInterval_) {
+    
+    if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckWhitelist(uid_) && del < minInterval_) {
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;

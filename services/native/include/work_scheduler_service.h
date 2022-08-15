@@ -41,6 +41,7 @@ namespace WorkScheduler {
 class WorkQueueManager;
 class WorkPolicyManager;
 class WorkBundleGroupChangeCallback;
+class SchedulerBgTaskSubscriber;
 class WorkSchedulerService final : public SystemAbility, public WorkSchedServiceStub,
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
@@ -195,6 +196,33 @@ public:
     {
         return workPolicyManager_;
     }
+
+    /**
+     * @brief add uid to the whitelist or delete uid from the whitelist. 
+     * 
+     * @param uid uid of the app.
+     * @param isAdd true if add name, else delete.
+     */
+    void UpdateWhiteList(int32_t uid, bool isAdd);
+
+    /**
+     * @brief init background task subscriber, subscribe self to bgtask service
+     * 
+     * @return true seccess to init subscriber
+     * @return false fail to init subscriber
+     */
+    bool InitBgTaskSubscriber();
+
+    /**
+     * @brief 
+     * 
+     * @return true 
+     * @return false 
+     */
+    bool CheckWhitelist(int32_t uid);
+private:
+    std::set<int32_t> whitelist;
+    std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 
 private:
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
