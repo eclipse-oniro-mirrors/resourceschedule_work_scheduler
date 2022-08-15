@@ -36,7 +36,7 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
 
   external_deps = [
     "ability_base:want",
-    "utils_base:utils",
+    "c_utils:utils",
   ]
 }
 
