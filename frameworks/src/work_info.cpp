@@ -27,6 +27,7 @@ WorkInfo::WorkInfo()
     workId_ = INVALID_VALUE;
     uid_ = INVALID_VALUE;
     persisted_ = false;
+    extras_ = nullptr;
 }
 
 WorkInfo::~WorkInfo() {}
@@ -98,6 +99,11 @@ void WorkInfo::RequestRepeatCycle(uint32_t timeInterval)
     repeatCycle->uintVal = timeInterval;
     repeatCycle->boolVal = true;
     conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
+}
+
+void WorkInfo::RequestExtras(AAFwk::WantParams extras)
+{
+    extras_ = std::make_shared<AAFwk::WantParams>(extras);
 }
 
 void WorkInfo::RefreshUid(int32_t uid)
@@ -210,6 +216,11 @@ std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> WorkI
     return std::make_shared<std::map<WorkCondition::Type, std::shared_ptr<Condition>>>(conditionMap_);
 }
 
+std::shared_ptr<AAFwk::WantParams> WorkInfo::GetExtras() const
+{
+    return extras_;
+}
+
 bool WorkInfo::Marshalling(Parcel &parcel) const
 {
     bool ret = false;
@@ -251,6 +262,11 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
                 ret = false;
             }
         }
+    }
+    if (extras_ != nullptr) {
+        ret = ret && extras_->Marshalling(parcel);
+    } else {
+        ret = false;
     }
     return ret;
 }
@@ -307,6 +323,7 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
         }
         read->conditionMap_.emplace(WorkCondition::Type(key), condition);
     }
+    read->extras_ = std::make_shared<AAFwk::WantParams>(*AAFwk::WantParams::Unmarshalling(parcel));
     return read;
 }
 
@@ -320,6 +337,36 @@ std::string WorkInfo::ParseToJsonStr()
     root["bundleName"] = bundleName_;
     root["abilityName"] = abilityName_;
     root["persisted"] = persisted_;
+    ParseConditionToJsonStr(root);
+    Json::Value extras;
+    Json::Value extrasType;
+    if (extras_ != nullptr) {
+        std::map<std::string, sptr<AAFwk::IInterface>> extrasMap = extras_->GetParams();
+        int typeId = INVALID_VALUE;
+        for (auto it : extrasMap) {
+            typeId = INVALID_VALUE;
+            typeId = AAFwk::WantParams::GetDataType(it.second);
+            extrasType[it.first] = typeId;
+            if (typeId != INVALID_VALUE) {
+                std::string value = AAFwk::WantParams::GetStringByType(it.second, typeId);
+                extras[it.first] = value;
+            } else {
+                WS_HILOGE("extras: type error.");
+            }
+        }
+    }
+    root["extras"] = extras;
+    root["extrasType"] = extrasType;
+    Json::StreamWriterBuilder writerBuilder;
+    std::ostringstream os;
+    std::unique_ptr<Json::StreamWriter> jsonWriter(writerBuilder.newStreamWriter());
+    jsonWriter->write(root, &os);
+    std::string result = os.str();
+    return result;
+}
+
+void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
+{
     Json::Value conditions;
     for (auto it : conditionMap_) {
         switch (it.first) {
@@ -356,12 +403,6 @@ std::string WorkInfo::ParseToJsonStr()
         }
     }
     root["conditions"] = conditions;
-    Json::StreamWriterBuilder writerBuilder;
-    std::ostringstream os;
-    std::unique_ptr<Json::StreamWriter> jsonWriter(writerBuilder.newStreamWriter());
-    jsonWriter->write(root, &os);
-    std::string result = os.str();
-    return result;
 }
 
 bool WorkInfo::ParseFromJson(const Json::Value value)
@@ -376,6 +417,25 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     this->bundleName_ = value["bundleName"].asString();
     this->abilityName_ = value["abilityName"].asString();
     this->persisted_ = value["persisted"].asBool();
+    ParseConditionFromJsonStr(value);
+    Json::Value extrasJson = value["extras"];
+    Json::Value extrasType = value["extrasType"];
+    AAFwk::WantParams extras;
+    Json::Value::Members keyList = extrasJson.getMemberNames();
+    for (auto key : keyList) {
+        int type = extrasType[key].asInt();
+        if (type != INVALID_VALUE) {
+            sptr<AAFwk::IInterface> exInterface = AAFwk::WantParams::GetInterfaceByType(type,
+                extrasJson[key].asString());
+            extras.SetParam(key, exInterface);
+        }
+    }
+    this->RequestExtras(extras);
+    return true;
+}
+
+void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
+{
     if (value.isMember("uid")) {
         this->uid_ = value["uid"].asInt();
     }
@@ -405,7 +465,6 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
             }
         }
     }
-    return true;
 }
 
 void WorkInfo::Dump(std::string &result)

@@ -13,9 +13,11 @@
  * limitations under the License.
  */
 #include "common.h"
+#include "common_want.h"
 
 #include "errors.h"
 #include "work_sched_hilog.h"
+#include "want_params.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -64,7 +66,7 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
     }
 
     // Get bundleName and abilityName.
-    std::string bundleName =  Common::GetStringProperty(env, objValue, "bundleName");
+    std::string bundleName = Common::GetStringProperty(env, objValue, "bundleName");
     std::string abilityName = Common::GetStringProperty(env, objValue, "abilityName");
     if (bundleName == UNSET_STRING_PARAM || abilityName == UNSET_STRING_PARAM) {
         WS_HILOGE("BundleName or abilityName is invalid, failed.");
@@ -196,10 +198,33 @@ bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     }
 }
 
+bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
+{
+    napi_value extras = nullptr;
+    napi_status getExtrasStatus = napi_get_named_property(env, objValue, "extras", &extras);
+    if (getExtrasStatus != napi_ok) {
+        WS_HILOGE("Get parameters false.");
+        return false;
+    }
+    AAFwk::WantParams extraParams;
+    if (!UnwrapWantParams(env, extras, extraParams)) {
+        WS_HILOGE("parameters are invalid, ignore.");
+        return false;
+    }
+    workInfo.RequestExtras(extraParams);
+    WS_HILOGI("Get parameters finished.");
+    return true;
+}
+
+
 bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     // Get base info.
     if (!GetBaseWorkInfo(env, objValue, workInfo)) {
+        return false;
+    }
+    // Get extras info.
+    if (!GetExtrasInfo(env, objValue, workInfo)) {
         return false;
     }
 

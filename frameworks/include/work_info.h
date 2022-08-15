@@ -23,6 +23,7 @@
 
 #include <parcel.h>
 #include "json/json.h"
+#include "want_params.h"
 #include "refbase.h"
 
 #include "work_condition.h"
@@ -96,6 +97,12 @@ public:
      * @param timeInterval The time interval.
      */
     void RequestRepeatCycle(uint32_t timeInterval);
+    /**
+     * @brief Request extra messages.
+     *
+     * @param timeInterval The time interval.
+     */
+    void RequestExtras(AAFwk::WantParams extras);
     /**
      * @brief Refresh uid.
      *
@@ -188,6 +195,12 @@ public:
      */
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**
+     * @brief Request extra messages.
+     *
+     * @param timeInterval The time interval.
+     */
+    std::shared_ptr<AAFwk::WantParams> GetExtras() const;
+    /**
      * @brief Marshalling.
      *
      * @param parcel The parcel.
@@ -214,12 +227,24 @@ public:
      */
     std::string ParseToJsonStr();
     /**
+     * @brief Parse conditions to json str.
+     *
+     * @return void.
+     */
+    void ParseConditionToJsonStr(Json::Value &root);
+    /**
      * @brief Parse from json.
      *
      * @param value The value.
      * @return True if success,else false.
      */
     bool ParseFromJson(const Json::Value value);
+    /**
+     * @brief Parse conditions from json.
+     *
+     * @return Json String.
+     */
+    void ParseConditionFromJsonStr(const Json::Value root);
 
 private:
     int32_t workId_;
@@ -227,6 +252,7 @@ private:
     std::string abilityName_;
     bool persisted_;
     int32_t uid_;
+    std::shared_ptr<AAFwk::WantParams> extras_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
 };
 } // namespace WorkScheduler

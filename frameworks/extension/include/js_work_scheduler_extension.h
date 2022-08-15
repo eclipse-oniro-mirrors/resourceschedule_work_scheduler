@@ -93,6 +93,7 @@ public:
 
 private:
     void GetSrcPath(std::string &srcPath);
+    std::string GetExtrasJsonStr(WorkInfo& workInfo);
     AbilityRuntime::JsRuntime &jsRuntime_;
     std::unique_ptr<NativeReference> jsObj_;
 };
