@@ -120,9 +120,9 @@ public:
      */
     void ClearAll();
     /**
-     * @brief Set min interval by input.
+     * @brief Set min interval by dump.
      */
-    void SetMinIntervalByInput(int64_t interval);
+    void SetMinIntervalByDump(int64_t interval);
 private:
     std::list<std::shared_ptr<WorkStatus>> workList_;
 };

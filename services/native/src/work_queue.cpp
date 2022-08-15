@@ -62,9 +62,9 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
         if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0) {
             continue;
         }
-        uidList.insert(it->uid_);
         if (it->IsReady()) {
             result.emplace_back(it);
+            uidList.insert(it->uid_);
         } else {
             if (it->IsReadyStatus()) {
                 it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
@@ -202,10 +202,10 @@ bool WorkComp::operator () (const shared_ptr<WorkStatus> w1, const shared_ptr<Wo
     return w1->priority_ >= w2->priority_;
 }
 
-void WorkQueue::SetMinIntervalByInput(int64_t interval)
+void WorkQueue::SetMinIntervalByDump(int64_t interval)
 {
     for (auto it : workList_) {
-        it->SetMinIntervalByInput(interval);
+        it->SetMinIntervalByDump(interval);
     }
 }
 } // namespace WorkScheduler

@@ -115,9 +115,9 @@ public:
      */
     void Dump(std::string& result);
     /**
-     * @brief Set min interval by input.
+     * @brief Set min interval by dump.
      */
-    void SetMinIntervalByInput(int64_t interval);
+    void SetMinIntervalByDump(int64_t interval);
 private:
     std::vector<std::shared_ptr<WorkStatus>> GetReayQueue(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
