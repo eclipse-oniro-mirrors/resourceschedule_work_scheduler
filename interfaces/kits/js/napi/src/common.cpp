@@ -223,7 +223,7 @@ bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
     if (!GetBaseWorkInfo(env, objValue, workInfo)) {
         return false;
     }
-    // Get extras info.
+    // Get extra parameters.
     if (!GetExtrasInfo(env, objValue, workInfo)) {
         return false;
     }

@@ -16,26 +16,17 @@
 #include "common_want.h"
 
 #include "bool_wrapper.h"
-#include "array_wrapper.h"
-#include "byte_wrapper.h"
 #include "double_wrapper.h"
-#include "float_wrapper.h"
 #include "int_wrapper.h"
-#include "long_wrapper.h"
-#include "short_wrapper.h"
 #include "string_wrapper.h"
-#include "zchar_wrapper.h"
-#include "remote_object_wrapper.h"
 #include "want_params_wrapper.h"
 #include "work_sched_hilog.h"
-#include "napi_remote_object.h"
 #include "securec.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantParams)
 {
-    WS_HILOGI("%{public}s called.", __func__);
     if (!IsTypeForNapiValue(env, param, napi_object)) {
         return false;
     }
@@ -44,12 +35,12 @@ bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantPar
     napi_value jsProName = nullptr;
     napi_get_property_names(env, param, &jsProNameList);
     napi_get_array_length(env, jsProNameList, &jsProCount);
-    WS_HILOGI("%{public}s called. Property size=%{public}d.", __func__, jsProCount);
+    WS_HILOGI("Property size=%{public}d.", jsProCount);
 
     for (uint32_t index = 0; index < jsProCount; index++) {
         napi_get_element(env, jsProNameList, index, &jsProName);
         std::string strProName = UnwrapStringFromJS(env, jsProName, "");
-        WS_HILOGI("%{public}s called. Property name=%{public}s.", __func__, strProName.c_str());
+        WS_HILOGI("Property name=%{public}s.", strProName.c_str());
         InnerUnwrapJS(env, param, wantParams, strProName);
     }
 

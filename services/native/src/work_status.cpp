@@ -162,8 +162,8 @@ bool WorkStatus::IsReady()
     auto workConditionMap = workInfo_->GetConditionMap();
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
-        return false;
-    }
+            return false;
+        }
         if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndChargerAndTimerReady(it.first)) {
             return false;
         }
@@ -192,24 +192,24 @@ bool WorkStatus::IsBatteryAndNetworkReady(WorkCondition::Type type)
 {
     auto workConditionMap = workInfo_->GetConditionMap();
     switch (type) {
-            case WorkCondition::Type::NETWORK: {
+        case WorkCondition::Type::NETWORK: {
             if (conditionMap_.at(type)->enumVal == WorkCondition::Network::NETWORK_UNKNOWN) {
-                    return false;
-                }
+                return false;
+            }
             if (workConditionMap->at(type)->enumVal != WorkCondition::Network::NETWORK_TYPE_ANY &&
                 workConditionMap->at(type)->enumVal != conditionMap_.at(type)->enumVal) {
-                    return false;
-                }
-                break;
+                return false;
             }
-            case WorkCondition::Type::BATTERY_STATUS: {
+            break;
+        }
+        case WorkCondition::Type::BATTERY_STATUS: {
             int32_t batteryReq = workConditionMap->at(type)->enumVal;
-                if (batteryReq != WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY &&
+            if (batteryReq != WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY &&
                 batteryReq != conditionMap_.at(type)->enumVal) {
-                    return false;
-                }
-                break;
+                return false;
             }
+            break;
+        }
         case WorkCondition::Type::BATTERY_LEVEL: {
             if (workConditionMap->at(type)->intVal > conditionMap_.at(type)->intVal) {
                 return false;
@@ -226,41 +226,41 @@ bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
 {
     auto workConditionMap = workInfo_->GetConditionMap();
     switch (type) {
-            case WorkCondition::Type::STORAGE: {
+        case WorkCondition::Type::STORAGE: {
             if (workConditionMap->at(type)->enumVal != WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY &&
                 workConditionMap->at(type)->enumVal != conditionMap_.at(type)->enumVal) {
-                    return false;
-                }
-                break;
+                return false;
             }
-            case WorkCondition::Type::CHARGER: {
+            break;
+        }
+        case WorkCondition::Type::CHARGER: {
             auto conditionSet = workConditionMap->at(type);
             auto conditionCurrent = conditionMap_.at(type);
-                if (conditionSet->boolVal) {
-                    if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal !=
-                        static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
-                        return false;
-                    }
-                } else {
-                    if (conditionCurrent->enumVal !=
-                        static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)) {
-                        return false;
-                    }
-                }
-                break;
-            }
-            case WorkCondition::Type::TIMER: {
-                uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-                double del = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
-                WS_HILOGD("del time:%{public}lf, intervalTime:%{public}u", del, intervalTime);
-                if (del < intervalTime) {
+            if (conditionSet->boolVal) {
+                if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal !=
+                    static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
                     return false;
                 }
-                break;
+            } else {
+                if (conditionCurrent->enumVal !=
+                    static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)) {
+                    return false;
+                }
             }
-            default:
-                break;
+            break;
         }
+        case WorkCondition::Type::TIMER: {
+            uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
+            double del = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
+            WS_HILOGD("del time:%{public}lf, intervalTime:%{public}u", del, intervalTime);
+            if (del < intervalTime) {
+                return false;
+            }
+            break;
+        }
+        default:
+            break;
+    }
     return true;
 }
 

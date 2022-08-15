@@ -98,9 +98,9 @@ public:
      */
     void RequestRepeatCycle(uint32_t timeInterval);
     /**
-     * @brief Request extra messages.
+     * @brief Request extra parameters.
      *
-     * @param timeInterval The time interval.
+     * @param extras extra parameters.
      */
     void RequestExtras(AAFwk::WantParams extras);
     /**
@@ -195,9 +195,9 @@ public:
      */
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**
-     * @brief Request extra messages.
+     * @brief Get extra parameters.
      *
-     * @param timeInterval The time interval.
+     * @return extra parameters.
      */
     std::shared_ptr<AAFwk::WantParams> GetExtras() const;
     /**

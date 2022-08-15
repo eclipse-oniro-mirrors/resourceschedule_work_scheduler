@@ -16,24 +16,56 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_COMMON_WANT
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_COMMON_WANT
 
-#include <map>
 #include <string>
 #include <vector>
 
 #include "napi/native_api.h"
-#include "napi/native_node_api.h"
-#include "want.h"
 #include "want_params.h"
 
 namespace OHOS {
 namespace WorkScheduler {
+/**
+ * @brief Unwrap napi value to WantParams object.
+ *
+ * @param env The environment that the Node-API call is invoked under.
+ * @param param The napi value parameters.
+ * @param wantParams Indicates the WantParams object containing the new parameters.
+ *
+ * @return True if success,else false.
+ */
 bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantParams);
+
+/**
+ * @brief Unwrap napi value to WantParams object with string property name.
+ *
+ * @param env The environment that the Node-API call is invoked under.
+ * @param param The napi value parameters.
+ * @param wantParams Indicates the WantParams object containing the new parameters.
+ * @param strProName The property name.
+ */
 void InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams, std::string strProName);
 
+/**
+ * @brief Unwrap string from napi value.
+ *
+ * @param env The environment that the Node-API call is invoked under.
+ * @param param The napi value parameters.
+ * @param defaultValue The default value.
+ *
+ * @return The string result.
+ */
 std::string UnwrapStringFromJS(napi_env env, napi_value param, const std::string &defaultValue);
 
+/**
+ * @brief Judge if is expect type for napi value.
+ *
+ * @param env The environment that the Node-API call is invoked under.
+ * @param param The napi value parameters.
+ * @param expectType The expect napi value type.
+ *
+ * @return True if is expect type for napi value, else false.
+ */
 bool IsTypeForNapiValue(napi_env env, napi_value param, napi_valuetype expectType);
-// bool BlackListFilter(const std::string &strProName);
 }  // namespace WorkScheduler
 }  // namespace OHOS
 #endif  // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_COMMON_WANT
