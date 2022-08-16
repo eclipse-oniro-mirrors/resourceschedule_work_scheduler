@@ -418,7 +418,14 @@ describe("WorkSchedulerJsTest", function () {
             workId: 16,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
         }
         function getTime(){
             var time = new Date();
@@ -970,5 +977,56 @@ describe("WorkSchedulerJsTest", function () {
         setTimeout(() => {
             done();
         }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest032
+     * @tc.desc: test work scheduler with supported parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest032", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest032---------------------------');
+        let workInfo = {
+            workId: 32,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        expect(res).assertEqual(true)
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest033
+     * @tc.desc: test work scheduler with unsupported parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest033", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest033---------------------------');
+        let workInfo = {
+            workId: 33,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            parameters: {
+                mykey0: 10,
+                mykey1: [1, 2, 3],
+                mykey2: [false, true, false],
+                mykey3: ["qqqqq", "wwwwww", "aaaaaaaaaaaaaaaaa"]
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        expect(res).assertEqual(true)
+        done();
     })
 })
