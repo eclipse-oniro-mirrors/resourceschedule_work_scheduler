@@ -1169,7 +1169,7 @@ describe("WorkSchedulerJsTest", function () {
             expect(false).assertEqual(true)
             done();
         }
-        workScheduler.getWorkStatus(9, (err, res) => {
+        workScheduler.getWorkStatus(37, (err, res) => {
             if (err) {
                 expect(false).assertEqual(true)
             } else {
@@ -1212,7 +1212,7 @@ describe("WorkSchedulerJsTest", function () {
             done();
         }
 
-        workScheduler.getWorkStatus(10).then((res) => {
+        workScheduler.getWorkStatus(38).then((res) => {
             for (let item in res) {
                 console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
             }
