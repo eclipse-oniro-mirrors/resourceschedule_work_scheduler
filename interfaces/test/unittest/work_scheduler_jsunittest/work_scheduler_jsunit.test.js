@@ -1029,4 +1029,200 @@ describe("WorkSchedulerJsTest", function () {
         expect(res).assertEqual(true)
         done();
     })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest033
+     * @tc.desc: test stop work scheduler with parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest034", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest034---------------------------');
+        let workInfo = {
+            workId: 34,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == true) {
+            var stopRes = workScheduler.stopWork(workInfo, false);
+            expect(stopRes).assertEqual(true)
+        } else {
+            expect(false).assertEqual(true)
+        }
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest011
+     * @tc.desc: test obtainAllWorks callback with parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest035", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest035---------------------------');
+        let workInfo = {
+            workId: 35,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == false) {
+            expect(false).assertEqual(true)
+            done();
+        }
+
+        workScheduler.obtainAllWorks((err, res) =>{
+            if (err) {
+                expect(false).assertEqual(true)
+            } else {
+                console.info('WORK_SCHEDULER obtainAllWorks callback success, data is:' + JSON.stringify(res));
+                expect(true).assertEqual(true)
+            }
+         });
+
+        setTimeout(()=>{
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest012
+     * @tc.desc: test obtainAllWorks promise with parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest036", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest036---------------------------');
+        let workInfo = {
+            workId: 36,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            batteryLevel: 15,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == false) {
+            expect(false).assertEqual(true)
+            done();
+        }
+
+        workScheduler.obtainAllWorks().then((res) => {
+            console.info('WORK_SCHEDULER obtainAllWorks promise success, data is:' + JSON.stringify(res));
+            expect(true).assertEqual(true)
+        }).catch((err) => {
+            console.info('workschedulerLog obtainAllWorks promise failed, because:' + err.data);
+            expect(false).assertEqual(true)
+        })
+
+        setTimeout(()=>{
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest037
+     * @tc.desc: test getWorkStatus callback with parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest037", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest037---------------------------');
+        let workInfo = {
+            workId: 37,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == false) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        workScheduler.getWorkStatus(9, (err, res) => {
+            if (err) {
+                expect(false).assertEqual(true)
+            } else {
+                for (let item in res) {
+                    console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
+                }
+                expect(true).assertEqual(true)
+            }
+        });
+        setTimeout(()=>{
+            done();
+        }, 500);
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest038
+     * @tc.desc: test getWorkStatus promise with parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest038", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest038---------------------------');
+        let workInfo = {
+            workId: 38,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            batteryLevel: 15,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        if (res == false) {
+            expect(false).assertEqual(true)
+            done();
+        }
+
+        workScheduler.getWorkStatus(10).then((res) => {
+            for (let item in res) {
+                console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
+            }
+            expect(true).assertEqual(true)
+        }).catch((err) => {
+            expect(false).assertEqual(true)
+        })
+
+        setTimeout(()=>{
+            done();
+        }, 500);
+    })
 })

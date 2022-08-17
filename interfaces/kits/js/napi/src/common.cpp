@@ -17,7 +17,6 @@
 
 #include "errors.h"
 #include "work_sched_hilog.h"
-#include "want_params.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -201,7 +200,7 @@ bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
 bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     napi_value extras = nullptr;
-    napi_status getExtrasStatus = napi_get_named_property(env, objValue, "extras", &extras);
+    napi_status getExtrasStatus = napi_get_named_property(env, objValue, "parameters", &extras);
     if (getExtrasStatus != napi_ok) {
         WS_HILOGE("Get parameters false.");
         return false;
@@ -224,9 +223,7 @@ bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
         return false;
     }
     // Get extra parameters.
-    if (!GetExtrasInfo(env, objValue, workInfo)) {
-        return false;
-    }
+    GetExtrasInfo(env, objValue, workInfo);
 
     // Get condition info.
     bool hasConditions = false;
@@ -432,6 +429,10 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
         }
     }
 
+    if (workInfo->GetExtras()) {
+        napi_value parameters = WrapWantParams(env, *workInfo->GetExtras());
+        napi_set_named_property(env, napiWork, "parameters", parameters);
+    }
     return napiWork;
 }
 

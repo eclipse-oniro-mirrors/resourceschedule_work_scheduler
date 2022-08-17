@@ -21,30 +21,39 @@
 #include "string_wrapper.h"
 #include "want_params_wrapper.h"
 #include "work_sched_hilog.h"
+#include "napi/native_node_api.h"
 #include "securec.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantParams)
+std::string UnwrapStringFromJS(napi_env env, napi_value param, const std::string &defaultValue = "")
 {
-    if (!IsTypeForNapiValue(env, param, napi_object)) {
-        return false;
-    }
-    napi_value jsProNameList = nullptr;
-    uint32_t jsProCount = 0;
-    napi_value jsProName = nullptr;
-    napi_get_property_names(env, param, &jsProNameList);
-    napi_get_array_length(env, jsProNameList, &jsProCount);
-    WS_HILOGI("Property size=%{public}d.", jsProCount);
-
-    for (uint32_t index = 0; index < jsProCount; index++) {
-        napi_get_element(env, jsProNameList, index, &jsProName);
-        std::string strProName = UnwrapStringFromJS(env, jsProName, "");
-        WS_HILOGI("Property name=%{public}s.", strProName.c_str());
-        InnerUnwrapJS(env, param, wantParams, strProName);
+    size_t size = 0;
+    if (napi_get_value_string_utf8(env, param, nullptr, 0, &size) != napi_ok) {
+        return defaultValue;
     }
 
-    return true;
+    std::string value("");
+    if (size == 0) {
+        return defaultValue;
+    }
+
+    char *buf = new (std::nothrow) char[size + 1];
+    if (buf == nullptr) {
+        return value;
+    }
+    (void)memset_s(buf, size + 1, 0, size + 1);
+
+    bool rev = napi_get_value_string_utf8(env, param, buf, size + 1, &size) == napi_ok;
+    if (rev) {
+        value = buf;
+    } else {
+        value = defaultValue;
+    }
+
+    delete[] buf;
+    buf = nullptr;
+    return value;
 }
 
 void InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams, std::string strProName)
@@ -97,36 +106,6 @@ void InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams
     }
 }
 
-std::string UnwrapStringFromJS(napi_env env, napi_value param, const std::string &defaultValue = "")
-{
-    size_t size = 0;
-    if (napi_get_value_string_utf8(env, param, nullptr, 0, &size) != napi_ok) {
-        return defaultValue;
-    }
-
-    std::string value("");
-    if (size == 0) {
-        return defaultValue;
-    }
-
-    char *buf = new (std::nothrow) char[size + 1];
-    if (buf == nullptr) {
-        return value;
-    }
-    (void)memset_s(buf, size + 1, 0, size + 1);
-
-    bool rev = napi_get_value_string_utf8(env, param, buf, size + 1, &size) == napi_ok;
-    if (rev) {
-        value = buf;
-    } else {
-        value = defaultValue;
-    }
-
-    delete[] buf;
-    buf = nullptr;
-    return value;
-}
-
 bool IsTypeForNapiValue(napi_env env, napi_value param, napi_valuetype expectType)
 {
     napi_valuetype valueType = napi_undefined;
@@ -138,6 +117,135 @@ bool IsTypeForNapiValue(napi_env env, napi_value param, napi_valuetype expectTyp
         return false;
     }
     return valueType == expectType;
+}
+
+bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantParams)
+{
+    if (!IsTypeForNapiValue(env, param, napi_object)) {
+        return false;
+    }
+    napi_value jsProNameList = nullptr;
+    uint32_t jsProCount = 0;
+    napi_value jsProName = nullptr;
+    napi_get_property_names(env, param, &jsProNameList);
+    napi_get_array_length(env, jsProNameList, &jsProCount);
+    WS_HILOGI("Property size=%{public}d.", jsProCount);
+
+    for (uint32_t index = 0; index < jsProCount; index++) {
+        napi_get_element(env, jsProNameList, index, &jsProName);
+        std::string strProName = UnwrapStringFromJS(env, jsProName, "");
+        WS_HILOGI("Property name=%{public}s.", strProName.c_str());
+        InnerUnwrapJS(env, param, wantParams, strProName);
+    }
+
+    return true;
+}
+
+bool InnerWrapWantParamsString(
+    napi_env env, napi_value jsObject, const std::string &key, const AAFwk::WantParams &wantParams)
+{
+    auto value = wantParams.GetParam(key);
+    AAFwk::IString *ao = AAFwk::IString::Query(value);
+    if (ao == nullptr) {
+        return false;
+    }
+
+    std::string natValue = AAFwk::String::Unbox(ao);
+    napi_value jsValue;
+    napi_create_string_utf8(env, natValue.c_str(), NAPI_AUTO_LENGTH, &jsValue);
+    // NAPI_CALL(env, napi_create_string_utf8(env, natValue.c_str(), NAPI_AUTO_LENGTH, &jsValue));
+    if (jsValue == nullptr) {
+        return false;
+    }
+
+    NAPI_CALL_BASE(env, napi_set_named_property(env, jsObject, key.c_str(), jsValue), false);
+    return true;
+}
+
+bool InnerWrapWantParamsBool(
+    napi_env env, napi_value jsObject, const std::string &key, const AAFwk::WantParams &wantParams)
+{
+    auto value = wantParams.GetParam(key);
+    AAFwk::IBoolean *bo = AAFwk::IBoolean::Query(value);
+    if (bo == nullptr) {
+        return false;
+    }
+
+    bool natValue = AAFwk::Boolean::Unbox(bo);
+    napi_value jsValue;
+    napi_get_boolean(env, natValue, &jsValue);
+    // NAPI_CALL(env, napi_get_boolean(env, natValue, &jsValue));
+    if (jsValue == nullptr) {
+        return false;
+    }
+
+    NAPI_CALL_BASE(env, napi_set_named_property(env, jsObject, key.c_str(), jsValue), false);
+    return true;
+}
+
+bool InnerWrapWantParamsInt(
+    napi_env env, napi_value jsObject, const std::string &key, const AAFwk::WantParams &wantParams)
+{
+    auto value = wantParams.GetParam(key);
+    AAFwk::IInteger *ao = AAFwk::IInteger::Query(value);
+    if (ao == nullptr) {
+        return false;
+    }
+
+    int natValue = AAFwk::Integer::Unbox(ao);
+    napi_value jsValue;
+    napi_create_int32(env, natValue, &jsValue);
+    // NAPI_CALL(env, napi_create_int32(env, natValue, &jsValue));
+    if (jsValue == nullptr) {
+        return false;
+    }
+
+    NAPI_CALL_BASE(env, napi_set_named_property(env, jsObject, key.c_str(), jsValue), false);
+    return true;
+}
+
+bool InnerWrapWantParamsDouble(
+    napi_env env, napi_value jsObject, const std::string &key, const AAFwk::WantParams &wantParams)
+{
+    auto value = wantParams.GetParam(key);
+    AAFwk::IDouble *ao = AAFwk::IDouble::Query(value);
+    if (ao == nullptr) {
+        return false;
+    }
+
+    double natValue = AAFwk::Double::Unbox(ao);
+    napi_value jsValue;
+    napi_create_double(env, natValue, &jsValue);
+    // NAPI_CALL(env, napi_create_double(env, natValue, &jsValue));
+    if (jsValue == nullptr) {
+        return false;
+    }
+
+    NAPI_CALL_BASE(env, napi_set_named_property(env, jsObject, key.c_str(), jsValue), false);
+    return true;
+}
+
+napi_value WrapWantParams(napi_env env, const AAFwk::WantParams &wantParams)
+{
+    WS_HILOGI("Start wrap wantParams.");
+    napi_value jsObject = nullptr;
+    NAPI_CALL(env, napi_create_object(env, &jsObject));
+
+    napi_value jsValue = nullptr;
+    const std::map<std::string, sptr<AAFwk::IInterface>> paramList = wantParams.GetParams();
+    for (auto iter = paramList.begin(); iter != paramList.end(); iter++) {
+        jsValue = nullptr;
+        if (AAFwk::IString::Query(iter->second) != nullptr) {
+            InnerWrapWantParamsString(env, jsObject, iter->first, wantParams);
+        } else if (AAFwk::IBoolean::Query(iter->second) != nullptr) {
+            InnerWrapWantParamsBool(env, jsObject, iter->first, wantParams);
+        } else if (AAFwk::IInteger::Query(iter->second) != nullptr) {
+            InnerWrapWantParamsInt(env, jsObject, iter->first, wantParams);
+        } else if (AAFwk::IDouble::Query(iter->second) != nullptr) {
+            InnerWrapWantParamsDouble(env, jsObject, iter->first, wantParams);
+        }
+    }
+    return jsObject;
 }
 }  // namespace AppExecFwk
 }  // namespace OHOS
