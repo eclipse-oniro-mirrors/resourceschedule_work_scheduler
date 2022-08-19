@@ -19,7 +19,6 @@
 #define private public
 #include "work_scheduler_service.h"
 #include "work_sched_service_stub.h"
-#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -32,7 +31,6 @@ namespace WorkScheduler {
         auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
         instance->OnStart();
         if(!instance->eventRunner_ || !instance->handler_) {
-            WS_HILOGE("Init failed due to create EventRunner or EventHandler.")
             return false;
         }
         instance->checkBundle_ = false;
