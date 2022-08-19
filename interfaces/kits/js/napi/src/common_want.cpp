@@ -56,7 +56,7 @@ std::string UnwrapStringFromJS(napi_env env, napi_value param, const std::string
     return value;
 }
 
-void InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams, std::string strProName)
+bool InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams, std::string strProName)
 {
     napi_valuetype jsValueType = napi_undefined;
     napi_value jsProValue = nullptr;
@@ -101,9 +101,10 @@ void InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams
         default:{
             WS_HILOGE("Param %{public}s is illegal. The value is only supported basic type(Number, String, Boolean).",
                 strProName.c_str());
-            break;
+            return false;
         }
     }
+    return true;
 }
 
 bool IsTypeForNapiValue(napi_env env, napi_value param, napi_valuetype expectType)
@@ -135,9 +136,10 @@ bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantPar
         napi_get_element(env, jsProNameList, index, &jsProName);
         std::string strProName = UnwrapStringFromJS(env, jsProName, "");
         WS_HILOGI("Property name=%{public}s.", strProName.c_str());
-        InnerUnwrapJS(env, param, wantParams, strProName);
+        if (!InnerUnwrapJS(env, param, wantParams, strProName)) {
+            return false;
+        }
     }
-
     return true;
 }
 

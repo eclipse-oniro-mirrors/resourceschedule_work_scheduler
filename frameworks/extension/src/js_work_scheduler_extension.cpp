@@ -131,7 +131,8 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     uint32_t timeInterval = workInfo.GetTimeInterval();
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
-    const std::string extrasStr = GetExtrasJsonStr(workInfo);
+    std::string extrasStr;
+    bool getExtrasRet = GetExtrasJsonStr(workInfo, extrasStr);
     WorkSchedulerExtension::OnWorkStart(workInfo);
     auto task = [=]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
@@ -145,7 +146,9 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
 
         workInfoData->SetProperty("abilityName", nativeEngine.CreateString(abilityName.c_str(), abilityName.size()));
 
-        workInfoData->SetProperty("extras", nativeEngine.CreateString(extrasStr.c_str(), extrasStr.size()));
+        if (getExtrasRet) {
+            workInfoData->SetProperty("parameters", nativeEngine.CreateString(extrasStr.c_str(), extrasStr.size()));
+        }
 
         workInfoData->SetProperty("isPersisted", nativeEngine.CreateBoolean(isPersisted));
         if (networkType != WorkCondition::Network::NETWORK_UNKNOWN) {
@@ -220,7 +223,8 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
     uint32_t timeInterval = workInfo.GetTimeInterval();
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
-    const std::string extrasStr = GetExtrasJsonStr(workInfo);
+    std::string extrasStr;
+    bool getExtrasRet = GetExtrasJsonStr(workInfo, extrasStr);
     WorkSchedulerExtension::OnWorkStop(workInfo);
     auto task = [=]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
@@ -234,7 +238,9 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
 
         workInfoData->SetProperty("abilityName", nativeEngine.CreateString(abilityName.c_str(), abilityName.size()));
 
-        workInfoData->SetProperty("extras", nativeEngine.CreateString(extrasStr.c_str(), extrasStr.size()));
+        if (getExtrasRet) {
+            workInfoData->SetProperty("parameters", nativeEngine.CreateString(extrasStr.c_str(), extrasStr.size()));
+        }
 
         workInfoData->SetProperty("isPersisted", nativeEngine.CreateBoolean(isPersisted));
         if (networkType != WorkCondition::Network::NETWORK_UNKNOWN) {
@@ -312,13 +318,13 @@ void JsWorkSchedulerExtension::GetSrcPath(std::string &srcPath)
     }
 }
 
-std::string JsWorkSchedulerExtension::GetExtrasJsonStr(WorkInfo& workInfo)
+bool JsWorkSchedulerExtension::GetExtrasJsonStr(const WorkInfo& workInfo, std::string& extrasStr)
 {
     std::shared_ptr<AAFwk::WantParams> extras = workInfo.GetExtras();
     Json::Value extrasJson;
     if (!extras) {
         WS_HILOGI("parameter is null.");
-        return "";
+        return false;
     }
     auto extrasMap = extras->GetParams();
     int typeId = INVALID_VALUE;
@@ -332,8 +338,8 @@ std::string JsWorkSchedulerExtension::GetExtrasJsonStr(WorkInfo& workInfo)
         }
     }
     Json::StreamWriterBuilder builder;
-    const std::string extrasStr = Json::writeString(builder, extrasJson);
-    return extrasStr;
+    extrasStr = Json::writeString(builder, extrasJson);
+    return true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

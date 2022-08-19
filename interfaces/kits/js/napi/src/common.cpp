@@ -202,8 +202,8 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     napi_value extras = nullptr;
     napi_status getExtrasStatus = napi_get_named_property(env, objValue, "parameters", &extras);
     if (getExtrasStatus != napi_ok) {
-        WS_HILOGE("Get parameters false.");
-        return false;
+        WS_HILOGI("parameters not set.");
+        return true;
     }
     AAFwk::WantParams extraParams;
     if (!UnwrapWantParams(env, extras, extraParams)) {
@@ -223,7 +223,9 @@ bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
         return false;
     }
     // Get extra parameters.
-    GetExtrasInfo(env, objValue, workInfo);
+    if (!GetExtrasInfo(env, objValue, workInfo)) {
+        return false;
+    }
 
     // Get condition info.
     bool hasConditions = false;

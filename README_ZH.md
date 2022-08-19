@@ -44,7 +44,7 @@ storageRequest|存储状态|	StorageRequest
 isRepeat|是否循环任务|	boolean
 repeatCycleTime |循环间隔|	number
 repeatCount	|循环次数| number
-
+parameters    |额外数据| {[key: string]: any}
 
 2、延迟任务注册、取消、查询等相关接口
 
@@ -75,14 +75,27 @@ function onWorkStop(work: WorkInfo): void; | 延迟调度任务回调结束
 
 延迟调度任务的使用需要遵从如下约束和规则：
 
-- **超时**：每次最长运行120s。
-- **WorkInfo参数约束** 
+- **超时**：系统会设置超时机制，延迟任务回调只允许运行一段时间，每次最长运行120s。超时之后，系统会主动停止。
+- **执行频率**：系统会根据应用的活跃度对延迟任务做分级管控，限制延迟任务调度的执行频率。
 
-（1） workId、bundleName、abilityName为必填项
+应用分组             |     延迟任务执行频率约束                            
+--------------------|-------------------------
+活跃 | 最小间隔2小时
+每日使用 | 最小间隔4小时 
+经常使用 | 最小间隔24小时 
+不经常使用 | 最小间隔48小时 
+受限分组 | 禁止 
+未使用分组 | 禁止 
 
-（2）至少要设置一个满足条件
+- **WorkInfo设置参数约束** 
 
-（3）repeatCycleTime至少20分钟，当设置repeatCycleTime时，必须选填isRepeat和repeatCount中的一个。
+（1） workId、bundleName、abilityName为必填项，bundleName必须填本应用，否则校验失败。
+
+（2）至少要设置一个满足的条件。
+
+（3）重复任务时间间隔至少20分钟，当设置重复任务时间间隔时，必须设置始终重复和重复次数中的一个。
+
+（4）额外数据支持number、string、bool三种类型。
 
 ## 相关仓<a name="section1371113476307"></a>
 

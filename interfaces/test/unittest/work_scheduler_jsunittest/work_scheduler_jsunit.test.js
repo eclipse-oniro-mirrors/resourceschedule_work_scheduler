@@ -1026,7 +1026,7 @@ describe("WorkSchedulerJsTest", function () {
             }
         }
         var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(true)
+        expect(res).assertEqual(false)
         done();
     })
 
