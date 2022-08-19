@@ -45,6 +45,7 @@ storageRequest|The storage status|	StorageRequest
 isRepeat|Is repeating work |	boolean
 repeatCycleTime | The repeating cycle time|	number
 repeatCount	| The repeating cycle count| number
+parameters    |extras data| {[key: string]: any}
 
 
 2. The api of work scheduler for starting, stopping and querying.
