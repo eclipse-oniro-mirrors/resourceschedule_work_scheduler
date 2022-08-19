@@ -19,37 +19,23 @@
 #define private public
 #include "work_scheduler_service.h"
 #include "work_sched_service_stub.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {
     constexpr int32_t MIN_LEN = 4;
     constexpr int32_t MAX_CODE_TEST = 15; // current max code is 7
-    constexpr int32_t INIT_DELAY = 2 * 1000;
     static bool isInited = false;
 
     bool DoInit()
     {
         auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        if (!instance->eventRunner_) {
-            instance->eventRunner_ = AppExecFwk::EventRunner::Create("WorkSchedulerService");
-        }
-        if (!instance->eventRunner_) {
+        instance->OnStart();
+        if(!instance->eventRunner_ || !instance->handler_) {
+            WS_HILOGE("Init failed due to create EventRunner or EventHandler.")
             return false;
         }
-
-        instance->handler_ = std::make_shared<WorkEventHandler>(instance->eventRunner_, instance.get());
-        if (!instance->IsBaseAbilityReady()) {
-            instance->GetHandler()->SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0),
-                INIT_DELAY);
-            return false;
-        }
-        instance->WorkQueueManagerInit();
-        if (!instance->WorkPolicyManagerInit()) {
-            return false;
-        }
-        instance->InitPersisted();
         instance->checkBundle_ = false;
-        instance->ready_ = true;
         return true;
     }
 
