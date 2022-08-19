@@ -70,13 +70,24 @@ API                                                          | Description
 
 ### Usage Guidelines<a name="section129654513264"></a>
 
-When an application needs to perform tasks with low real-time performance, work scheduler  can be used. When the conditions set by the application are met, the mechanism will make a unified decision and scheduling time based on the current state of the system, such as memory, power consumption, and heat.
+When an application needs to perform tasks with low real-time performance, work scheduler can be used. When the conditions set by the application are met, the mechanism will make a unified decision and scheduling time based on the current state of the system, such as memory, power consumption, and heat.
 
 #### Restrictions on Using Work Scheduler<a name="section1551164914237"></a>
 
 Adhere to the following constraints and rules when using work scheduler:
 
 - **Timeout**：The longest running time is 120s each time.
+- **Execution frequency**：The system will perform hierarchical control on the work scheduler according to the bundle activity of the application, and limit the execution frequency of work scheduler.
+
+Application group             |    Execution frequency constraint                            
+--------------------|-------------------------
+active group | minimum interval 2 hours
+daily used group | minimum interval 4 hours
+fixed group | minimum interval 24 hours
+rare used group | minimum interval 48 hours
+restricted group | forbidden
+unused group | forbidden 
+
 - **Restrict to WorkInfo**：
 
 (1) WorkId, bundleName and abilityName are required.
@@ -84,6 +95,8 @@ Adhere to the following constraints and rules when using work scheduler:
 (2) At least one condition must be set.
 
 (3) Repeatcycletime should be at least 20 minutes. When setting repeatcycletime, you must select one of isrepeat and repeatcount.
+
+(4) Parameters support type include number, string and bool.
 
 ## Repositories Involved<a name="section1371113476307"></a>
 
