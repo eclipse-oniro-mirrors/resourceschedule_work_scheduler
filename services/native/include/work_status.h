@@ -24,7 +24,6 @@
 #include "work_info.h"
 
 namespace OHOS {
-using namespace Utils;
 namespace WorkScheduler {
 class WorkSchedulerService;
 class WorkStatus {
@@ -56,7 +55,7 @@ public:
     bool persisted_;
     int32_t priority_;
     bool needRetrigger_ {false};
-    uint32_t timeRetrigger_ {UINT32_MAX};
+    int32_t timeRetrigger_ {INT32_MAX};
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
     std::shared_ptr<WorkInfo> workInfo_;
 
@@ -151,9 +150,9 @@ public:
      */
     static void ClearUidLastTimeMap(int32_t uid);
     /**
-     * @brief Set min interval by input.
+     * @brief Set min interval by dump.
      */
-    void SetMinIntervalByInput(int64_t interval);
+    void SetMinIntervalByDump(int64_t interval);
     /**
      * @brief get min interval.
      */
@@ -163,11 +162,12 @@ private:
     time_t baseTime_;
     int64_t minInterval_;
     bool callbackFlag_;
-    static std::map<int32_t, time_t> uidLastTimeMap_;
+    static std::map<int32_t, time_t> s_uid_last_time_map;
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
-    bool IsReadyInner();
+    bool IsBatteryAndNetworkReady(WorkCondition::Type type);
+    bool IsStorageAndChargerAndTimerReady(WorkCondition::Type type);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

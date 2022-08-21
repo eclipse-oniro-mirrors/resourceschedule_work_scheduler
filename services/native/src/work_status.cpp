@@ -30,9 +30,9 @@ using namespace OHOS::PowerMgr;
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
-static bool debugMode_ = false;
+static bool debugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
-std::map<int32_t, time_t> WorkStatus::uidLastTimeMap_;
+std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 
 time_t getCurrentTime()
 {
@@ -64,6 +64,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
     this->priority_ = DEFAULT_PRIORITY;
     this->currentStatus_ = WAIT_CONDITION;
     this->minInterval_ = MIN_INTERVAL_DEFAULT;
+    this->callbackFlag_ = false;
 }
 
 WorkStatus::~WorkStatus() {}
@@ -158,18 +159,24 @@ bool WorkStatus::IsReady()
         WS_HILOGD("Work is running");
         return false;
     }
-    if (!IsReadyInner()) {
-        return false;
+    auto workConditionMap = workInfo_->GetConditionMap();
+    for (auto it : *workConditionMap) {
+        if (conditionMap_.count(it.first) <= 0) {
+            return false;
+        }
+        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndChargerAndTimerReady(it.first)) {
+            return false;
+        }
     }
-    if (!debugMode_ && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
+    if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
     }
-    auto itMap = uidLastTimeMap_.find(uid_);
-    if (itMap == uidLastTimeMap_.end()) {
+    auto itMap = s_uid_last_time_map.find(uid_);
+    if (itMap == s_uid_last_time_map.end()) {
         return true;
     }
-    time_t lastTime = uidLastTimeMap_[uid_];
+    time_t lastTime = s_uid_last_time_map[uid_];
     double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
@@ -182,73 +189,78 @@ bool WorkStatus::IsReady()
     return true;
 }
 
-bool WorkStatus::IsReadyInner()
+bool WorkStatus::IsBatteryAndNetworkReady(WorkCondition::Type type)
 {
     auto workConditionMap = workInfo_->GetConditionMap();
-    for (auto it : *workConditionMap) {
-        if (conditionMap_.count(it.first) <= 0) {
-            return false;
+    switch (type) {
+        case WorkCondition::Type::NETWORK: {
+            if (conditionMap_.at(type)->enumVal == WorkCondition::Network::NETWORK_UNKNOWN) {
+                return false;
+            }
+            if (workConditionMap->at(type)->enumVal != WorkCondition::Network::NETWORK_TYPE_ANY &&
+                workConditionMap->at(type)->enumVal != conditionMap_.at(type)->enumVal) {
+                return false;
+            }
+            break;
         }
-        switch (it.first) {
-            case WorkCondition::Type::NETWORK: {
-                if (conditionMap_.at(it.first)->enumVal == WorkCondition::Network::NETWORK_UNKNOWN) {
-                    return false;
-                }
-                if (workConditionMap->at(it.first)->enumVal != WorkCondition::Network::NETWORK_TYPE_ANY &&
-                    workConditionMap->at(it.first)->enumVal != conditionMap_.at(it.first)->enumVal) {
-                    return false;
-                }
-                break;
+        case WorkCondition::Type::BATTERY_STATUS: {
+            int32_t batteryReq = workConditionMap->at(type)->enumVal;
+            if (batteryReq != WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY &&
+                batteryReq != conditionMap_.at(type)->enumVal) {
+                return false;
             }
-            case WorkCondition::Type::BATTERY_STATUS: {
-                int32_t batteryReq = workConditionMap->at(it.first)->enumVal;
-                if (batteryReq != WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY &&
-                    batteryReq != conditionMap_.at(it.first)->enumVal) {
-                    return false;
-                }
-                break;
-            }
-            case WorkCondition::Type::STORAGE: {
-                if (workConditionMap->at(it.first)->enumVal != WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY &&
-                    workConditionMap->at(it.first)->enumVal != conditionMap_.at(it.first)->enumVal) {
-                    return false;
-                }
-                break;
-            }
-            case WorkCondition::Type::CHARGER: {
-                auto conditionSet = workConditionMap->at(it.first);
-                auto conditionCurrent = conditionMap_.at(it.first);
-                if (conditionSet->boolVal) {
-                    if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal !=
-                        static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
-                        return false;
-                    }
-                } else {
-                    if (conditionCurrent->enumVal !=
-                        static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)) {
-                        return false;
-                    }
-                }
-                break;
-            }
-            case WorkCondition::Type::BATTERY_LEVEL: {
-                if (workConditionMap->at(it.first)->intVal > conditionMap_.at(it.first)->intVal) {
-                    return false;
-                }
-                break;
-            }
-            case WorkCondition::Type::TIMER: {
-                uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-                double del = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
-                WS_HILOGD("del time:%{public}lf, intervalTime:%{public}u", del, intervalTime);
-                if (del < intervalTime) {
-                    return false;
-                }
-                break;
-            }
-            default:
-                break;
+            break;
         }
+        case WorkCondition::Type::BATTERY_LEVEL: {
+            if (workConditionMap->at(type)->intVal > conditionMap_.at(type)->intVal) {
+                return false;
+            }
+            break;
+        }
+        default:
+            break;
+    }
+    return true;
+}
+
+bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
+{
+    auto workConditionMap = workInfo_->GetConditionMap();
+    switch (type) {
+        case WorkCondition::Type::STORAGE: {
+            if (workConditionMap->at(type)->enumVal != WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY &&
+                workConditionMap->at(type)->enumVal != conditionMap_.at(type)->enumVal) {
+                return false;
+            }
+            break;
+        }
+        case WorkCondition::Type::CHARGER: {
+            auto conditionSet = workConditionMap->at(type);
+            auto conditionCurrent = conditionMap_.at(type);
+            if (conditionSet->boolVal) {
+                if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal !=
+                    static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
+                    return false;
+                }
+            } else {
+                if (conditionCurrent->enumVal !=
+                    static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)) {
+                    return false;
+                }
+            }
+            break;
+        }
+        case WorkCondition::Type::TIMER: {
+            uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
+            double del = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
+            WS_HILOGD("del time:%{public}lf, intervalTime:%{public}u", del, intervalTime);
+            if (del < intervalTime) {
+                return false;
+            }
+            break;
+        }
+        default:
+            break;
     }
     return true;
 }
@@ -258,7 +270,7 @@ bool WorkStatus::SetMinInterval()
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = DeviceUsageStats::BundleActiveClient::GetInstance().QueryPackageGroup(bundleName_, userId_);
     if (group == -1) {
-        WS_HILOGE ("Query package group failed. userId = %{public}d, bundleName = %{public}s",
+        WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
             userId_, bundleName_.c_str());
         return false;
     }
@@ -281,14 +293,14 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
 #endif
-    WS_HILOGD ("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
+    WS_HILOGD("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
     return true;
 }
 
-void WorkStatus::SetMinIntervalByInput(int64_t interval)
+void WorkStatus::SetMinIntervalByDump(int64_t interval)
 {
-    WS_HILOGD ("Set min interval by input to %{public}" PRId64 "", interval);
-    debugMode_ = interval == 0 ? false : true;
+    WS_HILOGD("Set min interval by dump to %{public}" PRId64 "", interval);
+    debugMode = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 
@@ -300,12 +312,12 @@ int64_t WorkStatus::GetMinInterval()
 void WorkStatus::UpdateUidLastTimeMap()
 {
     time_t lastTime = getCurrentTime();
-    uidLastTimeMap_[uid_] = lastTime;
+    s_uid_last_time_map[uid_] = lastTime;
 }
 
 void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
-    uidLastTimeMap_.erase(uid);
+    s_uid_last_time_map.erase(uid);
 }
 
 bool WorkStatus::IsRunning()

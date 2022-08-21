@@ -596,7 +596,7 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
         workQueueManager_->SetTimeCycle(std::stoi(value));
         result.append("Set repeat time min value success.");
     } else if (key == "-min_interval") {
-        workQueueManager_->SetMinIntervalByInput(std::stoi(value));
+        workQueueManager_->SetMinIntervalByDump(std::stoi(value));
         result.append("Set min interval value success.");
     } else {
         result.append("Error params.");
