@@ -17,11 +17,19 @@
 #define WORKSCHED_SP_SINGLETON_H
 
 #include <mutex>
+#include <memory>
 #include <refbase.h>
 #include "nocopyable.h"
 
 namespace OHOS {
 namespace WorkScheduler {
+#define DECLARE_DELAYED_SP_SINGLETON(MyClass) \
+public:                                       \
+    ~MyClass();                               \
+private:                                      \
+    friend DelayedSpSingleton<MyClass>;       \
+    MyClass();
+
 template<typename T>
 class DelayedSpSingleton : public NoCopyable {
 public:

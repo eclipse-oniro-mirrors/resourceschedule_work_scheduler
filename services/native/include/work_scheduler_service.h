@@ -45,6 +45,7 @@ class WorkSchedulerService final : public SystemAbility, public WorkSchedService
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
     DECLARE_SYSTEM_ABILITY(WorkSchedulerService);
+    DECLARE_DELAYED_SP_SINGLETON(WorkSchedulerService);
 public:
     WorkSchedulerService(const int32_t systemAbilityId, bool runOnCreate);
 
@@ -201,7 +202,6 @@ private:
         SystemAbilityStatusChangeListener() {};
         virtual void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
     };
-    friend DelayedSpSingleton<WorkSchedulerService>;
 
 private:
     const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
