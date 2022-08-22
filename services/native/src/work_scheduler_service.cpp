@@ -104,7 +104,8 @@ bool WorkSchedulerService::IsBaseAbilityReady()
     if (systemAbilityManager == nullptr
         || systemAbilityManager->CheckSystemAbility(APP_MGR_SERVICE_ID) == nullptr
         || systemAbilityManager->CheckSystemAbility(COMMON_EVENT_SERVICE_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID) == nullptr) {
+        || systemAbilityManager->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID) == nullptr
+        || systemAbilityManager->CheckSystemAbility(BACKGROUND_TASK_MANAGER_SERVICE_ID) == nullptr) {
         return false;
     }
     return true;
@@ -207,12 +208,6 @@ bool WorkSchedulerService::Init()
 
 bool WorkSchedulerService::InitBgTaskSubscriber()
 {
-    sptr<ISystemAbilityManager> systemAbilityManager
-        = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (!systemAbilityManager->CheckSystemAbility(BACKGROUND_TASK_MANAGER_SERVICE_ID)) {
-        WS_HILOGE("GetBackgroundTaskManagerProxy GetSystemAbility failed.");
-        return false;
-    }
     if (subscriber_ == nullptr) {
         subscriber_ = make_shared<SchedulerBgTaskSubscriber>(shared_from_this());
     }

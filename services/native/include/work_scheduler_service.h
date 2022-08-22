@@ -198,8 +198,8 @@ public:
     }
 
     /**
-     * @brief add uid to the whitelist or delete uid from the whitelist. 
-     * 
+     * @brief add uid to the whitelist or delete uid from the whitelist.
+     *
      * @param uid uid of the app.
      * @param isAdd true if add name, else delete.
      */
@@ -207,18 +207,12 @@ public:
 
     /**
      * @brief init background task subscriber, subscribe self to bgtask service
-     * 
+     *
      * @return true seccess to init subscriber
      * @return false fail to init subscriber
      */
     bool InitBgTaskSubscriber();
 
-    /**
-     * @brief 
-     * 
-     * @return true 
-     * @return false 
-     */
     bool CheckWhitelist(int32_t uid);
 private:
     std::set<int32_t> whitelist;

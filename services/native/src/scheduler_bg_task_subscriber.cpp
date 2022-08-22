@@ -19,15 +19,13 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-namespace {
-const std::string TAG = "SchedulerBgTaskSubscriber";
-}
+
 // using namespace OHOS::BackgroundTaskMgr;
 SchedulerBgTaskSubscriber::SchedulerBgTaskSubscriber(const std::shared_ptr<WorkSchedulerService> workSchedulerService)
 {
     if (workSchedulerService != nullptr) {
         workSchedulerService_ = workSchedulerService;
-    } 
+    }
 }
 
 void SchedulerBgTaskSubscriber::OnConnected()
@@ -43,6 +41,7 @@ void SchedulerBgTaskSubscriber::OnDisconnected()
 void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
+    WS_HILOGI("OnEfficiencyResourcesApply before");
     if (resourceInfo == nullptr && (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
@@ -59,6 +58,7 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
 void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
+    WS_HILOGI("OnEfficiencyResourcesApply before");
     if (resourceInfo == nullptr && (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
@@ -73,14 +73,16 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
 }
 
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesApply(
-    const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) 
+    const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
+    WS_HILOGI("OnAppEfficiencyResourcesApply before");
     OnEfficiencyResourcesApply(resourceInfo);
 }
 
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
+    WS_HILOGI("OnAppEfficiencyResourcesReset before");
     OnEfficiencyResourcesReset(resourceInfo);
 }
 
