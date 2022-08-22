@@ -98,7 +98,7 @@ bool InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams
             }
             break;
         }
-        default:{
+        default: {
             WS_HILOGE("Param %{public}s is illegal. The value is only supported basic type(Number, String, Boolean).",
                 strProName.c_str());
             return false;
@@ -107,24 +107,23 @@ bool InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams
     return true;
 }
 
-bool IsTypeForNapiValue(napi_env env, napi_value param, napi_valuetype expectType)
+bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantParams)
 {
-    napi_valuetype valueType = napi_undefined;
     if (param == nullptr) {
         return false;
     }
-
+    napi_valuetype valueType = napi_undefined;
     if (napi_typeof(env, param, &valueType) != napi_ok) {
         return false;
     }
-    return valueType == expectType;
-}
-
-bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantParams)
-{
-    if (!IsTypeForNapiValue(env, param, napi_object)) {
+    if (valueType == napi_undefined) {
+        WS_HILOGI("parameters not set.");
+        return true;
+    } else if (valueType != napi_object) {
+        WS_HILOGE("parameters should be {[key: string]: value} format.");
         return false;
     }
+
     napi_value jsProNameList = nullptr;
     uint32_t jsProCount = 0;
     napi_value jsProName = nullptr;
@@ -155,7 +154,6 @@ bool InnerWrapWantParamsString(
     std::string natValue = AAFwk::String::Unbox(ao);
     napi_value jsValue;
     napi_create_string_utf8(env, natValue.c_str(), NAPI_AUTO_LENGTH, &jsValue);
-    // NAPI_CALL(env, napi_create_string_utf8(env, natValue.c_str(), NAPI_AUTO_LENGTH, &jsValue));
     if (jsValue == nullptr) {
         return false;
     }
@@ -176,7 +174,6 @@ bool InnerWrapWantParamsBool(
     bool natValue = AAFwk::Boolean::Unbox(bo);
     napi_value jsValue;
     napi_get_boolean(env, natValue, &jsValue);
-    // NAPI_CALL(env, napi_get_boolean(env, natValue, &jsValue));
     if (jsValue == nullptr) {
         return false;
     }
@@ -197,7 +194,6 @@ bool InnerWrapWantParamsInt(
     int natValue = AAFwk::Integer::Unbox(ao);
     napi_value jsValue;
     napi_create_int32(env, natValue, &jsValue);
-    // NAPI_CALL(env, napi_create_int32(env, natValue, &jsValue));
     if (jsValue == nullptr) {
         return false;
     }
@@ -218,7 +214,6 @@ bool InnerWrapWantParamsDouble(
     double natValue = AAFwk::Double::Unbox(ao);
     napi_value jsValue;
     napi_create_double(env, natValue, &jsValue);
-    // NAPI_CALL(env, napi_create_double(env, natValue, &jsValue));
     if (jsValue == nullptr) {
         return false;
     }

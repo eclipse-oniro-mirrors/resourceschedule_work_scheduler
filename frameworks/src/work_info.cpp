@@ -286,6 +286,16 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
         return nullptr;
     }
 
+    UnmarshallCondition(parcel, read, mapsize);
+    AAFwk::WantParams *wantParams = AAFwk::WantParams::Unmarshalling(parcel);
+    if (wantParams != nullptr) {
+        read->extras_ = std::make_shared<AAFwk::WantParams>(*wantParams);
+    }
+    return read;
+}
+
+void WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize)
+{
     read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
     for (uint32_t i = 0; i < mapsize; i++) {
         int32_t key = parcel.ReadInt32();
@@ -321,11 +331,6 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
         }
         read->conditionMap_.emplace(WorkCondition::Type(key), condition);
     }
-    AAFwk::WantParams *wantParams = AAFwk::WantParams::Unmarshalling(parcel);
-    if (wantParams != nullptr) {
-        read->extras_ = std::make_shared<AAFwk::WantParams>(*wantParams);
-    }
-    return read;
 }
 
 std::string WorkInfo::ParseToJsonStr()
@@ -352,11 +357,11 @@ std::string WorkInfo::ParseToJsonStr()
                 std::string value = AAFwk::WantParams::GetStringByType(it.second, typeId);
                 extras[it.first] = value;
             } else {
-                WS_HILOGE("extras: type error.");
+                WS_HILOGE("parameters: type error.");
             }
         }
-        root["extras"] = extras;
-        root["extrasType"] = extrasType;
+        root["parameters"] = extras;
+        root["parametersType"] = extrasType;
     }
     Json::StreamWriterBuilder writerBuilder;
     std::ostringstream os;
@@ -419,11 +424,11 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     this->abilityName_ = value["abilityName"].asString();
     this->persisted_ = value["persisted"].asBool();
     ParseConditionFromJsonStr(value);
-    if (!value.isMember("extras")) {
+    if (!value.isMember("parameters")) {
         return true;
     }
-    Json::Value extrasJson = value["extras"];
-    Json::Value extrasType = value["extrasType"];
+    Json::Value extrasJson = value["parameters"];
+    Json::Value extrasType = value["parametersType"];
     AAFwk::WantParams extras;
     Json::Value::Members keyList = extrasJson.getMemberNames();
     for (auto key : keyList) {

@@ -202,16 +202,14 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     napi_value extras = nullptr;
     napi_status getExtrasStatus = napi_get_named_property(env, objValue, "parameters", &extras);
     if (getExtrasStatus != napi_ok) {
-        WS_HILOGI("parameters not set.");
         return true;
     }
     AAFwk::WantParams extraParams;
     if (!UnwrapWantParams(env, extras, extraParams)) {
-        WS_HILOGE("parameters are invalid, ignore.");
         return false;
     }
     workInfo.RequestExtras(extraParams);
-    WS_HILOGI("Get parameters finished.");
+    WS_HILOGD("Get parameters finished.");
     return true;
 }
 

@@ -227,24 +227,12 @@ public:
      */
     std::string ParseToJsonStr();
     /**
-     * @brief Parse conditions to json str.
-     *
-     * @return void.
-     */
-    void ParseConditionToJsonStr(Json::Value &root);
-    /**
      * @brief Parse from json.
      *
      * @param value The value.
      * @return True if success,else false.
      */
     bool ParseFromJson(const Json::Value value);
-    /**
-     * @brief Parse conditions from json.
-     *
-     * @return Json String.
-     */
-    void ParseConditionFromJsonStr(const Json::Value root);
 
 private:
     int32_t workId_;
@@ -254,6 +242,10 @@ private:
     int32_t uid_;
     std::shared_ptr<AAFwk::WantParams> extras_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
+private:
+    static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
+    void ParseConditionToJsonStr(Json::Value &root);
+    void ParseConditionFromJsonStr(const Json::Value root);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
