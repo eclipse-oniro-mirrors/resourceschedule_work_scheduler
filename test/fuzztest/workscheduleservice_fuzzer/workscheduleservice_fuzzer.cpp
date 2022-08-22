@@ -30,7 +30,7 @@ namespace WorkScheduler {
     {
         auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
         instance->OnStart();
-        if(!instance->eventRunner_ || !instance->handler_) {
+        if (!instance->eventRunner_ || !instance->handler_) {
             return false;
         }
         instance->checkBundle_ = false;

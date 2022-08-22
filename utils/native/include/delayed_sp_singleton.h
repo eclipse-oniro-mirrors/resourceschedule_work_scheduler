@@ -16,26 +16,17 @@
 #ifndef WORKSCHED_SP_SINGLETON_H
 #define WORKSCHED_SP_SINGLETON_H
 
-#include "nocopyable.h"
 #include <mutex>
-#include <memory>
 #include <refbase.h>
+#include "nocopyable.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-#define DECLARE_DELAYED_SP_SINGLETON(MyClass) \
-public: \
-    ~MyClass(); \
-private: \
-    friend DelayedSpSingleton<MyClass>; \
-    MyClass();
-
 template<typename T>
 class DelayedSpSingleton : public NoCopyable {
 public:
     static sptr<T> GetInstance();
     static void DestroyInstance();
-
 private:
     static sptr<T> instance_;
     static std::mutex mutex_;
@@ -56,7 +47,6 @@ sptr<T> DelayedSpSingleton<T>::GetInstance()
             instance_ = new T();
         }
     }
-
     return instance_;
 }
 
