@@ -28,7 +28,7 @@ namespace WorkScheduler {
 
     bool DoInit()
     {
-        auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        auto instance = DelayedSpSingleton<WorkSchedulerService>::GetInstance();
         instance->OnStart();
         if (!instance->eventRunner_ || !instance->handler_) {
             return false;
@@ -41,7 +41,7 @@ namespace WorkScheduler {
     {
         MessageParcel reply;
         MessageOption option;
-        int32_t ret = DelayedSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code, data, reply, option);
+        int32_t ret = DelayedSpSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code, data, reply, option);
         return ret;
     }
 
