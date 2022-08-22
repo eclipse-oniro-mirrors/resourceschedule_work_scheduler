@@ -41,7 +41,8 @@ namespace WorkScheduler {
     {
         MessageParcel reply;
         MessageOption option;
-        int32_t ret = DelayedSpSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code, data, reply, option);
+        int32_t ret = DelayedSpSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code,
+            data, reply, option);
         return ret;
     }
 
