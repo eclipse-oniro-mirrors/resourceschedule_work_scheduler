@@ -24,32 +24,16 @@ namespace OHOS {
 namespace WorkScheduler {
     constexpr int32_t MIN_LEN = 4;
     constexpr int32_t MAX_CODE_TEST = 15; // current max code is 7
-    constexpr int32_t INIT_DELAY = 2 * 1000;
     static bool isInited = false;
 
     bool DoInit()
     {
-        auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        if (!instance->eventRunner_) {
-            instance->eventRunner_ = AppExecFwk::EventRunner::Create("WorkSchedulerService");
-        }
-        if (!instance->eventRunner_) {
+        auto instance = DelayedSpSingleton<WorkSchedulerService>::GetInstance();
+        instance->OnStart();
+        if (!instance->eventRunner_ || !instance->handler_) {
             return false;
         }
-
-        instance->handler_ = std::make_shared<WorkEventHandler>(instance->eventRunner_, instance.get());
-        if (!instance->IsBaseAbilityReady()) {
-            instance->GetHandler()->SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0),
-                INIT_DELAY);
-            return false;
-        }
-        instance->WorkQueueManagerInit();
-        if (!instance->WorkPolicyManagerInit()) {
-            return false;
-        }
-        instance->InitPersisted();
         instance->checkBundle_ = false;
-        instance->ready_ = true;
         return true;
     }
 
@@ -57,7 +41,8 @@ namespace WorkScheduler {
     {
         MessageParcel reply;
         MessageOption option;
-        int32_t ret = DelayedSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code, data, reply, option);
+        int32_t ret = DelayedSpSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code,
+            data, reply, option);
         return ret;
     }
 
