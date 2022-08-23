@@ -348,9 +348,8 @@ std::string WorkInfo::ParseToJsonStr()
         Json::Value extras;
         Json::Value extrasType;
         std::map<std::string, sptr<AAFwk::IInterface>> extrasMap = extras_->GetParams();
-        int typeId = INVALID_VALUE;
         for (auto it : extrasMap) {
-            typeId = INVALID_VALUE;
+            int typeId = INVALID_VALUE;
             typeId = AAFwk::WantParams::GetDataType(it.second);
             extrasType[it.first] = typeId;
             if (typeId != INVALID_VALUE) {

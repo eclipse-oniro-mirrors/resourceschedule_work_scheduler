@@ -228,10 +228,8 @@ napi_value WrapWantParams(napi_env env, const AAFwk::WantParams &wantParams)
     napi_value jsObject = nullptr;
     NAPI_CALL(env, napi_create_object(env, &jsObject));
 
-    napi_value jsValue = nullptr;
     const std::map<std::string, sptr<AAFwk::IInterface>> paramList = wantParams.GetParams();
     for (auto iter = paramList.begin(); iter != paramList.end(); iter++) {
-        jsValue = nullptr;
         if (AAFwk::IString::Query(iter->second) != nullptr) {
             InnerWrapWantParamsString(env, jsObject, iter->first, wantParams);
         } else if (AAFwk::IBoolean::Query(iter->second) != nullptr) {
@@ -244,5 +242,5 @@ napi_value WrapWantParams(napi_env env, const AAFwk::WantParams &wantParams)
     }
     return jsObject;
 }
-}  // namespace AppExecFwk
+}  // namespace WorkScheduler
 }  // namespace OHOS

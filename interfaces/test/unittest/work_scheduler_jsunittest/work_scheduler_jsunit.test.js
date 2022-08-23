@@ -1031,8 +1031,8 @@ describe("WorkSchedulerJsTest", function () {
     })
 
     /*
-     * @tc.name: WorkSchedulerJsTest033
-     * @tc.desc: test stop work scheduler with parameters.
+     * @tc.name: WorkSchedulerJsTest034
+     * @tc.desc: test persisted work scheduler with supported parameters.
      * @tc.type: FUNC
      * @tc.require: SR000H5U1N AR000H5U1V
      */
@@ -1040,6 +1040,53 @@ describe("WorkSchedulerJsTest", function () {
         console.info('----------------------WorkSchedulerJsTest034---------------------------');
         let workInfo = {
             workId: 34,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            isPersisted: true,
+            parameters: {
+                mykey0: 2147483647111,
+                mykey1: 10,
+                mykey2: 'string',
+                mykey3: true,
+                mykey4: 2.55
+            }
+        }
+        var res = workScheduler.startWork(workInfo);
+        expect(res).assertEqual(true)
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest035
+     * @tc.desc: test work scheduler with fault type parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest035", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest035---------------------------');
+        let workInfo = {
+            workId: 35,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
+            parameters: 1
+        }
+        var res = workScheduler.startWork(workInfo);
+        expect(res).assertEqual(false)
+        done();
+    })
+
+    /*
+     * @tc.name: WorkSchedulerJsTest036
+     * @tc.desc: test stop work scheduler with parameters.
+     * @tc.type: FUNC
+     * @tc.require: SR000H5U1N AR000H5U1V
+     */
+    it("WorkSchedulerJsTest036", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest036---------------------------');
+        let workInfo = {
+            workId: 36,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
@@ -1062,15 +1109,15 @@ describe("WorkSchedulerJsTest", function () {
     })
 
     /*
-     * @tc.name: WorkSchedulerJsTest011
+     * @tc.name: WorkSchedulerJsTest037
      * @tc.desc: test obtainAllWorks callback with parameters.
      * @tc.type: FUNC
      * @tc.require: SR000H5U1N AR000H5U1V
      */
-    it("WorkSchedulerJsTest035", 0, async function (done) {
-        console.info('----------------------WorkSchedulerJsTest035---------------------------');
+    it("WorkSchedulerJsTest037", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest037---------------------------');
         let workInfo = {
-            workId: 35,
+            workId: 37,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
@@ -1103,15 +1150,15 @@ describe("WorkSchedulerJsTest", function () {
     })
 
     /*
-     * @tc.name: WorkSchedulerJsTest012
+     * @tc.name: WorkSchedulerJsTest038
      * @tc.desc: test obtainAllWorks promise with parameters.
      * @tc.type: FUNC
      * @tc.require: SR000H5U1N AR000H5U1V
      */
-    it("WorkSchedulerJsTest036", 0, async function (done) {
-        console.info('----------------------WorkSchedulerJsTest036---------------------------');
+    it("WorkSchedulerJsTest038", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest038---------------------------');
         let workInfo = {
-            workId: 36,
+            workId: 38,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
@@ -1144,15 +1191,15 @@ describe("WorkSchedulerJsTest", function () {
     })
 
     /*
-     * @tc.name: WorkSchedulerJsTest037
+     * @tc.name: WorkSchedulerJsTest039
      * @tc.desc: test getWorkStatus callback with parameters.
      * @tc.type: FUNC
      * @tc.require: SR000H5U1N AR000H5U1V
      */
-    it("WorkSchedulerJsTest037", 0, async function (done) {
-        console.info('----------------------WorkSchedulerJsTest037---------------------------');
+    it("WorkSchedulerJsTest039", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest039---------------------------');
         let workInfo = {
-            workId: 37,
+            workId: 39,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
@@ -1185,15 +1232,15 @@ describe("WorkSchedulerJsTest", function () {
     })
 
     /*
-     * @tc.name: WorkSchedulerJsTest038
+     * @tc.name: WorkSchedulerJsTest040
      * @tc.desc: test getWorkStatus promise with parameters.
      * @tc.type: FUNC
      * @tc.require: SR000H5U1N AR000H5U1V
      */
-    it("WorkSchedulerJsTest038", 0, async function (done) {
-        console.info('----------------------WorkSchedulerJsTest038---------------------------');
+    it("WorkSchedulerJsTest040", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest040---------------------------');
         let workInfo = {
-            workId: 38,
+            workId: 40,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
