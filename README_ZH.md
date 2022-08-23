@@ -44,7 +44,7 @@ storageRequest|存储状态|	StorageRequest
 isRepeat|是否循环任务|	boolean
 repeatCycleTime |循环间隔|	number
 repeatCount	|循环次数| number
-parameters    |额外数据| {[key: string]: any}
+parameters    |携带参数信息| {[key: string]: any}
 
 2、延迟任务注册、取消、查询等相关接口
 

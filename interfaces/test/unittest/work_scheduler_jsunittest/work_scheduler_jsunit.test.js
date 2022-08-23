@@ -422,7 +422,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
@@ -983,7 +983,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest032
      * @tc.desc: test work scheduler with supported parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest032", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest032---------------------------');
@@ -995,7 +995,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
@@ -1009,7 +1009,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest033
      * @tc.desc: test work scheduler with unsupported parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest033", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest033---------------------------');
@@ -1034,7 +1034,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest034
      * @tc.desc: test persisted work scheduler with supported parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest034", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest034---------------------------');
@@ -1047,7 +1047,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
@@ -1061,7 +1061,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest035
      * @tc.desc: test work scheduler with fault type parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest035", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest035---------------------------');
@@ -1081,7 +1081,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest036
      * @tc.desc: test stop work scheduler with parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest036", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest036---------------------------');
@@ -1093,7 +1093,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
@@ -1112,7 +1112,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest037
      * @tc.desc: test obtainAllWorks callback with parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest037", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest037---------------------------');
@@ -1124,7 +1124,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
@@ -1153,7 +1153,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest038
      * @tc.desc: test obtainAllWorks promise with parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest038", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest038---------------------------');
@@ -1166,7 +1166,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
@@ -1194,7 +1194,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest039
      * @tc.desc: test getWorkStatus callback with parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest039", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest039---------------------------');
@@ -1206,7 +1206,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
@@ -1235,7 +1235,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest040
      * @tc.desc: test getWorkStatus promise with parameters.
      * @tc.type: FUNC
-     * @tc.require: SR000H5U1N AR000H5U1V
+     * @tc.require: issueI5NG8L
      */
     it("WorkSchedulerJsTest040", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest040---------------------------');
@@ -1248,7 +1248,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: {
                 mykey0: 2147483647111,
                 mykey1: 10,
-                mykey2: 'string',
+                mykey2: "string",
                 mykey3: true,
                 mykey4: 2.55
             }
