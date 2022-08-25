@@ -29,12 +29,12 @@
 #include "ability_manager_interface.h"
 #include "policy/app_data_clear_listener.h"
 #include "policy/app_removed_listener.h"
-#include "singleton.h"
 #include "system_ability_status_change_stub.h"
 #include "work_info.h"
 #include "work_sched_service_stub.h"
 #include "work_status.h"
 #include "work_event_handler.h"
+#include "delayed_sp_singleton.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -45,7 +45,7 @@ class WorkSchedulerService final : public SystemAbility, public WorkSchedService
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
     DECLARE_SYSTEM_ABILITY(WorkSchedulerService);
-    DECLARE_DELAYED_SINGLETON(WorkSchedulerService);
+    DECLARE_DELAYED_SP_SINGLETON(WorkSchedulerService);
 public:
     WorkSchedulerService(const int32_t systemAbilityId, bool runOnCreate);
 
