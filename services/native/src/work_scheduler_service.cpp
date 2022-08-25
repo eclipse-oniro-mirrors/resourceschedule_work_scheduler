@@ -215,6 +215,7 @@ bool WorkSchedulerService::InitBgTaskSubscriber()
         subscriber_ = make_shared<SchedulerBgTaskSubscriber>(shared_from_this());
     }
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
+    WS_HILOGE("subscribe background TASK half success!");
     if (ret != ERR_OK) {
         WS_HILOGE("SubscribeBackgroundTask failed.");
         return false;
@@ -226,19 +227,22 @@ bool WorkSchedulerService::InitBgTaskSubscriber()
 
 ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
 {
+    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos start.");
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> appList;
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> procList;
     ErrCode result = BackgroundTaskMgr::BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(appList, procList);
     if (result != ERR_OK) {
-        WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d: ", result);
+        WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d", result);
         return result; 
     }
+    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos begin read data.");
     for (const auto& info : appList) {
         whitelist_.emplace(info->GetUid());
     }
     for (const auto& info : procList) {
         whitelist_.emplace(info->GetPid());
     }
+    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos end.");
     return ERR_OK;
 }
 
