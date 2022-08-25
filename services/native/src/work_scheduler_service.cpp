@@ -45,12 +45,13 @@
 #include "json/json.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
+#include "scheduler_bg_task_subscriber.h"
+#include "background_task_mgr_helper.h"
+#include "resource_callback_info.h"
 #include "work_scheduler_connection.h"
 #include "work_bundle_group_change_callback.h"
 #include "work_sched_common.h"
 #include "work_sched_utils.h"
-#include "scheduler_bg_task_subscriber.h"
-#include "background_task_mgr_helper.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -196,10 +197,12 @@ bool WorkSchedulerService::Init()
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
+    WS_HILOGE("Publish background TASK success!");
     if (!InitBgTaskSubscriber()) {
         WS_HILOGE("subscribe background task failed!");
         return false;
     }
+    WS_HILOGE("subscribe background TASK success!");
     checkBundle_ = true;
     ready_ = true;
     WS_HILOGI("init success.");
@@ -216,7 +219,27 @@ bool WorkSchedulerService::InitBgTaskSubscriber()
         WS_HILOGE("SubscribeBackgroundTask failed.");
         return false;
     }
+    BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
+    this->GetEfficiencyResourcesInfos();
     return true;
+}
+
+ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
+{
+    std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> appList;
+    std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> procList;
+    ErrCode result = BackgroundTaskMgr::BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(appList, procList);
+    if (result != ERR_OK) {
+        WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d: ", result);
+        return result; 
+    }
+    for (const auto& info : appList) {
+        whitelist_.emplace(info->GetUid());
+    }
+    for (const auto& info : procList) {
+        whitelist_.emplace(info->GetPid());
+    }
+    return ERR_OK;
 }
 
 void WorkSchedulerService::WorkQueueManagerInit()
@@ -576,7 +599,19 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
     result.append("Need check bundle:" + std::to_string(checkBundle_) + "\n")
         .append("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()) + "\n")
         .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
-        .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n");
+        .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n")
+        .append("whitelist :" + GetWhiteList());
+}
+
+std::string WorkSchedulerService::GetWhiteList()
+{
+    std::string res {""};
+    WS_HILOGD("GetWhiteList whitelist_.size() : %{public}d", whitelist_.size());
+    for (auto &it : whitelist_) {
+        res.append(std::to_string(it));
+        WS_HILOGD("GetWhiteList  : %{public}s", res.c_str());
+    }
+    return res;
 }
 
 void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, std::string &result)
@@ -672,15 +707,17 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 void WorkSchedulerService::UpdateWhiteList(int32_t uid, bool isAdd)
 {
     if (isAdd) {
-        whitelist.emplace(uid);
+        whitelist_.emplace(uid);
+        WS_HILOGD("called, true whitelist_.size() : %{public}d", whitelist_.size());
     } else {
-        whitelist.erase(uid);
+        whitelist_.erase(uid);
+        WS_HILOGD("called, whitelist_.size() : %{public}d", whitelist_.size());
     }
 }
 
 bool WorkSchedulerService::CheckWhitelist(int32_t uid)
 {
-    return whitelist.find(uid) != whitelist.end();
+    return whitelist_.find(uid) != whitelist_.end();
 }
 
 void WorkSchedulerService::SystemAbilityStatusChangeListener::OnAddSystemAbility

@@ -20,7 +20,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 
-// using namespace OHOS::BackgroundTaskMgr;
+using namespace OHOS::BackgroundTaskMgr;
 SchedulerBgTaskSubscriber::SchedulerBgTaskSubscriber(const std::shared_ptr<WorkSchedulerService> workSchedulerService)
 {
     if (workSchedulerService != nullptr) {
@@ -42,7 +42,7 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
     WS_HILOGI("OnEfficiencyResourcesApply before");
-    if (resourceInfo == nullptr && (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
+    if (resourceInfo == nullptr || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
     }
@@ -59,7 +59,7 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
     WS_HILOGI("OnEfficiencyResourcesApply before");
-    if (resourceInfo == nullptr && (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
+    if (resourceInfo == nullptr || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
     }

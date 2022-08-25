@@ -202,7 +202,7 @@ public:
      *
      * @param uid uid of the app.
      * @param isAdd true if add name, else delete.
-     */
+     */  
     void UpdateWhiteList(int32_t uid, bool isAdd);
 
     /**
@@ -214,8 +214,11 @@ public:
     bool InitBgTaskSubscriber();
 
     bool CheckWhitelist(int32_t uid);
+
+    std::string GetWhiteList();
+    ErrCode GetEfficiencyResourcesInfos();
 private:
-    std::set<int32_t> whitelist;
+    std::set<int32_t> whitelist_;
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 
 private:
