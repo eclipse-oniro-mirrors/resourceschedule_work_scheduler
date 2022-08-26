@@ -220,7 +220,6 @@ bool WorkSchedulerService::InitBgTaskSubscriber()
         WS_HILOGE("SubscribeBackgroundTask failed.");
         return false;
     }
-    BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
     this->GetEfficiencyResourcesInfos();
     return true;
 }
@@ -240,7 +239,7 @@ ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
         whitelist_.emplace(info->GetUid());
     }
     for (const auto& info : procList) {
-        whitelist_.emplace(info->GetPid());
+        whitelist_.emplace(info->GetUid());
     }
     WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos end.");
     return ERR_OK;
@@ -612,7 +611,7 @@ std::string WorkSchedulerService::GetWhiteList()
     std::string res {""};
     WS_HILOGD("GetWhiteList whitelist_.size() : %{public}d", whitelist_.size());
     for (auto &it : whitelist_) {
-        res.append(std::to_string(it));
+        res.append(std::to_string(it) + " ");
         WS_HILOGD("GetWhiteList  : %{public}s", res.c_str());
     }
     return res;

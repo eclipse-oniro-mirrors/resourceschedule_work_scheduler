@@ -47,7 +47,7 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
         return;
     }
     auto workSchedulerServicePtr = workSchedulerService_.lock();
-    if (workSchedulerServicePtr != nullptr) {
+    if (workSchedulerServicePtr) {
         int32_t uid = resourceInfo->GetUid();
         WS_HILOGD("called, bundleName=%{public}s, uid=%{public}d, pid=%{public}d, resourcenumber=%{public}u",
             resourceInfo->GetBundleName().c_str(), uid, resourceInfo->GetPid(), resourceInfo->GetResourceNumber());
@@ -64,7 +64,7 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
         return;
     }
     auto workSchedulerServicePtr = workSchedulerService_.lock();
-    if (workSchedulerServicePtr != nullptr) {
+    if (workSchedulerServicePtr) {
         int32_t uid = resourceInfo->GetUid();
         WS_HILOGD("called, bundleName=%{public}s, uid=%{public}d, pid=%{public}d, resourcenumber=%{public}u",
             resourceInfo->GetBundleName().c_str(), uid, resourceInfo->GetPid(), resourceInfo->GetResourceNumber());
