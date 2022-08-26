@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "common.h"
+#include "common_want.h"
 
 #include "errors.h"
 #include "work_sched_hilog.h"
@@ -64,7 +65,7 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
     }
 
     // Get bundleName and abilityName.
-    std::string bundleName =  Common::GetStringProperty(env, objValue, "bundleName");
+    std::string bundleName = Common::GetStringProperty(env, objValue, "bundleName");
     std::string abilityName = Common::GetStringProperty(env, objValue, "abilityName");
     if (bundleName == UNSET_STRING_PARAM || abilityName == UNSET_STRING_PARAM) {
         WS_HILOGE("BundleName or abilityName is invalid, failed.");
@@ -196,10 +197,31 @@ bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     }
 }
 
+bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
+{
+    napi_value extras = nullptr;
+    napi_status getExtrasStatus = napi_get_named_property(env, objValue, "parameters", &extras);
+    if (getExtrasStatus != napi_ok) {
+        return true;
+    }
+    AAFwk::WantParams extraParams;
+    if (!UnwrapWantParams(env, extras, extraParams)) {
+        return false;
+    }
+    workInfo.RequestExtras(extraParams);
+    WS_HILOGD("Get parameters finished.");
+    return true;
+}
+
+
 bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     // Get base info.
     if (!GetBaseWorkInfo(env, objValue, workInfo)) {
+        return false;
+    }
+    // Get extra parameters.
+    if (!GetExtrasInfo(env, objValue, workInfo)) {
         return false;
     }
 
@@ -407,6 +429,10 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
         }
     }
 
+    if (workInfo->GetExtras()) {
+        napi_value parameters = WrapWantParams(env, *workInfo->GetExtras());
+        napi_set_named_property(env, napiWork, "parameters", parameters);
+    }
     return napiWork;
 }
 

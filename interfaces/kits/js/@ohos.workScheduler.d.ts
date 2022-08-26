@@ -92,6 +92,10 @@ declare namespace workScheduler {
          * The idle wait time based on which the work is triggered.
          */
         idleWaitTime?: number;
+        /**
+         * The extra parameters for triggering a work.
+         */
+        parameters?: {[key: string]: any};
     }
 
     /**

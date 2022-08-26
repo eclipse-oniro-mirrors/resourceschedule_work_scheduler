@@ -170,6 +170,7 @@ private:
     static bool GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
     static bool GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
     static bool GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
+    static bool GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
