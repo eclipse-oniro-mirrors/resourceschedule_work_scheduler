@@ -65,8 +65,8 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "thermal_manager:thermalsrv_client",
   ]
 
-  resource_config_file = 
-    "//foundation/resourceschedule/work_scheduler/test/resource/ohos_test.xml"
+  resource_config_file =
+      "//foundation/resourceschedule/work_scheduler/test/resource/ohos_test.xml"
 }
 
 ###############################################################################
