@@ -15,7 +15,7 @@
 <configuration ver="2.0">
     <target name="WorkScheduleServiceFuzzTest">
         <preparer>
-            <option name="push" value="resourceschedule/work_scheduler/libworkschedextension.z.so -> /data/test" src="out"/>
+            <option name="push" value="resourceschedule/work_scheduler/libworkschedextension.z.so -> /system/lib64" src="out"/>
         </preparer>
     </target>
 </configuration>
