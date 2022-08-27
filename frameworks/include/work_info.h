@@ -23,6 +23,7 @@
 
 #include <parcel.h>
 #include "json/json.h"
+#include "want_params.h"
 #include "refbase.h"
 
 #include "work_condition.h"
@@ -96,6 +97,12 @@ public:
      * @param timeInterval The time interval.
      */
     void RequestRepeatCycle(uint32_t timeInterval);
+    /**
+     * @brief Request extra parameters.
+     *
+     * @param extras extra parameters.
+     */
+    void RequestExtras(AAFwk::WantParams extras);
     /**
      * @brief Refresh uid.
      *
@@ -188,6 +195,12 @@ public:
      */
     std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> GetConditionMap();
     /**
+     * @brief Get extra parameters.
+     *
+     * @return extra parameters.
+     */
+    std::shared_ptr<AAFwk::WantParams> GetExtras() const;
+    /**
      * @brief Marshalling.
      *
      * @param parcel The parcel.
@@ -227,7 +240,12 @@ private:
     std::string abilityName_;
     bool persisted_;
     int32_t uid_;
+    std::shared_ptr<AAFwk::WantParams> extras_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
+private:
+    static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
+    void ParseConditionToJsonStr(Json::Value &root);
+    void ParseConditionFromJsonStr(const Json::Value root);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

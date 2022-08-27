@@ -34,7 +34,10 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
     "//third_party/jsoncpp",
   ]
 
-  external_deps = [ "c_utils:utils" ]
+  external_deps = [
+    "ability_base:want",
+    "c_utils:utils",
+  ]
 }
 
 group("workinfotest") {

@@ -27,6 +27,14 @@ AbilityRuntime::Extension *WorkSchedulerExtensionModuleLoader::Create(
     return WorkSchedulerExtension::Create(runtime);
 }
 
+std::map<std::string, std::string> WorkSchedulerExtensionModuleLoader::GetParams()
+{
+    std::map<std::string, std::string> params;
+    params.insert(std::pair<std::string, std::string>("type", "1"));
+    params.insert(std::pair<std::string, std::string>("name", "WorkSchedulerExtension"));
+    return params;
+}
+
 extern "C" __attribute__((visibility("default"))) void* OHOS_EXTENSION_GetExtensionModule()
 {
     return &WorkSchedulerExtensionModuleLoader::GetInstance();

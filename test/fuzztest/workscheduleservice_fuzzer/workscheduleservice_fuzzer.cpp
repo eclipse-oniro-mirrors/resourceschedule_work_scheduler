@@ -15,41 +15,34 @@
 
 #include "workscheduleservice_fuzzer.h"
 
-#include "work_event_handler.h"
 #define private public
-#include "work_scheduler_service.h"
+#include "system_ability_definition.h"
+#include "iservice_registry.h"
 #include "work_sched_service_stub.h"
 
 namespace OHOS {
 namespace WorkScheduler {
     constexpr int32_t MIN_LEN = 4;
     constexpr int32_t MAX_CODE_TEST = 15; // current max code is 7
-    constexpr int32_t INIT_DELAY = 2 * 1000;
     static bool isInited = false;
+    std::mutex mutexLock;
+    sptr<IRemoteObject> remoteObject;
 
     bool DoInit()
     {
-        auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        if (!instance->eventRunner_) {
-            instance->eventRunner_ = AppExecFwk::EventRunner::Create("WorkSchedulerService");
+        std::lock_guard<std::mutex> lock(mutexLock);
+        if (remoteObject != nullptr) {
+            return true;
         }
-        if (!instance->eventRunner_) {
+        sptr<ISystemAbilityManager> SystemAbilityManager =
+            SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (SystemAbilityManager == nullptr) {
             return false;
         }
-
-        instance->handler_ = std::make_shared<WorkEventHandler>(instance->eventRunner_, instance.get());
-        if (!instance->IsBaseAbilityReady()) {
-            instance->GetHandler()->SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0),
-                INIT_DELAY);
+        remoteObject = SystemAbilityManager->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+        if (remoteObject == nullptr) {
             return false;
         }
-        instance->WorkQueueManagerInit();
-        if (!instance->WorkPolicyManagerInit()) {
-            return false;
-        }
-        instance->InitPersisted();
-        instance->checkBundle_ = false;
-        instance->ready_ = true;
         return true;
     }
 
@@ -57,7 +50,7 @@ namespace WorkScheduler {
     {
         MessageParcel reply;
         MessageOption option;
-        int32_t ret = DelayedSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code, data, reply, option);
+        int32_t ret = remoteObject->SendRequest(code, data, reply, option);
         return ret;
     }
 
