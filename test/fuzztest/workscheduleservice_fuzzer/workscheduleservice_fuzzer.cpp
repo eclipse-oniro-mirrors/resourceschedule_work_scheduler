@@ -15,9 +15,9 @@
 
 #include "workscheduleservice_fuzzer.h"
 
-#include "work_event_handler.h"
 #define private public
-#include "work_scheduler_service.h"
+#include "system_ability_definition.h"
+#include "iservice_registry.h"
 #include "work_sched_service_stub.h"
 
 namespace OHOS {
@@ -25,15 +25,24 @@ namespace WorkScheduler {
     constexpr int32_t MIN_LEN = 4;
     constexpr int32_t MAX_CODE_TEST = 15; // current max code is 7
     static bool isInited = false;
+    std::mutex mutexLock;
+    sptr<IRemoteObject> remoteObject;
 
     bool DoInit()
     {
-        auto instance = DelayedSpSingleton<WorkSchedulerService>::GetInstance();
-        instance->OnStart();
-        if (!instance->eventRunner_ || !instance->handler_) {
+        std::lock_guard<std::mutex> lock(mutexLock);
+        if (remoteObject != nullptr) {
+            return true;
+        }
+        sptr<ISystemAbilityManager> SystemAbilityManager =
+            SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+        if (SystemAbilityManager == nullptr) {
             return false;
         }
-        instance->checkBundle_ = false;
+        remoteObject = SystemAbilityManager->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+        if (remoteObject == nullptr) {
+            return false;
+        }
         return true;
     }
 
@@ -41,8 +50,7 @@ namespace WorkScheduler {
     {
         MessageParcel reply;
         MessageOption option;
-        int32_t ret = DelayedSpSingleton<WorkSchedulerService>::GetInstance()->OnRemoteRequest(code,
-            data, reply, option);
+        int32_t ret = remoteObject->SendRequest(code, data, reply, option);
         return ret;
     }
 
