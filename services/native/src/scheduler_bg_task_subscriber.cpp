@@ -23,34 +23,32 @@ namespace WorkScheduler {
 using namespace OHOS::BackgroundTaskMgr;
 SchedulerBgTaskSubscriber::SchedulerBgTaskSubscriber(const std::shared_ptr<WorkSchedulerService> workSchedulerService)
 {
-    if (workSchedulerService != nullptr) {
+    if (workSchedulerService) {
         workSchedulerService_ = workSchedulerService;
     }
 }
 
 void SchedulerBgTaskSubscriber::OnConnected()
 {
-    WS_HILOGI("called");
+    WS_HILOGD("OnConnected called");
 }
 
 void SchedulerBgTaskSubscriber::OnDisconnected()
 {
-    WS_HILOGI("called");
+    WS_HILOGD("OnDisconnected called");
 }
 
 void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    WS_HILOGI("OnEfficiencyResourcesApply before");
-    if (resourceInfo == nullptr || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
+    WS_HILOGD("OnEfficiencyResourcesApply called");
+    if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
     }
     auto workSchedulerServicePtr = workSchedulerService_.lock();
     if (workSchedulerServicePtr) {
         int32_t uid = resourceInfo->GetUid();
-        WS_HILOGD("called, bundleName=%{public}s, uid=%{public}d, pid=%{public}d, resourcenumber=%{public}u",
-            resourceInfo->GetBundleName().c_str(), uid, resourceInfo->GetPid(), resourceInfo->GetResourceNumber());
         DelayedSingleton<WorkSchedulerService>::GetInstance()->UpdateWhiteList(uid, true);
     }
 }
@@ -58,16 +56,14 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
 void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    WS_HILOGI("OnEfficiencyResourcesApply before");
-    if (resourceInfo == nullptr || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
+    WS_HILOGD("OnEfficiencyResourcesApply called");
+    if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
     }
     auto workSchedulerServicePtr = workSchedulerService_.lock();
     if (workSchedulerServicePtr) {
         int32_t uid = resourceInfo->GetUid();
-        WS_HILOGD("called, bundleName=%{public}s, uid=%{public}d, pid=%{public}d, resourcenumber=%{public}u",
-            resourceInfo->GetBundleName().c_str(), uid, resourceInfo->GetPid(), resourceInfo->GetResourceNumber());
         DelayedSingleton<WorkSchedulerService>::GetInstance()->UpdateWhiteList(uid, false);
     }
 }
@@ -75,14 +71,12 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesApply(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    WS_HILOGI("OnAppEfficiencyResourcesApply before");
     OnEfficiencyResourcesApply(resourceInfo);
 }
 
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    WS_HILOGI("OnAppEfficiencyResourcesReset before");
     OnEfficiencyResourcesReset(resourceInfo);
 }
 

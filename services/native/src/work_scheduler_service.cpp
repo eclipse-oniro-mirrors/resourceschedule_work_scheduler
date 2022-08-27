@@ -197,12 +197,10 @@ bool WorkSchedulerService::Init()
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
-    WS_HILOGE("Publish background TASK success!");
     if (!InitBgTaskSubscriber()) {
         WS_HILOGE("subscribe background task failed!");
         return false;
     }
-    WS_HILOGE("subscribe background TASK success!");
     checkBundle_ = true;
     ready_ = true;
     WS_HILOGI("init success.");
@@ -211,22 +209,21 @@ bool WorkSchedulerService::Init()
 
 bool WorkSchedulerService::InitBgTaskSubscriber()
 {
-    if (subscriber_ == nullptr) {
+    if (!subscriber_) {
         subscriber_ = make_shared<SchedulerBgTaskSubscriber>(shared_from_this());
     }
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
-    WS_HILOGE("subscribe background TASK half success!");
     if (ret != ERR_OK) {
         WS_HILOGE("SubscribeBackgroundTask failed.");
         return false;
     }
     this->GetEfficiencyResourcesInfos();
+    WS_HILOGD("subscribe background TASK success!");
     return true;
 }
 
 ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
 {
-    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos start.");
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> appList;
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> procList;
     ErrCode result = BackgroundTaskMgr::BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(appList, procList);
@@ -234,14 +231,13 @@ ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
         WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d", result);
         return result; 
     }
-    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos begin read data.");
     for (const auto& info : appList) {
         whitelist_.emplace(info->GetUid());
     }
     for (const auto& info : procList) {
         whitelist_.emplace(info->GetUid());
     }
-    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos end.");
+    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos succeed.");
     return ERR_OK;
 }
 
@@ -609,7 +605,6 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
 std::string WorkSchedulerService::GetWhiteList()
 {
     std::string res {""};
-    WS_HILOGD("GetWhiteList whitelist_.size() : %{public}d", whitelist_.size());
     for (auto &it : whitelist_) {
         res.append(std::to_string(it) + " ");
         WS_HILOGD("GetWhiteList  : %{public}s", res.c_str());
@@ -711,10 +706,8 @@ void WorkSchedulerService::UpdateWhiteList(int32_t uid, bool isAdd)
 {
     if (isAdd) {
         whitelist_.emplace(uid);
-        WS_HILOGD("called, true whitelist_.size() : %{public}d", whitelist_.size());
     } else {
         whitelist_.erase(uid);
-        WS_HILOGD("called, whitelist_.size() : %{public}d", whitelist_.size());
     }
 }
 
