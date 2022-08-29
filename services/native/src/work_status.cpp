@@ -181,7 +181,7 @@ bool WorkStatus::IsReady()
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
 
-    if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckWhitelist(uid_) && del < minInterval_) {
+    if (DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckWhitelist(uid_) && del < minInterval_) {
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;

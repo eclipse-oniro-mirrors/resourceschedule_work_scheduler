@@ -23,7 +23,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class SchedulerBgTaskSubscriber : public BackgroundTaskMgr::BackgroundTaskSubscriber {
 public:
-    explicit SchedulerBgTaskSubscriber(const std::shared_ptr<WorkSchedulerService> workSchedulerService);
+    SchedulerBgTaskSubscriber() = default;
     virtual void OnConnected() override;
     virtual void OnDisconnected() override;
     virtual void OnEfficiencyResourcesApply(const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
@@ -31,8 +31,6 @@ public:
     virtual void OnAppEfficiencyResourcesApply(const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
     virtual void OnAppEfficiencyResourcesReset(const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
     virtual void OnRemoteDied(const wptr<IRemoteObject> &object) override;
-private:
-    std::weak_ptr<WorkSchedulerService> workSchedulerService_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

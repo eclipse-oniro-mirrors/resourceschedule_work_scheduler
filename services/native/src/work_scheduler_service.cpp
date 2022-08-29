@@ -198,6 +198,7 @@ bool WorkSchedulerService::Init()
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
+    WS_HILOGI("start InitBgTaskSubscriber!");
     if (!InitBgTaskSubscriber()) {
         WS_HILOGE("subscribe background task failed!");
         return false;
@@ -210,9 +211,7 @@ bool WorkSchedulerService::Init()
 
 bool WorkSchedulerService::InitBgTaskSubscriber()
 {
-    if (!subscriber_) {
-        subscriber_ = make_shared<SchedulerBgTaskSubscriber>(shared_from_this());
-    }
+    subscriber_ = make_shared<SchedulerBgTaskSubscriber>();
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
     if (ret != ERR_OK) {
         WS_HILOGE("SubscribeBackgroundTask failed.");
@@ -230,7 +229,7 @@ ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
     ErrCode result = BackgroundTaskMgr::BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(appList, procList);
     if (result != ERR_OK) {
         WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d", result);
-        return result; 
+        return result;
     }
     for (const auto& info : appList) {
         whitelist_.emplace(info->GetUid());

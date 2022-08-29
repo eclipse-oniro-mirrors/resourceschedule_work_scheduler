@@ -21,12 +21,6 @@ namespace OHOS {
 namespace WorkScheduler {
 
 using namespace OHOS::BackgroundTaskMgr;
-SchedulerBgTaskSubscriber::SchedulerBgTaskSubscriber(const std::shared_ptr<WorkSchedulerService> workSchedulerService)
-{
-    if (workSchedulerService) {
-        workSchedulerService_ = workSchedulerService;
-    }
-}
 
 void SchedulerBgTaskSubscriber::OnConnected()
 {
@@ -46,26 +40,20 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
     }
-    auto workSchedulerServicePtr = workSchedulerService_.lock();
-    if (workSchedulerServicePtr) {
-        int32_t uid = resourceInfo->GetUid();
-        DelayedSingleton<WorkSchedulerService>::GetInstance()->UpdateWhiteList(uid, true);
-    }
+    int32_t uid = resourceInfo->GetUid();
+    DelayedSpSingleton<WorkSchedulerService>::GetInstance()->UpdateWhiteList(uid, true);
 }
 
 void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    WS_HILOGD("OnEfficiencyResourcesApply called");
+    WS_HILOGD("OnEfficiencyResourcesReset called");
     if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
         WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
         return;
     }
-    auto workSchedulerServicePtr = workSchedulerService_.lock();
-    if (workSchedulerServicePtr) {
-        int32_t uid = resourceInfo->GetUid();
-        DelayedSingleton<WorkSchedulerService>::GetInstance()->UpdateWhiteList(uid, false);
-    }
+    int32_t uid = resourceInfo->GetUid();
+    DelayedSpSingleton<WorkSchedulerService>::GetInstance()->UpdateWhiteList(uid, false);
 }
 
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesApply(
