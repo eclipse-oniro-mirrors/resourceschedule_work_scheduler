@@ -174,7 +174,7 @@ void WorkSchedulerService::OnStop()
 #endif
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::UnsubscribeBackgroundTask(*subscriber_);
     if (ret != ERR_OK) {
-        WS_HILOGE("UnSubscribeBackgroundTask failed.");
+        WS_HILOGE("unscribe bgtask failed.");
     }
     eventRunner_.reset();
     handler_.reset();
@@ -198,7 +198,7 @@ bool WorkSchedulerService::Init()
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
-    WS_HILOGI("start InitBgTaskSubscriber!");
+    WS_HILOGI("start init background task subscriber!");
     if (!InitBgTaskSubscriber()) {
         WS_HILOGE("subscribe background task failed!");
         return false;
@@ -237,7 +237,7 @@ ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
     for (const auto& info : procList) {
         whitelist_.emplace(info->GetUid());
     }
-    WS_HILOGI("WorkSchedulerService GetEfficiencyResourcesInfos succeed.");
+    WS_HILOGI("get efficiency resources infos succeed.");
     return ERR_OK;
 }
 

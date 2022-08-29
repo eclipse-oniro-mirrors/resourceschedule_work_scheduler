@@ -19,9 +19,7 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-
 using namespace OHOS::BackgroundTaskMgr;
-
 void SchedulerBgTaskSubscriber::OnConnected()
 {
     WS_HILOGD("OnConnected called");
@@ -37,7 +35,7 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
 {
     WS_HILOGD("OnEfficiencyResourcesApply called");
     if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
-        WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
+        WS_HILOGE("called with null efficiency callback info");
         return;
     }
     int32_t uid = resourceInfo->GetUid();
@@ -49,7 +47,7 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
 {
     WS_HILOGD("OnEfficiencyResourcesReset called");
     if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
-        WS_HILOGE("called with null EfficiencyResourceCallbackInfo");
+        WS_HILOGE("called with null efficiency callback info");
         return;
     }
     int32_t uid = resourceInfo->GetUid();

@@ -202,7 +202,7 @@ public:
      *
      * @param uid uid of the app.
      * @param isAdd true if add name, else delete.
-     */  
+     */
     void UpdateWhiteList(int32_t uid, bool isAdd);
 
     /**
