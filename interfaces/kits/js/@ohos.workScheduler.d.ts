@@ -93,7 +93,7 @@ declare namespace workScheduler {
          */
         idleWaitTime?: number;
         /**
-         * The extra parameters for triggering a work.
+         * The parameters of the work. The value is only supported basic type(Number, String, Boolean).
          */
         parameters?: {[key: string]: any};
     }
