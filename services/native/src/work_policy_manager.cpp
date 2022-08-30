@@ -41,6 +41,8 @@ const uint32_t MAX_WATCHDOG_ID = 1000;
 const uint32_t INIT_WATCHDOG_ID = 1;
 const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
+const int32_t MEDIUM_WATCHDOG_TIME = 10*60*1000;
+const int32_t LONG_WATCHDOG_TIME = 10*60*1000;
 }
 
 WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
@@ -359,6 +361,17 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     if (wmsptr == nullptr) {
         WS_HILOGE("Workscheduler service is null");
         return;
+    }
+    int32_t chargerStatus = topWork->conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;  
+    if(wss_->CheckWhitelist(topWork->uid_)) {
+        if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
+            || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
+            SetWatchdogTime(MEDIUM_WATCHDOG_TIME);
+        } else {
+            SetWatchdogTime(LONG_WATCHDOG_TIME);
+        }
+    } else {
+        SetWatchdogTime(WATCHDOG_TIME);
     }
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
     wmsptr->UpdateWorkBeforeRealStart(topWork);
