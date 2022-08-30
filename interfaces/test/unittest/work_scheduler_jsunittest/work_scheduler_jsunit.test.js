@@ -464,17 +464,17 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         let begin = getTime();
-        let end = 0;
-        let times = 0;
         for (var i = 0 ; i < 20 ; i++) {
             var res = workScheduler.startWork(workInfo);
-            end = getTime();
-            times = end - begin;
         }
+        let end = getTime();
+        let times = end - begin;
         if (times/20 < 50){
             expect(true).assertEqual(true)
         }
-        done();
+        setTimeout(() => {
+            done();
+        }, 1000);
     })
     
     /*
@@ -578,7 +578,9 @@ describe("WorkSchedulerJsTest", function () {
                 expect(true).assertEqual(true)
             }
         }
-        done();
+        setTimeout(() => {
+            done();
+        }, 1000);
     })
 
     /*
@@ -662,7 +664,7 @@ describe("WorkSchedulerJsTest", function () {
 
     /*
      * @tc.name: WorkSchedulerJsTest023
-     * @tc.desc: test spent time by stopWork takes 20 times.
+     * @tc.desc: test spent time by getWorkStatus takes 20 times.
      * @tc.type: FUNC
      * @tc.require:
      */
@@ -699,7 +701,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         setTimeout(() => {
             done();
-        }, 500);
+        }, 1000);
     })
 
     /*
@@ -723,9 +725,9 @@ describe("WorkSchedulerJsTest", function () {
         }
         var res = workScheduler.startWork(workInfo);
         if (res == true) {
-            let startTime = (new Date()).valueOf()
+            let startTime = getTime();
             workScheduler.obtainAllWorks((err, res) =>{
-                let endTime = (new Date()).valueOf()
+                let endTime = getTime();
                 let workTime = endTime - startTime;
                 if (workTime < 50) {
                     expect(true).assertTrue()
@@ -800,10 +802,10 @@ describe("WorkSchedulerJsTest", function () {
         }
         var res = workScheduler.startWork(workInfo);
         if (res == true) {
-            let startTime = (new Date()).valueOf()
+            let startTime = getTime();
             for (var i = 0 ; i < 20 ; i++) {
                 workScheduler.obtainAllWorks((err, res) => {
-                    let endTime = (new Date()).valueOf()
+                    let endTime = getTime();
                     let workTime = endTime - startTime;
                     if (workTime/20 < 50) {
                         expect(true).assertTrue()
@@ -815,7 +817,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         setTimeout(() => {
             done();
-        }, 500);
+        }, 1000);
     })
 
     /*
@@ -976,7 +978,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         setTimeout(() => {
             done();
-        }, 500);
+        }, 1000);
     })
 
     /*
