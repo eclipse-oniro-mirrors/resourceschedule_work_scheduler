@@ -14,14 +14,18 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("worksched_private_config") {
-  include_dirs = [ "${worksched_service_path}/zidl/include",
-    "${worksched_frameworks_path}/extension/include" ]
+  include_dirs = [
+    "${worksched_service_path}/zidl/include",
+    "${worksched_frameworks_path}/extension/include",
+  ]
 }
 
 config("worksched_public_config") {
-  include_dirs = [ "native/include",
+  include_dirs = [
+    "native/include",
     "//base/powermgr/battery_manager/interfaces/innerkits/native/include",
-    "//foundation/communication/netmanager_base/interfaces/innerkits/netconnclient/include" ]
+    "//foundation/communication/netmanager_base/interfaces/innerkits/netconnclient/include",
+  ]
 }
 
 ohos_shared_library("workschedservice") {

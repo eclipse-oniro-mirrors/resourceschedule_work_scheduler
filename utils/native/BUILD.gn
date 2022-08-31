@@ -14,8 +14,10 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("utils_config") {
-  include_dirs = [ "include",
-  "//base/account/os_account/interfaces/innerkits/ohosaccount/native/include" ]
+  include_dirs = [
+    "include",
+    "//base/account/os_account/interfaces/innerkits/ohosaccount/native/include",
+  ]
 }
 
 ohos_source_set("workschedutils") {
