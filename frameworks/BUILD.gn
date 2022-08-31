@@ -18,9 +18,10 @@ config("worksched_private_config") {
 }
 
 config("worksched_public_config") {
-  include_dirs = [ "include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include"
-    ]
+  include_dirs = [
+    "include",
+    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
+  ]
 }
 
 ohos_shared_library("workschedclient") {
@@ -34,9 +35,7 @@ ohos_shared_library("workschedclient") {
 
   public_configs = [ ":worksched_public_config" ]
 
-  deps = [
-    "${worksched_utils_path}:workschedutils",
-  ]
+  deps = [ "${worksched_utils_path}:workschedutils" ]
 
   external_deps = [
     "ability_base:want",
