@@ -14,18 +14,26 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("worksched_private_config") {
-  include_dirs = [ "${worksched_service_path}/zidl/include" ]
+  include_dirs = [
+    "${worksched_service_path}/zidl/include",
+    "${ability_runtime_path}/frameworks/native/ability/native/",
+    "//foundation/arkui/napi/native_engine",
+  ]
 }
 
 config("worksched_public_config") {
   include_dirs = [ "include" ]
 }
 
-ohos_shared_library("workschedclient") {
+ohos_shared_library("workschedextension") {
   sources = [
-    "${worksched_frameworks_path}/src/work_info.cpp",
-    "${worksched_frameworks_path}/src/workscheduler_srv_client.cpp",
-    "${worksched_service_path}/zidl/src/work_sched_service_proxy.cpp",
+    "${worksched_service_path}/zidl/src/work_scheduler_stub.cpp",
+    "${worksched_service_path}/zidl/src/work_scheduler_stub_imp.cpp",
+    "src/js_work_scheduler_extension.cpp",
+    "src/js_work_scheduler_extension_context.cpp",
+    "src/work_scheduler_extension.cpp",
+    "src/work_scheduler_extension_context.cpp",
+    "src/work_scheduler_extension_module_loader.cpp",
   ]
 
   configs = [ ":worksched_private_config" ]
@@ -33,22 +41,20 @@ ohos_shared_library("workschedclient") {
   public_configs = [ ":worksched_public_config" ]
 
   deps = [
+    "${ability_runtime_path}/frameworks/native/appkit:app_context",
+    "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
-    "//third_party/jsoncpp",
   ]
 
   external_deps = [
     "ability_base:want",
-    "ability_runtime:ability_manager",
-    "ability_runtime:app_manager",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:abilitykit_native",
     "ability_runtime:runtime",
-    "bundle_framework:appexecfwk_core",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "napi:ace_napi",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
   ]
 
+  relative_install_dir = "extensionability/"
   part_name = "${worksched_native_part_name}"
 }

@@ -14,7 +14,8 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("utils_config") {
-  include_dirs = [ "include" ]
+  include_dirs = [ "include",
+  "//base/account/os_account/interfaces/innerkits/ohosaccount/native/include" ]
 }
 
 ohos_source_set("workschedutils") {
@@ -28,11 +29,9 @@ ohos_source_set("workschedutils") {
   deps = [ "//third_party/jsoncpp" ]
 
   external_deps = [
-    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "os_account:libaccountkits",
     "os_account:os_account_innerkits",
   ]
 

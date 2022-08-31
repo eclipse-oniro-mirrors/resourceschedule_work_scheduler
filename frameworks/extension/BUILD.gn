@@ -41,27 +41,20 @@ ohos_shared_library("workschedextension") {
   public_configs = [ ":worksched_public_config" ]
 
   deps = [
-    "${ability_runtime_path}/frameworks/native/ability:ability_context_native",
-    "${ability_runtime_path}/frameworks/native/ability/native:abilitykit_native",
     "${ability_runtime_path}/frameworks/native/appkit:app_context",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
-    "//foundation/arkui/napi:ace_napi",
-    "//third_party/jsoncpp",
   ]
 
   external_deps = [
     "ability_base:want",
-    "ability_runtime:ability_manager",
-    "ability_runtime:app_manager",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:abilitykit_native",
     "ability_runtime:runtime",
-    "bundle_framework:appexecfwk_core",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_core",
-    "napi:ace_napi",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
   ]
 
+  relative_install_dir = "extensionability/"
   part_name = "${worksched_native_part_name}"
 }
