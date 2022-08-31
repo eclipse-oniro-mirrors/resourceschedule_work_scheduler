@@ -30,10 +30,10 @@ void SchedulerBgTaskSubscriber::OnDisconnected()
     WS_HILOGD("OnDisconnected called");
 }
 
-void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
+void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesApply(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    WS_HILOGD("OnEfficiencyResourcesApply called");
+    WS_HILOGD("OnProcEfficiencyResourcesApply called");
     if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
         WS_HILOGE("called with null efficiency callback info");
         return;
@@ -42,10 +42,10 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesApply(
     DelayedSpSingleton<WorkSchedulerService>::GetInstance()->UpdateWhiteList(uid, true);
 }
 
-void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
+void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    WS_HILOGD("OnEfficiencyResourcesReset called");
+    WS_HILOGD("OnProcEfficiencyResourcesReset called");
     if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
         WS_HILOGE("called with null efficiency callback info");
         return;
@@ -57,13 +57,13 @@ void SchedulerBgTaskSubscriber::OnEfficiencyResourcesReset(
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesApply(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    OnEfficiencyResourcesApply(resourceInfo);
+    OnProcEfficiencyResourcesApply(resourceInfo);
 }
 
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesReset(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
-    OnEfficiencyResourcesReset(resourceInfo);
+    OnProcEfficiencyResourcesReset(resourceInfo);
 }
 
 void SchedulerBgTaskSubscriber::OnRemoteDied(const wptr<IRemoteObject> &object)
