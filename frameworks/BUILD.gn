@@ -20,6 +20,7 @@ config("worksched_private_config") {
 config("worksched_public_config") {
   include_dirs = [
     "include",
+    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
   ]
 }
 
