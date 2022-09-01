@@ -41,8 +41,8 @@ const uint32_t MAX_WATCHDOG_ID = 1000;
 const uint32_t INIT_WATCHDOG_ID = 1;
 const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
-const int32_t MEDIUM_WATCHDOG_TIME = 10*60*1000;
-const int32_t LONG_WATCHDOG_TIME = 20*60*1000;
+const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
+const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
 }
 
 WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
