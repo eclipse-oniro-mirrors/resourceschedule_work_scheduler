@@ -363,7 +363,7 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
         return;
     }
     int32_t chargerStatus = topWork->conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;
-    if (wss_->CheckWhitelist(topWork->uid_)) {
+    if (wmsptr->CheckWhitelist(topWork->uid_)) {
         if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
             || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
             SetWatchdogTime(LONG_WATCHDOG_TIME);
