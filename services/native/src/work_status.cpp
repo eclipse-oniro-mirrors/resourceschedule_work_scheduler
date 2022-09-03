@@ -168,6 +168,9 @@ bool WorkStatus::IsReady()
             return false;
         }
     }
+    if (DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckWhitelist(uid_)) {
+        return true;
+    }
     if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
@@ -181,7 +184,7 @@ bool WorkStatus::IsReady()
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
 
-    if (DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckWhitelist(uid_) && del < minInterval_) {
+    if (del < minInterval_) {
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;

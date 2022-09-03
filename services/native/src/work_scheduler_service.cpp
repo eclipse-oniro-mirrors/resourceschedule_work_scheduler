@@ -604,6 +604,9 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
 
 std::string WorkSchedulerService::GetWhiteList()
 {
+    if (whitelist_.empty()) {
+        return "empty";
+    }
     std::string res {""};
     for (auto &it : whitelist_) {
         res.append(std::to_string(it) + " ");

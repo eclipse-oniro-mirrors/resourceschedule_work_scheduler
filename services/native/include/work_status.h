@@ -25,7 +25,6 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-class WorkSchedulerService;
 class WorkStatus {
 public:
     enum Status {

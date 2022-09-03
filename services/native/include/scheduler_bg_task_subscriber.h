@@ -26,9 +26,9 @@ public:
     SchedulerBgTaskSubscriber() = default;
     virtual void OnConnected() override;
     virtual void OnDisconnected() override;
-    virtual void OnEfficiencyResourcesApply(
+    virtual void OnProcEfficiencyResourcesApply(
         const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
-    virtual void OnEfficiencyResourcesReset(
+    virtual void OnProcEfficiencyResourcesReset(
         const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
     virtual void OnAppEfficiencyResourcesApply(
         const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
