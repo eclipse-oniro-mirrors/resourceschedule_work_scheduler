@@ -602,7 +602,7 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
         .append("whitelist :" + GetWhiteList());
 }
 
-std::string WorkSchedulerService::GetWhiteList()
+std::string WorkSchedulerService::GetEffiResApplyInfo()
 {
     if (whitelist_.empty()) {
         return "empty";
@@ -610,8 +610,8 @@ std::string WorkSchedulerService::GetWhiteList()
     std::string res {""};
     for (auto &it : whitelist_) {
         res.append(std::to_string(it) + " ");
-        WS_HILOGD("GetWhiteList  : %{public}s", res.c_str());
     }
+    WS_HILOGD("GetWhiteList  : %{public}s", res.c_str());
     return res;
 }
 
@@ -705,7 +705,7 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
     return ERR_OK;
 }
 
-void WorkSchedulerService::UpdateWhiteList(int32_t uid, bool isAdd)
+void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
 {
     if (isAdd) {
         whitelist_.emplace(uid);
@@ -714,7 +714,7 @@ void WorkSchedulerService::UpdateWhiteList(int32_t uid, bool isAdd)
     }
 }
 
-bool WorkSchedulerService::CheckWhitelist(int32_t uid)
+bool WorkSchedulerService::CheckEffiResApplyInfo(int32_t uid)
 {
     return whitelist_.find(uid) != whitelist_.end();
 }

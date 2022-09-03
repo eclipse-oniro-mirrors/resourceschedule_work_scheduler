@@ -203,7 +203,7 @@ public:
      * @param uid uid of the app.
      * @param isAdd true if add name, else delete.
      */
-    void UpdateWhiteList(int32_t uid, bool isAdd);
+    void UpdateEffiResApplyInfo(int32_t uid, bool isAdd);
 
     /**
      * @brief init background task subscriber, subscribe self to bgtask service
@@ -213,9 +213,27 @@ public:
      */
     bool InitBgTaskSubscriber();
 
-    bool CheckWhitelist(int32_t uid);
+    /**
+     * @brief check uid has work_scheduler resources or not
+     * 
+     * @param uid 
+     * @return true uid has work_scheduler resources or not
+     * @return false uid does not have work_scheduler resources or not
+     */
+    bool CheckEffiResApplyInfo(int32_t uid);
 
-    std::string GetWhiteList();
+    /**
+     * @brief Get the efficiency resources uid List object
+     * 
+     * @return std::string string consists of uid
+     */
+    std::string GetEffiResApplyInfoUid();
+
+    /**
+     * @brief Get the Efficiency Resources Infos object
+     * 
+     * @return ErrCode 
+     */
     ErrCode GetEfficiencyResourcesInfos();
 private:
     std::set<int32_t> whitelist_;

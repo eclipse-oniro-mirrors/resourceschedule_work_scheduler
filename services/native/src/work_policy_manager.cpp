@@ -362,17 +362,7 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
         WS_HILOGE("Workscheduler service is null");
         return;
     }
-    int32_t chargerStatus = topWork->conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;
-    if (wmsptr->CheckWhitelist(topWork->uid_)) {
-        if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
-            || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
-            SetWatchdogTime(LONG_WATCHDOG_TIME);
-        } else {
-            SetWatchdogTime(MEDIUM_WATCHDOG_TIME);
-        }
-    } else {
-        SetWatchdogTime(WATCHDOG_TIME);
-    }
+    UpdateWatchdogTime(wmsptr, topWork);
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
     wmsptr->UpdateWorkBeforeRealStart(topWork);
     RemoveFromReadyQueue(topWork);
@@ -387,6 +377,31 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
         } else {
             topWork->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
         }
+    }
+}
+
+void WorkPolicyManager::UpdateWatchdogTime(const wptr<WorkSchedulerService> &wmsptr,
+    std::shared_ptr<WorkStatus> &topWork)
+{
+    if (wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
+        int32_t chargerStatus = 0;
+        auto iter = topWork->conditionMap_.find(WorkCondition::Type::CHARGER);
+        if (iter != topWork->conditionMap_.end() && iter->second) {
+            chargerStatus = topWork->conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;
+        } else {
+            WS_HILOGD("charger is in CHARGING_UNKNOWN status");
+            chargerStatus = static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN);
+        }
+        if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
+            || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
+            WS_HILOGD("charger is in CHARGING_UNKNOWN or CHARGING_UNPLUGGED status");
+            SetWatchdogTime(MEDIUM_WATCHDOG_TIME);
+        } else {
+            WS_HILOGD("charger is in CHARGING status");
+            SetWatchdogTime(LONG_WATCHDOG_TIME);
+        }
+    } else {
+        SetWatchdogTime(WATCHDOG_TIME);
     }
 }
 

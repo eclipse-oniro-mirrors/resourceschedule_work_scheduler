@@ -168,7 +168,7 @@ bool WorkStatus::IsReady()
             return false;
         }
     }
-    if (DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckWhitelist(uid_)) {
+    if (DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
         return true;
     }
     if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
