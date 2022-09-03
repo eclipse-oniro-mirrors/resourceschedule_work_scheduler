@@ -215,8 +215,8 @@ public:
 
     /**
      * @brief check uid has work_scheduler resources or not
-     * 
-     * @param uid 
+     *
+     * @param uid the uid of application
      * @return true uid has work_scheduler resources or not
      * @return false uid does not have work_scheduler resources or not
      */
@@ -224,15 +224,15 @@ public:
 
     /**
      * @brief Get the efficiency resources uid List object
-     * 
+     *
      * @return std::string string consists of uid
      */
     std::string GetEffiResApplyUid();
 
     /**
      * @brief Get the Efficiency Resources Infos object
-     * 
-     * @return ErrCode 
+     *
+     * @return ErrCode ERR_OK if succeed, others if failed
      */
     ErrCode QueryResAppliedUid();
 private:
