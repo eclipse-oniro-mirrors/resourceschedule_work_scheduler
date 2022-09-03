@@ -233,10 +233,14 @@ ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
         return result;
     }
     for (const auto& info : appList) {
-        whitelist_.emplace(info->GetUid());
+        if ((info->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
+            whitelist_.emplace(info->GetUid());
+        }
     }
     for (const auto& info : procList) {
-        whitelist_.emplace(info->GetUid());
+        if ((info->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
+            whitelist_.emplace(info->GetUid());
+        }
     }
     WS_HILOGI("get efficiency resources infos succeed.");
     return ERR_OK;
