@@ -219,12 +219,12 @@ bool WorkSchedulerService::InitBgTaskSubscriber()
         WS_HILOGE("SubscribeBackgroundTask failed.");
         return false;
     }
-    this->GetResAppliedUid();
+    this->QueryResAppliedUid();
     WS_HILOGD("subscribe background TASK success!");
     return true;
 }
 
-ErrCode WorkSchedulerService::GetResAppliedUid()
+ErrCode WorkSchedulerService::QueryResAppliedUid()
 {
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> appList;
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> procList;
