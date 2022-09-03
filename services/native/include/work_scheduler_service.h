@@ -234,7 +234,7 @@ public:
      * 
      * @return ErrCode 
      */
-    ErrCode GetEfficiencyResourcesInfos();
+    ErrCode GetResAppliedUid();
 private:
     std::set<int32_t> whitelist_;
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;

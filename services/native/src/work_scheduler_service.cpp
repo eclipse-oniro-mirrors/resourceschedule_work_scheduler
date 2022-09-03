@@ -48,6 +48,7 @@
 #include "scheduler_bg_task_subscriber.h"
 #include "background_task_mgr_helper.h"
 #include "resource_callback_info.h"
+#include "resource_type.h"
 #include "work_scheduler_connection.h"
 #include "work_bundle_group_change_callback.h"
 #include "work_sched_common.h"
@@ -218,12 +219,12 @@ bool WorkSchedulerService::InitBgTaskSubscriber()
         WS_HILOGE("SubscribeBackgroundTask failed.");
         return false;
     }
-    this->GetEfficiencyResourcesInfos();
+    this->GetResAppliedUid();
     WS_HILOGD("subscribe background TASK success!");
     return true;
 }
 
-ErrCode WorkSchedulerService::GetEfficiencyResourcesInfos()
+ErrCode WorkSchedulerService::GetResAppliedUid()
 {
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> appList;
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> procList;
