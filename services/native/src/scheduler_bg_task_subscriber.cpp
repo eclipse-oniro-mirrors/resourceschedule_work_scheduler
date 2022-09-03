@@ -35,7 +35,7 @@ void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesApply(
 {
     WS_HILOGD("OnProcEfficiencyResourcesApply called");
     if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
-        WS_HILOGE("called with null efficiency callback info");
+        WS_HILOGI("called with null efficiency callback info");
         return;
     }
     int32_t uid = resourceInfo->GetUid();
@@ -47,7 +47,7 @@ void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesReset(
 {
     WS_HILOGD("OnProcEfficiencyResourcesReset called");
     if (!resourceInfo || (resourceInfo->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) == 0) {
-        WS_HILOGE("called with null efficiency callback info");
+        WS_HILOGI("called with null efficiency callback info");
         return;
     }
     int32_t uid = resourceInfo->GetUid();

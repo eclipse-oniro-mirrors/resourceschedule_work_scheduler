@@ -227,7 +227,7 @@ public:
      * 
      * @return std::string string consists of uid
      */
-    std::string GetEffiResApplyInfoUid();
+    std::string GetEffiResApplyUid();
 
     /**
      * @brief Get the Efficiency Resources Infos object

@@ -176,6 +176,7 @@ void WorkSchedulerService::OnStop()
     if (ret != ERR_OK) {
         WS_HILOGE("unscribe bgtask failed.");
     }
+    subscriber_.reset();
     eventRunner_.reset();
     handler_.reset();
     ready_ = false;
@@ -599,10 +600,10 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
         .append("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()) + "\n")
         .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
         .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n")
-        .append("whitelist :" + GetWhiteList());
+        .append("whitelist :" + GetEffiResApplyUid());
 }
 
-std::string WorkSchedulerService::GetEffiResApplyInfo()
+std::string WorkSchedulerService::GetEffiResApplyUid()
 {
     if (whitelist_.empty()) {
         return "empty";
