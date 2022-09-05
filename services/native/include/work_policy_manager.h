@@ -219,6 +219,8 @@ private:
     uint32_t NewWatchdogId();
     void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
     std::shared_ptr<WorkStatus> GetWorkFromWatchdog(uint32_t id);
+    void UpdateWatchdogTime(const wptr<WorkSchedulerService> &wmsptr,
+        std::shared_ptr<WorkStatus> &topWork);
 
     const wptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;

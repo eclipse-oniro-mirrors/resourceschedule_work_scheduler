@@ -39,7 +39,8 @@
           "napi",
           "battery_manager",
           "ability_base",
-          "eventhandler"
+          "eventhandler",
+          "background_task_mgr"
         ],
         "third_party": [ "googletest" ]
       },

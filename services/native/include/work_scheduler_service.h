@@ -41,6 +41,7 @@ namespace WorkScheduler {
 class WorkQueueManager;
 class WorkPolicyManager;
 class WorkBundleGroupChangeCallback;
+class SchedulerBgTaskSubscriber;
 class WorkSchedulerService final : public SystemAbility, public WorkSchedServiceStub,
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
@@ -195,6 +196,48 @@ public:
     {
         return workPolicyManager_;
     }
+
+    /**
+     * @brief add uid to the whitelist or delete uid from the whitelist.
+     *
+     * @param uid uid of the app.
+     * @param isAdd true if add name, else delete.
+     */
+    void UpdateEffiResApplyInfo(int32_t uid, bool isAdd);
+
+    /**
+     * @brief init background task subscriber, subscribe self to bgtask service
+     *
+     * @return true seccess to init subscriber
+     * @return false fail to init subscriber
+     */
+    bool InitBgTaskSubscriber();
+
+    /**
+     * @brief check uid has work_scheduler resources or not
+     *
+     * @param uid the uid of application
+     * @return true uid has work_scheduler resources or not
+     * @return false uid does not have work_scheduler resources or not
+     */
+    bool CheckEffiResApplyInfo(int32_t uid);
+
+    /**
+     * @brief Get the efficiency resources uid List object
+     *
+     * @return std::string string consists of uid
+     */
+    std::string GetEffiResApplyUid();
+
+    /**
+     * @brief Get the Efficiency Resources Infos object
+     *
+     * @return ErrCode ERR_OK if succeed, others if failed
+     */
+    ErrCode QueryResAppliedUid();
+private:
+    std::set<int32_t> whitelist_;
+    std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 
 private:
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {

@@ -18,11 +18,11 @@
 #include "battery_srv_client.h"
 #include "work_sched_common.h"
 #include "work_sched_utils.h"
+#include "work_scheduler_service.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #include "bundle_active_group_map.h"
 #endif
-#include "work_scheduler_service.h"
 
 using namespace std;
 using namespace OHOS::PowerMgr;
@@ -168,6 +168,9 @@ bool WorkStatus::IsReady()
             return false;
         }
     }
+    if (DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
+        return true;
+    }
     if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
@@ -180,6 +183,7 @@ bool WorkStatus::IsReady()
     double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
+
     if (del < minInterval_) {
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
