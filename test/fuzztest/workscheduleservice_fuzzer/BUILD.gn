@@ -64,6 +64,9 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "samgr:samgr_proxy",
     "thermal_manager:thermalsrv_client",
   ]
+
+  resource_config_file =
+      "//foundation/resourceschedule/work_scheduler/test/resource/ohos_test.xml"
 }
 
 ###############################################################################
