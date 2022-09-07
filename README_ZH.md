@@ -75,7 +75,7 @@ function onWorkStop(work: WorkInfo): void; | 延迟调度任务回调结束
 
 延迟调度任务的使用需要遵从如下约束和规则：
 
-- **超时**：系统会设置超时机制，延迟任务回调只允许运行一段时间，每次最长运行120s。超时之后，系统会主动停止。
+- **超时**：系统会设置超时机制，延迟任务回调只允许运行一段时间，每次最长运行120s。超时之后，系统会主动停止。默认的超时限制为2分钟，对于系统应用，可以通过[能效资源申请接口](https://gitee.com/openharmony/resourceschedule_background_task_mgr/blob/master/README_ZH.md)获取更长的执行时间（充电状态20分钟，非充电状态10分钟）。
 - **执行频率**：系统会根据应用的活跃度对延迟任务做分级管控，限制延迟任务调度的执行频率。
 
 应用分组             |     延迟任务执行频率约束                            
@@ -86,6 +86,7 @@ function onWorkStop(work: WorkInfo): void; | 延迟调度任务回调结束
 不经常使用 | 最小间隔48小时 
 受限分组 | 禁止 
 未使用分组 | 禁止 
+[能效资源豁免分组](https://gitee.com/openharmony/resourceschedule_background_task_mgr/blob/master/README_ZH.md)  | 不受限制 
 
 - **WorkInfo设置参数约束** 
 
@@ -109,3 +110,4 @@ function onWorkStop(work: WorkInfo): void; | 延迟调度任务回调结束
 
 [powermgr_battery_manager](https://gitee.com/openharmony/powermgr_battery_manager)
 
+[resourceschedule_background_task_mgr](https://gitee.com/openharmony/resourceschedule_background_task_mgr)
