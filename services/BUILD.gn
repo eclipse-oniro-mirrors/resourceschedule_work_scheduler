@@ -42,6 +42,7 @@ ohos_shared_library("workschedservice") {
     "native/src/policy/app_removed_listener.cpp",
     "native/src/policy/memory_policy.cpp",
     "native/src/policy/thermal_policy.cpp",
+    "native/src/scheduler_bg_task_subscriber.cpp",
     "native/src/watchdog.cpp",
     "native/src/work_bundle_group_change_callback.cpp",
     "native/src/work_conn_manager.cpp",
