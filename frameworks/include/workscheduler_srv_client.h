@@ -35,27 +35,27 @@ public:
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    bool StartWork(WorkInfo& workInfo);
+    ErrCode StartWork(WorkInfo& workInfo);
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    bool StopWork(WorkInfo& workInfo);
+    ErrCode StopWork(WorkInfo& workInfo);
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    bool StopAndCancelWork(WorkInfo& workInfo);
+    ErrCode StopAndCancelWork(WorkInfo& workInfo);
     /**
      * @brief Stop and clear works.
      *
      * @return True if success,else false
      */
-    bool StopAndClearWorks();
+    ErrCode StopAndClearWorks();
     /**
      * @brief The last work time out.
      *

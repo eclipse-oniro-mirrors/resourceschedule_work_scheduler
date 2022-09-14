@@ -17,6 +17,7 @@
 
 #include "errors.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -61,6 +62,7 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
     int32_t workId = Common::GetIntProperty(env, objValue, "workId");
     if (workId == UNSET_INT_PARAM || workId < 0) {
         WS_HILOGE("Work id is invalid, failed.");
+        HandleParamErr(env, E_WORKID_ERR);
         return false;
     }
 
@@ -69,6 +71,7 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
     std::string abilityName = Common::GetStringProperty(env, objValue, "abilityName");
     if (bundleName == UNSET_STRING_PARAM || abilityName == UNSET_STRING_PARAM) {
         WS_HILOGE("BundleName or abilityName is invalid, failed.");
+        HandleParamErr(env, E_BUNDLE_OR_ABILITY_NAME_EMPTY);
         return false;
     }
 
@@ -92,6 +95,7 @@ bool Common::GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("NetworkType set is invalid, just ignore set.");
+        HandleParamErr(env, E_NETWORK_TYPE_ERR);
     }
     return hasCondition;
 }
@@ -115,6 +119,7 @@ bool Common::GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
         } else {
             workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_ANY);
             WS_HILOGE("ChargeType info is invalid, just ignore set.");
+            HandleParamErr(env, E_CHARGER_TYPE_ERR);
         }
         hasCondition = true;
     }
@@ -133,6 +138,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("BatteryLevel set is invalid, just ignore set.");
+        HandleParamErr(env, E_BATTERY_LEVEL_ERR);
     }
 
     // Get battery status info.
@@ -145,6 +151,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("BatteryStatus set is invalid, just ignore set.");
+        HandleParamErr(env, E_BATTERY_STATUS_ERR);
     }
     return hasCondition;
 }
@@ -161,6 +168,7 @@ bool Common::GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("StorageRequest set is invalid, just ignore set.");
+        HandleParamErr(env, E_STORAGE_REQUEST_ERR);
     }
     return hasCondition;
 }
@@ -190,6 +198,7 @@ bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     } else {
         if (repeatCount < 0) {
             WS_HILOGE("RepeatCount is invalid, ignore.");
+            HandleParamErr(env, E_REPEAT_COUNT_ERR);
             return false;
         }
         workInfo.RequestRepeatCycle(repeatCycleTime, repeatCount);
@@ -206,6 +215,7 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     }
     AAFwk::WantParams extraParams;
     if (!UnwrapWantParams(env, extras, extraParams)) {
+        HandleParamErr(env, E_PARAMETERS_ERR);
         return false;
     }
     workInfo.RequestExtras(extraParams);
@@ -245,6 +255,7 @@ bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 
     if (!hasConditions) {
         WS_HILOGE("Set none conditions, so fail to init WorkInfo.");
+        HandleParamErr(env, E_CONDITION_EMPTY);
         return false;
     }
     return true;
@@ -489,6 +500,101 @@ void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &inf
         SetCallback(env, info.callback, info.errorCode, result);
     } else {
         SetPromise(env, info, result);
+    }
+}
+
+void Common::HandleErrCode(const napi_env &env, int32_t errCode) {
+    int32_t errCodeInfo;
+    std::string errMessage;
+    switch (errCode) {
+        case E_PARCEL_READ_FALIED:
+            errCodeInfo = E_PARCEL_OPERATION_FALIED;
+            errMessage = "Parcel operation failed. Failed to read parcel.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_PARCEL_WRITE_FALIED:
+            errCodeInfo = E_PARCEL_OPERATION_FALIED;
+            errMessage = "Parcel operation failed. Failed to write parcel.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_GET_SYSTEM_ABILITY_MANAGER_FALIED:
+            errCodeInfo = E_SYSTEM_SERVICE_OPERATION_FAILED;
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_CHECK_SYSTEM_ABILITY_FALIED:
+            errCodeInfo = E_SYSTEM_SERVICE_OPERATION_FAILED;
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_SERVICE_NOT_READY:
+            errCodeInfo = E_SYSTEM_SERVICE_OPERATION_FAILED;
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        default:
+            HandleParamErr(env, errCode);
+            break;
+    }
+}
+
+void Common::HandleParamErr(const napi_env &env, int32_t errCode) {
+    int32_t errCodeInfo = E_PARAM_ERROR;
+    std::string errMessage;
+    switch (errCode) {
+        case E_PARAM_NUMBER_ERR:
+            errMessage = "Parcel operation failed. Failed to read parcel.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_WORK_INFO_TYPE_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_BUNDLE_OR_ABILITY_NAME_EMPTY:
+            errMessage = "Parcel operation failed. Failed to read parcel.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_WORKID_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_CONDITION_EMPTY:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_NETWORK_TYPE_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_CHARGER_TYPE_ERR:
+            errMessage = "Parcel operation failed. Failed to read parcel.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_BATTERY_LEVEL_ERR:
+            errMessage = "Parcel operation failed. Failed to write parcel.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_BATTERY_STATUS_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_STORAGE_REQUEST_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_REPEAT_CYCLE_TIME_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_REPEAT_COUNT_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_PARAMETERS_ERR:
+            errMessage = "System service operation failed. Failed to get system ability manager.";
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        default: {}
     }
 }
 } // namespace WorkScheduler

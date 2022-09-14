@@ -345,24 +345,24 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     return true;
 }
 
-bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
+int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return false;
+        return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
-        return false;
+        return E_CHECK_WORKINFO_FAILED;
     }
     if (!CheckCondition(workInfo)) {
-        return false;
+        return E_REPEAT_CYCLE_TIME_ERR;
     }
     WS_HILOGD("workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
         workInfo.GetBundleName().c_str(), workInfo.GetAbilityName().c_str(), workInfo.GetWorkId(), uid);
     shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
-    bool ret = false;
-    if (workPolicyManager_->AddWork(workStatus, uid)) {
+    int32_t ret = workPolicyManager_->AddWork(workStatus, uid);
+    if (ret == ERR_OK) {
         workQueueManager_->AddWork(workStatus);
         if (workInfo.IsPersisted()) {
             std::lock_guard<std::mutex> lock(mutex_);
@@ -371,9 +371,6 @@ bool WorkSchedulerService::StartWork(WorkInfo& workInfo)
             persistedMap_.emplace(workStatus->workId_, persistedInfo);
             RefreshPersistedWorks();
         }
-        ret = true;
-    } else {
-        WS_HILOGE("Work Policy Manager AddWork return false");
     }
     return ret;
 }
@@ -391,38 +388,39 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
     }
 }
 
-bool WorkSchedulerService::StopWork(WorkInfo& workInfo)
+int32_t WorkSchedulerService::StopWork(WorkInfo& workInfo)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return false;
+        return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
-        return false;
+        return E_CHECK_WORKINFO_FAILED;
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
         WS_HILOGE("workStatus is nullptr");
-        return false;
+        return E_WORK_NOT_EXIST_FAILED;
     }
-    return StopWorkInner(workStatus, uid, false, false);
+    StopWorkInner(workStatus, uid, false, false);
+    return ERR_OK;
 }
 
-bool WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
+int32_t WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return false;
+        return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
-        return false;
+        return E_CHECK_WORKINFO_FAILED;
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
         WS_HILOGE("workStatus is nullptr");
-        return false;
+        return E_WORK_NOT_EXIST_FAILED;
     }
     StopWorkInner(workStatus, uid, true, false);
     if (workStatus->persisted_) {
@@ -430,7 +428,7 @@ bool WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
         persistedMap_.erase(workStatus->workId_);
         RefreshPersistedWorks();
     }
-    return true;
+    return ERR_OK;
 }
 
 bool WorkSchedulerService::StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
@@ -447,13 +445,14 @@ void WorkSchedulerService::WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatu
     StopWorkInner(workStatus, workStatus->uid_, false, true);
 }
 
-bool WorkSchedulerService::StopAndClearWorks()
+int32_t WorkSchedulerService::StopAndClearWorks()
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return false;
+        return E_SERVICE_NOT_READY;
     }
-    return StopAndClearWorksByUid(IPCSkeleton::GetCallingUid());
+    StopAndClearWorksByUid(IPCSkeleton::GetCallingUid());
+    return ERR_OK;
 }
 
 bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
@@ -478,14 +477,17 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
     return ret;
 }
 
-bool WorkSchedulerService::IsLastWorkTimeout(int32_t workId)
+int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return false;
+        return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    return workPolicyManager_->IsLastWorkTimeout(workId, uid);
+    if (workPolicyManager_->IsLastWorkTimeout(workId, uid)) {
+        return 1;
+    }
+    return 0;
 }
 
 void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)

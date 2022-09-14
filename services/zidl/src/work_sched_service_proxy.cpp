@@ -16,12 +16,13 @@
 
 #include <ipc_types.h>
 #include <message_parcel.h>
+#include "work_sched_errors.h"
 
 #include "work_sched_common.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-bool WorkSchedServiceProxy::StartWork(WorkInfo& workInfo)
+int32_t WorkSchedServiceProxy::StartWork(WorkInfo& workInfo)
 {
     WS_HILOGI("proxy Call StartWork come in");
     sptr<IRemoteObject> remote = Remote();
@@ -33,7 +34,7 @@ bool WorkSchedServiceProxy::StartWork(WorkInfo& workInfo)
 
     if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
         WS_HILOGE("WorkSchedServiceProxy::%{public}s write descriptor failed!", __func__);
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
 
     WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
@@ -41,15 +42,15 @@ bool WorkSchedServiceProxy::StartWork(WorkInfo& workInfo)
     int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::START_WORK), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, error code: %{public}d", ret);
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
-    bool result = false;
-    READ_PARCEL_WITH_RET(reply, Bool, result, false);
+    int32_t result = E_PARCEL_READ_FALIED;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, result);
     WS_HILOGD("after result : %{public}s ", std::to_string(result).c_str());
     return result;
 }
 
-bool WorkSchedServiceProxy::StopWork(WorkInfo& workInfo)
+int32_t WorkSchedServiceProxy::StopWork(WorkInfo& workInfo)
 {
     sptr<IRemoteObject> remote = Remote();
     RETURN_IF_WITH_RET(remote == nullptr, false);
@@ -60,7 +61,7 @@ bool WorkSchedServiceProxy::StopWork(WorkInfo& workInfo)
 
     if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
         WS_HILOGE(" write descriptor failed!");
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
 
     WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
@@ -68,14 +69,14 @@ bool WorkSchedServiceProxy::StopWork(WorkInfo& workInfo)
     int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::STOP_WORK), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
-    bool result = false;
-    READ_PARCEL_WITH_RET(reply, Bool, result, false);
+    int32_t result = E_PARCEL_OPERATION_FALIED;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, result);
     return result;
 }
 
-bool WorkSchedServiceProxy::StopAndCancelWork(WorkInfo& workInfo)
+int32_t WorkSchedServiceProxy::StopAndCancelWork(WorkInfo& workInfo)
 {
     sptr<IRemoteObject> remote = Remote();
     RETURN_IF_WITH_RET(remote == nullptr, false);
@@ -94,14 +95,14 @@ bool WorkSchedServiceProxy::StopAndCancelWork(WorkInfo& workInfo)
         data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
-    bool result = false;
-    READ_PARCEL_WITH_RET(reply, Bool, result, false);
+    int32_t result = E_PARCEL_OPERATION_FALIED;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, result);
     return result;
 }
 
-bool WorkSchedServiceProxy::StopAndClearWorks()
+int32_t WorkSchedServiceProxy::StopAndClearWorks()
 {
     sptr<IRemoteObject> remote = Remote();
     RETURN_IF_WITH_RET(remote == nullptr, false);
@@ -111,21 +112,21 @@ bool WorkSchedServiceProxy::StopAndClearWorks()
     MessageOption option;
     if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
         WS_HILOGE("write descriptor failed!");
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
 
     int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::STOP_AND_CLEAR_WORKS),
         data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
-    bool result = false;
-    READ_PARCEL_WITH_RET(reply, Bool, result, false);
+    int32_t result = E_PARCEL_OPERATION_FALIED;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, result);
     return result;
 }
 
-bool WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId)
+int32_t WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId)
 {
     sptr<IRemoteObject> remote = Remote();
     RETURN_IF_WITH_RET(remote == nullptr, false);
@@ -135,7 +136,7 @@ bool WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId)
     MessageOption option;
     if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
         WS_HILOGE("write descriptor failed!");
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
 
     WRITE_PARCEL_WITHOUT_RET(data, Int32, workId);
@@ -143,10 +144,10 @@ bool WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId)
         data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
-        return false;
+        return E_PARCEL_WRITE_FALIED;
     }
-    bool result = false;
-    READ_PARCEL_WITH_RET(reply, Bool, result, false);
+    int32_t result = E_PARCEL_OPERATION_FALIED;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, result);
     return result;
 }
 

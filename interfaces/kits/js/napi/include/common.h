@@ -163,6 +163,10 @@ public:
     static void ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &info,
         const napi_value &result);
 
+    static void HandleErrCode(const napi_env &env, int32_t errCode);
+
+    static void HandleParamErr(const napi_env &env, int32_t errCode);
+
 private:
     static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
     static bool GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);

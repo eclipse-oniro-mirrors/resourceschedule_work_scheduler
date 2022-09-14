@@ -34,28 +34,27 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
     switch (code) {
         case static_cast<int32_t>(IWorkSchedService::START_WORK): {
             int32_t ret = StartWorkStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::STOP_WORK): {
             int32_t ret = StopWorkStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::STOP_AND_CANCEL_WORK): {
             int32_t ret = StopAndCancelWorkStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::STOP_AND_CLEAR_WORKS): {
             int32_t ret = StopAndClearWorksStub(data);
-            WS_HILOGD("ret is ERR_OK ? %{public}s", (ret == ERR_OK) ? "true" : "false");
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::IS_LAST_WORK_TIMEOUT): {
             int32_t ret = IsLastWorkTimeoutStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::OBTAIN_ALL_WORKS): {
@@ -134,10 +133,7 @@ int32_t WorkSchedServiceStub::StopAndClearWorksStub(MessageParcel& data)
 int32_t WorkSchedServiceStub::IsLastWorkTimeoutStub(MessageParcel& data)
 {
     int32_t workId = data.ReadInt32();
-    if (!IsLastWorkTimeout(workId)) {
-        return E_IS_LAST_WORK_TIMEOUT_FALSE;
-    }
-    return ERR_OK;
+    return IsLastWorkTimeout(workId);
 }
 
 std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceStub::ObtainAllWorksStub(MessageParcel& data)

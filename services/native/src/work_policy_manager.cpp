@@ -89,17 +89,17 @@ void WorkPolicyManager::AddAppDataClearListener(std::shared_ptr<AppDataClearList
     appDataClearListener_->Start();
 }
 
-bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
+int32_t WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
 {
     WS_HILOGD("Add work");
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         if (uidQueueMap_.at(uid)->Contains(make_shared<string>(workStatus->workId_))) {
             WS_HILOGE("Workid has been added, should remove first.");
-            return false;
+            return E_ADD_REPEAT_WORK_ERR;
         } else if (uidQueueMap_.at(uid)->GetSize() >= MAX_WORK_COUNT_PER_UID) {
             WS_HILOGE("each uid only can be added %{public}u works", MAX_WORK_COUNT_PER_UID);
-            return false;
+            return E_WORK_EXCEED_UPPER_LIMIT;
         }
         uidQueueMap_.at(uid)->Push(workStatus);
     } else {
@@ -146,7 +146,7 @@ bool WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
         type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
 
     WS_HILOGI("push workStatus ID: %{public}s to uidQueue(%{public}d)", workStatus->workId_.c_str(), uid);
-    return true;
+    return ERR_OK;
 }
 
 bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t uid)

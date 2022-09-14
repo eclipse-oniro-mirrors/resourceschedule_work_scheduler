@@ -47,34 +47,34 @@ public:
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    virtual bool StartWork(WorkInfo& workInfo) = 0;
+    virtual int32_t StartWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    virtual bool StopWork(WorkInfo& workInfo) = 0;
+    virtual int32_t StopWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    virtual bool StopAndCancelWork(WorkInfo& workInfo) = 0;
+    virtual int32_t StopAndCancelWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and clear works.
      *
      * @return True if success,else false
      */
-    virtual bool StopAndClearWorks() = 0;
+    virtual int32_t StopAndClearWorks() = 0;
     /**
      * @brief Check whether last work executed time out.
      *
      * @param workId The id of work.
      * @return True if the work executed time out, else false.
      */
-    virtual bool IsLastWorkTimeout(int32_t workId) = 0;
+    virtual int32_t IsLastWorkTimeout(int32_t workId) = 0;
     /**
      * @brief Obtain all works.
      *

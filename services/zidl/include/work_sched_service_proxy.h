@@ -39,34 +39,34 @@ public:
      * @param workInfo The info of work.
      * @return True if success,else false.
      */
-    bool StartWork(WorkInfo& workInfo) override;
+    int32_t StartWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
      * @return True if success,else false.
      */
-    bool StopWork(WorkInfo& workInfo) override;
+    int32_t StopWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
      * @return True if success,else false.
      */
-    bool StopAndCancelWork(WorkInfo& workInfo) override;
+    int32_t StopAndCancelWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and clear works.
      *
      * @return True if success,else false.
      */
-    bool StopAndClearWorks() override;
+    int32_t StopAndClearWorks() override;
     /**
      * @brief The last work time out.
      *
      * @param workId The id of work.
      * @return True if success,else false.
      */
-    bool IsLastWorkTimeout(int32_t workId) override;
+    int32_t IsLastWorkTimeout(int32_t workId) override;
     /**
      * @brief Obtain all works.
      *
