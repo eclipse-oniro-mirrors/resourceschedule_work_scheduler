@@ -35,7 +35,7 @@ struct IsLastWorkTimeOutParamsInfo {
 struct AsyncCallbackIsLastWorkTimeOut : public AsyncWorkData {
     explicit AsyncCallbackIsLastWorkTimeOut(napi_env env) : AsyncWorkData(env) {}
     int32_t workId {-1};
-    bool result;
+    bool result {false};
 };
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, IsLastWorkTimeOutParamsInfo &params)
@@ -89,13 +89,13 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = (AsyncCallbackIsLastWorkTimeOut *)data;
+            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *>data;
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(asyncCallbackInfo->workId,
                 asyncCallbackInfo->result);
         },
         [](napi_env env, napi_status status, void *data) {
-            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = (AsyncCallbackIsLastWorkTimeOut *) data;
+            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *> data;
             std::unique_ptr<AsyncCallbackIsLastWorkTimeOut> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = nullptr;
