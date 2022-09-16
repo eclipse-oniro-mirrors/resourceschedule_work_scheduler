@@ -505,31 +505,37 @@ void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &inf
 
 void Common::HandleErrCode(const napi_env &env, int32_t errCode) {
     int32_t errCodeInfo;
-    std::string errMessage;
+    std::string errMessage = "BussinessError ";
     switch (errCode) {
         case E_PARCEL_READ_FALIED:
-            errCodeInfo = E_PARCEL_OPERATION_FALIED;
-            errMessage = "Parcel operation failed. Failed to read parcel.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_PARCEL_WRITE_FALIED:
             errCodeInfo = E_PARCEL_OPERATION_FALIED;
-            errMessage = "Parcel operation failed. Failed to write parcel.";
+            errMessage.append(std::to_string(errCodeInfo)).append(": ").append(saErrCodeMsgMap[errCode]);
             napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
             break;
         case E_GET_SYSTEM_ABILITY_MANAGER_FALIED:
-            errCodeInfo = E_SYSTEM_SERVICE_OPERATION_FAILED;
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_CHECK_SYSTEM_ABILITY_FALIED:
-            errCodeInfo = E_SYSTEM_SERVICE_OPERATION_FAILED;
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_SERVICE_NOT_READY:
             errCodeInfo = E_SYSTEM_SERVICE_OPERATION_FAILED;
-            errMessage = "System service operation failed. Failed to get system ability manager.";
+            errMessage.append(std::to_string(errCodeInfo)).append(": ").append(saErrCodeMsgMap[errCode]);
+            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            break;
+        case E_IPC_COMMUNICATION_FAILED:
+            [[fallthrough]];
+        case E_CHECK_WORKINFO_FAILED:
+            [[fallthrough]];
+        case E_WORK_NOT_EXIST_FAILED:
+            errMessage.append(std::to_string(errCode)).append(": ").append(saErrCodeMsgMap[errCode]);
+            napi_throw_error(env, std::to_string(errCode).c_str(), errMessage.c_str());
+            break;
+        case E_ADD_REPEAT_WORK_ERR:
+            [[fallthrough]];
+        case E_WORK_EXCEED_UPPER_LIMIT:
+            errCodeInfo = E_STARTWORK_FAILED;
+            errMessage.append(std::to_string(errCodeInfo)).append(": ").append(saErrCodeMsgMap[errCode]);
             napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
             break;
         default:
@@ -540,59 +546,35 @@ void Common::HandleErrCode(const napi_env &env, int32_t errCode) {
 
 bool Common::HandleParamErr(const napi_env &env, int32_t errCode) {
     int32_t errCodeInfo = E_PARAM_ERROR;
-    std::string errMessage;
+    std::string errMessage = "BussinessError 401: Parameter error. ";
     bool isParamErr = true;
     switch (errCode) {
         case E_PARAM_NUMBER_ERR:
-            errMessage = "Parcel operation failed. Failed to read parcel.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_WORK_INFO_TYPE_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_BUNDLE_OR_ABILITY_NAME_EMPTY:
-            errMessage = "Parcel operation failed. Failed to read parcel.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_WORKID_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_CONDITION_EMPTY:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_NETWORK_TYPE_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_CHARGER_TYPE_ERR:
-            errMessage = "Parcel operation failed. Failed to read parcel.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_BATTERY_LEVEL_ERR:
-            errMessage = "Parcel operation failed. Failed to write parcel.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_BATTERY_STATUS_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_STORAGE_REQUEST_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_REPEAT_CYCLE_TIME_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_REPEAT_COUNT_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
+            [[fallthrough]];
         case E_PARAMETERS_ERR:
-            errMessage = "System service operation failed. Failed to get system ability manager.";
+            errMessage.append(paramErrCodeMsgMap[errCode]);
             napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
             break;
         default:

@@ -62,13 +62,11 @@ enum ParamError {
     E_BATTERY_LEVEL_ERR,
     E_BATTERY_STATUS_ERR,
     E_STORAGE_REQUEST_ERR,
-    E_REPEAT_CYCLE_TIME_ERR,
     E_REPEAT_COUNT_ERR,
     E_PARAMETERS_ERR,
     E_PARAMETERS_TYPE_ERR,
     E_PARAMETERS_FORMAT_ERR,
     E_NEED_CANCLE_TYPE_ERR,
-    
 };
 
 enum ServiceError {
@@ -79,23 +77,40 @@ enum ServiceError {
     E_SERVICE_NOT_READY,
     E_ADD_REPEAT_WORK_ERR,
     E_WORK_EXCEED_UPPER_LIMIT,
+    E_REPEAT_CYCLE_TIME_ERR,
 };
 
 
 static std::map<int32_t, std::string> saErrCodeMsgMap = {
-    {E_PARCEL_READ_FALIED, "0"},
-    {E_PARCEL_WRITE_FALIED, "0"},
-    {E_GET_SYSTEM_ABILITY_MANAGER_FALIED, "0"},
-    {E_CHECK_SYSTEM_ABILITY_FALIED, "0"},
-    {E_SERVICE_NOT_READY, "0"},
-    {E_ADD_REPEAT_WORK_ERR, "0"},
-    {E_WORK_EXCEED_UPPER_LIMIT, "0"}
+    {E_PARCEL_READ_FALIED, "Parcel operation failed. Failed to read the parcel."},
+    {E_PARCEL_WRITE_FALIED, "Parcel operation failed. Failed to write the parcel."},
+    {E_GET_SYSTEM_ABILITY_MANAGER_FALIED, "System service operation failed. Failed to get system ability manager."},
+    {E_CHECK_SYSTEM_ABILITY_FALIED, "System service operation failed. Failed to get system ability."},
+    {E_SERVICE_NOT_READY, "System service operation failed. The service is not ready."},
+    {E_IPC_COMMUNICATION_FAILED, "IPC communication failed. Failed to access the system service."},
+    {E_CHECK_WORKINFO_FAILED, "Check workInfo failed. Current bundleUid and input uid do not match."},
+    {E_ADD_REPEAT_WORK_ERR, "StartWork failed. The work has been already added."},
+    {E_WORK_EXCEED_UPPER_LIMIT, "StartWork failed. Each uid can add up to 10 works."},
+    {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
 };
 
 static std::map<int32_t, std::string> paramErrCodeMsgMap = {
-    {E_PARAM_NUMBER_ERR, "The number of arguments is wrong."}
-
-
+    {E_PARAM_NUMBER_ERR, "The number of arguments is wrong."},
+    {E_WORK_INFO_TYPE_ERR, "The type of workInfo must be {key: value} object."},
+    {E_BUNDLE_OR_ABILITY_NAME_EMPTY, "The bundleName and abilityName cannot be empty."},
+    {E_WORKID_ERR, "The workId must be greater than 0."},
+    {E_CONDITION_EMPTY, "The workinfo condition cannot be empty."},
+    {E_NETWORK_TYPE_ERR, "The value of networkType ranges from NETWORK_TYPE_ANY to NETWORK_TYPE_ETHERNET."},
+    {E_CHARGER_TYPE_ERR, "The value of chargerType ranges from CHARGING_PLUGGED_ANY to CHARGING_UNPLUGGED."},
+    {E_BATTERY_LEVEL_ERR, "The value of batteryLevel ranges from 0 to 100."},
+    {E_BATTERY_STATUS_ERR, "The value of batteryStatus ranges from BATTERY_STATUS_LOW to BATTERY_STATUS_LOW_OR_OKAY."},
+    {E_STORAGE_REQUEST_ERR, "The value of storageRequest ranges from STORAGE_LEVEL_LOW to STORAGE_LEVEL_LOW_OR_OKAY."},
+    {E_REPEAT_COUNT_ERR, "The number of repeatCount must be greater than or equal to 0."},
+    {E_PARAMETERS_ERR, "The type of parameters must be string, boolean or number."},
+    {E_PARAMETERS_TYPE_ERR, "The type of parameters must be string, boolean or number."},
+    {E_PARAMETERS_FORMAT_ERR, "The format of parameters must be {key: value} object"},
+    {E_NEED_CANCLE_TYPE_ERR, "The type of needCancle must be boolean."},
+    {E_REPEAT_CYCLE_TIME_ERR, "The repeat time should be greater than or equal to 20 minutes."},
 };
 } // namespace WorkScheduler
 } // namespace OHOS
