@@ -89,13 +89,13 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *>data;
+            AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *>(data);
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().GetWorkStatus(asyncCallbackInfo->workId,
                 asyncCallbackInfo->workInfo);
         },
         [](napi_env env, napi_status status, void *data) {
-            AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *>data;
+            AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *>(data);
             std::unique_ptr<AsyncCallbackInfoGetWorkStatus> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = Common::GetNapiWorkInfo(env, asyncCallbackInfo->workInfo);
