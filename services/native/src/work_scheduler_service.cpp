@@ -605,7 +605,7 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
         .append("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()) + "\n")
         .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
         .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n")
-        .append("whitelist :" + GetEffiResApplyUid());
+        .append("whitelist:" + GetEffiResApplyUid());
 }
 
 std::string WorkSchedulerService::GetEffiResApplyUid()
