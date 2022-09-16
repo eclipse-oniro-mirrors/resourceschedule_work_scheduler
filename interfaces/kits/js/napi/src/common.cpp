@@ -487,8 +487,8 @@ napi_value Common::SetPromise(
         napi_value eCode = nullptr;
         NAPI_CALL(env, napi_create_int32(env, info.errorCode, &eCode));
         NAPI_CALL(env, napi_create_object(env, &res));
-        NAPI_CALL(env, napi_set_named_property(env, res, "data", eCode));
-        NAPI_CALL(env, napi_set_named_property(env, res, "code", eCode));
+        NAPI_CALL(env, napi_set_named_property(env, res, "errCode", eCode));
+        NAPI_CALL(env, napi_set_named_property(env, res, "errMessage", eCode));
         napi_reject_deferred(env, info.deferred, res);
     }
     return result;
@@ -538,9 +538,10 @@ void Common::HandleErrCode(const napi_env &env, int32_t errCode) {
     }
 }
 
-void Common::HandleParamErr(const napi_env &env, int32_t errCode) {
+bool Common::HandleParamErr(const napi_env &env, int32_t errCode) {
     int32_t errCodeInfo = E_PARAM_ERROR;
     std::string errMessage;
+    bool isParamErr = true;
     switch (errCode) {
         case E_PARAM_NUMBER_ERR:
             errMessage = "Parcel operation failed. Failed to read parcel.";
@@ -594,8 +595,11 @@ void Common::HandleParamErr(const napi_env &env, int32_t errCode) {
             errMessage = "System service operation failed. Failed to get system ability manager.";
             napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
             break;
-        default: {}
+        default:
+            isParamErr = false;
+            break;
     }
+    return isParamErr;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

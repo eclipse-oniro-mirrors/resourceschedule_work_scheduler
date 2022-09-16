@@ -23,6 +23,7 @@
 
 #include "ability_manager_client.h"
 #include "work_sched_common.h"
+#include "errors.h"
 
 using namespace std;
 using namespace OHOS::AAFwk;

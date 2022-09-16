@@ -126,10 +126,10 @@ int32_t WorkSchedServiceProxy::StopAndClearWorks()
     return result;
 }
 
-int32_t WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId)
+int32_t WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId, bool &result)
 {
     sptr<IRemoteObject> remote = Remote();
-    RETURN_IF_WITH_RET(remote == nullptr, false);
+    RETURN_IF_WITH_RET(remote == nullptr, E_IPC_COMMUNICATION_FAILED);
 
     MessageParcel data;
     MessageParcel reply;
@@ -146,17 +146,18 @@ int32_t WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId)
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
         return E_PARCEL_WRITE_FALIED;
     }
-    int32_t result = E_PARCEL_OPERATION_FALIED;
-    READ_PARCEL_WITHOUT_RET(reply, Int32, result);
-    return result;
+    ret = E_PARCEL_OPERATION_FALIED;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, ret);
+    READ_PARCEL_WITHOUT_RET(reply, Bool, result);
+    return ret;
 }
 
-std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceProxy::ObtainAllWorks(int32_t &uid, int32_t &pid)
+int32_t WorkSchedServiceProxy::ObtainAllWorks(int32_t &uid, int32_t &pid,
+    std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
     WS_HILOGD("uid: %{public}d, pid: %{public}d", uid, pid);
-    std::list<std::shared_ptr<WorkInfo>> workInfos;
     sptr<IRemoteObject> remote = Remote();
-    RETURN_IF_WITH_RET(remote == nullptr, workInfos);
+    RETURN_IF_WITH_RET(remote == nullptr, E_IPC_COMMUNICATION_FAILED);
 
     MessageParcel data;
     MessageParcel reply;
@@ -164,7 +165,7 @@ std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceProxy::ObtainAllWorks(int32
 
     if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
         WS_HILOGE("write descriptor failed!");
-        return workInfos;
+        return E_PARCEL_WRITE_FALIED;
     }
 
     WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
@@ -173,7 +174,7 @@ std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceProxy::ObtainAllWorks(int32
     int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::OBTAIN_ALL_WORKS), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
-        return workInfos;
+        return E_PARCEL_WRITE_FALIED;
     }
 
     int32_t worksize = 0;
@@ -188,33 +189,34 @@ std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceProxy::ObtainAllWorks(int32
         workInfos.emplace_back(std::make_shared<WorkInfo>(*workInfo));
     }
     WS_HILOGD("return list size: %{public}zu", workInfos.size());
-    return workInfos;
+    return ERR_OK;
 }
 
-std::shared_ptr<WorkInfo> WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int32_t &workId)
+int32_t WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
 {
     WS_HILOGD("enter, workId: %{public}d", workId);
     sptr<IRemoteObject> remote = Remote();
-    RETURN_IF_WITH_RET(remote == nullptr, nullptr);
+    RETURN_IF_WITH_RET(remote == nullptr, E_IPC_COMMUNICATION_FAILED);
     MessageParcel data;
     MessageParcel reply;
     MessageOption option;
     if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
         WS_HILOGE("write descriptor failed!");
-        return nullptr;
+        return E_PARCEL_WRITE_FALIED;
     }
     WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
     WRITE_PARCEL_WITHOUT_RET(data, Int32, workId);
     int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::GET_WORK_STATUS), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
-        return nullptr;
+        return E_PARCEL_WRITE_FALIED;
     }
-    sptr<WorkInfo> workInfo = reply.ReadStrongParcelable<WorkInfo>();
-    if (workInfo == nullptr) {
-        return nullptr;
+    sptr<WorkInfo> workInfoSptr = reply.ReadStrongParcelable<WorkInfo>();
+    if (workInfoSptr == nullptr) {
+        return E_WORK_NOT_EXIST_FAILED;
     }
-    return std::make_shared<WorkInfo>(*workInfo);
+    workInfo = std::make_shared<WorkInfo>(*workInfoSptr);
+    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

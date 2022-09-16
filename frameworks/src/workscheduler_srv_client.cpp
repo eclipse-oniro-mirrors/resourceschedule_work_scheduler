@@ -45,21 +45,21 @@ ErrCode WorkSchedulerSrvClient::Connect()
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         WS_HILOGE("GetSystemAbilityManager failed!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return E_GET_SYSTEM_ABILITY_MANAGER_FALIED;
     }
     sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
     if (remoteObject_ == nullptr) {
         WS_HILOGE("GetSystemAbility failed!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return E_CHECK_SYSTEM_ABILITY_FALIED;
     }
     deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new WorkSchedulerDeathRecipient());
     if (deathRecipient_ == nullptr) {
         WS_HILOGE("Failed to create WorkScheduelrDeathRecipient!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return E_SYSTEM_SERVICE_OPERATION_FAILED;
     }
     if ((remoteObject_->IsProxyObject()) && (!remoteObject_->AddDeathRecipient(deathRecipient_))) {
         WS_HILOGE("Add death recipient to WorkSchedulerService failed!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return E_SYSTEM_SERVICE_OPERATION_FAILED;
     }
     iWorkSchedService_ = iface_cast<IWorkSchedService>(remoteObject_);
     WS_HILOGD("Connecting WorkSchedService success.");
@@ -140,7 +140,7 @@ ErrCode WorkSchedulerSrvClient::IsLastWorkTimeout(int32_t workId, bool &result)
     if (errCode != ERR_OK) {
         return errCode;
     }
-    errCode = iWorkSchedService_->IsLastWorkTimeout(workId);
+    errCode = iWorkSchedService_->IsLastWorkTimeout(workId, result);
     if (errCode == 1) {
         result = true;
     } else {
@@ -158,8 +158,7 @@ ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInf
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
-    workInfos = iWorkSchedService_->ObtainAllWorks(uid, pid);
-    return ERR_OK;
+    return iWorkSchedService_->ObtainAllWorks(uid, pid, workInfos);
 }
 
 ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo)
@@ -173,11 +172,7 @@ ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<Wo
         return code;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    workInfo = iWorkSchedService_->GetWorkStatus(uid, workId);
-    if (workInfo == nullptr) {
-        return E_GET_WORK_STATUS_ERROR;
-    }
-    return ERR_OK;
+    return iWorkSchedService_->GetWorkStatus(uid, workId, workInfo);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

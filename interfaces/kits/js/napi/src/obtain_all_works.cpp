@@ -93,6 +93,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
                         count++;
                     }
                 }
+                Common::HandleParamErr(env, asyncCallbackInfo->errorCode);
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
         },

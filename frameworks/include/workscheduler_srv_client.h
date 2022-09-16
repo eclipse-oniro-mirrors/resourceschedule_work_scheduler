@@ -33,34 +33,34 @@ public:
      * @brief Start work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode StartWork(WorkInfo& workInfo);
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode StopWork(WorkInfo& workInfo);
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode StopAndCancelWork(WorkInfo& workInfo);
     /**
      * @brief Stop and clear works.
      *
-     * @return True if success,else false
+     * @return ERR_OK on success, others on failure.
      */
     ErrCode StopAndClearWorks();
     /**
      * @brief The last work time out.
      *
      * @param workId The id of work.
-     * @param result The result.
+     * @param result True if the work executed time out, else false.
      * @return ERR_OK on success, others on failure.
      */
     ErrCode IsLastWorkTimeout(int32_t workId, bool &result);

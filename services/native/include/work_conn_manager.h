@@ -22,7 +22,6 @@
 
 #include "work_scheduler_connection.h"
 #include "work_status.h"
-#include "errors.h"
 
 namespace OHOS {
 using namespace Utils;

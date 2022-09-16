@@ -37,52 +37,55 @@ public:
      * @brief Start work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false.
+     * @return error code, ERR_OK if success.
      */
     int32_t StartWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false.
+     * @return error code, ERR_OK if success.
      */
     int32_t StopWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false.
+     * @return error code, ERR_OK if success.
      */
     int32_t StopAndCancelWork(WorkInfo& workInfo) override;
     /**
      * @brief Stop and clear works.
      *
-     * @return True if success,else false.
+     * @return error code, ERR_OK if success.
      */
     int32_t StopAndClearWorks() override;
     /**
      * @brief The last work time out.
      *
      * @param workId The id of work.
-     * @return True if success,else false.
+     * @param result True if the work executed time out, else false.
+     * @return error code, ERR_OK if success.
      */
-    int32_t IsLastWorkTimeout(int32_t workId) override;
+    int32_t IsLastWorkTimeout(int32_t workId, bool &result) override;
     /**
      * @brief Obtain all works.
      *
      * @param uid The uid.
      * @param pid The pid.
-     * @return Infos of work.
+     * @param workInfos The infos of work.
+     * @return error code, ERR_OK if success.
      */
-    std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) override;
+    int32_t ObtainAllWorks(int32_t &uid, int32_t &pid, std::list<std::shared_ptr<WorkInfo>>& workInfos) override;
     /**
      * @brief Get the status of work.
      *
      * @param uid The uid.
-     * @param pid The pid.
-     * @return The status of work.
+     * @param workId The id of work.
+     * @param workInfo The info of work.
+     * @return error code, ERR_OK if success.
      */
-    std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) override;
+    int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) override;
 private:
     static inline BrokerDelegator<WorkSchedServiceProxy> delegator_;
 };

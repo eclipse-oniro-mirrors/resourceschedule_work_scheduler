@@ -103,7 +103,7 @@ bool InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams
         default: {
             WS_HILOGE("Param %{public}s is illegal. The value is only supported basic type(Number, String, Boolean).",
                 strProName.c_str());
-            Common::HandleParamErr(env, E_PARAMETERS_ERR);
+            Common::HandleParamErr(env, E_PARAMETERS_TYPE_ERR);
             return false;
         }
     }
@@ -124,6 +124,7 @@ bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantPar
         return true;
     } else if (valueType != napi_object) {
         WS_HILOGE("parameters should be {[key: string]: value} format.");
+        Common::HandleParamErr(env, E_PARAMETERS_FORMAT_ERR);
         return false;
     }
 

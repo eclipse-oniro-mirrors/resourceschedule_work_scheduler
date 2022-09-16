@@ -104,6 +104,7 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
                 } else {
                     napi_get_boolean(env, asyncCallbackInfo->result, &result);
                 }
+                Common::HandleParamErr(env, asyncCallbackInfo->errorCode);
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
         },

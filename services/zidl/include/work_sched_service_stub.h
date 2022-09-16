@@ -45,51 +45,54 @@ public:
      * @brief Start work stub.
      *
      * @param data The data.
-     * @return ERR_OK on success, E_STOP_WORK_FAILED on failure.
+     * @return error code, ERR_OK if success.
      */
     int32_t StartWorkStub(MessageParcel& data);
     /**
      * @brief Stop work stub.
      *
      * @param data The data.
-     * @return ERR_OK on success, E_STOP_WORK_FAILED on failure.
+     * @return error code, ERR_OK if success.
      */
     int32_t StopWorkStub(MessageParcel& data);
     /**
      * @brief Stop and cancel work stub.
      *
      * @param data The data.
-     * @return ERR_OK on success, E_STOP_AND_CANCEL_WORK_FAILED on failure.
+     * @return error code, ERR_OK if success.
      */
     int32_t StopAndCancelWorkStub(MessageParcel& data);
     /**
      * @brief Stop and clear works stub.
      *
      * @param data The data.
-     * @return ERR_OK on success, E_STOP_AND_CLEAR_WORKS_FAILED on failure.
+     * @return error code, ERR_OK if success.
      */
     int32_t StopAndClearWorksStub(MessageParcel& data);
     /**
      * @brief The last work time out stub.
      *
      * @param data The data.
-     * @return ERR_OK on success, E_IS_LAST_WORK_TIMEOUT_FALSE on failure.
+     * @param result True if the work executed time out, else false.
+     * @return error code, ERR_OK if success.
      */
-    int32_t IsLastWorkTimeoutStub(MessageParcel& data);
+    int32_t IsLastWorkTimeoutStub(MessageParcel& data, bool &result);
     /**
      * @brief Obtain all works stub.
      *
      * @param data The data.
-     * @return Infos of work.
+     * @param workInfos The infos of work.
+     * @return error code, ERR_OK if success.
      */
-    std::list<std::shared_ptr<WorkInfo>> ObtainAllWorksStub(MessageParcel& data);
+    int32_t ObtainAllWorksStub(MessageParcel& data, std::list<std::shared_ptr<WorkInfo>>& workInfos);
     /**
      * @brief Get work status stub.
      *
      * @param data The data.
-     * @return Work status stub.
+     * @param workInfo The info of work.
+     * @return error code, ERR_OK if success.
      */
-    std::shared_ptr<WorkInfo> GetWorkStatusStub(MessageParcel& data);
+    int32_t GetWorkStatusStub(MessageParcel& data, std::shared_ptr<WorkInfo>& workInfo);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

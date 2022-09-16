@@ -16,7 +16,7 @@
 #include "work_status.h"
 
 #include "battery_srv_client.h"
-#include "work_sched_common.h"
+#include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "work_scheduler_service.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE

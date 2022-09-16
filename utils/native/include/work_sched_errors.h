@@ -65,6 +65,8 @@ enum ParamError {
     E_REPEAT_CYCLE_TIME_ERR,
     E_REPEAT_COUNT_ERR,
     E_PARAMETERS_ERR,
+    E_PARAMETERS_TYPE_ERR,
+    E_PARAMETERS_FORMAT_ERR,
     E_NEED_CANCLE_TYPE_ERR,
     
 };
@@ -79,6 +81,22 @@ enum ServiceError {
     E_WORK_EXCEED_UPPER_LIMIT,
 };
 
+
+static std::map<int32_t, std::string> saErrCodeMsgMap = {
+    {E_PARCEL_READ_FALIED, "0"},
+    {E_PARCEL_WRITE_FALIED, "0"},
+    {E_GET_SYSTEM_ABILITY_MANAGER_FALIED, "0"},
+    {E_CHECK_SYSTEM_ABILITY_FALIED, "0"},
+    {E_SERVICE_NOT_READY, "0"},
+    {E_ADD_REPEAT_WORK_ERR, "0"},
+    {E_WORK_EXCEED_UPPER_LIMIT, "0"}
+};
+
+static std::map<int32_t, std::string> paramErrCodeMsgMap = {
+    {E_PARAM_NUMBER_ERR, "The number of arguments is wrong."}
+
+
+};
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_ERRORS_H

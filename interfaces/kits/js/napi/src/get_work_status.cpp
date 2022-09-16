@@ -99,6 +99,7 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
             std::unique_ptr<AsyncCallbackInfoGetWorkStatus> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = Common::GetNapiWorkInfo(env, asyncCallbackInfo->workInfo);
+                Common::HandleParamErr(env, asyncCallbackInfo->errorCode); //throw param error
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
         },

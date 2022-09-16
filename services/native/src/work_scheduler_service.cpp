@@ -51,7 +51,7 @@
 #include "resource_type.h"
 #include "work_scheduler_connection.h"
 #include "work_bundle_group_change_callback.h"
-#include "work_sched_common.h"
+#include "work_sched_errors.h"
 #include "work_sched_utils.h"
 
 using namespace std;
@@ -477,7 +477,7 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
     return ret;
 }
 
-int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId)
+int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId, bool &result)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
@@ -485,9 +485,11 @@ int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId)
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (workPolicyManager_->IsLastWorkTimeout(workId, uid)) {
-        return 1;
+        result = true;
+    } else {
+        result = false;
     }
-    return 0;
+    return ERR_OK;
 }
 
 void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)
@@ -495,23 +497,26 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
     workPolicyManager_->OnConditionReady(workStatusVector);
 }
 
-list<shared_ptr<WorkInfo>> WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid)
+int32_t WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid,
+        std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        list<shared_ptr<WorkInfo>> allWorks;
-        return allWorks;
+        return E_SERVICE_NOT_READY;
     }
-    return workPolicyManager_->ObtainAllWorks(uid);
+    workInfos = workPolicyManager_->ObtainAllWorks(uid);
+    return ERR_OK;
 }
 
-shared_ptr<WorkInfo> WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &workId)
+int32_t WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return nullptr;
+        workInfo = nullptr;
+        return E_SERVICE_NOT_READY;
     }
-    return workPolicyManager_->GetWorkStatus(uid, workId);
+    workInfo = workPolicyManager_->GetWorkStatus(uid, workId);
+    return ERR_OK;
 }
 
 void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus> work)
