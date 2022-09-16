@@ -449,9 +449,8 @@ list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         auto allWorkStatus = queue->GetWorkList();
-        for (auto it : allWorkStatus) {
-            allWorks.emplace_back(it->workInfo_);
-        }
+        std::transform(allWorkStatus.begin(), allWorkStatus.end(), std::back_inserter(allWorks),
+		    [](std::shared_ptr<WorkStatus> it) { return it->workInfo_; });
     }
     return allWorks;
 }

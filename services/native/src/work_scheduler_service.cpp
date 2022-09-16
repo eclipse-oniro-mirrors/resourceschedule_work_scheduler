@@ -461,9 +461,8 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
     WS_HILOGD("Stop and clear works by Uid:%{public}d", uid);
     list<std::shared_ptr<WorkStatus>> allWorks = workPolicyManager_->GetAllWorkStatus(uid);
     list<std::string> workIdList;
-    for (auto work : allWorks) {
-        workIdList.push_back(work->workId_);
-    }
+    std::transform(allWorks.cbegin(), allWorks.cend(), std::back_inserter(workIdList),
+		[](std::shared_ptr<WorkStatus> work) { return work->workId_; });
     bool ret = workQueueManager_->StopAndClearWorks(allWorks)
         && workPolicyManager_->StopAndClearWorks(uid);
     if (ret) {
@@ -695,9 +694,8 @@ int32_t WorkSchedulerService::CreateNodeDir(std::string dir)
 
 int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 {
-    int32_t fd = -1;
     if (access(filePath.c_str(), 0) != 0) {
-        fd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+        int32_t fd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
         if (fd < ERR_OK) {
             WS_HILOGE("Open file fail.");
             return fd;
