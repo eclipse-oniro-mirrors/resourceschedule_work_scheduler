@@ -450,7 +450,7 @@ list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
         auto queue = uidQueueMap_.at(uid);
         auto allWorkStatus = queue->GetWorkList();
         std::transform(allWorkStatus.begin(), allWorkStatus.end(), std::back_inserter(allWorks),
-		    [](std::shared_ptr<WorkStatus> it) { return it->workInfo_; });
+            [](std::shared_ptr<WorkStatus> it) { return it->workInfo_; });
     }
     return allWorks;
 }
