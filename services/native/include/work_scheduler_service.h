@@ -235,10 +235,11 @@ public:
      * @return ErrCode ERR_OK if succeed, others if failed
      */
     ErrCode QueryResAppliedUid();
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 private:
     std::set<int32_t> whitelist_;
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
-
+#endif
 private:
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:

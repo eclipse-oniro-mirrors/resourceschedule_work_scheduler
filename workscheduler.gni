@@ -39,4 +39,10 @@ declare_args() {
       !defined(global_parts_info.resourceschedule_device_usage_statistics)) {
     bundle_active_enable = false
   }
+
+  resourceschedule_bgtaskmgr_enable = true
+  if (defined(global_parts_info) &&
+    !defined(global_parts_info.resourceschedule_background_task_mgr)) {
+    resourceschedule_bgtaskmgr_enable = false
+  }
 }
