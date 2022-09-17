@@ -235,9 +235,9 @@ public:
      * @return ErrCode ERR_OK if succeed, others if failed
      */
     ErrCode QueryResAppliedUid();
-#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 private:
     std::set<int32_t> whitelist_;
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif
 private:

@@ -179,8 +179,8 @@ void WorkSchedulerService::OnStop()
     if (ret != ERR_OK) {
         WS_HILOGE("unscribe bgtask failed.");
     }
-#endif
     subscriber_.reset();
+#endif
     eventRunner_.reset();
     handler_.reset();
     ready_ = false;
@@ -632,7 +632,7 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
 {
     if (key == "-memory") {
         workPolicyManager_->SetMemoryByDump(std::stoi(value));
-        result.append("Set memory success.");   
+        result.append("Set memory success.");
     } else if (key == "-watchdog_time") {
         workPolicyManager_->SetWatchdogTime(std::stoi(value));
         result.append("Set watchdog time success.");
