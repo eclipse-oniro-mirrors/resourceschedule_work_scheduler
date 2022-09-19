@@ -43,6 +43,8 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
+static bool debugMode = false;
+static int32_t debugWatchdogTime = WATCHDOG_TIME;
 }
 
 WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
@@ -400,6 +402,10 @@ void WorkPolicyManager::UpdateWatchdogTime(const wptr<WorkSchedulerService> &wms
             WS_HILOGD("charger is in CHARGING status");
             SetWatchdogTime(LONG_WATCHDOG_TIME);
         }
+        return;
+    }
+    if (debugMode) {
+        SetWatchdogTime(debugWatchdogTime);
     } else {
         SetWatchdogTime(WATCHDOG_TIME);
     }
@@ -526,6 +532,14 @@ int32_t WorkPolicyManager::GetDumpSetMemory()
 void WorkPolicyManager::SetMemoryByDump(int32_t memory)
 {
     dumpSetMemory_ = memory;
+}
+
+void WorkPolicyManager::SetWatchdogTimeByDump(int32_t time)
+{
+    WS_HILOGD("Set watchdog time by dump to %{public}", time);
+    debugMode = time == 0 ? false : true;
+    watchdogTime_ = time == 0 ? watchdogTime_ : time;
+    debugWatchdogTime = watchdogTime_;
 }
 
 void WorkPolicyManager::SetWatchdogTime(int32_t time)
