@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 #include "scheduler_bg_task_subscriber.h"
 #include "resource_type.h"
 #include "resource_callback_info.h"
@@ -72,3 +72,4 @@ void SchedulerBgTaskSubscriber::OnRemoteDied(const wptr<IRemoteObject> &object)
 }
 } // namespace Memory
 } // namespace OHOS
+#endif

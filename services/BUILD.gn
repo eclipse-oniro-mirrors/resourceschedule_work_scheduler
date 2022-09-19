@@ -71,7 +71,7 @@ ohos_shared_library("workschedservice") {
     "ability_base:want",
     "ability_runtime:ability_manager",
     "ability_runtime:wantagent_innerkits",
-    "background_task_mgr:bgtaskmgr_innerkits",
+    "battery_manager:batterysrv_client",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
@@ -89,6 +89,10 @@ ohos_shared_library("workschedservice") {
   if (bundle_active_enable) {
     external_deps += [ "device_usage_statistics:usagestatsinner" ]
     defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
+  if (resourceschedule_bgtaskmgr_enable) {
+    external_deps += [ "background_task_mgr:bgtaskmgr_innerkits" ]
+    defines += [ "RESOURCESCHEDULE_BGTASKMGR_ENABLE" ]
   }
 
   part_name = "${worksched_native_part_name}"
