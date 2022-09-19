@@ -42,16 +42,8 @@ ohos_shared_library("workscheduler") {
   external_deps = [
     "ability_base:base",
     "ability_base:want",
-    "ability_runtime:app_manager",
-    "bundle_framework:appexecfwk_base",
-    "common_event_service:cesfwk_innerkits",
-    "eventhandler:libeventhandler",
     "hiviewdfx_hilog_native:libhilog",
-    "ipc:ipc_core",
-    "ipc_js:rpc",
     "napi:ace_napi",
-    "safwk:system_ability_fwk",
-    "samgr:samgr_proxy",
   ]
 
   relative_install_dir = "module"

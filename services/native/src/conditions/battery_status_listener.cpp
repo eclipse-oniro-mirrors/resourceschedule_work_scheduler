@@ -14,7 +14,6 @@
  */
 #include "conditions/battery_status_listener.h"
 
-#include "battery_info.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "matching_skills.h"

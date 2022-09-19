@@ -73,7 +73,7 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
         return;
     }
     NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
-    auto shellContextRef = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
+    auto shellContextRef = jsRuntime_.LoadSystemModule("WorkSchedulerExtensionContext",
         &contextObj, 1);
     contextObj = shellContextRef->Get();
     context->Bind(jsRuntime_, shellContextRef.release());

@@ -42,7 +42,7 @@ declare_args() {
 
   resourceschedule_bgtaskmgr_enable = true
   if (defined(global_parts_info) &&
-    !defined(global_parts_info.resourceschedule_background_task_mgr)) {
+      !defined(global_parts_info.resourceschedule_background_task_mgr)) {
     resourceschedule_bgtaskmgr_enable = false
   }
 }
