@@ -532,7 +532,7 @@ void WorkPolicyManager::SetMemoryByDump(int32_t memory)
 
 void WorkPolicyManager::SetWatchdogTimeByDump(int32_t time)
 {
-    WS_HILOGD("Set watchdog time by dump to %{public}", time);
+    WS_HILOGD("Set watchdog time by dump to %{public}d", time);
     watchdogTime_ = time == 0 ? WATCHDOG_TIME : time;
     lastWatchdogTime = watchdogTime_;
 }
