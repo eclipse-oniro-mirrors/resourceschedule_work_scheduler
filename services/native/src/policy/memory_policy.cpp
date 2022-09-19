@@ -34,9 +34,8 @@ MemoryPolicy::~MemoryPolicy()
 
 int32_t MemoryPolicy::GetMemAvailable()
 {
-    int32_t dumpSetMemory;
     if (workPolicyManager_ != nullptr) {
-        dumpSetMemory = workPolicyManager_->GetDumpSetMemory();
+        int32_t dumpSetMemory = workPolicyManager_->GetDumpSetMemory();
         if (dumpSetMemory != -1) {
             WS_HILOGD("dump set memory:%{public}d", dumpSetMemory);
             return dumpSetMemory;

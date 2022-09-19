@@ -350,7 +350,6 @@ std::string WorkInfo::ParseToJsonStr()
         std::map<std::string, sptr<AAFwk::IInterface>> extrasMap = extras_->GetParams();
         int typeId = INVALID_VALUE;
         for (auto it : extrasMap) {
-            typeId = INVALID_VALUE;
             typeId = AAFwk::WantParams::GetDataType(it.second);
             extrasType[it.first] = typeId;
             if (typeId != INVALID_VALUE) {
@@ -433,7 +432,6 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     Json::Value::Members keyList = extrasJson.getMemberNames();
     int typeId = INVALID_VALUE;
     for (auto key : keyList) {
-        typeId = INVALID_VALUE;
         typeId = extrasType[key].asInt();
         if (typeId != INVALID_VALUE) {
             sptr<AAFwk::IInterface> exInterface = AAFwk::WantParams::GetInterfaceByType(typeId,

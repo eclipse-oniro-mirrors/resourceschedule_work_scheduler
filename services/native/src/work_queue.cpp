@@ -100,11 +100,9 @@ void WorkQueue::Push(shared_ptr<WorkStatus> workStatus)
 
 bool WorkQueue::Remove(shared_ptr<WorkStatus> workStatus)
 {
-    for (auto it : workList_) {
-        if (workStatus == it) {
-            workList_.remove(it);
-            return true;
-        }
+    auto iter = std::find(workList_.cbegin(), workList_.cend(), workStatus);
+    if (iter != workList_.end()) {
+        workList_.remove(*iter);
     }
     return true;
 }
@@ -116,20 +114,20 @@ uint32_t WorkQueue::GetSize()
 
 bool WorkQueue::Contains(std::shared_ptr<std::string> workId)
 {
-    for (auto it : workList_) {
-        if (workId->compare(it->workId_) == 0) {
-            return true;
-        }
+    auto iter = std::find_if(workList_.cbegin(), workList_.cend(), [&workId]
+        (const shared_ptr<WorkStatus> &workStatus) { return workId->compare(workStatus->workId_) == 0; });
+    if (iter != workList_.end()) {
+        return true;
     }
     return false;
 }
 
 shared_ptr<WorkStatus> WorkQueue::Find(string workId)
 {
-    for (auto it : workList_) {
-        if (it->workId_ == workId) {
-            return it;
-        }
+    auto iter = std::find_if(workList_.cbegin(), workList_.cend(),
+        [&workId](const shared_ptr<WorkStatus> &workStatus) { return workStatus->workId_ == workId; });
+    if (iter != workList_.end()) {
+        return *iter;
     }
     return nullptr;
 }

@@ -35,10 +35,10 @@ int32_t WorkSchedUtils::GetCurrentAccountId()
         return -1;
     }
 
-    for (const auto& accountId : osAccountIds) {
-        if (accountId >= 0) {
-            return accountId;
-        }
+    auto iter = std::find_if(osAccountIds.cbegin(), osAccountIds.cend(),
+        [](const int32_t &accountId) { return accountId >= 0; });
+    if (iter != osAccountIds.end()) {
+        return *iter;
     }
     WS_HILOGE("GetCurrentAccountId failed, no osAccountIds now.");
     return -1;
@@ -58,10 +58,10 @@ bool WorkSchedUtils::IsIdActive(int32_t id)
         return false;
     }
 
-    for (const auto& accountId : osAccountIds) {
-        if (accountId == id) {
-            return true;
-        }
+    auto iter = std::find_if(osAccountIds.cbegin(), osAccountIds.cend(),
+        [&id](const int32_t &accountId) { return accountId == id; });
+    if (iter != osAccountIds.end()) {
+        return true;
     }
     WS_HILOGE("IsIdActive failed, osAccountIds now.");
     return false;
