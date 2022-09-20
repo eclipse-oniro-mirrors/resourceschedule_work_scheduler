@@ -633,7 +633,7 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
         workPolicyManager_->SetMemoryByDump(std::stoi(value));
         result.append("Set memory success.");
     } else if (key == "-watchdog_time") {
-        workPolicyManager_->SetWatchdogTime(std::stoi(value));
+        workPolicyManager_->SetWatchdogTimeByDump(std::stoi(value));
         result.append("Set watchdog time success.");
     } else if (key == "-repeat_time_min") {
         workQueueManager_->SetTimeCycle(std::stoi(value));

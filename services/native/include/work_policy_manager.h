@@ -191,6 +191,12 @@ public:
      */
     int32_t GetDumpSetMemory();
     /**
+     * @brief Set watchdog time by dump.
+     *
+     * @param time The time.
+     */
+    void SetWatchdogTimeByDump(int32_t time);
+    /**
      * @brief Set watchdog time.
      *
      * @param time The time.

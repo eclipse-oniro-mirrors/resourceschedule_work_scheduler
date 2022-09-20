@@ -43,6 +43,7 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
+static int32_t lastWatchdogTime = WATCHDOG_TIME;
 }
 
 WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
@@ -383,26 +384,27 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::UpdateWatchdogTime(const wptr<WorkSchedulerService> &wmsptr,
     std::shared_ptr<WorkStatus> &topWork)
 {
-    if (wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
-        int32_t chargerStatus = 0;
-        auto iter = topWork->conditionMap_.find(WorkCondition::Type::CHARGER);
-        if (iter != topWork->conditionMap_.end() && iter->second) {
-            chargerStatus = topWork->conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;
-        } else {
-            WS_HILOGD("charger is in CHARGING_UNKNOWN status");
-            chargerStatus = static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN);
-        }
-        if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
-            || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
-            WS_HILOGD("charger is in CHARGING_UNKNOWN or CHARGING_UNPLUGGED status");
-            SetWatchdogTime(MEDIUM_WATCHDOG_TIME);
-        } else {
-            WS_HILOGD("charger is in CHARGING status");
-            SetWatchdogTime(LONG_WATCHDOG_TIME);
-        }
-    } else {
-        SetWatchdogTime(WATCHDOG_TIME);
+    if (!wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
+        SetWatchdogTime(lastWatchdogTime);
+        return;
     }
+    int32_t chargerStatus = 0;
+    auto iter = topWork->conditionMap_.find(WorkCondition::Type::CHARGER);
+    if (iter != topWork->conditionMap_.end() && iter->second) {
+        chargerStatus = topWork->conditionMap_.at(WorkCondition::Type::CHARGER)->enumVal;
+    } else {
+        WS_HILOGD("charger is in CHARGING_UNKNOWN status");
+        chargerStatus = static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN);
+    }
+    if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
+        || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
+        WS_HILOGD("charger is in CHARGING_UNKNOWN or CHARGING_UNPLUGGED status");
+        SetWatchdogTime(MEDIUM_WATCHDOG_TIME);
+    } else {
+        WS_HILOGD("charger is in CHARGING status");
+        SetWatchdogTime(LONG_WATCHDOG_TIME);
+    }
+
 }
 
 void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus)
@@ -525,6 +527,13 @@ int32_t WorkPolicyManager::GetDumpSetMemory()
 void WorkPolicyManager::SetMemoryByDump(int32_t memory)
 {
     dumpSetMemory_ = memory;
+}
+
+void WorkPolicyManager::SetWatchdogTimeByDump(int32_t time)
+{
+    WS_HILOGD("Set watchdog time by dump to %{public}d", time);
+    watchdogTime_ = time == 0 ? WATCHDOG_TIME : time;
+    lastWatchdogTime = watchdogTime_;
 }
 
 void WorkPolicyManager::SetWatchdogTime(int32_t time)
