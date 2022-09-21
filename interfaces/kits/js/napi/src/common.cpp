@@ -447,31 +447,34 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     return napiWork;
 }
 
-napi_value Common::GetCallbackErrorValue(napi_env env, int32_t errCode)
+napi_value Common::GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg)
 {
     if (errCode == ERR_OK) {
         return NapiGetNull(env);
     }
-    napi_value result = nullptr;
+    napi_value error = nullptr;
     napi_value eCode = nullptr;
+    napi_value eMsg = nullptr;
     NAPI_CALL(env, napi_create_int32(env, errCode, &eCode));
-    NAPI_CALL(env, napi_create_object(env, &result));
-    NAPI_CALL(env, napi_set_named_property(env, result, "data", eCode));
-    NAPI_CALL(env, napi_set_named_property(env, result, "code", eCode));
-    return result;
+    NAPI_CALL(env, napi_create_string_utf8(env, errMsg.c_str(),
+        errMsg.length(), &eMsg));
+    NAPI_CALL(env, napi_create_object(env, &error));
+    NAPI_CALL(env, napi_set_named_property(env, error, "code", eCode));
+    NAPI_CALL(env, napi_set_named_property(env, error, "message", eMsg));
+    return error;
 }
 
 void Common::SetCallback(
-    const napi_env &env, const napi_ref &callbackIn, const int32_t &errorCode, const napi_value &result)
+    const napi_env &env, const AsyncWorkData &info, const napi_value &result)
 {
     napi_value undefined = nullptr;
     napi_get_undefined(env, &undefined);
 
     napi_value callback = nullptr;
     napi_value resultout = nullptr;
-    napi_get_reference_value(env, callbackIn, &callback);
+    napi_get_reference_value(env, info.callback, &callback);
     napi_value results[RESULT_PARAMS_NUM] = {nullptr};
-    results[0] = GetCallbackErrorValue(env, errorCode);
+    results[0] = GetCallbackErrorValue(env, info.errorCode, info.errorMsg);
     results[1] = result;
     NAPI_CALL_RETURN_VOID(env, napi_call_function(env, undefined, callback,
         RESULT_PARAMS_NUM, &results[0], &resultout));
@@ -483,13 +486,16 @@ napi_value Common::SetPromise(
     if (info.errorCode == ERR_OK) {
         napi_resolve_deferred(env, info.deferred, result);
     } else {
-        napi_value res = nullptr;
+        napi_value error = nullptr;
         napi_value eCode = nullptr;
+        napi_value eMsg = nullptr;
         NAPI_CALL(env, napi_create_int32(env, info.errorCode, &eCode));
-        NAPI_CALL(env, napi_create_object(env, &res));
-        NAPI_CALL(env, napi_set_named_property(env, res, "errCode", eCode));
-        NAPI_CALL(env, napi_set_named_property(env, res, "errMessage", eCode));
-        napi_reject_deferred(env, info.deferred, res);
+        NAPI_CALL(env, napi_create_string_utf8(env, errMsg.c_str(),
+            errMsg.length(), &eMsg));
+        NAPI_CALL(env, napi_create_object(env, &error));
+        NAPI_CALL(env, napi_set_named_property(env, error, "code", eCode));
+        NAPI_CALL(env, napi_set_named_property(env, error, "message", eCode));
+        napi_reject_deferred(env, info.deferred, error);
     }
     return result;
 }
@@ -497,13 +503,15 @@ napi_value Common::SetPromise(
 void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &info, const napi_value &result)
 {
     if (info.isCallback) {
-        SetCallback(env, info.callback, info.errorCode, result);
+        SetCallback(env, info, result);
     } else {
         SetPromise(env, info, result);
     }
 }
 
-void Common::HandleErrCode(const napi_env &env, int32_t errCode) {
+void Common::HandleErrCode(const napi_env &env, const int32_t errCode)
+{
+    WS_HILOGD("HandleErrCode errCode = %{public}d", errCode);
     int32_t errCodeInfo;
     std::string errMessage = "BussinessError ";
     switch (errCode) {
@@ -544,8 +552,9 @@ void Common::HandleErrCode(const napi_env &env, int32_t errCode) {
     }
 }
 
-bool Common::HandleParamErr(const napi_env &env, int32_t errCode) {
-    int32_t errCodeInfo = E_PARAM_ERROR;
+bool Common::HandleParamErr(const napi_env &env, const int32_t errCode)
+{
+    WS_HILOGD("HandleParamErr errCode = %{public}d", errCode);
     std::string errMessage = "BussinessError 401: Parameter error. ";
     bool isParamErr = true;
     switch (errCode) {
@@ -575,13 +584,26 @@ bool Common::HandleParamErr(const napi_env &env, int32_t errCode) {
             [[fallthrough]];
         case E_PARAMETERS_ERR:
             errMessage.append(paramErrCodeMsgMap[errCode]);
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
+            napi_throw_error(env, std::to_string(E_PARAM_ERROR).c_str(), errMessage.c_str());
             break;
         default:
             isParamErr = false;
             break;
     }
     return isParamErr;
+}
+
+std::string Common::FindErrMsg(const napi_env &env, const int32_t errCode)
+{
+    auto iter = saErrCodeMsgMap.find(errCode);
+    if (iter != saErrCodeMsgMap.end()) {
+        return saErrCodeMsgMap[errCode];
+    }
+    iter = paramErrCodeMsgMap.find(errCode);
+    if (iter != paramErrCodeMsgMap.end()) {
+        return paramErrCodeMsgMap[errCode];
+    }
+    return "";
 }
 } // namespace WorkScheduler
 } // namespace OHOS

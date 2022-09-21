@@ -133,7 +133,7 @@ public:
      * @param errCode The errCode.
      * @return Callback error value.
      */
-    static napi_value GetCallbackErrorValue(napi_env env, int32_t errCode);
+    static GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg);
     /**
      * @brief Set callback.
      *
@@ -142,8 +142,7 @@ public:
      * @param errorCode The errorCode.
      * @param result The result.
      */
-    static void SetCallback(const napi_env &env, const napi_ref &callbackIn, const int32_t &errorCode,
-        const napi_value &result);
+    static void SetCallback(const napi_env &env, const AsyncWorkData &info, const napi_value &result);
     /**
      * @brief Set promise.
      *
@@ -162,10 +161,27 @@ public:
      */
     static void ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &info,
         const napi_value &result);
-
-    static void HandleErrCode(const napi_env &env, int32_t errCode);
-
-    static bool HandleParamErr(const napi_env &env, int32_t errCode);
+    /**
+     * @brief Handle error code and throw error.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static void HandleErrCode(const napi_env &env, const int32_t errCode);
+    /**
+     * @brief Handle param error code and throw param error.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static bool HandleParamErr(const napi_env &env, const int32_t errCode);
+    /**
+     * @brief Find error message by code.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static std::string FindErrMsg(const napi_env &env, const int32_t errCode);
 
 private:
     static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);

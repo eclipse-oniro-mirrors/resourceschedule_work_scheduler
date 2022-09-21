@@ -35,6 +35,8 @@ struct GetWorkStatusParamsInfo {
 struct AsyncCallbackInfoGetWorkStatus : public AsyncWorkData {
     explicit AsyncCallbackInfoGetWorkStatus(napi_env env) : AsyncWorkData(env) {}
     int32_t workId {-1};
+    int32_t errorCode {0};
+    std::string errorMsg {""};
     std::shared_ptr<WorkInfo> workInfo {nullptr};
 };
 
@@ -93,12 +95,14 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().GetWorkStatus(asyncCallbackInfo->workId,
                 asyncCallbackInfo->workInfo);
+            asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
             AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = (AsyncCallbackInfoGetWorkStatus *)data;
             std::unique_ptr<AsyncCallbackInfoGetWorkStatus> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = Common::GetNapiWorkInfo(env, asyncCallbackInfo->workInfo);
+                WS_HILOGD("asyncCallbackInfo->errorCode = %{public}d", asyncCallbackInfo->errorCode);
                 Common::HandleParamErr(env, asyncCallbackInfo->errorCode); //throw param error
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }

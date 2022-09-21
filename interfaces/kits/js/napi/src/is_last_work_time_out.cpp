@@ -93,6 +93,7 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(asyncCallbackInfo->workId,
                 asyncCallbackInfo->result);
+            asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
             AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = (AsyncCallbackIsLastWorkTimeOut *) data;

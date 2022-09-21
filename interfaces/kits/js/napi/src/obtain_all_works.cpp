@@ -76,6 +76,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
             AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = (AsyncCallbackInfoObtainAllWorks *)data;
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(asyncCallbackInfo->workInfoList);
+            asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
             AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = (AsyncCallbackInfoObtainAllWorks *)data;
