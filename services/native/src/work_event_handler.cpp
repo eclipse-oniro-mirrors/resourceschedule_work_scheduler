@@ -16,6 +16,7 @@
 #include "work_event_handler.h"
 
 #include "work_scheduler_service.h"
+#include "work_policy_manager.h"
 #include "work_sched_hilog.h"
 
 using namespace std;
