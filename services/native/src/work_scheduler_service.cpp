@@ -45,10 +45,11 @@
 #include "json/json.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 #include "scheduler_bg_task_subscriber.h"
 #include "background_task_mgr_helper.h"
-#include "resource_callback_info.h"
 #include "resource_type.h"
+#endif
 #include "work_scheduler_connection.h"
 #include "work_bundle_group_change_callback.h"
 #include "work_sched_errors.h"
@@ -173,11 +174,13 @@ void WorkSchedulerService::OnStop()
     groupObserver_ = nullptr;
     hasGroupObserver = -1;
 #endif
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::UnsubscribeBackgroundTask(*subscriber_);
     if (ret != ERR_OK) {
         WS_HILOGE("unscribe bgtask failed.");
     }
     subscriber_.reset();
+#endif
     eventRunner_.reset();
     handler_.reset();
     ready_ = false;
@@ -213,6 +216,7 @@ bool WorkSchedulerService::Init()
 
 bool WorkSchedulerService::InitBgTaskSubscriber()
 {
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     subscriber_ = make_shared<SchedulerBgTaskSubscriber>();
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
     if (ret != ERR_OK) {
@@ -221,11 +225,13 @@ bool WorkSchedulerService::InitBgTaskSubscriber()
     }
     this->QueryResAppliedUid();
     WS_HILOGD("subscribe background TASK success!");
+#endif
     return true;
 }
 
 ErrCode WorkSchedulerService::QueryResAppliedUid()
 {
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> appList;
     std::vector<std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo>> procList;
     ErrCode result = BackgroundTaskMgr::BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(appList, procList);
@@ -244,6 +250,7 @@ ErrCode WorkSchedulerService::QueryResAppliedUid()
         }
     }
     WS_HILOGI("get efficiency resources infos succeed.");
+#endif
     return ERR_OK;
 }
 
@@ -460,9 +467,8 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
     WS_HILOGD("Stop and clear works by Uid:%{public}d", uid);
     list<std::shared_ptr<WorkStatus>> allWorks = workPolicyManager_->GetAllWorkStatus(uid);
     list<std::string> workIdList;
-    for (auto work : allWorks) {
-        workIdList.push_back(work->workId_);
-    }
+    std::transform(allWorks.cbegin(), allWorks.cend(), std::back_inserter(workIdList),
+        [](std::shared_ptr<WorkStatus> work) { return work->workId_; });
     bool ret = workQueueManager_->StopAndClearWorks(allWorks)
         && workPolicyManager_->StopAndClearWorks(uid);
     if (ret) {
@@ -612,7 +618,7 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
         .append("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()) + "\n")
         .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
         .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n")
-        .append("whitelist :" + GetEffiResApplyUid());
+        .append("whitelist:" + GetEffiResApplyUid());
 }
 
 std::string WorkSchedulerService::GetEffiResApplyUid()
@@ -634,7 +640,7 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
         workPolicyManager_->SetMemoryByDump(std::stoi(value));
         result.append("Set memory success.");
     } else if (key == "-watchdog_time") {
-        workPolicyManager_->SetWatchdogTime(std::stoi(value));
+        workPolicyManager_->SetWatchdogTimeByDump(std::stoi(value));
         result.append("Set watchdog time success.");
     } else if (key == "-repeat_time_min") {
         workQueueManager_->SetTimeCycle(std::stoi(value));
@@ -702,9 +708,8 @@ int32_t WorkSchedulerService::CreateNodeDir(std::string dir)
 
 int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 {
-    int32_t fd = -1;
     if (access(filePath.c_str(), 0) != 0) {
-        fd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
+        int32_t fd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
         if (fd < ERR_OK) {
             WS_HILOGE("Open file fail.");
             return fd;

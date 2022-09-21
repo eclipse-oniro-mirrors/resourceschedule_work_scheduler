@@ -75,13 +75,13 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = (AsyncCallbackInfoObtainAllWorks *)data;
+            AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = static_cast<AsyncCallbackInfoObtainAllWorks *>(data);
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(asyncCallbackInfo->workInfoList);
             asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
-            AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = (AsyncCallbackInfoObtainAllWorks *)data;
+            AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = static_cast<AsyncCallbackInfoObtainAllWorks *>(data);
             std::unique_ptr<AsyncCallbackInfoObtainAllWorks> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = nullptr;

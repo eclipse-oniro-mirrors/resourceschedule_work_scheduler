@@ -329,7 +329,6 @@ bool JsWorkSchedulerExtension::GetExtrasJsonStr(const WorkInfo& workInfo, std::s
     auto extrasMap = extras->GetParams();
     int typeId = INVALID_VALUE;
     for (auto it : extrasMap) {
-        typeId = INVALID_VALUE;
         typeId = AAFwk::WantParams::GetDataType(it.second);
         if (typeId != INVALID_VALUE) {
             std::string value = AAFwk::WantParams::GetStringByType(it.second, typeId);

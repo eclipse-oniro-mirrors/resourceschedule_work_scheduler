@@ -91,14 +91,14 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
         nullptr,
         resourceName,
         [](napi_env env, void *data) {
-            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = (AsyncCallbackIsLastWorkTimeOut *)data;
+            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = static_cast<AsyncCallbackIsLastWorkTimeOut *>(data);
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(asyncCallbackInfo->workId,
                 asyncCallbackInfo->result);
             asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
-            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = (AsyncCallbackIsLastWorkTimeOut *) data;
+            AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = static_cast<AsyncCallbackIsLastWorkTimeOut *>(data);
             std::unique_ptr<AsyncCallbackIsLastWorkTimeOut> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = nullptr;
