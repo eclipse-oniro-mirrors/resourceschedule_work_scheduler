@@ -133,7 +133,7 @@ public:
      * @param errCode The errCode.
      * @return Callback error value.
      */
-    static GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg);
+    static napi_value GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg);
     /**
      * @brief Set callback.
      *

@@ -490,11 +490,11 @@ napi_value Common::SetPromise(
         napi_value eCode = nullptr;
         napi_value eMsg = nullptr;
         NAPI_CALL(env, napi_create_int32(env, info.errorCode, &eCode));
-        NAPI_CALL(env, napi_create_string_utf8(env, errMsg.c_str(),
-            errMsg.length(), &eMsg));
+        NAPI_CALL(env, napi_create_string_utf8(env, info.errorMsg.c_str(),
+            info.errorMsg.length(), &eMsg));
         NAPI_CALL(env, napi_create_object(env, &error));
         NAPI_CALL(env, napi_set_named_property(env, error, "code", eCode));
-        NAPI_CALL(env, napi_set_named_property(env, error, "message", eCode));
+        NAPI_CALL(env, napi_set_named_property(env, error, "message", eMsg));
         napi_reject_deferred(env, info.deferred, error);
     }
     return result;
