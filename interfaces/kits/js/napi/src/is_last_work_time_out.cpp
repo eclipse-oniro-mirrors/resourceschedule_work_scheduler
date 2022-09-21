@@ -35,6 +35,8 @@ struct IsLastWorkTimeOutParamsInfo {
 struct AsyncCallbackIsLastWorkTimeOut : public AsyncWorkData {
     explicit AsyncCallbackIsLastWorkTimeOut(napi_env env) : AsyncWorkData(env) {}
     int32_t workId {-1};
+    int32_t errorCode {0};
+    std::string errorMsg {""};
     bool result;
 };
 
