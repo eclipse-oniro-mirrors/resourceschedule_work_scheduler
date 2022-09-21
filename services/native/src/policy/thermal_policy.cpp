@@ -15,6 +15,7 @@
 #include "policy/thermal_policy.h"
 
 #include "thermal_mgr_client.h"
+#include "work_sched_hilog.h"
 
 using namespace std;
 using namespace OHOS::PowerMgr;

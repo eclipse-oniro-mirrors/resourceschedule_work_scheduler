@@ -21,6 +21,7 @@
 #include "common_event_support.h"
 #include "matching_skills.h"
 #include "want.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {

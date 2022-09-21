@@ -20,13 +20,9 @@
 #include <vector>
 
 #include "policy_type.h"
-#include "policy/app_removed_listener.h"
 #include "policy/ipolicy_filter.h"
 #include "work_conn_manager.h"
-#include "work_info.h"
 #include "work_queue.h"
-#include "work_scheduler_service.h"
-#include "work_sched_common.h"
 #include "work_status.h"
 
 namespace OHOS {

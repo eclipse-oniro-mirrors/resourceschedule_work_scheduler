@@ -19,6 +19,7 @@
 #include "common_event_manager.h"
 #include "matching_skills.h"
 #include "want.h"
+#include "work_sched_hilog.h"
 
 using namespace std;
 
