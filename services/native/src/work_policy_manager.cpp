@@ -23,9 +23,10 @@
 #include <system_ability_definition.h>
 
 #include "policy/app_data_clear_listener.h"
+#include "policy/app_removed_listener.h"
 #include "work_scheduler_service.h"
 #include "work_event_handler.h"
-
+#include "work_sched_hilog.h"
 #include "watchdog.h"
 
 using namespace std;

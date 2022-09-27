@@ -15,6 +15,8 @@
 #include "policy/memory_policy.h"
 
 #include <fstream>
+#include <securec.h>
+#include "work_sched_hilog.h"
 
 using namespace std;
 

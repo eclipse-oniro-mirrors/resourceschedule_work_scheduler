@@ -17,7 +17,6 @@
 
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 #include "background_task_subscriber.h"
-#include "work_scheduler_service.h"
 #include "background_task_mgr_helper.h"
 
 namespace OHOS {

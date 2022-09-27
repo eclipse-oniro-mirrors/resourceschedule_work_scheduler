@@ -22,8 +22,6 @@
 
 #include "conditions/icondition_listener.h"
 #include "work_queue.h"
-#include "work_scheduler_service.h"
-#include "work_sched_common.h"
 #include "work_status.h"
 
 namespace OHOS {

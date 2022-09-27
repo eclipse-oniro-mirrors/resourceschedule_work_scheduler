@@ -16,7 +16,8 @@
 #include "work_queue.h"
 
 #include "work_condition.h"
-#include "work_sched_common.h"
+#include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 using namespace std;
 
