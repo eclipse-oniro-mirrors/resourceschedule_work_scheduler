@@ -30,7 +30,7 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
     if (descriptor != remoteDescriptor) {
         WS_HILOGE("failed, descriptor is not matched!");
-        return E_GET_WORKSCHED_SERVICE_FALIED;
+        return E_PARCEL_OPERATION_FAILED;
     }
     switch (code) {
         case static_cast<int32_t>(IWorkSchedService::START_WORK): {
@@ -93,13 +93,9 @@ int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_START_WORK_FAILED;
+        return E_PARCEL_OPERATION_FAILED;
     }
-    if (!StartWork(*workInfo)) {
-        WS_HILOGE("StartWork failed");
-        return E_START_WORK_FAILED;
-    }
-    return ERR_OK;
+    return StartWork(*workInfo);
 }
 
 int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
@@ -107,12 +103,9 @@ int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_STOP_WORK_FAILED;
+        return E_PARCEL_OPERATION_FAILED;
     }
-    if (!StopWork(*workInfo)) {
-        return E_STOP_WORK_FAILED;
-    }
-    return ERR_OK;
+    return StopWork(*workInfo);
 }
 
 int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
@@ -120,21 +113,14 @@ int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_STOP_AND_CANCEL_WORK_FAILED;
+        return E_PARCEL_OPERATION_FAILED;
     }
-    if (!StopAndCancelWork(*workInfo)) {
-        return E_STOP_AND_CANCEL_WORK_FAILED;
-    }
-    return ERR_OK;
+    return StopAndCancelWork(*workInfo);
 }
 
 int32_t WorkSchedServiceStub::StopAndClearWorksStub(MessageParcel& data)
 {
-    if (!StopAndClearWorks()) {
-        WS_HILOGE("StopAndClearWorks failed");
-        return E_STOP_AND_CLEAR_WORKS_FAILED;
-    }
-    return ERR_OK;
+    return StopAndClearWorks();
 }
 
 int32_t WorkSchedServiceStub::IsLastWorkTimeoutStub(MessageParcel& data, bool &result)

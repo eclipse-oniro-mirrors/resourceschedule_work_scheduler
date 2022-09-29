@@ -19,7 +19,16 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+    /**
+     * @brief Start work and throw error.
+     * @return void.
+     */
     napi_value StartWork(napi_env env, napi_callback_info info);
+    /**
+     * @brief Start work.
+     * @return True if success,else false.
+     */
+    napi_value StartWorkWithRet(napi_env env, napi_callback_info info);
 }
 }
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_START_WORK

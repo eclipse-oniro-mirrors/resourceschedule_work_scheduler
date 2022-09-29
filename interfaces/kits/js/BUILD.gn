@@ -32,6 +32,7 @@ ohos_shared_library("workscheduler") {
     "${worksched_root_path}/interfaces/kits/js/napi/src/stop_and_clear_works.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/stop_work.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/workscheduler_napi.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/resourceschedule_worksched_napi.cpp"
   ]
 
   deps = [

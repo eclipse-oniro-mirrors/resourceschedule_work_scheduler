@@ -215,7 +215,7 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     }
     AAFwk::WantParams extraParams;
     if (!UnwrapWantParams(env, extras, extraParams)) {
-        HandleParamErr(env, E_PARAMETERS_ERR);
+        HandleParamErr(env, E_PARAMETERS_TYPE_ERR);
         return false;
     }
     workInfo.RequestExtras(extraParams);
@@ -509,101 +509,61 @@ void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &inf
     }
 }
 
-void Common::HandleErrCode(const napi_env &env, const int32_t errCode)
+void Common::HandleErrCode(const napi_env &env, int32_t errCode)
 {
-    WS_HILOGD("HandleErrCode errCode = %{public}d", errCode);
-    int32_t errCodeInfo;
-    std::string errMessage = "BussinessError ";
-    switch (errCode) {
-        case E_PARCEL_READ_FALIED:
-            [[fallthrough]];
-        case E_PARCEL_WRITE_FALIED:
-            errCodeInfo = E_PARCEL_OPERATION_FALIED;
-            errMessage.append(std::to_string(errCodeInfo)).append(": ").append(saErrCodeMsgMap[errCode]);
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
-        case E_GET_SYSTEM_ABILITY_MANAGER_FALIED:
-            [[fallthrough]];
-        case E_CHECK_SYSTEM_ABILITY_FALIED:
-            [[fallthrough]];
-        case E_SERVICE_NOT_READY:
-            errCodeInfo = E_SYSTEM_SERVICE_OPERATION_FAILED;
-            errMessage.append(std::to_string(errCodeInfo)).append(": ").append(saErrCodeMsgMap[errCode]);
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
-        case E_IPC_COMMUNICATION_FAILED:
-            [[fallthrough]];
-        case E_CHECK_WORKINFO_FAILED:
-            [[fallthrough]];
-        case E_WORK_NOT_EXIST_FAILED:
-            errMessage.append(std::to_string(errCode)).append(": ").append(saErrCodeMsgMap[errCode]);
-            napi_throw_error(env, std::to_string(errCode).c_str(), errMessage.c_str());
-            break;
-        case E_ADD_REPEAT_WORK_ERR:
-            [[fallthrough]];
-        case E_WORK_EXCEED_UPPER_LIMIT:
-            errCodeInfo = E_STARTWORK_FAILED;
-            errMessage.append(std::to_string(errCodeInfo)).append(": ").append(saErrCodeMsgMap[errCode]);
-            napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMessage.c_str());
-            break;
-        default:
-            HandleParamErr(env, errCode);
-            break;
+    if (errCode == ERR_OK) {
+        return;
+    }
+    std::string errMsg = FindErrMsg(env, errCode);
+    int32_t errCodeInfo = FindErrCode(env, errCode);
+    if (errMsg != "") {
+        napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMsg.c_str());
     }
 }
 
-bool Common::HandleParamErr(const napi_env &env, const int32_t errCode)
+bool Common::HandleParamErr(const napi_env &env, int32_t errCode)
 {
-    WS_HILOGD("HandleParamErr errCode = %{public}d", errCode);
-    std::string errMessage = "BussinessError 401: Parameter error. ";
-    bool isParamErr = true;
-    switch (errCode) {
-        case E_PARAM_NUMBER_ERR:
-            [[fallthrough]];
-        case E_WORK_INFO_TYPE_ERR:
-            [[fallthrough]];
-        case E_BUNDLE_OR_ABILITY_NAME_EMPTY:
-            [[fallthrough]];
-        case E_WORKID_ERR:
-            [[fallthrough]];
-        case E_CONDITION_EMPTY:
-            [[fallthrough]];
-        case E_NETWORK_TYPE_ERR:
-            [[fallthrough]];
-        case E_CHARGER_TYPE_ERR:
-            [[fallthrough]];
-        case E_BATTERY_LEVEL_ERR:
-            [[fallthrough]];
-        case E_BATTERY_STATUS_ERR:
-            [[fallthrough]];
-        case E_STORAGE_REQUEST_ERR:
-            [[fallthrough]];
-        case E_REPEAT_CYCLE_TIME_ERR:
-            [[fallthrough]];
-        case E_REPEAT_COUNT_ERR:
-            [[fallthrough]];
-        case E_PARAMETERS_ERR:
-            errMessage.append(paramErrCodeMsgMap[errCode]);
-            napi_throw_error(env, std::to_string(E_PARAM_ERROR).c_str(), errMessage.c_str());
-            break;
-        default:
-            isParamErr = false;
-            break;
+    if (errCode == ERR_OK) {
+        return false;
     }
-    return isParamErr;
+    WS_HILOGE("HandleParamErr %{public}d", errCode);
+    auto iter = paramErrCodeMsgMap.find(errCode);
+    if (iter != paramErrCodeMsgMap.end()) {
+        std::string errMessage = "BussinessError 401: Parameter error. ";
+        errMessage.append(iter->second);
+        napi_throw_error(env, std::to_string(E_PARAM_ERROR).c_str(), errMessage.c_str());
+        return true;
+    }
+    return false;
 }
 
 std::string Common::FindErrMsg(const napi_env &env, const int32_t errCode)
 {
+    if (errCode == ERR_OK) {
+        return "";
+    }
     auto iter = saErrCodeMsgMap.find(errCode);
     if (iter != saErrCodeMsgMap.end()) {
-        return saErrCodeMsgMap[errCode];
+        std::string errMessage = "BussinessError ";
+        errMessage.append(std::to_string(errCode)).append(": ").append(iter->second);
+        return errMessage;
     }
     iter = paramErrCodeMsgMap.find(errCode);
     if (iter != paramErrCodeMsgMap.end()) {
-        return paramErrCodeMsgMap[errCode];
+        std::string errMessage = "BussinessError 401: Parameter error. ";
+        errMessage.append(iter->second);
+        return errMessage;
     }
-    return "";
+    return "Inner error.";
+}
+
+int32_t Common::FindErrCode(const napi_env &env, const int32_t errCodeIn)
+{
+    auto iter = paramErrCodeMsgMap.find(errCodeIn);
+    if (iter != paramErrCodeMsgMap.end()) {
+        return E_PARAM_ERROR;
+    }
+    return errCodeIn;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

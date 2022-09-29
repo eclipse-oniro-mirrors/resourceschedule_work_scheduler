@@ -20,39 +20,26 @@
 namespace OHOS {
 namespace WorkScheduler {
 enum {
-    WORKSCHED_MODULE_TYPE = 0x00,
-};
-
-// offset of workscheduler error, only be used in this file.
-constexpr ErrCode WORKSCHED_SERVICE_ERR_OFFSET = ErrCodeOffset(SUBSYS_IAWARE, WORKSCHED_MODULE_TYPE);
-
-enum {
-    E_WORK_ID_INVALID = WORKSCHED_SERVICE_ERR_OFFSET + 1,
-    E_CLIENT_CONNECT_SERVICE_FAILED,
-    E_GET_WORK_STATUS_ERROR,
-    E_GET_WORKSCHED_SERVICE_FALIED,
-    E_START_WORK_FAILED,
-    E_STOP_WORK_FAILED,
-    E_STOP_AND_CANCEL_WORK_FAILED,
-    E_STOP_AND_CLEAR_WORKS_FAILED,
-    E_IS_LAST_WORK_TIMEOUT_FALSE,
-    E_GROUP_CHANGE_NOT_MATCH_HAP
-};
-
-enum {
     E_PERMISSION_DENIED = 201,
     E_PARAM_ERROR = 401,
     E_MEMORY_OPERATION_FAILED = 9700001,
-    E_PARCEL_OPERATION_FALIED,
-    E_SYSTEM_SERVICE_OPERATION_FAILED,
-    E_IPC_COMMUNICATION_FAILED,
+    E_PARCEL_OPERATION_FAILED,
+    E_CLIENT_CONNECT_SERVICE_FAILED,
+    E_SERVICE_NOT_READY,//
+    E_ADD_REPEAT_WORK_ERR,
+    E_WORK_EXCEED_UPPER_LIMIT,
+    E_REPEAT_CYCLE_TIME_ERR,
+    E_WORK_ID_INVALID,
+    // E_IPC_COMMUNICATION_FAILED,
     E_CHECK_WORKINFO_FAILED,
-    E_STARTWORK_FAILED,
-    E_WORK_NOT_EXIST_FAILED
+    E_WORK_NOT_EXIST_FAILED,
+    // inner error code
+    E_INNER_ERR,
+    E_GROUP_CHANGE_NOT_MATCH_HAP,
 };
 
 enum ParamError {
-    E_PARAM_NUMBER_ERR = 9700101,
+    E_PARAM_NUMBER_ERR = 9700401,
     E_WORK_INFO_TYPE_ERR,
     E_BUNDLE_OR_ABILITY_NAME_EMPTY,
     E_WORKID_ERR,
@@ -63,35 +50,23 @@ enum ParamError {
     E_BATTERY_STATUS_ERR,
     E_STORAGE_REQUEST_ERR,
     E_REPEAT_COUNT_ERR,
-    E_PARAMETERS_ERR,
+    // E_PARAMETERS_ERR,
     E_PARAMETERS_TYPE_ERR,
     E_PARAMETERS_FORMAT_ERR,
     E_NEED_CANCLE_TYPE_ERR,
 };
 
-enum ServiceError {
-    E_PARCEL_READ_FALIED = 9700201,
-    E_PARCEL_WRITE_FALIED,
-    E_GET_SYSTEM_ABILITY_MANAGER_FALIED,
-    E_CHECK_SYSTEM_ABILITY_FALIED,
-    E_SERVICE_NOT_READY,
-    E_ADD_REPEAT_WORK_ERR,
-    E_WORK_EXCEED_UPPER_LIMIT,
-    E_REPEAT_CYCLE_TIME_ERR,
-};
-
-
 static std::map<int32_t, std::string> saErrCodeMsgMap = {
-    {E_PARCEL_READ_FALIED, "Parcel operation failed. Failed to read the parcel."},
-    {E_PARCEL_WRITE_FALIED, "Parcel operation failed. Failed to write the parcel."},
-    {E_GET_SYSTEM_ABILITY_MANAGER_FALIED, "System service operation failed. Failed to get system ability manager."},
-    {E_CHECK_SYSTEM_ABILITY_FALIED, "System service operation failed. Failed to get system ability."},
+    {E_MEMORY_OPERATION_FAILED, "Parcel operation failed. Failed to read or write the parcel."},
+    {E_PARCEL_OPERATION_FAILED, "Parcel operation failed. Failed to read or write the parcel."},
+    {E_CLIENT_CONNECT_SERVICE_FAILED, "System service operation failed. Failed to connect the system service."},
     {E_SERVICE_NOT_READY, "System service operation failed. The service is not ready."},
-    {E_IPC_COMMUNICATION_FAILED, "IPC communication failed. Failed to access the system service."},
     {E_CHECK_WORKINFO_FAILED, "Check workInfo failed. Current bundleUid and input uid do not match."},
     {E_ADD_REPEAT_WORK_ERR, "StartWork failed. The work has been already added."},
+    {E_REPEAT_CYCLE_TIME_ERR, "The repeat time should be greater than or equal to 20 minutes."},
     {E_WORK_EXCEED_UPPER_LIMIT, "StartWork failed. Each uid can add up to 10 works."},
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
+    {E_WORK_ID_INVALID, "The workId must be greater than 0."},
 };
 
 static std::map<int32_t, std::string> paramErrCodeMsgMap = {
@@ -106,11 +81,11 @@ static std::map<int32_t, std::string> paramErrCodeMsgMap = {
     {E_BATTERY_STATUS_ERR, "The value of batteryStatus ranges from BATTERY_STATUS_LOW to BATTERY_STATUS_LOW_OR_OKAY."},
     {E_STORAGE_REQUEST_ERR, "The value of storageRequest ranges from STORAGE_LEVEL_LOW to STORAGE_LEVEL_LOW_OR_OKAY."},
     {E_REPEAT_COUNT_ERR, "The number of repeatCount must be greater than or equal to 0."},
-    {E_PARAMETERS_ERR, "The type of parameters must be string, boolean or number."},
+    // {E_PARAMETERS_ERR, "The type of parameters must be string, boolean or number."},
     {E_PARAMETERS_TYPE_ERR, "The type of parameters must be string, boolean or number."},
     {E_PARAMETERS_FORMAT_ERR, "The format of parameters must be {key: value} object"},
     {E_NEED_CANCLE_TYPE_ERR, "The type of needCancle must be boolean."},
-    {E_REPEAT_CYCLE_TIME_ERR, "The repeat time should be greater than or equal to 20 minutes."},
+    {E_PARAM_ERROR, "The input param is error."},
 };
 } // namespace WorkScheduler
 } // namespace OHOS

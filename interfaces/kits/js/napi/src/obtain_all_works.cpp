@@ -30,8 +30,6 @@ const uint32_t OBTAIN_ALL_WORKS_MAX_PARAMS = 1;
 struct AsyncCallbackInfoObtainAllWorks : public AsyncWorkData {
     explicit AsyncCallbackInfoObtainAllWorks(napi_env env) : AsyncWorkData(env) {}
     std::list<std::shared_ptr<WorkInfo>> workInfoList;
-    int32_t errorCode {0};
-    std::string errorMsg {""};
 };
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, napi_ref &callback)

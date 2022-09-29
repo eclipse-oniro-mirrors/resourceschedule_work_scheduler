@@ -35,6 +35,7 @@ struct AsyncWorkData {
     napi_ref callback = nullptr;
     bool isCallback = false;
     int32_t errorCode = 0;
+    std::string errorMsg = "";
 };
 
 class Common {
@@ -130,7 +131,8 @@ public:
      * @brief Get callback error value.
      *
      * @param env The env.
-     * @param errCode The errCode.
+     * @param errCode The error code.
+     * @param errMsg The error message.
      * @return Callback error value.
      */
     static napi_value GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg);
@@ -138,8 +140,7 @@ public:
      * @brief Set callback.
      *
      * @param env The env.
-     * @param callbackIn The callbackIn.
-     * @param errorCode The errorCode.
+     * @param info The info.
      * @param result The result.
      */
     static void SetCallback(const napi_env &env, const AsyncWorkData &info, const napi_value &result);
@@ -182,6 +183,8 @@ public:
      * @param errCode The error code.
      */
     static std::string FindErrMsg(const napi_env &env, const int32_t errCode);
+
+    static int32_t FindErrCode(const napi_env &env, const int32_t errCodeIn);
 
 private:
     static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);

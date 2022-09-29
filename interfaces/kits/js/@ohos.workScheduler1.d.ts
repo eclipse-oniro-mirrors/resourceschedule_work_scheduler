@@ -24,7 +24,7 @@ import {AsyncCallback} from './basic';
  * @deprecated since 9
  * @useinstead @ohos.resourceschedule.workScheduler
  */
-declare namespace workScheduler {
+declare namespace workScheduler1 {
     /**
      * The info of work.
      *

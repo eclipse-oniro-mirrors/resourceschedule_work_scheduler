@@ -35,8 +35,6 @@ struct GetWorkStatusParamsInfo {
 struct AsyncCallbackInfoGetWorkStatus : public AsyncWorkData {
     explicit AsyncCallbackInfoGetWorkStatus(napi_env env) : AsyncWorkData(env) {}
     int32_t workId {-1};
-    int32_t errorCode {0};
-    std::string errorMsg {""};
     std::shared_ptr<WorkInfo> workInfo {nullptr};
 };
 

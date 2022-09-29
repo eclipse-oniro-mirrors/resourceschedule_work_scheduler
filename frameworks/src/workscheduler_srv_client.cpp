@@ -45,21 +45,21 @@ ErrCode WorkSchedulerSrvClient::Connect()
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         WS_HILOGE("GetSystemAbilityManager failed!");
-        return E_GET_SYSTEM_ABILITY_MANAGER_FALIED;
+        return E_CLIENT_CONNECT_SERVICE_FAILED;
     }
     sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
     if (remoteObject_ == nullptr) {
         WS_HILOGE("GetSystemAbility failed!");
-        return E_CHECK_SYSTEM_ABILITY_FALIED;
+        return E_CLIENT_CONNECT_SERVICE_FAILED;
     }
     deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new WorkSchedulerDeathRecipient());
     if (deathRecipient_ == nullptr) {
         WS_HILOGE("Failed to create WorkScheduelrDeathRecipient!");
-        return E_SYSTEM_SERVICE_OPERATION_FAILED;
+        return E_CLIENT_CONNECT_SERVICE_FAILED;
     }
     if ((remoteObject_->IsProxyObject()) && (!remoteObject_->AddDeathRecipient(deathRecipient_))) {
         WS_HILOGE("Add death recipient to WorkSchedulerService failed!");
-        return E_SYSTEM_SERVICE_OPERATION_FAILED;
+        return E_CLIENT_CONNECT_SERVICE_FAILED;
     }
     iWorkSchedService_ = iface_cast<IWorkSchedService>(remoteObject_);
     WS_HILOGD("Connecting WorkSchedService success.");

@@ -19,13 +19,14 @@
 #include "napi/native_node_api.h"
 
 namespace OHOS {
+namespace resourceschedule {
 namespace WorkScheduler {
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-__attribute__((constructor)) void RegisterModule(void);
-static napi_value Init(napi_env env, napi_value exports);
+__attribute__((constructor)) void RegisterModule2(void);
+static napi_value Init2(napi_env env, napi_value exports);
 
 static napi_value InitNetworkType(napi_env env, napi_value exports);
 static napi_value EnumNetworkTypeConstructor(napi_env env, napi_callback_info info);
@@ -47,11 +48,12 @@ napi_module _resourcesched_work_sched_module = {
     .nm_version = 1,
     .nm_flags = 0,
     .nm_filename = nullptr,
-    .nm_register_func = Init,
+    .nm_register_func = Init2,
     .nm_modname = "resourceschedule.workScheduler",
     .nm_priv = ((void *)0),
     .reserved = {0}
 };
 }  // namespace WorkScheduler
+}
 }  // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_NAPI_H

@@ -41,13 +41,40 @@ napi_value StartWork(napi_env env, napi_callback_info info)
 
     // Get workInfo and call service.
     WorkInfo workInfo = WorkInfo();
-    ErrCode errCode = E_WORK_INFO_TYPE_ERR;
+    // ErrCode errCode = E_WORK_INFO_TYPE_ERR;
     if (Common::GetWorkInfo(env, argv[WORK_INFO_INDEX], workInfo)) {
-        errCode = WorkSchedulerSrvClient::GetInstance().StartWork(workInfo);
+        ErrCode errCode = WorkSchedulerSrvClient::GetInstance().StartWork(workInfo);
+        Common::HandleErrCode(env, errCode);
     }
-    Common::HandleErrCode(env, errCode);
+    // Common::HandleErrCode(env, errCode);
     WS_HILOGD("Start work napi end.");
     return Common::NapiGetNull(env);
+}
+
+napi_value StartWorkWithRet(napi_env env, napi_callback_info info)
+{
+    WS_HILOGD("Start work with ret napi begin.");
+
+    // Check params.
+    size_t argc = START_WORK_PARAMS;
+    napi_value argv[START_WORK_PARAMS] = {0};
+    napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
+    NAPI_ASSERT(env, argc == START_WORK_PARAMS, "parameter error!");
+    bool matchFlag = Common::MatchValueType(env, argv[WORK_INFO_INDEX], napi_object);
+    NAPI_ASSERT(env, matchFlag, "Type error, it should be object");
+
+    // Get workInfo and call service.
+    WorkInfo workInfo = WorkInfo();
+    bool result;
+    if (!Common::GetWorkInfo(env, argv[WORK_INFO_INDEX], workInfo)) {
+        result = false;
+    } else {
+        result = WorkSchedulerSrvClient::GetInstance().StartWork(workInfo) == 0 ? true : false;
+    }
+    napi_value napiValue = nullptr;
+    NAPI_CALL(env, napi_get_boolean(env, result, &napiValue));
+    WS_HILOGD("Start work with ret napi end.");
+    return napiValue;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

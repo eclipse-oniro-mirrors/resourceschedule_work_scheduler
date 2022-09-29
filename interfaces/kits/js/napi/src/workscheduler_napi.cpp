@@ -41,6 +41,29 @@ napi_value Init(napi_env env, napi_value exports)
 {
     WS_HILOGD("Work scheduler napi init.");
     napi_property_descriptor desc[] = {
+        DECLARE_NAPI_FUNCTION("startWork", StartWorkWithRet),
+        DECLARE_NAPI_FUNCTION("stopWork", StopWorkWithRet),
+        DECLARE_NAPI_FUNCTION("getWorkStatus", GetWorkStatus),
+        DECLARE_NAPI_FUNCTION("obtainAllWorks", ObtainAllWorks),
+        DECLARE_NAPI_FUNCTION("stopAndClearWorks", StopAndClearWorksWithRet),
+        DECLARE_NAPI_FUNCTION("isLastWorkTimeOut", IsLastWorkTimeOut),
+    };
+
+    NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
+
+    // Init constant value.
+    InitNetworkType(env, exports);
+    InitChargingType(env, exports);
+    InitBatteryStatus(env, exports);
+    InitStorageRequest(env, exports);
+
+    return exports;
+}
+
+napi_value InitApi(napi_env env, napi_value exports)
+{
+    WS_HILOGD("Work scheduler napi init.");
+    napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("startWork", StartWork),
         DECLARE_NAPI_FUNCTION("stopWork", StopWork),
         DECLARE_NAPI_FUNCTION("getWorkStatus", GetWorkStatus),
@@ -253,6 +276,7 @@ napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info info)
 __attribute__((constructor)) void RegisterModule(void)
 {
     napi_module_register(&_module);
+    napi_module_register(&_apiModule);
 }
 EXTERN_C_END
 } // namespace WorkScheduler

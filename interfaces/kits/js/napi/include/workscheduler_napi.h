@@ -26,6 +26,7 @@ extern "C" {
 
 __attribute__((constructor)) void RegisterModule(void);
 static napi_value Init(napi_env env, napi_value exports);
+static napi_value InitApi(napi_env env, napi_value exports);
 
 static napi_value InitNetworkType(napi_env env, napi_value exports);
 static napi_value EnumNetworkTypeConstructor(napi_env env, napi_callback_info info);
@@ -49,6 +50,16 @@ napi_module _module = {
     .nm_filename = nullptr,
     .nm_register_func = Init,
     .nm_modname = "workScheduler",
+    .nm_priv = ((void *)0),
+    .reserved = {0}
+};
+
+napi_module _apiModule = {
+    .nm_version = 1,
+    .nm_flags = 0,
+    .nm_filename = nullptr,
+    .nm_register_func = InitApi,
+    .nm_modname = "resourceschedule.workScheduler",
     .nm_priv = ((void *)0),
     .reserved = {0}
 };
