@@ -165,7 +165,7 @@ ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<Wo
 {
     WS_HILOGD("Get Work Status");
     if (workId <= 0) {
-        return E_WORK_ID_INVALID;
+        return E_WORKID_ERR;
     }
     ErrCode code = Connect();
     if (code != ERR_OK) {
