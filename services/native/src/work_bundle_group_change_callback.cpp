@@ -25,13 +25,12 @@ WorkBundleGroupChangeCallback::WorkBundleGroupChangeCallback(std::shared_ptr<Wor
     workQueueManager_ = workQueueManager;
 }
 
-void WorkBundleGroupChangeCallback::OnBundleGroupChanged(
-    const DeviceUsageStats::BundleActiveGroupCallbackInfo &bundleActiveGroupCallbackInfo)
+void WorkBundleGroupChangeCallback::OnAppGroupChanged(const AppGroupCallbackInfo &appGroupCallbackInfo)
 {
-    int32_t newGroup = bundleActiveGroupCallbackInfo.GetNewGroup();
-    int32_t oldGroup = bundleActiveGroupCallbackInfo.GetOldGroup();
-    int32_t userId = bundleActiveGroupCallbackInfo.GetUserId();
-    std::string bundleName = bundleActiveGroupCallbackInfo.GetBundleName();
+    int32_t newGroup = appGroupCallbackInfo.GetNewGroup();
+    int32_t oldGroup = appGroupCallbackInfo.GetOldGroup();
+    int32_t userId = appGroupCallbackInfo.GetUserId();
+    std::string bundleName = appGroupCallbackInfo.GetBundleName();
     WS_HILOGD("Bundle group changed to %{public}d with userId = %{public}d, bundleName = %{public}s",
         newGroup, userId, bundleName.c_str());
     if (!workQueueManager_) {
