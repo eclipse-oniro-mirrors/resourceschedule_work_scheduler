@@ -25,7 +25,8 @@ WorkBundleGroupChangeCallback::WorkBundleGroupChangeCallback(std::shared_ptr<Wor
     workQueueManager_ = workQueueManager;
 }
 
-void WorkBundleGroupChangeCallback::OnAppGroupChanged(const AppGroupCallbackInfo &appGroupCallbackInfo)
+void WorkBundleGroupChangeCallback::OnAppGroupChanged(
+    const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo)
 {
     int32_t newGroup = appGroupCallbackInfo.GetNewGroup();
     int32_t oldGroup = appGroupCallbackInfo.GetOldGroup();

@@ -32,7 +32,7 @@ public:
     * parameters: appGroupCallbackInfo
     * return: void.
     */
-    virtual void OnAppGroupChanged(const AppGroupCallbackInfo &appGroupCallbackInfo) override;
+    virtual void OnAppGroupChanged(const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo) override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
 };
