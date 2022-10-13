@@ -13,6 +13,8 @@
 
 When an application needs to perform tasks that do not require high real-time performance, such as data learning when the device is idle, the work scheduler can be used. When the application setting conditions are met, the mechanism will uniformly decide the scheduling time according to the current state of the system, such as memory, power consumption, heat, etc.
 
+![](figures/en-us_image001.png)
+
 ## Directory Structure<a name="section161941989596"></a>
 
 ```
