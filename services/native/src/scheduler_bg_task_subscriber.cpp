@@ -16,6 +16,8 @@
 #include "scheduler_bg_task_subscriber.h"
 #include "resource_type.h"
 #include "resource_callback_info.h"
+#include "work_scheduler_service.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {

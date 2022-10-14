@@ -15,6 +15,7 @@
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "work_bundle_group_change_callback.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {
