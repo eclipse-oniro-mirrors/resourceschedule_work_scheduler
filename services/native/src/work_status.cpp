@@ -19,6 +19,8 @@
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "work_scheduler_service.h"
+#include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #include "bundle_active_group_map.h"

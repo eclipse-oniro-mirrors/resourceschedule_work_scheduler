@@ -20,7 +20,7 @@
 #include "common_event_support.h"
 #include "net_supplier_info.h"
 #include "want.h"
-#include "work_sched_common.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {

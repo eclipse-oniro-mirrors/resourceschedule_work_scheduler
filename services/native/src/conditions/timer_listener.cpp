@@ -15,6 +15,7 @@
 #include "conditions/timer_listener.h"
 
 #include "work_queue_event_handler.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {
