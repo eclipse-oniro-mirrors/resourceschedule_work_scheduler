@@ -140,10 +140,12 @@ public:
      * @brief Set callback.
      *
      * @param env The env.
-     * @param info The info.
+     * @param callbackIn The callback.
+     * @param errCode The errCode.
      * @param result The result.
      */
-    static void SetCallback(const napi_env &env, const AsyncWorkData &info, const napi_value &result);
+    static void SetCallback(const napi_env &env, const napi_ref &callbackIn,
+        const int32_t &errCode, const napi_value &result);
     /**
      * @brief Set promise.
      *
@@ -183,7 +185,12 @@ public:
      * @param errCode The error code.
      */
     static std::string FindErrMsg(const napi_env &env, const int32_t errCode);
-
+    /**
+     * @brief Find the error code actually reported by code.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
     static int32_t FindErrCode(const napi_env &env, const int32_t errCodeIn);
 
 private:

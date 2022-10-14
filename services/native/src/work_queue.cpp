@@ -12,11 +12,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <list>
-#include <algorithm>
+#include <set>
 #include "work_queue.h"
 
 #include "work_condition.h"
+#include "work_sched_hilog.h"
 #include "work_sched_errors.h"
 
 using namespace std;

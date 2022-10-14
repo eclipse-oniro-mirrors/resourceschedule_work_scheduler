@@ -58,3 +58,37 @@ ohos_shared_library("workschedextension") {
   relative_install_dir = "extensionability/"
   part_name = "${worksched_native_part_name}"
 }
+
+ohos_shared_library("resourceschedule_workschedextension") {
+  sources = [
+    "${worksched_service_path}/zidl/src/work_scheduler_stub.cpp",
+    "${worksched_service_path}/zidl/src/work_scheduler_stub_imp.cpp",
+    "src/js_work_scheduler_extension.cpp",
+    "src/js_work_scheduler_extension_context.cpp",
+    "src/work_scheduler_extension.cpp",
+    "src/work_scheduler_extension_context.cpp",
+    "src/work_scheduler_extension_module_loader.cpp",
+  ]
+
+  configs = [ ":worksched_private_config" ]
+
+  public_configs = [ ":worksched_public_config" ]
+
+  deps = [
+    "${ability_runtime_path}/frameworks/native/appkit:app_context",
+    "${worksched_frameworks_path}:workschedclient",
+    "${worksched_utils_path}:workschedutils",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:runtime",
+    "hiviewdfx_hilog_native:libhilog",
+    "ipc:ipc_core",
+  ]
+
+  relative_install_dir = "extensionability/resourceschedule/"
+  part_name = "${worksched_native_part_name}"
+}

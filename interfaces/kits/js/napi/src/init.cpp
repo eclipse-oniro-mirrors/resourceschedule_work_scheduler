@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "workscheduler_napi.h"
+#include "init.h"
 
 #include <cstddef>
 
@@ -38,12 +38,12 @@ napi_ref chargingTypeConstructor_ = nullptr;
 napi_ref batteryStatusConstructor_ = nullptr;
 napi_ref storageRequestConstructor_ = nullptr;
 
-napi_value Init(napi_env env, napi_value exports)
+napi_value InitApi(napi_env env, napi_value exports)
 {
     WS_HILOGD("Work scheduler napi init.");
     napi_property_descriptor desc[] = {
         DECLARE_NAPI_FUNCTION("startWork", StartWork),
-        DECLARE_NAPI_FUNCTION("stopWork", StopAndClearWorks),
+        DECLARE_NAPI_FUNCTION("stopWork", StopWork),
         DECLARE_NAPI_FUNCTION("getWorkStatus", GetWorkStatus),
         DECLARE_NAPI_FUNCTION("obtainAllWorks", ObtainAllWorks),
         DECLARE_NAPI_FUNCTION("stopAndClearWorks", StopAndClearWorks),
@@ -253,7 +253,7 @@ napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info info)
  */
 __attribute__((constructor)) void RegisterModule(void)
 {
-    napi_module_register(&_module);
+    napi_module_register(&_apiModule);
 }
 EXTERN_C_END
 } // namespace WorkScheduler

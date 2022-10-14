@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHED_NAPI_H
-#define FOUNDATION_RESOURCESCHEDULE_WORKSCHED_NAPI_H
+#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INIT
+#define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INIT
 
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
@@ -25,7 +25,7 @@ extern "C" {
 #endif
 
 __attribute__((constructor)) void RegisterModule(void);
-static napi_value Init(napi_env env, napi_value exports);
+static napi_value InitApi(napi_env env, napi_value exports);
 
 static napi_value InitNetworkType(napi_env env, napi_value exports);
 static napi_value EnumNetworkTypeConstructor(napi_env env, napi_callback_info info);
@@ -43,15 +43,15 @@ static napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info
 /*
  * Module define
  */
-napi_module _module = {
+napi_module _apiModule = {
     .nm_version = 1,
     .nm_flags = 0,
     .nm_filename = nullptr,
-    .nm_register_func = Init,
-    .nm_modname = "workScheduler",
+    .nm_register_func = InitApi,
+    .nm_modname = "resourceschedule.workScheduler",
     .nm_priv = ((void *)0),
     .reserved = {0}
 };
 }  // namespace WorkScheduler
 }  // namespace OHOS
-#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHED_NAPI_H
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INIT

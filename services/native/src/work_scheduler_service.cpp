@@ -43,6 +43,8 @@
 #include "conditions/group_listener.h"
 #include "event_publisher.h"
 #include "json/json.h"
+#include "policy/app_data_clear_listener.h"
+#include "policy/app_removed_listener.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
@@ -53,6 +55,7 @@
 #include "work_scheduler_connection.h"
 #include "work_bundle_group_change_callback.h"
 #include "work_sched_errors.h"
+#include "work_sched_hilog.h"
 #include "work_sched_utils.h"
 
 using namespace std;

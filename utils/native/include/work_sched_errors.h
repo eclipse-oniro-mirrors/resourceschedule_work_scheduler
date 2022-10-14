@@ -19,17 +19,19 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+const int OFFSET = 100;
 enum {
     E_PERMISSION_DENIED = 201,
     E_PARAM_ERROR = 401,
-    E_MEMORY_OPERATION_FAILED = 9700001,
-    E_PARCEL_OPERATION_FAILED,
-    E_CLIENT_CONNECT_SERVICE_FAILED,
+    E_MEMORY_OPERATION_FAILED = 970000101,
+    E_PARCEL_OPERATION_FAILED = 970000201,
+    E_CLIENT_CONNECT_SERVICE_FAILED = 970000301,
     E_SERVICE_NOT_READY,
-    E_CHECK_WORKINFO_FAILED,
-    E_ADD_REPEAT_WORK_ERR,
-    E_WORK_EXCEED_UPPER_LIMIT,   
+    E_CHECK_WORKINFO_FAILED = 970000401,
     E_WORK_NOT_EXIST_FAILED,
+    E_ADD_REPEAT_WORK_ERR = 970000501,
+    E_WORK_EXCEED_UPPER_LIMIT,
+    E_REPEAT_CYCLE_TIME_ERR,
     // inner error code
     E_INNER_ERR,
     E_GROUP_CHANGE_NOT_MATCH_HAP,
@@ -40,6 +42,7 @@ enum ParamError {
     E_WORK_INFO_TYPE_ERR,
     E_BUNDLE_OR_ABILITY_NAME_EMPTY,
     E_WORKID_ERR,
+    E_CALLBACK_TYPE_ERR,
     E_CONDITION_EMPTY,
     E_NETWORK_TYPE_ERR,
     E_CHARGER_TYPE_ERR,
@@ -50,7 +53,6 @@ enum ParamError {
     E_PARAMETERS_TYPE_ERR,
     E_PARAMETERS_FORMAT_ERR,
     E_NEED_CANCLE_TYPE_ERR,
-    E_REPEAT_CYCLE_TIME_ERR,
 };
 
 static std::map<int32_t, std::string> saErrCodeMsgMap = {
@@ -69,7 +71,8 @@ static std::map<int32_t, std::string> paramErrCodeMsgMap = {
     {E_PARAM_NUMBER_ERR, "The number of arguments is wrong."},
     {E_WORK_INFO_TYPE_ERR, "The type of workInfo must be {key: value} object."},
     {E_BUNDLE_OR_ABILITY_NAME_EMPTY, "The bundleName and abilityName cannot be empty."},
-    {E_WORKID_ERR, "The workId must be greater than or equal to 0."},
+    {E_WORKID_ERR, "The workId must be number greater than or equal to 0."},
+    {E_CALLBACK_TYPE_ERR, "The callback should be function."},
     {E_CONDITION_EMPTY, "The workinfo condition cannot be empty."},
     {E_NETWORK_TYPE_ERR, "The value of networkType ranges from NETWORK_TYPE_ANY to NETWORK_TYPE_ETHERNET."},
     {E_CHARGER_TYPE_ERR, "The value of chargerType ranges from CHARGING_PLUGGED_ANY to CHARGING_UNPLUGGED."},

@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import workScheduler from '@ohos.workScheduler'
+import workScheduler from '@ohos.resourceschedule.workScheduler'
 
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
 
@@ -49,7 +49,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest001
      * @tc.desc: test work scheduler work id < 0
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
      */
     it("WorkSchedulerJsTest001", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest001---------------------------');
@@ -58,8 +58,11 @@ describe("WorkSchedulerJsTest", function () {
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName"
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(false)
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(true).assertEqual(true)
+        }
         done();
     })
 
@@ -67,7 +70,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest002
      * @tc.desc: test work scheduler work id = 0
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899
+     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5VPND
      */
     it("WorkSchedulerJsTest002", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest002---------------------------');
@@ -77,8 +80,12 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(true)
+        try{
+            workScheduler.startWork(workInfo);
+            expect(true).assertEqual(true)
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         done();
     })
 
@@ -86,7 +93,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest003
      * @tc.desc: test work scheduler without bundle name.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C
+     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5VPND
      */
     it("WorkSchedulerJsTest003", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest003---------------------------');
@@ -95,8 +102,11 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(false)
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(true).assertEqual(true)
+        }
         done();
     })
 
@@ -104,7 +114,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest004
      * @tc.desc: test work scheduler without ability name.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C
+     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5VPND
      */
     it("WorkSchedulerJsTest004", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest004---------------------------');
@@ -113,8 +123,11 @@ describe("WorkSchedulerJsTest", function () {
             bundleName: "com.example.myapplication",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(false)
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(true).assertEqual(true)
+        }
         done();
     })
 
@@ -122,7 +135,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest005
      * @tc.desc: test work scheduler without conditions.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C
+     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5VPND
      */
     it("WorkSchedulerJsTest005", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest005---------------------------');
@@ -131,8 +144,11 @@ describe("WorkSchedulerJsTest", function () {
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName"
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(false)
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(true).assertEqual(true)
+        }
         done();
     })
 
@@ -140,7 +156,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest006
      * @tc.desc: test work scheduler success.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
      */
     it("WorkSchedulerJsTest006", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest006---------------------------');
@@ -150,8 +166,12 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(true)
+        try{
+            workScheduler.startWork(workInfo);
+            expect(true).assertEqual(true)
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         done();
     })
 
@@ -159,7 +179,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest007
      * @tc.desc: test stopWork.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
      */
     it("WorkSchedulerJsTest007", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest007---------------------------');
@@ -169,11 +189,11 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            var stopRes = workScheduler.stopWork(workInfo, false);
-            expect(stopRes).assertEqual(true)
-        } else {
+        try{
+            workScheduler.startWork(workInfo);
+            workScheduler.stopWork(workInfo, false);
+            expect(true).assertEqual(true)
+        } catch (error) {
             expect(false).assertEqual(true)
         }
         done();
@@ -183,7 +203,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest008
      * @tc.desc: test stopWork.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
      */
     it("WorkSchedulerJsTest008", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest008---------------------------');
@@ -193,11 +213,11 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            var stopRes = workScheduler.stopWork(workInfo, false);
-            expect(stopRes).assertEqual(true)
-        } else {
+        try{
+            workScheduler.startWork(workInfo);
+            workScheduler.stopWork(workInfo, false);
+            expect(true).assertEqual(true)
+        } catch (error) {
             expect(false).assertEqual(true)
         }
         done();
@@ -207,7 +227,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest009
      * @tc.desc: test getWorkStatus callback.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899
+     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5VPND
      */
     it("WorkSchedulerJsTest009", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest009---------------------------');
@@ -217,21 +237,26 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
-        workScheduler.getWorkStatus(9, (err, res) => {
-            if (err) {
-                expect(false).assertEqual(true)
-            } else {
-                for (let item in res) {
-                    console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
+        try{
+            workScheduler.getWorkStatus(9, (err, res) => {
+                if (err) {
+                    expect(false).assertEqual(true)
+                } else {
+                    for (let item in res) {
+                        console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
+                    }
+                    expect(true).assertEqual(true)
                 }
-                expect(true).assertEqual(true)
-            }
-        });
+            });
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         setTimeout(()=>{
             done();
         }, 500);
@@ -241,7 +266,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest010
      * @tc.desc: test getWorkStatus promise.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899
+     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5VPND
      */
     it("WorkSchedulerJsTest010", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest010---------------------------');
@@ -252,20 +277,24 @@ describe("WorkSchedulerJsTest", function () {
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
             batteryLevel: 15
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
-
-        workScheduler.getWorkStatus(10).then((res) => {
-            for (let item in res) {
-                console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
-            }
-            expect(true).assertEqual(true)
-        }).catch((err) => {
+        try{
+            workScheduler.getWorkStatus(10).then((res) => {
+                for (let item in res) {
+                    console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
+                }
+                expect(true).assertEqual(true)
+            }).catch((err) => {
+                expect(false).assertEqual(true)
+            })
+        } catch (error) {
             expect(false).assertEqual(true)
-        })
+        }
 
         setTimeout(()=>{
             done();
@@ -276,7 +305,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest011
      * @tc.desc: test obtainAllWorks callback.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
      */
     it("WorkSchedulerJsTest011", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest011---------------------------');
@@ -286,20 +315,24 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
-
-        workScheduler.obtainAllWorks((err, res) =>{
-            if (err) {
-                expect(false).assertEqual(true)
-            } else {
-                console.info('WORK_SCHEDULER obtainAllWorks callback success, data is:' + JSON.stringify(res));
-                expect(true).assertEqual(true)
-            }
-         });
+        try{
+            workScheduler.obtainAllWorks((err, res) =>{
+                if (err) {
+                    expect(false).assertEqual(true)
+                } else {
+                    console.info('WORK_SCHEDULER obtainAllWorks callback success, data is:' + JSON.stringify(res));
+                    expect(true).assertEqual(true)
+                }
+            });
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
 
         setTimeout(()=>{
             done();
@@ -310,7 +343,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest012
      * @tc.desc: test obtainAllWorks promise.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
      */
     it("WorkSchedulerJsTest012", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest012---------------------------');
@@ -321,8 +354,9 @@ describe("WorkSchedulerJsTest", function () {
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
             batteryLevel: 15
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
@@ -344,7 +378,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest013
      * @tc.desc: test stopAndClearWorks.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
      */
     it("WorkSchedulerJsTest013", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest013---------------------------');
@@ -354,11 +388,11 @@ describe("WorkSchedulerJsTest", function () {
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            var stopRes = workScheduler.stopAndClearWorks();
-            expect(stopRes).assertEqual(true)
-        } else {
+        try{
+            workScheduler.startWork(workInfo);
+            workScheduler.stopAndClearWorks(workInfo, false);
+            expect(true).assertEqual(true)
+        } catch (error) {
             expect(false).assertEqual(true)
         }
         done();
@@ -368,18 +402,22 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest014
      * @tc.desc: test isLastWorkTimeOut callback.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
      */
     it("WorkSchedulerJsTest014", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest014---------------------------');
-        workScheduler.isLastWorkTimeOut(14, (err, res) =>{
-            if (err) {
-                expect(false).assertEqual(true)
-            } else {
-                console.info('WORK_SCHEDULER isLastWorkTimeOut callback success, data is:' + res);
-                expect(true).assertEqual(true)
-            }
-        });
+        try{
+            workScheduler.isLastWorkTimeOut(14, (err, res) =>{
+                if (err) {
+                    expect(false).assertEqual(true)
+                } else {
+                    console.info('WORK_SCHEDULER isLastWorkTimeOut callback success, data is:' + res);
+                    expect(true).assertEqual(true)
+                }
+            });
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         setTimeout(()=>{
             done();
         }, 500);
@@ -389,18 +427,22 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest015
      * @tc.desc: test isLastWorkTimeOut promise.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
      */
     it("WorkSchedulerJsTest015", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest015---------------------------');
-        workScheduler.isLastWorkTimeOut(15)
-            .then(res => {
-                console.info('WORK_SCHEDULER isLastWorkTimeOut promise success, data is:' + res);
-                expect(true).assertEqual(true)
-            })
-            .catch(err =>  {
-                expect(false).assertEqual(true)
-        });
+        try{
+            workScheduler.isLastWorkTimeOut(15)
+                .then(res => {
+                    console.info('WORK_SCHEDULER isLastWorkTimeOut promise success, data is:' + res);
+                    expect(true).assertEqual(true)
+                })
+                .catch(err =>  {
+                    expect(false).assertEqual(true)
+            });
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         setTimeout(()=>{
             done();
         }, 500);
@@ -433,13 +475,17 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         let begin = getTime();
-        var res = workScheduler.startWork(workInfo);
-        if (res === true) {
-            let end = getTime();
-            let times = end - begin;
-            if (times < 50) {
-                expect(res).assertEqual(true)
-            }
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+
+        let end = getTime();
+        let times = end - begin;
+        if (times < 50) {
+            expect(true).assertEqual(true)
         }
         done();
     })
@@ -465,7 +511,9 @@ describe("WorkSchedulerJsTest", function () {
         }
         let begin = getTime();
         for (var i = 0 ; i < 20 ; i++) {
-            var res = workScheduler.startWork(workInfo);
+            try{
+                workScheduler.startWork(workInfo);
+            } catch (error) {}
         }
         let end = getTime();
         let times = end - begin;
@@ -496,17 +544,17 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
+        try{
+            workScheduler.startWork(workInfo);
             let begin = getTime();
-            var stopRes = workScheduler.stopWork(workInfo, false);
-            if (stopRes == true) {
-                let end = getTime();
-                let times = end - begin;
-                if (times < 50) {
-                    expect(stopRes).assertEqual(true)
-                }
+            workScheduler.stopWork(workInfo, false);
+            let end = getTime();
+            let times = end - begin;
+            if (times < 50) {
+                expect(true).assertEqual(true)
             }
+        } catch (error) {
+            expect(false).assertEqual(true)
         }
         done();
     })
@@ -530,18 +578,26 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let begin = getTime();
-            var stopRes = workScheduler.stopWork(workInfo, true);
-            if (stopRes == true) {
-                let end = getTime();
-                let times = end - begin;
-                if (times < 50) {
-                    expect(stopRes).assertEqual(true)
-                }
-            }
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
         }
+
+        let begin = getTime();
+        try{
+            workScheduler.stopWork(workInfo, true);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        let end = getTime();
+        let times = end - begin;
+        if (times < 50) {
+            expect(true).assertEqual(true)
+        }
+
         done();
     })
 
@@ -564,19 +620,18 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let begin = getTime();
-            let end = 0;
-            let times = 0;
-            for (var i = 0 ; i < 20 ; i++) {
-                var stopRes = workScheduler.stopWork(workInfo, true);
-                end = getTime();
-                times = end - begin;
-            }
-            if (times/20 < 50){
-                expect(true).assertEqual(true)
-            }
+        let begin = getTime();
+        let end = 0;
+        let times = 0;
+        for (var i = 0 ; i < 20 ; i++) {
+            try{
+                workScheduler.startWork(workInfo);
+            } catch (error) {}
+            end = getTime();
+            times = end - begin;
+        }
+        if (times/20 < 50){
+            expect(true).assertEqual(true)
         }
         setTimeout(() => {
             done();
@@ -614,11 +669,18 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        let begin =0;
-        if (res == true) {
-            begin = getTime();
-            workScheduler.getWorkStatus(21,workSchedulerCallback);
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        let begin = getTime();
+        try{
+            workScheduler.getWorkStatus(21, workSchedulerCallback);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
         }
     })
 
@@ -641,9 +703,15 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let begin = getTime();
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+
+        let begin = getTime();
+        try{
             workScheduler.getWorkStatus(22).then((res) => {
                 let end = getTime();
                 let times = end - begin;
@@ -659,6 +727,9 @@ describe("WorkSchedulerJsTest", function () {
                     console.info('WORK_SCHEDULER getWorkStatuscallback success,' + item + ' is:' + res[item]);
                 }
             })
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
         }
     })
 
@@ -681,23 +752,27 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        let begin = 0;
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
         let end = 0;
         let times = 0;
-        if (res == true) {
-            begin = getTime();
-            for (var i = 0 ; i < 20 ; i++) {
+        let begin = getTime();
+        for (var i = 0 ; i < 20 ; i++) {
+            try{
                 workScheduler.getWorkStatus(23, (err, res) => {
                     end = getTime();
                     times = end - begin;
                 });
-            }
-            if (times/20 < 50) {
-                expect(true).assertTrue();
-            } else {
-                expect(false).assertTrue();
-            }
+            } catch (error) {}
+        }
+        if (times/20 < 50) {
+            expect(true).assertTrue();
+        } else {
+            expect(false).assertTrue();
         }
         setTimeout(() => {
             done();
@@ -723,9 +798,14 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let startTime = getTime();
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        let startTime = getTime();
+        try{
             workScheduler.obtainAllWorks((err, res) =>{
                 let endTime = getTime();
                 let workTime = endTime - startTime;
@@ -735,7 +815,7 @@ describe("WorkSchedulerJsTest", function () {
                     expect(false).assertTrue()
                 }
             });
-        }
+        } catch (error) {}
         setTimeout(() => {
             done();
         }, 500);
@@ -760,9 +840,14 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let begin = getTime();
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        let begin = getTime();
+        try{
             workScheduler.obtainAllWorks().then((res) => {
                 let end = getTime();
                 let times = end - begin;
@@ -775,7 +860,7 @@ describe("WorkSchedulerJsTest", function () {
             }).catch((err) => {
                 console.info('workschedulerLog obtainAllWorks promise failed, because:' + err.data);
             })
-        }
+        } catch (error) {}
         setTimeout(() => {
             done();
         }, 500);
@@ -800,10 +885,15 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let startTime = getTime();
-            for (var i = 0 ; i < 20 ; i++) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        let startTime = getTime();
+        for (var i = 0 ; i < 20 ; i++) {
+            try{
                 workScheduler.obtainAllWorks((err, res) => {
                     let endTime = getTime();
                     let workTime = endTime - startTime;
@@ -813,7 +903,7 @@ describe("WorkSchedulerJsTest", function () {
                         expect(false).assertTrue()
                     }
                 });
-            }
+            } catch (error) {}
         }
         setTimeout(() => {
             done();
@@ -839,17 +929,22 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let begin = getTime();
-            var stopRes = workScheduler.stopAndClearWorks();
-            if (stopRes == true) {
-                let end = getTime();
-                let times = end - begin;
-                if (times < 50) {
-                    expect(stopRes).assertEqual(true)
-                }
-            }
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        let begin = getTime();
+        try{
+            workScheduler.stopAndClearWorks();
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
+        let end = getTime();
+        let times = end - begin;
+        if (times < 50) {
+            expect(true).assertEqual(true)
         }
         done();
     })
@@ -873,19 +968,24 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            let begin = getTime();
-            let end = 0;
-            let times = 0;
-            for (var i = 0 ; i < 20 ; i++) {
-                var stopRes = workScheduler.stopAndClearWorks();
-                end = getTime();
-                times = end - begin;
-            }
-            if (times/20 < 50){
-                expect(true).assertEqual(true)
-            }
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+            done();
+        }
+        let begin = getTime();
+        let end = 0;
+        let times = 0;
+        for (var i = 0 ; i < 20 ; i++) {
+            try{
+                workScheduler.stopAndClearWorks();
+            } catch (error) {}
+            end = getTime();
+            times = end - begin;
+        }
+        if (times/20 < 50){
+            expect(true).assertEqual(true)
         }
         done();
     })
@@ -904,15 +1004,17 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         let begin = getTime();
-        workScheduler.isLastWorkTimeOut(29, (err, res) =>{
-            let end = getTime();
-            let times = end - begin;
-            if (times < 50) {
-                expect(true).assertTrue();
-            } else {
-                expect(false).assertTrue();
-            }
-        });
+        try{
+            workScheduler.isLastWorkTimeOut(29, (err, res) =>{
+                let end = getTime();
+                let times = end - begin;
+                if (times < 50) {
+                    expect(true).assertTrue();
+                } else {
+                    expect(false).assertTrue();
+                }
+            });
+        } catch (error) {}
         setTimeout(() => {
             done();
         }, 500);
@@ -932,20 +1034,22 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         let begin = getTime();
-        workScheduler.isLastWorkTimeOut(30)
-            .then(res => {
-                let end = getTime();
-                let times = end - begin;
-                if (times < 50) {
-                    expect(true).assertTrue();
-                } else {
-                    expect(false).assertTrue();
-                }
-                console.info('WORK_SCHEDULER isLastWorkTimeOut promise success, data is:' + res);
-            })
-            .catch(err =>  {
-                expect(false).assertEqual(true)
-        });
+        try{
+            workScheduler.isLastWorkTimeOut(30)
+                .then(res => {
+                    let end = getTime();
+                    let times = end - begin;
+                    if (times < 50) {
+                        expect(true).assertTrue();
+                    } else {
+                        expect(false).assertTrue();
+                    }
+                    console.info('WORK_SCHEDULER isLastWorkTimeOut promise success, data is:' + res);
+                })
+                .catch(err =>  {
+                    expect(false).assertEqual(true)
+            });
+        } catch (error) {}
         setTimeout(() => {
             done();
         }, 500);
@@ -966,15 +1070,17 @@ describe("WorkSchedulerJsTest", function () {
         }
         let begin = getTime();
         for (var i = 0 ; i < 20 ; i++) {
-            workScheduler.isLastWorkTimeOut(31, (err, res) =>{
-                var end = getTime();
-                var times = end - begin;
-                if (times < 50) {
-                    expect(true).assertTrue();
-                } else {
-                    expect(false).assertTrue();
-                }
-            });
+            try{
+                workScheduler.isLastWorkTimeOut(31, (err, res) =>{
+                    var end = getTime();
+                    var times = end - begin;
+                    if (times < 50) {
+                        expect(true).assertTrue();
+                    } else {
+                        expect(false).assertTrue();
+                    }
+                });
+            } catch (error) {}
         }
         setTimeout(() => {
             done();
@@ -1002,8 +1108,12 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(true)
+        try{
+            workScheduler.startWork(workInfo);
+            expect(true).assertEqual(true)
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         done();
     })
 
@@ -1027,8 +1137,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey3: ["qqqqq", "wwwwww", "aaaaaaaaaaaaaaaaa"]
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(false)
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(true).assertEqual(true)
+        }
         done();
     })
 
@@ -1054,8 +1167,12 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(true)
+        try{
+            workScheduler.startWork(workInfo);
+            expect(true).assertEqual(true)
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         done();
     })
 
@@ -1074,8 +1191,11 @@ describe("WorkSchedulerJsTest", function () {
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
             parameters: 1
         }
-        var res = workScheduler.startWork(workInfo);
-        expect(res).assertEqual(false)
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(true).assertEqual(true)
+        }
         done();
     })
 
@@ -1100,11 +1220,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == true) {
-            var stopRes = workScheduler.stopWork(workInfo, false);
-            expect(stopRes).assertEqual(true)
-        } else {
+        try{
+            workScheduler.startWork(workInfo);
+            workScheduler.stopWork(workInfo, false);
+            expect(true).assertEqual(true)
+        } catch (error) {
             expect(false).assertEqual(true)
         }
         done();
@@ -1131,8 +1251,9 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
@@ -1173,8 +1294,9 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
@@ -1213,8 +1335,9 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
@@ -1255,8 +1378,9 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        var res = workScheduler.startWork(workInfo);
-        if (res == false) {
+        try{
+            workScheduler.startWork(workInfo);
+        } catch (error) {
             expect(false).assertEqual(true)
             done();
         }

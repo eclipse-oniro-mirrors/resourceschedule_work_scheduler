@@ -106,7 +106,12 @@ declare namespace workScheduler {
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @param work The info of work.
-     * @throws { BusinessError } If the input parameter is not valid parameter.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @throws { BusinessError } 9700004 - Check workInfo failed.
+     * @throws { BusinessError } 9700005 - StartWork failed.
      */
     function startWork(work: WorkInfo): void;
 
@@ -118,7 +123,11 @@ declare namespace workScheduler {
      * @StageModelOnly
      * @param work The info of work.
      * @param needCancel True if need to be canceled after being stopped, otherwise false.
-     * @throws { BusinessError } If the input parameter is not valid parameter.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @throws { BusinessError } 9700004 - Check workInfo failed.
      */
     function stopWork(work: WorkInfo, needCancel?: boolean): void;
 
@@ -129,7 +138,11 @@ declare namespace workScheduler {
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @param workId The id of work.
-     * @throws { BusinessError } If the input parameter is not valid parameter.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @throws { BusinessError } 9700004 - Check workInfo failed.
      */
     function getWorkStatus(workId: number, callback: AsyncCallback<WorkInfo>): void;
     function getWorkStatus(workId: number): Promise<WorkInfo>;
@@ -140,7 +153,10 @@ declare namespace workScheduler {
      * @since 9
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
-     * @throws { BusinessError } If the input parameter is not valid parameter.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
      * @return the work info list.
      */
     function obtainAllWorks(callback: AsyncCallback<void>): Array<WorkInfo>;
@@ -152,6 +168,11 @@ declare namespace workScheduler {
      * @since 9
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @throws { BusinessError } 9700004 - Check workInfo failed.
      */
     function stopAndClearWorks(): void;
 
@@ -162,7 +183,11 @@ declare namespace workScheduler {
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @param workId The id of work.
-     * @throws { BusinessError } If the input parameter is not valid parameter.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @throws { BusinessError } 9700004 - Check workInfo failed.
      * @return true if last work running is timeout, otherwise false.
      */
     function isLastWorkTimeOut(workId: number, callback: AsyncCallback<void>): boolean;
