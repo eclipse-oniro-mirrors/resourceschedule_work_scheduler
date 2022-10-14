@@ -106,7 +106,6 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = Common::GetNapiWorkInfo(env, asyncCallbackInfo->workInfo);
                 WS_HILOGD("asyncCallbackInfo->errorCode = %{public}d", asyncCallbackInfo->errorCode);
-                Common::HandleParamErr(env, asyncCallbackInfo->errorCode); //throw param error
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
         },

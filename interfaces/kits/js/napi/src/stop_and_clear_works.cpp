@@ -28,15 +28,5 @@ napi_value StopAndClearWorks(napi_env env, napi_callback_info info)
     WS_HILOGD("StopAndClearWorks napi end. result: %{public}s", errCode == ERR_OK ? "true" : "false");
     return Common::NapiGetNull(env);
 }
-
-napi_value StopAndClearWorksWithRet(napi_env env, napi_callback_info info)
-{
-    WS_HILOGD("StopAndClearWorks napi begin");
-    napi_value napiValue = nullptr;
-    bool result = WorkSchedulerSrvClient::GetInstance().StopAndClearWorks() == ERR_OK;
-    NAPI_CALL(env, napi_get_boolean(env, result, &napiValue));
-    WS_HILOGD("StopAndClearWorks napi end. result: %{public}s", result ? "true" : "false");
-    return napiValue;
-}
 } // namespace WorkScheduler
 } // namespace OHOS

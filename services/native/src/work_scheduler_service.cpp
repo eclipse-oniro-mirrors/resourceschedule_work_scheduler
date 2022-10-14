@@ -507,7 +507,7 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
 }
 
 int32_t WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid,
-        std::list<std::shared_ptr<WorkInfo>>& workInfos)
+    std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");

@@ -479,7 +479,7 @@ void Common::SetCallback(
     } else {
         std::string errMsg = FindErrMsg(env, errCode);
         int32_t errCodeInfo = FindErrCode(env, errCode);
-        results[0] = GetCallbackErrorValue(env, errCodeInfo, errMsg); 
+        results[0] = GetCallbackErrorValue(env, errCodeInfo, errMsg);
     }
     results[1] = result;
     NAPI_CALL_RETURN_VOID(env,

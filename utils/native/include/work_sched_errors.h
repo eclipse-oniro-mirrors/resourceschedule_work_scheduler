@@ -16,6 +16,7 @@
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_ERRORS_H
 
 #include <errors.h>
+#include <map>
 
 namespace OHOS {
 namespace WorkScheduler {

@@ -58,12 +58,12 @@ ohos_shared_library("workscheduler_napi") {
     "${worksched_root_path}/interfaces/kits/js/napi/src/common.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/common_want.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/get_work_status.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/init.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/is_last_work_time_out.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/obtain_all_works.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/start_work.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/stop_and_clear_works.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/stop_work.cpp",
-    "${worksched_root_path}/interfaces/kits/js/napi/src/init.cpp",
   ]
 
   deps = [
