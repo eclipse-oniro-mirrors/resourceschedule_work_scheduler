@@ -54,13 +54,13 @@ parameters    |Parameter information carried| {[key: string]: any}
 
  API                                                          | Description                                                  
  ------------------------------------------------------------ | ------------------------------------------------------------ 
- function startWork(work: WorkInfo): boolean;                 | work scheduler application                                   
- function stopWork(work: WorkInfo, needCancel?: boolean): boolean; | work scheduler cancel                                        
+ function startWork(work: WorkInfo): void;                 | work scheduler application                                   
+ function stopWork(work: WorkInfo, needCancel?: boolean): void; | work scheduler cancel                                        
  function getWorkStatus(workId: number, callback: AsyncCallback<WorkInfo>): void; | get the status of work（Callback form）                      
  function getWorkStatus(workId: number): Promise<WorkInfo>;   | get the status of work（Promise form）                       
  function obtainAllWorks(callback: AsyncCallback<void>): Array<WorkInfo>; | get all works（Callback form）                               
  function obtainAllWorks(): Promise<Array<WorkInfo>>;         | get all works（Promise form）                                
- function stopAndClearWorks(): boolean;                       | stop and clear work                                          
+ function stopAndClearWorks(): void;                       | stop and clear work                                          
  function isLastWorkTimeOut(workId: number, callback: AsyncCallback<void>): boolean; | Get whether the last task has timed out（For repeat work. Callback form） 
  function isLastWorkTimeOut(workId: number): Promise<boolean>; | Get whether the last task has timed out（For repeat work. Promise form） 
 

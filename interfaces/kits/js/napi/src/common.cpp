@@ -574,7 +574,7 @@ int32_t Common::FindErrCode(const napi_env &env, const int32_t errCodeIn)
     if (iter != paramErrCodeMsgMap.end()) {
         return E_PARAM_ERROR;
     }
-    return errCodeIn > OFFSET * 10 ? errCodeIn / OFFSET : errCodeIn;
+    return errCodeIn > THRESHOLD ? errCodeIn / OFFSET : errCodeIn;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

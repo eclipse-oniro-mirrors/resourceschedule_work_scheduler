@@ -21,6 +21,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 const int OFFSET = 100;
+const int THRESHOLD = 1000;
 enum {
     E_PERMISSION_DENIED = 201,
     E_PARAM_ERROR = 401,

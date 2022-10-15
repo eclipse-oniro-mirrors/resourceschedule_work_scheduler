@@ -49,7 +49,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest001
      * @tc.desc: test work scheduler work id < 0
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5QJR8
      */
     it("WorkSchedulerJsTest001", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest001---------------------------');
@@ -70,7 +70,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest002
      * @tc.desc: test work scheduler work id = 0
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5QJR8
      */
     it("WorkSchedulerJsTest002", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest002---------------------------');
@@ -93,7 +93,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest003
      * @tc.desc: test work scheduler without bundle name.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5QJR8
      */
     it("WorkSchedulerJsTest003", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest003---------------------------');
@@ -114,7 +114,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest004
      * @tc.desc: test work scheduler without ability name.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5QJR8
      */
     it("WorkSchedulerJsTest004", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest004---------------------------');
@@ -135,7 +135,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest005
      * @tc.desc: test work scheduler without conditions.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89A AR000GH89B AR000GH89C issueI5QJR8
      */
     it("WorkSchedulerJsTest005", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest005---------------------------');
@@ -156,7 +156,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest006
      * @tc.desc: test work scheduler success.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5QJR8
      */
     it("WorkSchedulerJsTest006", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest006---------------------------');
@@ -179,7 +179,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest007
      * @tc.desc: test stopWork.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5QJR8
      */
     it("WorkSchedulerJsTest007", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest007---------------------------');
@@ -203,7 +203,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest008
      * @tc.desc: test stopWork.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5QJR8
      */
     it("WorkSchedulerJsTest008", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest008---------------------------');
@@ -227,7 +227,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest009
      * @tc.desc: test getWorkStatus callback.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5QJR8
      */
     it("WorkSchedulerJsTest009", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest009---------------------------');
@@ -266,7 +266,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest010
      * @tc.desc: test getWorkStatus promise.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89H AR000GH89I AR000GH899 issueI5QJR8
      */
     it("WorkSchedulerJsTest010", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest010---------------------------');
@@ -305,7 +305,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest011
      * @tc.desc: test obtainAllWorks callback.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5QJR8
      */
     it("WorkSchedulerJsTest011", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest011---------------------------');
@@ -343,7 +343,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest012
      * @tc.desc: test obtainAllWorks promise.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5QJR8
      */
     it("WorkSchedulerJsTest012", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest012---------------------------');
@@ -378,7 +378,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest013
      * @tc.desc: test stopAndClearWorks.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89E AR000GH89F AR000GH89G issueI5QJR8
      */
     it("WorkSchedulerJsTest013", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest013---------------------------');
@@ -402,7 +402,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest014
      * @tc.desc: test isLastWorkTimeOut callback.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5QJR8
      */
     it("WorkSchedulerJsTest014", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest014---------------------------');
@@ -427,7 +427,7 @@ describe("WorkSchedulerJsTest", function () {
      * @tc.name: WorkSchedulerJsTest015
      * @tc.desc: test isLastWorkTimeOut promise.
      * @tc.type: FUNC
-     * @tc.require: SR000GGTN7 AR000GH89D issueI5VPND
+     * @tc.require: SR000GGTN7 AR000GH89D issueI5QJR8
      */
     it("WorkSchedulerJsTest015", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest015---------------------------');
@@ -938,12 +938,11 @@ describe("WorkSchedulerJsTest", function () {
         let begin = getTime();
         try{
             workScheduler.stopAndClearWorks();
-        } catch (error) {
-            expect(false).assertEqual(true)
-        }
+        } catch (error) {}
         let end = getTime();
         let times = end - begin;
         if (times < 50) {
+            console.log('WorkSchedulerJsTest027 times' + times);
             expect(true).assertEqual(true)
         }
         done();
