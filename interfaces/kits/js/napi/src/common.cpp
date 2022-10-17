@@ -29,7 +29,7 @@ const int32_t TRUE_PARAM = 1;
 const int32_t FALSE_PARAM = 0;
 const int32_t BATTERY_LEVEL_MIN = 0;
 const int32_t BATTERY_LEVEL_MAX = 100;
-bool HAS_PARAM_ERROR = false;
+bool g_HAS_PARAM_ERROR = false;
 
 AsyncWorkData::AsyncWorkData(napi_env napiEnv)
 {
@@ -227,7 +227,7 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
 
 bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
-    HAS_PARAM_ERROR = false;
+    g_HAS_PARAM_ERROR = false;
     // Get base info.
     if (!GetBaseWorkInfo(env, objValue, workInfo)) {
         return false;
@@ -255,7 +255,7 @@ bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
         hasConditions = true;
     }
     // if param error occurs when get workInfo
-    if (HAS_PARAM_ERROR) {
+    if (g_HAS_PARAM_ERROR) {
         return false;
     }
     if (!hasConditions) {
@@ -588,7 +588,7 @@ void Common::HandleParamErr(const napi_env &env, int32_t errCode)
         std::string errMessage = "BussinessError 401: Parameter error. ";
         errMessage.append(iter->second);
         napi_throw_error(env, std::to_string(E_PARAM_ERROR).c_str(), errMessage.c_str());
-        HAS_PARAM_ERROR = true;
+        g_HAS_PARAM_ERROR = true;
     }
 }
 
