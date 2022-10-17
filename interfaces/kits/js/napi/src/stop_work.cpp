@@ -17,6 +17,7 @@
 #include "common.h"
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -32,34 +33,36 @@ napi_value StopWork(napi_env env, napi_callback_info info)
     size_t argc = STOP_WORK_PARAMS;
     napi_value argv[STOP_WORK_PARAMS] = {0};
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
-    NAPI_ASSERT(env, argc == STOP_WORK_PARAMS, "parameter error!");
-    bool matchFlag = Common::MatchValueType(env, argv[WORK_INFO_INDEX], napi_object);
-    NAPI_ASSERT(env, matchFlag, "Type error, Should is object");
-    matchFlag = Common::MatchValueType(env, argv[NEED_CANCEL_INDEX], napi_boolean);
-    NAPI_ASSERT(env, matchFlag, "Type error, Should is boolean");
+    if (argc != STOP_WORK_PARAMS) {
+        Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
+        return Common::NapiGetNull(env);
+    }
+    if (!Common::MatchValueType(env, argv[WORK_INFO_INDEX], napi_object)) {
+        Common::HandleParamErr(env, E_WORK_INFO_TYPE_ERR);
+        return Common::NapiGetNull(env);
+    }
+    if (!Common::MatchValueType(env, argv[NEED_CANCEL_INDEX], napi_boolean)) {
+        Common::HandleParamErr(env, E_NEED_CANCLE_TYPE_ERR);
+        return Common::NapiGetNull(env);
+    }
 
     // get params
-    WorkInfo workInfo = WorkInfo();
-    bool getWorkRes = Common::GetWorkInfo(env, argv[WORK_INFO_INDEX], workInfo);
     bool needCancel = false;
     napi_get_value_bool(env, argv[NEED_CANCEL_INDEX], &needCancel);
 
     // Check workInfo and call service.
-    bool result;
-    if (!getWorkRes) {
-        WS_HILOGE("Work info create failed.");
-        result = false;
-    } else {
+    WorkInfo workInfo = WorkInfo();
+    ErrCode errCode = E_WORK_INFO_TYPE_ERR;
+    if (Common::GetWorkInfo(env, argv[WORK_INFO_INDEX], workInfo)) {
         if (needCancel) {
-            result = WorkSchedulerSrvClient::GetInstance().StopAndCancelWork(workInfo);
+            errCode = WorkSchedulerSrvClient::GetInstance().StopAndCancelWork(workInfo);
         } else {
-            result = WorkSchedulerSrvClient::GetInstance().StopWork(workInfo);
+            errCode = WorkSchedulerSrvClient::GetInstance().StopWork(workInfo);
         }
     }
-    napi_value napiValue = nullptr;
-    NAPI_CALL(env, napi_get_boolean(env, result, &napiValue));
+    Common::HandleErrCode(env, errCode);
     WS_HILOGD("Stop Work napi end.");
-    return napiValue;
+    return Common::NapiGetNull(env);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

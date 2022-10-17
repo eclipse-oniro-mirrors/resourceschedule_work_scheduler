@@ -62,7 +62,7 @@ public:
      * @param uid The uid.
      * @return True if success,else false.
      */
-    bool AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
+    int32_t AddWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
     /**
      * @brief Remove work.
      *

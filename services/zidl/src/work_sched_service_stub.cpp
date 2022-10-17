@@ -18,6 +18,7 @@
 #include <string_ex.h>
 
 #include "work_sched_common.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -29,38 +30,41 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
     std::u16string remoteDescriptor = data.ReadInterfaceToken();
     if (descriptor != remoteDescriptor) {
         WS_HILOGE("failed, descriptor is not matched!");
-        return E_GET_WORKSCHED_SERVICE_FALIED;
+        return E_PARCEL_OPERATION_FAILED;
     }
     switch (code) {
         case static_cast<int32_t>(IWorkSchedService::START_WORK): {
             int32_t ret = StartWorkStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::STOP_WORK): {
             int32_t ret = StopWorkStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::STOP_AND_CANCEL_WORK): {
             int32_t ret = StopAndCancelWorkStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::STOP_AND_CLEAR_WORKS): {
             int32_t ret = StopAndClearWorksStub(data);
-            WS_HILOGD("ret is ERR_OK ? %{public}s", (ret == ERR_OK) ? "true" : "false");
-            reply.WriteBool(ret == ERR_OK);
+            reply.WriteInt32(ret);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::IS_LAST_WORK_TIMEOUT): {
-            int32_t ret = IsLastWorkTimeoutStub(data);
-            reply.WriteBool(ret == ERR_OK);
+            bool isLastWorkTimeout;
+            int32_t ret = IsLastWorkTimeoutStub(data, isLastWorkTimeout);
+            reply.WriteInt32(ret);
+            reply.WriteBool(isLastWorkTimeout);
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedService::OBTAIN_ALL_WORKS): {
-            std::list<std::shared_ptr<WorkInfo>> workInfos = ObtainAllWorksStub(data);
+            std::list<std::shared_ptr<WorkInfo>> workInfos;
+            int32_t ret = ObtainAllWorksStub(data, workInfos);
             uint32_t worksize = workInfos.size();
+            reply.WriteInt32(ret);
             reply.WriteInt32(worksize);
             for (auto workInfo : workInfos) {
                 reply.WriteParcelable(&*workInfo);
@@ -69,7 +73,9 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
         }
         case static_cast<int32_t>(IWorkSchedService::GET_WORK_STATUS): {
             WS_HILOGI("call GetWorkStatus");
-            auto workInfo = GetWorkStatusStub(data);
+            std::shared_ptr<WorkInfo> workInfo;
+            int32_t ret = GetWorkStatusStub(data, workInfo);
+            reply.WriteInt32(ret);
             reply.WriteParcelable(&*workInfo);
             return ERR_OK;
         }
@@ -87,13 +93,9 @@ int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_START_WORK_FAILED;
+        return E_PARCEL_OPERATION_FAILED;
     }
-    if (!StartWork(*workInfo)) {
-        WS_HILOGE("StartWork failed");
-        return E_START_WORK_FAILED;
-    }
-    return ERR_OK;
+    return StartWork(*workInfo);
 }
 
 int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
@@ -101,12 +103,9 @@ int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_STOP_WORK_FAILED;
+        return E_PARCEL_OPERATION_FAILED;
     }
-    if (!StopWork(*workInfo)) {
-        return E_STOP_WORK_FAILED;
-    }
-    return ERR_OK;
+    return StopWork(*workInfo);
 }
 
 int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
@@ -114,47 +113,37 @@ int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
-        return E_STOP_AND_CANCEL_WORK_FAILED;
+        return E_PARCEL_OPERATION_FAILED;
     }
-    if (!StopAndCancelWork(*workInfo)) {
-        return E_STOP_AND_CANCEL_WORK_FAILED;
-    }
-    return ERR_OK;
+    return StopAndCancelWork(*workInfo);
 }
 
 int32_t WorkSchedServiceStub::StopAndClearWorksStub(MessageParcel& data)
 {
-    if (!StopAndClearWorks()) {
-        WS_HILOGE("StopAndClearWorks failed");
-        return E_STOP_AND_CLEAR_WORKS_FAILED;
-    }
-    return ERR_OK;
+    return StopAndClearWorks();
 }
 
-int32_t WorkSchedServiceStub::IsLastWorkTimeoutStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::IsLastWorkTimeoutStub(MessageParcel& data, bool &result)
 {
     int32_t workId = data.ReadInt32();
-    if (!IsLastWorkTimeout(workId)) {
-        return E_IS_LAST_WORK_TIMEOUT_FALSE;
-    }
-    return ERR_OK;
+    return IsLastWorkTimeout(workId, result);
 }
 
-std::list<std::shared_ptr<WorkInfo>> WorkSchedServiceStub::ObtainAllWorksStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::ObtainAllWorksStub(MessageParcel& data, std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
     int32_t pid = 0, uid = 0;
     READ_PARCEL_WITHOUT_RET(data, Int32, uid);
     READ_PARCEL_WITHOUT_RET(data, Int32, pid);
-    return ObtainAllWorks(uid, pid);
+    return ObtainAllWorks(uid, pid, workInfos);
 }
 
-std::shared_ptr<WorkInfo> WorkSchedServiceStub::GetWorkStatusStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::GetWorkStatusStub(MessageParcel& data, std::shared_ptr<WorkInfo>& workInfo)
 {
     int32_t uid;
     int32_t workId;
     READ_PARCEL_WITHOUT_RET(data, Int32, uid);
     READ_PARCEL_WITHOUT_RET(data, Int32, workId);
-    return GetWorkStatus(uid, workId);
+    return GetWorkStatus(uid, workId, workInfo);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

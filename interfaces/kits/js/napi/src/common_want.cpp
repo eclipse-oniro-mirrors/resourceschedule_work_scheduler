@@ -14,7 +14,9 @@
  */
 
 #include "common_want.h"
+#include "common.h"
 
+#include "work_sched_errors.h"
 #include "bool_wrapper.h"
 #include "double_wrapper.h"
 #include "int_wrapper.h"
@@ -101,6 +103,7 @@ bool InnerUnwrapJS(napi_env env, napi_value param, AAFwk::WantParams &wantParams
         default: {
             WS_HILOGE("Param %{public}s is illegal. The value is only supported basic type(Number, String, Boolean).",
                 strProName.c_str());
+            Common::HandleParamErr(env, E_PARAMETERS_TYPE_ERR);
             return false;
         }
     }
@@ -121,6 +124,7 @@ bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantPar
         return true;
     } else if (valueType != napi_object) {
         WS_HILOGE("parameters should be {[key: string]: value} format.");
+        Common::HandleParamErr(env, E_PARAMETERS_TYPE_ERR);
         return false;
     }
 

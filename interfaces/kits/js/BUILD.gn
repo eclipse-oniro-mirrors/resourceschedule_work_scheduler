@@ -50,3 +50,35 @@ ohos_shared_library("workscheduler") {
   part_name = "${worksched_native_part_name}"
   subsystem_name = "resourceschedule"
 }
+
+ohos_shared_library("workscheduler_napi") {
+  public_configs = [ ":worksched_public_config" ]
+
+  sources = [
+    "${worksched_root_path}/interfaces/kits/js/napi/src/common.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/common_want.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/get_work_status.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/init.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/is_last_work_time_out.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/obtain_all_works.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/start_work.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/stop_and_clear_works.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/stop_work.cpp",
+  ]
+
+  deps = [
+    "${worksched_frameworks_path}:workschedclient",
+    "${worksched_utils_path}:workschedutils",
+  ]
+
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "hiviewdfx_hilog_native:libhilog",
+    "napi:ace_napi",
+  ]
+
+  relative_install_dir = "module/resourceschedule"
+  part_name = "${worksched_native_part_name}"
+  subsystem_name = "resourceschedule"
+}

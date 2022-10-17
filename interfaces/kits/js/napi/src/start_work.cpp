@@ -17,6 +17,7 @@
 #include "common.h"
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -31,22 +32,23 @@ napi_value StartWork(napi_env env, napi_callback_info info)
     size_t argc = START_WORK_PARAMS;
     napi_value argv[START_WORK_PARAMS] = {0};
     napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
-    NAPI_ASSERT(env, argc == START_WORK_PARAMS, "parameter error!");
-    bool matchFlag = Common::MatchValueType(env, argv[WORK_INFO_INDEX], napi_object);
-    NAPI_ASSERT(env, matchFlag, "Type error, it should be object");
+    if (argc != START_WORK_PARAMS) {
+        Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
+        return Common::NapiGetNull(env);
+    }
+    if (!Common::MatchValueType(env, argv[WORK_INFO_INDEX], napi_object)) {
+        Common::HandleParamErr(env, E_WORK_INFO_TYPE_ERR);
+        return Common::NapiGetNull(env);
+    }
 
     // Get workInfo and call service.
     WorkInfo workInfo = WorkInfo();
-    bool result;
-    if (!Common::GetWorkInfo(env, argv[WORK_INFO_INDEX], workInfo)) {
-        result = false;
-    } else {
-        result = WorkSchedulerSrvClient::GetInstance().StartWork(workInfo);
+    if (Common::GetWorkInfo(env, argv[WORK_INFO_INDEX], workInfo)) {
+        ErrCode errCode = WorkSchedulerSrvClient::GetInstance().StartWork(workInfo);
+        Common::HandleErrCode(env, errCode);
     }
-    napi_value napiValue = nullptr;
-    NAPI_CALL(env, napi_get_boolean(env, result, &napiValue));
     WS_HILOGD("Start work napi end.");
-    return napiValue;
+    return Common::NapiGetNull(env);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

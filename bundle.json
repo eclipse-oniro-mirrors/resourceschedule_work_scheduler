@@ -49,6 +49,7 @@
           "base_group": [],
           "fwk_group": [
             "//foundation/resourceschedule/work_scheduler/interfaces/kits/js:workscheduler",
+            "//foundation/resourceschedule/work_scheduler/interfaces/kits/js:workscheduler_napi",
             "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient",
             "//foundation/resourceschedule/work_scheduler/frameworks/extension:workschedextension",
             "//foundation/resourceschedule/work_scheduler/interfaces/kits/js/napi/work_scheduler_extension:workschedulerextensionability_napi",

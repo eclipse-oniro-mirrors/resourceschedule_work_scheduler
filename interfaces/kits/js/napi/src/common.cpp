@@ -17,6 +17,7 @@
 
 #include "errors.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -28,6 +29,7 @@ const int32_t TRUE_PARAM = 1;
 const int32_t FALSE_PARAM = 0;
 const int32_t BATTERY_LEVEL_MIN = 0;
 const int32_t BATTERY_LEVEL_MAX = 100;
+bool g_HAS_PARAM_ERROR = false;
 
 AsyncWorkData::AsyncWorkData(napi_env napiEnv)
 {
@@ -58,17 +60,19 @@ napi_value Common::NapiGetNull(napi_env env)
 bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     // Get workid.
-    int32_t workId = Common::GetIntProperty(env, objValue, "workId");
+    int32_t workId = GetIntProperty(env, objValue, "workId", E_WORKID_ERR);
     if (workId == UNSET_INT_PARAM || workId < 0) {
         WS_HILOGE("Work id is invalid, failed.");
+        HandleParamErr(env, E_WORKID_ERR);
         return false;
     }
 
     // Get bundleName and abilityName.
-    std::string bundleName = Common::GetStringProperty(env, objValue, "bundleName");
-    std::string abilityName = Common::GetStringProperty(env, objValue, "abilityName");
+    std::string bundleName = GetStringProperty(env, objValue, "bundleName", E_BUNDLE_OR_ABILITY_NAME_ERR);
+    std::string abilityName = GetStringProperty(env, objValue, "abilityName", E_BUNDLE_OR_ABILITY_NAME_ERR);
     if (bundleName == UNSET_STRING_PARAM || abilityName == UNSET_STRING_PARAM) {
         WS_HILOGE("BundleName or abilityName is invalid, failed.");
+        HandleParamErr(env, E_BUNDLE_OR_ABILITY_NAME_ERR);
         return false;
     }
 
@@ -76,14 +80,14 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
     workInfo.SetElement(bundleName, abilityName);
 
     // Get persist param. if not set, it will be used false.
-    workInfo.RequestPersisted(Common::GetBoolProperty(env, objValue, "isPersisted"));
+    workInfo.RequestPersisted(GetBoolProperty(env, objValue, "isPersisted", E_IS_PERSISTED_ERR));
     return true;
 }
 
 bool Common::GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     bool hasCondition = false;
-    int32_t networkType = Common::GetIntProperty(env, objValue, "networkType");
+    int32_t networkType = GetIntProperty(env, objValue, "networkType", E_NETWORK_TYPE_ERR);
     if (networkType == UNSET_INT_PARAM) {
         WS_HILOGI("Unset networkType.");
     } else if (networkType >= WorkCondition::Network::NETWORK_TYPE_ANY &&
@@ -92,6 +96,7 @@ bool Common::GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("NetworkType set is invalid, just ignore set.");
+        HandleParamErr(env, E_NETWORK_TYPE_ERR);
     }
     return hasCondition;
 }
@@ -99,8 +104,8 @@ bool Common::GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInf
 bool Common::GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     bool hasCondition = false;
-    int32_t isCharging = Common::GetBoolToIntProperty(env, objValue, "isCharging");
-    int32_t chargerType = Common::GetIntProperty(env, objValue, "chargerType");
+    int32_t isCharging = GetBoolToIntProperty(env, objValue, "isCharging", E_IS_CHARGING_ERR);
+    int32_t chargerType = GetIntProperty(env, objValue, "chargerType", E_CHARGER_TYPE_ERR);
     if (isCharging == UNSET_INT_PARAM) {
         WS_HILOGI("Unset isCharging, ignore ChargerType set also.");
     } else if (isCharging == FALSE_PARAM) {
@@ -115,6 +120,7 @@ bool Common::GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
         } else {
             workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_ANY);
             WS_HILOGE("ChargeType info is invalid, just ignore set.");
+            HandleParamErr(env, E_CHARGER_TYPE_ERR);
         }
         hasCondition = true;
     }
@@ -125,7 +131,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
 {
     bool hasCondition = false;
     // Get battery level info.
-    int32_t batteryLevel = Common::GetIntProperty(env, objValue, "batteryLevel");
+    int32_t batteryLevel = GetIntProperty(env, objValue, "batteryLevel", E_BATTERY_LEVEL_ERR);
     if (batteryLevel == UNSET_INT_PARAM) {
         WS_HILOGI("Unset batteryLevel.");
     } else if (batteryLevel >= BATTERY_LEVEL_MIN && batteryLevel <= BATTERY_LEVEL_MAX) {
@@ -133,10 +139,11 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("BatteryLevel set is invalid, just ignore set.");
+        HandleParamErr(env, E_BATTERY_LEVEL_ERR);
     }
 
     // Get battery status info.
-    int32_t batteryStatus = Common::GetIntProperty(env, objValue, "batteryStatus");
+    int32_t batteryStatus = GetIntProperty(env, objValue, "batteryStatus", E_BATTERY_STATUS_ERR);
     if (batteryStatus == UNSET_INT_PARAM) {
         WS_HILOGI("Unset batteryStatus.");
     } else if (batteryStatus >= WorkCondition::BatteryStatus::BATTERY_STATUS_LOW &&
@@ -145,6 +152,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("BatteryStatus set is invalid, just ignore set.");
+        HandleParamErr(env, E_BATTERY_STATUS_ERR);
     }
     return hasCondition;
 }
@@ -152,7 +160,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
 bool Common::GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
     bool hasCondition = false;
-    int32_t storageRequest = Common::GetIntProperty(env, objValue, "storageRequest");
+    int32_t storageRequest = GetIntProperty(env, objValue, "storageRequest", E_STORAGE_REQUEST_ERR);
     if (storageRequest == UNSET_INT_PARAM) {
         WS_HILOGI("Unset StorageRequest.");
     } else if (storageRequest >= WorkCondition::Storage::STORAGE_LEVEL_LOW
@@ -161,20 +169,21 @@ bool Common::GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInf
         hasCondition = true;
     } else {
         WS_HILOGE("StorageRequest set is invalid, just ignore set.");
+        HandleParamErr(env, E_STORAGE_REQUEST_ERR);
     }
     return hasCondition;
 }
 
 bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
-    int32_t repeatCycleTime = Common::GetIntProperty(env, objValue, "repeatCycleTime");
+    int32_t repeatCycleTime = GetIntProperty(env, objValue, "repeatCycleTime", E_REPEAT_CYCLE_TIME_TYPE_ERR);
     if (repeatCycleTime == UNSET_INT_PARAM) {
         WS_HILOGI("RepeatCycleTime not set, just ignore other repeat set.");
         return false;
     }
 
-    bool isRepeat = Common::GetBoolProperty(env, objValue, "isRepeat");
-    int32_t repeatCount = Common::GetIntProperty(env, objValue, "repeatCount");
+    bool isRepeat = GetBoolProperty(env, objValue, "isRepeat", E_IS_REPEAT_ERR);
+    int32_t repeatCount = GetIntProperty(env, objValue, "repeatCount", E_REPEAT_COUNT_ERR);
     if (!isRepeat && repeatCount == UNSET_INT_PARAM) {
         WS_HILOGI("Not set isRepeat or repeatCount, ignore.");
         return false;
@@ -190,6 +199,7 @@ bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     } else {
         if (repeatCount < 0) {
             WS_HILOGE("RepeatCount is invalid, ignore.");
+            HandleParamErr(env, E_REPEAT_COUNT_ERR);
             return false;
         }
         workInfo.RequestRepeatCycle(repeatCycleTime, repeatCount);
@@ -206,6 +216,7 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     }
     AAFwk::WantParams extraParams;
     if (!UnwrapWantParams(env, extras, extraParams)) {
+        HandleParamErr(env, E_PARAMETERS_TYPE_ERR);
         return false;
     }
     workInfo.RequestExtras(extraParams);
@@ -216,6 +227,7 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
 
 bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
+    g_HAS_PARAM_ERROR = false;
     // Get base info.
     if (!GetBaseWorkInfo(env, objValue, workInfo)) {
         return false;
@@ -242,68 +254,113 @@ bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
     if (GetRepeatInfo(env, objValue, workInfo)) {
         hasConditions = true;
     }
-
+    // if param error occurs when get workInfo
+    if (g_HAS_PARAM_ERROR) {
+        return false;
+    }
     if (!hasConditions) {
         WS_HILOGE("Set none conditions, so fail to init WorkInfo.");
+        HandleParamErr(env, E_CONDITION_EMPTY);
         return false;
     }
     return true;
 }
 
-int32_t Common::GetIntProperty(napi_env env, napi_value object, const std::string &propertyName)
+int32_t Common::GetIntProperty(napi_env env, napi_value object,
+    const std::string &propertyName, ErrCode errCode)
 {
     int32_t intValue = UNSET_INT_PARAM;
     napi_value value = nullptr;
     napi_status getNameStatus = napi_get_named_property(env, object, propertyName.c_str(), &value);
-    if (getNameStatus == napi_ok) {
-        napi_status getIntStatus = napi_get_value_int32(env, value, &intValue);
-        if (getIntStatus == napi_ok) {
-            return intValue;
-        }
+    if (getNameStatus != napi_ok) {
+        return intValue;
     }
+    napi_valuetype valueType = napi_undefined;
+    napi_typeof(env, value, &valueType);
+    if (valueType == napi_undefined) {
+        WS_HILOGD("Unset %{public}s.", propertyName.c_str());
+        return intValue;
+    } else if (valueType != napi_number) {
+        WS_HILOGE("%{public}s type error, number expect.", propertyName.c_str());
+        HandleParamErr(env, errCode);
+        return intValue;
+    }
+    napi_get_value_int32(env, value, &intValue);
     return intValue;
 }
 
-bool Common::GetBoolProperty(napi_env env, napi_value object, const std::string &propertyName)
+bool Common::GetBoolProperty(napi_env env, napi_value object,
+    const std::string &propertyName, ErrCode errCode)
 {
     bool boolValue = false;
     napi_value value = nullptr;
     napi_status getNameStatus = napi_get_named_property(env, object, propertyName.c_str(), &value);
-    if (getNameStatus == napi_ok) {
-        napi_status getIntStatus = napi_get_value_bool(env, value, &boolValue);
-        if (getIntStatus == napi_ok) {
-            return boolValue;
-        }
+    if (getNameStatus != napi_ok) {
+        return boolValue;
     }
+    napi_valuetype valueType = napi_undefined;
+    napi_typeof(env, value, &valueType);
+    if (valueType == napi_undefined) {
+        WS_HILOGD("Unset %{public}s.", propertyName.c_str());
+        return boolValue;
+    } else if (valueType != napi_boolean) {
+        WS_HILOGE("%{public}s type error, boolean expect.", propertyName.c_str());
+        HandleParamErr(env, errCode);
+        return boolValue;
+    }
+    napi_get_value_bool(env, value, &boolValue);
     return boolValue;
 }
 
-int32_t Common::GetBoolToIntProperty(napi_env env, napi_value object, const std::string &propertyName)
+int32_t Common::GetBoolToIntProperty(napi_env env, napi_value object,
+    const std::string &propertyName, ErrCode errCode)
 {
     bool boolValue = false;
     napi_value value = nullptr;
     napi_status getNameStatus = napi_get_named_property(env, object, propertyName.c_str(), &value);
-    if (getNameStatus == napi_ok) {
-        napi_status getIntStatus = napi_get_value_bool(env, value, &boolValue);
-        if (getIntStatus == napi_ok) {
-            return boolValue ? TRUE_PARAM : FALSE_PARAM;
-        }
+    if (getNameStatus != napi_ok) {
+        return UNSET_INT_PARAM;
+    }
+    napi_valuetype valueType = napi_undefined;
+    napi_typeof(env, value, &valueType);
+    if (valueType == napi_undefined) {
+        WS_HILOGD("Unset %{public}s.", propertyName.c_str());
+        return UNSET_INT_PARAM;
+    } else if (valueType != napi_boolean) {
+        WS_HILOGE("%{public}s type error, boolean expect.", propertyName.c_str());
+        HandleParamErr(env, errCode);
+        return UNSET_INT_PARAM;
+    }
+    napi_status getIntStatus = napi_get_value_bool(env, value, &boolValue);
+    if (getIntStatus == napi_ok) {
+        return boolValue ? TRUE_PARAM : FALSE_PARAM;
     }
     return UNSET_INT_PARAM;
 }
 
-std::string Common::GetStringProperty(napi_env env, napi_value object, const std::string &propertyName)
+std::string Common::GetStringProperty(napi_env env, napi_value object,
+    const std::string &propertyName, ErrCode errCode)
 {
     napi_value value = nullptr;
     napi_status getNameStatus = napi_get_named_property(env, object, propertyName.c_str(), &value);
-    if (getNameStatus == napi_ok) {
-        char chars[NAME_MAXIMUM_LIMIT] = {0};
-        size_t charLength = 0;
-        napi_status getStringStatus =
-            napi_get_value_string_utf8(env, value, chars, NAME_MAXIMUM_LIMIT, &charLength);
-        if (getStringStatus == napi_ok && charLength > 0) {
-            return std::string(chars, charLength);
-        }
+    if (getNameStatus != napi_ok) {
+        return UNSET_STRING_PARAM;
+    }
+    napi_valuetype valueType = napi_undefined;
+    napi_typeof(env, value, &valueType);
+    if (valueType == napi_undefined) {
+        WS_HILOGD("Unset %{public}s.", propertyName.c_str());
+        return UNSET_STRING_PARAM;
+    } else if (valueType != napi_string) {
+        WS_HILOGE("%{public}s type error, string expect.", propertyName.c_str());
+        HandleParamErr(env, errCode);
+        return UNSET_STRING_PARAM;
+    }
+    char chars[NAME_MAXIMUM_LIMIT] = {0};
+    size_t charLength = 0;
+    napi_status getStringStatus = napi_get_value_string_utf8(env, value, chars, NAME_MAXIMUM_LIMIT, &charLength);
+    if (getStringStatus == napi_ok && charLength > 0) {
+        return std::string(chars, charLength);
     }
     return UNSET_STRING_PARAM;
 }
@@ -436,22 +493,25 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     return napiWork;
 }
 
-napi_value Common::GetCallbackErrorValue(napi_env env, int32_t errCode)
+napi_value Common::GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg)
 {
     if (errCode == ERR_OK) {
         return NapiGetNull(env);
     }
-    napi_value result = nullptr;
+    napi_value error = nullptr;
     napi_value eCode = nullptr;
+    napi_value eMsg = nullptr;
     NAPI_CALL(env, napi_create_int32(env, errCode, &eCode));
-    NAPI_CALL(env, napi_create_object(env, &result));
-    NAPI_CALL(env, napi_set_named_property(env, result, "data", eCode));
-    NAPI_CALL(env, napi_set_named_property(env, result, "code", eCode));
-    return result;
+    NAPI_CALL(env, napi_create_string_utf8(env, errMsg.c_str(),
+        errMsg.length(), &eMsg));
+    NAPI_CALL(env, napi_create_object(env, &error));
+    NAPI_CALL(env, napi_set_named_property(env, error, "code", eCode));
+    NAPI_CALL(env, napi_set_named_property(env, error, "message", eMsg));
+    return error;
 }
 
 void Common::SetCallback(
-    const napi_env &env, const napi_ref &callbackIn, const int32_t &errorCode, const napi_value &result)
+    const napi_env &env, const napi_ref &callbackIn, const int32_t &errCode, const napi_value &result)
 {
     napi_value undefined = nullptr;
     napi_get_undefined(env, &undefined);
@@ -460,10 +520,16 @@ void Common::SetCallback(
     napi_value resultout = nullptr;
     napi_get_reference_value(env, callbackIn, &callback);
     napi_value results[RESULT_PARAMS_NUM] = {nullptr};
-    results[0] = GetCallbackErrorValue(env, errorCode);
+    if (errCode == ERR_OK) {
+        results[0] = NapiGetNull(env);
+    } else {
+        std::string errMsg = FindErrMsg(env, errCode);
+        int32_t errCodeInfo = FindErrCode(env, errCode);
+        results[0] = GetCallbackErrorValue(env, errCodeInfo, errMsg);
+    }
     results[1] = result;
-    NAPI_CALL_RETURN_VOID(env, napi_call_function(env, undefined, callback,
-        RESULT_PARAMS_NUM, &results[0], &resultout));
+    NAPI_CALL_RETURN_VOID(env,
+        napi_call_function(env, undefined, callback, RESULT_PARAMS_NUM, &results[0], &resultout));
 }
 
 napi_value Common::SetPromise(
@@ -472,13 +538,19 @@ napi_value Common::SetPromise(
     if (info.errorCode == ERR_OK) {
         napi_resolve_deferred(env, info.deferred, result);
     } else {
-        napi_value res = nullptr;
+        int32_t errCodeInfo = FindErrCode(env, info.errorCode);
+        std::string errMsg = FindErrMsg(env, info.errorCode);
+        napi_value error = nullptr;
         napi_value eCode = nullptr;
-        NAPI_CALL(env, napi_create_int32(env, info.errorCode, &eCode));
-        NAPI_CALL(env, napi_create_object(env, &res));
-        NAPI_CALL(env, napi_set_named_property(env, res, "data", eCode));
-        NAPI_CALL(env, napi_set_named_property(env, res, "code", eCode));
-        napi_reject_deferred(env, info.deferred, res);
+        napi_value eMsg = nullptr;
+        NAPI_CALL(env, napi_create_int32(env, errCodeInfo, &eCode));
+        NAPI_CALL(env, napi_create_string_utf8(env, errMsg.c_str(),
+            errMsg.length(), &eMsg));
+        NAPI_CALL(env, napi_create_object(env, &error));
+        NAPI_CALL(env, napi_set_named_property(env, error, "data", eCode));
+        NAPI_CALL(env, napi_set_named_property(env, error, "code", eCode));
+        NAPI_CALL(env, napi_set_named_property(env, error, "message", eMsg));
+        napi_reject_deferred(env, info.deferred, error);
     }
     return result;
 }
@@ -490,6 +562,64 @@ void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &inf
     } else {
         SetPromise(env, info, result);
     }
+}
+
+void Common::HandleErrCode(const napi_env &env, int32_t errCode)
+{
+    WS_HILOGI("HandleErrCode errCode = %{public}d", errCode);
+    if (errCode == ERR_OK) {
+        return;
+    }
+    std::string errMsg = FindErrMsg(env, errCode);
+    int32_t errCodeInfo = FindErrCode(env, errCode);
+    if (errMsg != "") {
+        napi_throw_error(env, std::to_string(errCodeInfo).c_str(), errMsg.c_str());
+    }
+}
+
+void Common::HandleParamErr(const napi_env &env, int32_t errCode)
+{
+    WS_HILOGI("HandleParamErr errCode = %{public}d", errCode);
+    if (errCode == ERR_OK) {
+        return;
+    }
+    auto iter = paramErrCodeMsgMap.find(errCode);
+    if (iter != paramErrCodeMsgMap.end()) {
+        std::string errMessage = "BussinessError 401: Parameter error. ";
+        errMessage.append(iter->second);
+        napi_throw_error(env, std::to_string(E_PARAM_ERROR).c_str(), errMessage.c_str());
+        g_HAS_PARAM_ERROR = true;
+    }
+}
+
+std::string Common::FindErrMsg(const napi_env &env, const int32_t errCode)
+{
+    if (errCode == ERR_OK) {
+        return "";
+    }
+    auto iter = saErrCodeMsgMap.find(errCode);
+    if (iter != saErrCodeMsgMap.end()) {
+        std::string errMessage = "BussinessError ";
+        int32_t errCodeInfo = FindErrCode(env, errCode);
+        errMessage.append(std::to_string(errCodeInfo)).append(": ").append(iter->second);
+        return errMessage;
+    }
+    iter = paramErrCodeMsgMap.find(errCode);
+    if (iter != paramErrCodeMsgMap.end()) {
+        std::string errMessage = "BussinessError 401: Parameter error. ";
+        errMessage.append(iter->second);
+        return errMessage;
+    }
+    return "Inner error.";
+}
+
+int32_t Common::FindErrCode(const napi_env &env, const int32_t errCodeIn)
+{
+    auto iter = paramErrCodeMsgMap.find(errCodeIn);
+    if (iter != paramErrCodeMsgMap.end()) {
+        return E_PARAM_ERROR;
+    }
+    return errCodeIn > THRESHOLD ? errCodeIn / OFFSET : errCodeIn;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

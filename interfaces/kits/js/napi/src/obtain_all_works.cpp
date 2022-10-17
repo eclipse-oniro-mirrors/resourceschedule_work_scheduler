@@ -20,6 +20,7 @@
 #include "common.h"
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -37,8 +38,10 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
     size_t argc = OBTAIN_ALL_WORKS_MAX_PARAMS;
     napi_value argv[OBTAIN_ALL_WORKS_MAX_PARAMS] = {nullptr};
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
-    bool paramsCheck = (argc == OBTAIN_ALL_WORKS_MIN_PARAMS) || (argc == OBTAIN_ALL_WORKS_MAX_PARAMS);
-    NAPI_ASSERT(env, paramsCheck, "Wrong number of arguments");
+    if (argc != OBTAIN_ALL_WORKS_MIN_PARAMS && argc != OBTAIN_ALL_WORKS_MAX_PARAMS) {
+        Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
+        return nullptr;
+    }
 
     // argv[0]: callback
     if (argc == OBTAIN_ALL_WORKS_MAX_PARAMS) {
@@ -76,6 +79,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
             AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = static_cast<AsyncCallbackInfoObtainAllWorks *>(data);
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(asyncCallbackInfo->workInfoList);
+            asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
             AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = static_cast<AsyncCallbackInfoObtainAllWorks *>(data);

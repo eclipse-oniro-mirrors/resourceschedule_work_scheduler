@@ -35,6 +35,7 @@ struct AsyncWorkData {
     napi_ref callback = nullptr;
     bool isCallback = false;
     int32_t errorCode = 0;
+    std::string errorMsg = "";
 };
 
 class Common {
@@ -61,36 +62,44 @@ public:
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return Int value.
      */
-    static int32_t GetIntProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static int32_t GetIntProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Get bool property.
      *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return True if success,else false
      */
-    static bool GetBoolProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static bool GetBoolProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Get bool to int property.
      *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return Bool to int property.
      */
-    static int32_t GetBoolToIntProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static int32_t GetBoolToIntProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Get string property.
      *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return String property.
      */
-    static std::string GetStringProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static std::string GetStringProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Match value type.
      *
@@ -130,20 +139,21 @@ public:
      * @brief Get callback error value.
      *
      * @param env The env.
-     * @param errCode The errCode.
+     * @param errCode The error code.
+     * @param errMsg The error message.
      * @return Callback error value.
      */
-    static napi_value GetCallbackErrorValue(napi_env env, int32_t errCode);
+    static napi_value GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg);
     /**
      * @brief Set callback.
      *
      * @param env The env.
-     * @param callbackIn The callbackIn.
-     * @param errorCode The errorCode.
+     * @param callbackIn The callback.
+     * @param errCode The errCode.
      * @param result The result.
      */
-    static void SetCallback(const napi_env &env, const napi_ref &callbackIn, const int32_t &errorCode,
-        const napi_value &result);
+    static void SetCallback(const napi_env &env, const napi_ref &callbackIn,
+        const int32_t &errCode, const napi_value &result);
     /**
      * @brief Set promise.
      *
@@ -162,6 +172,34 @@ public:
      */
     static void ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &info,
         const napi_value &result);
+    /**
+     * @brief Handle error code and throw error.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static void HandleErrCode(const napi_env &env, const int32_t errCode);
+    /**
+     * @brief Handle param error code and throw param error.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static void HandleParamErr(const napi_env &env, const int32_t errCode);
+    /**
+     * @brief Find error message by code.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static std::string FindErrMsg(const napi_env &env, const int32_t errCode);
+    /**
+     * @brief Find the error code actually reported by code.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static int32_t FindErrCode(const napi_env &env, const int32_t errCodeIn);
 
 private:
     static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);

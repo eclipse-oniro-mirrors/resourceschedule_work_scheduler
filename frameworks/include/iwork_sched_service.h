@@ -45,51 +45,56 @@ public:
      * @brief Start work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false
+     * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual bool StartWork(WorkInfo& workInfo) = 0;
+    virtual int32_t StartWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false
+     * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual bool StopWork(WorkInfo& workInfo) = 0;
+    virtual int32_t StopWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
-     * @return True if success,else false
+     * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual bool StopAndCancelWork(WorkInfo& workInfo) = 0;
+    virtual int32_t StopAndCancelWork(WorkInfo& workInfo) = 0;
     /**
      * @brief Stop and clear works.
      *
-     * @return True if success,else false
+     * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual bool StopAndClearWorks() = 0;
+    virtual int32_t StopAndClearWorks() = 0;
     /**
      * @brief Check whether last work executed time out.
      *
      * @param workId The id of work.
-     * @return True if the work executed time out, else false.
+     * @param result True if the work executed time out, else false.
+     * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual bool IsLastWorkTimeout(int32_t workId) = 0;
+    virtual int32_t IsLastWorkTimeout(int32_t workId, bool &result) = 0;
     /**
      * @brief Obtain all works.
      *
      * @param uid The uid.
      * @param pid The pid.
-     * @return True if the work executed time out, else false.
+     * @param workInfos The infos of work.
+     * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid, int32_t &pid) = 0;
+    virtual int32_t ObtainAllWorks(int32_t &uid, int32_t &pid,
+        std::list<std::shared_ptr<WorkInfo>>& workInfos) = 0;
     /**
      * @brief Check whether last work executed time out.
      *
+     * @param uid The uid.
      * @param workId The id of work.
-     * @return True if the work executed time out, else false.
+     * @param workInfo The info of work.
+     * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual std::shared_ptr<WorkInfo> GetWorkStatus(int32_t &uid, int32_t &workId) = 0;
+    virtual int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.workscheduler.iworkschedservice");
 };

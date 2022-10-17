@@ -21,6 +21,8 @@
 namespace OHOS {
 namespace WorkScheduler {
     napi_value StopAndClearWorks(napi_env env, napi_callback_info info);
+
+    napi_value StopAndClearWorksWithRet(napi_env env, napi_callback_info info);
 }
 }
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_STOP_AND_CLEAR_WORKS

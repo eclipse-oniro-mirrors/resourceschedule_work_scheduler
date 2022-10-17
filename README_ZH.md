@@ -52,13 +52,13 @@ parameters    |携带参数信息| {[key: string]: any}
 
 接口名                                                    |     接口描述                            
 ---------------------------------------------------------|-----------------------------------------
-function startWork(work: WorkInfo): boolean; | 延迟调度任务申请 
-function stopWork(work: WorkInfo, needCancel?: boolean): boolean;        | 延迟调度任务取消 
+function startWork(work: WorkInfo): void; | 延迟调度任务申请 
+function stopWork(work: WorkInfo, needCancel?: boolean): void;        | 延迟调度任务取消 
 function getWorkStatus(workId: number, callback: AsyncCallback<WorkInfo>): void;| 获取延迟调度任务状态（Callback形式） 
 function getWorkStatus(workId: number): Promise<WorkInfo>; | 获取延迟调度任务状态（Promise形式） 
 function obtainAllWorks(callback: AsyncCallback<void>): Array<WorkInfo>;| 获取所有延迟调度任务（Callback形式） 
 function obtainAllWorks(): Promise<Array<WorkInfo>>;| 获取所有延迟调度任务（Promise形式） 
-function stopAndClearWorks(): boolean;| 停止并清除任务
+function stopAndClearWorks(): void;| 停止并清除任务
 function isLastWorkTimeOut(workId: number, callback: AsyncCallback<void>): boolean;| 获取上次任务是否超时（针对RepeatWork，Callback形式）
 function isLastWorkTimeOut(workId: number): Promise<boolean>;| 获取上次任务是否超时（针对RepeatWork，Promise形式）
 

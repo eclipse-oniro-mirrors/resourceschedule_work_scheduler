@@ -16,17 +16,17 @@
 
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"
+#include "common.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 napi_value StopAndClearWorks(napi_env env, napi_callback_info info)
 {
     WS_HILOGD("StopAndClearWorks napi begin");
-    napi_value napiValue = nullptr;
-    bool result = WorkSchedulerSrvClient::GetInstance().StopAndClearWorks();
-    NAPI_CALL(env, napi_get_boolean(env, result, &napiValue));
-    WS_HILOGD("StopAndClearWorks napi end. result: %{public}s", result ? "true" : "false");
-    return napiValue;
+    ErrCode errCode = WorkSchedulerSrvClient::GetInstance().StopAndClearWorks();
+    Common::HandleErrCode(env, errCode);
+    WS_HILOGD("StopAndClearWorks napi end. result: %{public}s", errCode == ERR_OK ? "true" : "false");
+    return Common::NapiGetNull(env);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

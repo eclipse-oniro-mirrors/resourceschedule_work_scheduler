@@ -19,6 +19,7 @@
 #include "common.h"
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -35,7 +36,7 @@ struct IsLastWorkTimeOutParamsInfo {
 struct AsyncCallbackIsLastWorkTimeOut : public AsyncWorkData {
     explicit AsyncCallbackIsLastWorkTimeOut(napi_env env) : AsyncWorkData(env) {}
     int32_t workId {-1};
-    bool result {false};
+    bool result;
 };
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, IsLastWorkTimeOutParamsInfo &params)
@@ -43,19 +44,26 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
     size_t argc = IS_LAST_WORK_TIME_OUT_MAX_PARAMS;
     napi_value argv[IS_LAST_WORK_TIME_OUT_MAX_PARAMS] = {nullptr};
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
-    bool paramsCheck = (argc == IS_LAST_WORK_TIME_OUT_MAX_PARAMS) || (argc == IS_LAST_WORK_TIME_OUT_MIN_PARAMS);
-    NAPI_ASSERT(env, paramsCheck, "Wrong number of arguments");
+    if (argc != IS_LAST_WORK_TIME_OUT_MAX_PARAMS && argc != IS_LAST_WORK_TIME_OUT_MIN_PARAMS) {
+        Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
+        return nullptr;
+    }
 
     // argv[0] : workId
-    bool matchFlag = Common::MatchValueType(env, argv[WORK_ID_INDEX], napi_number);
-    NAPI_ASSERT(env, matchFlag, "Type error, Should is number");
+    if (!Common::MatchValueType(env, argv[WORK_ID_INDEX], napi_number)) {
+        Common::HandleParamErr(env, E_WORKID_ERR);
+        return nullptr;
+    }
     napi_get_value_int32(env, argv[WORK_ID_INDEX], &params.workId);
 
     // argv[1]: callback
     if (argc == IS_LAST_WORK_TIME_OUT_MAX_PARAMS) {
         napi_valuetype valuetype = napi_undefined;
         NAPI_CALL(env, napi_typeof(env, argv[CALLBACK_INDEX], &valuetype));
-        NAPI_ASSERT(env, valuetype == napi_function, "Wrong argument type. Function expected.");
+        if (valuetype != napi_function) {
+            Common::HandleParamErr(env, E_CALLBACK_TYPE_ERR);
+            return nullptr;
+        }
         napi_create_reference(env, argv[CALLBACK_INDEX], 1, &params.callback);
     }
     return Common::NapiGetNull(env);
@@ -93,6 +101,7 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(asyncCallbackInfo->workId,
                 asyncCallbackInfo->result);
+            asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
             AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = static_cast<AsyncCallbackIsLastWorkTimeOut *>(data);

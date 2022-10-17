@@ -19,6 +19,7 @@
 #include "common.h"
 #include "workscheduler_srv_client.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -43,19 +44,26 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
     size_t argc = GET_WORK_STATUS_MAX_PARAMS;
     napi_value argv[GET_WORK_STATUS_MAX_PARAMS] = {nullptr};
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
-    bool paramsCheck = (argc == GET_WORK_STATUS_MIN_PARAMS) || (argc == GET_WORK_STATUS_MAX_PARAMS);
-    NAPI_ASSERT(env, paramsCheck, "Wrong number of arguments");
+    if (argc != GET_WORK_STATUS_MIN_PARAMS && argc != GET_WORK_STATUS_MAX_PARAMS) {
+        Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
+        return nullptr;
+    }
 
     // argv[0] : workId
-    bool matchFlag = Common::MatchValueType(env, argv[WORK_ID_INDEX], napi_number);
-    NAPI_ASSERT(env, matchFlag, "Type error, Should is number");
+    if (!Common::MatchValueType(env, argv[WORK_ID_INDEX], napi_number)) {
+        Common::HandleParamErr(env, E_WORKID_ERR);
+        return nullptr;
+    }
     napi_get_value_int32(env, argv[WORK_ID_INDEX], &params.workId);
 
     // argv[1]: callback
     if (argc == GET_WORK_STATUS_MAX_PARAMS) {
         napi_valuetype valuetype = napi_undefined;
         NAPI_CALL(env, napi_typeof(env, argv[CALLBACK_INDEX], &valuetype));
-        NAPI_ASSERT(env, valuetype == napi_function, "Wrong argument type. Function expected.");
+        if (valuetype != napi_function) {
+            Common::HandleParamErr(env, E_CALLBACK_TYPE_ERR);
+            return nullptr;
+        }
         napi_create_reference(env, argv[CALLBACK_INDEX], 1, &params.callback);
     }
     return Common::NapiGetNull(env);
@@ -93,12 +101,14 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
             asyncCallbackInfo->errorCode =
                 WorkSchedulerSrvClient::GetInstance().GetWorkStatus(asyncCallbackInfo->workId,
                 asyncCallbackInfo->workInfo);
+            asyncCallbackInfo->errorMsg = Common::FindErrMsg(env, asyncCallbackInfo->errorCode);
         },
         [](napi_env env, napi_status status, void *data) {
             AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *>(data);
             std::unique_ptr<AsyncCallbackInfoGetWorkStatus> callbackPtr {asyncCallbackInfo};
             if (asyncCallbackInfo != nullptr) {
                 napi_value result = Common::GetNapiWorkInfo(env, asyncCallbackInfo->workInfo);
+                WS_HILOGD("asyncCallbackInfo->errorCode = %{public}d", asyncCallbackInfo->errorCode);
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
         },

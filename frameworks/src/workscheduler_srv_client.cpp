@@ -89,42 +89,46 @@ void WorkSchedulerSrvClient::WorkSchedulerDeathRecipient::OnRemoteDied(const wpt
     WS_HILOGD("Work Scheduler Death Recipient Recv death notice.");
 }
 
-bool WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
+ErrCode WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
 {
     WS_HILOGD("Start Work");
-    if (Connect() != ERR_OK) {
-        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
-        return false;
+    ErrCode ret = Connect();
+    if (ret != ERR_OK) {
+        WS_HILOGE("Connect() failed, errno: %{public}d", ret);
+        return ret;
     }
     return iWorkSchedService_->StartWork(workInfo);
 }
 
-bool WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
+ErrCode WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
 {
     WS_HILOGD("Stop Work");
-    if (Connect() != ERR_OK) {
-        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
-        return false;
+    ErrCode ret = Connect();
+    if (ret != ERR_OK) {
+        WS_HILOGE("Connect() failed, errno: %{public}d", ret);
+        return ret;
     }
     return iWorkSchedService_->StopWork(workInfo);
 }
 
-bool WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)
+ErrCode WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)
 {
     WS_HILOGD("Stop And Cancel Work");
-    if (Connect() != ERR_OK) {
-        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
-        return false;
+    ErrCode ret = Connect();
+    if (ret != ERR_OK) {
+        WS_HILOGE("Connect() failed, errno: %{public}d", ret);
+        return ret;
     }
     return iWorkSchedService_->StopAndCancelWork(workInfo);
 }
 
-bool WorkSchedulerSrvClient::StopAndClearWorks()
+ErrCode WorkSchedulerSrvClient::StopAndClearWorks()
 {
     WS_HILOGD("Stop And Clear Works");
-    if (Connect() != ERR_OK) {
-        WS_HILOGE("Connect() failed, errno: %{public}d", Connect());
-        return false;
+    ErrCode ret = Connect();
+    if (ret != ERR_OK) {
+        WS_HILOGE("Connect() failed, errno: %{public}d", ret);
+        return ret;
     }
     return iWorkSchedService_->StopAndClearWorks();
 }
@@ -136,8 +140,13 @@ ErrCode WorkSchedulerSrvClient::IsLastWorkTimeout(int32_t workId, bool &result)
     if (errCode != ERR_OK) {
         return errCode;
     }
-    result = iWorkSchedService_->IsLastWorkTimeout(workId);
-    return ERR_OK;
+    errCode = iWorkSchedService_->IsLastWorkTimeout(workId, result);
+    if (errCode == 1) {
+        result = true;
+    } else {
+        result = false;
+    }
+    return errCode;
 }
 
 ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos)
@@ -149,26 +158,21 @@ ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInf
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t pid = IPCSkeleton::GetCallingPid();
-    workInfos = iWorkSchedService_->ObtainAllWorks(uid, pid);
-    return ERR_OK;
+    return iWorkSchedService_->ObtainAllWorks(uid, pid, workInfos);
 }
 
 ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo)
 {
     WS_HILOGD("Get Work Status");
     if (workId <= 0) {
-        return E_WORK_ID_INVALID;
+        return E_WORKID_ERR;
     }
     ErrCode code = Connect();
     if (code != ERR_OK) {
         return code;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    workInfo = iWorkSchedService_->GetWorkStatus(uid, workId);
-    if (workInfo == nullptr) {
-        return E_GET_WORK_STATUS_ERROR;
-    }
-    return ERR_OK;
+    return iWorkSchedService_->GetWorkStatus(uid, workId, workInfo);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
