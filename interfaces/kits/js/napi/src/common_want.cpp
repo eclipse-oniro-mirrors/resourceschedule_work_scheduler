@@ -124,7 +124,7 @@ bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantPar
         return true;
     } else if (valueType != napi_object) {
         WS_HILOGE("parameters should be {[key: string]: value} format.");
-        Common::HandleParamErr(env, E_PARAMETERS_FORMAT_ERR);
+        Common::HandleParamErr(env, E_PARAMETERS_TYPE_ERR);
         return false;
     }
 
