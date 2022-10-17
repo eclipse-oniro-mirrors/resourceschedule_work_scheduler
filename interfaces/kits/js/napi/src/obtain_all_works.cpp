@@ -40,6 +40,7 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
     if (argc != OBTAIN_ALL_WORKS_MIN_PARAMS && argc != OBTAIN_ALL_WORKS_MAX_PARAMS) {
         Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
+        return nullptr;
     }
 
     // argv[0]: callback

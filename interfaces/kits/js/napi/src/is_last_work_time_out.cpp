@@ -46,11 +46,13 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, NULL, NULL));
     if (argc != IS_LAST_WORK_TIME_OUT_MAX_PARAMS && argc != IS_LAST_WORK_TIME_OUT_MIN_PARAMS) {
         Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
+        return nullptr;
     }
 
     // argv[0] : workId
     if (!Common::MatchValueType(env, argv[WORK_ID_INDEX], napi_number)) {
         Common::HandleParamErr(env, E_WORKID_ERR);
+        return nullptr;
     }
     napi_get_value_int32(env, argv[WORK_ID_INDEX], &params.workId);
 
@@ -60,6 +62,7 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
         NAPI_CALL(env, napi_typeof(env, argv[CALLBACK_INDEX], &valuetype));
         if (valuetype != napi_function) {
             Common::HandleParamErr(env, E_CALLBACK_TYPE_ERR);
+            return nullptr;
         }
         napi_create_reference(env, argv[CALLBACK_INDEX], 1, &params.callback);
     }

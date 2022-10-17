@@ -62,36 +62,44 @@ public:
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return Int value.
      */
-    static int32_t GetIntProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static int32_t GetIntProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Get bool property.
      *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return True if success,else false
      */
-    static bool GetBoolProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static bool GetBoolProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Get bool to int property.
      *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return Bool to int property.
      */
-    static int32_t GetBoolToIntProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static int32_t GetBoolToIntProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Get string property.
      *
      * @param env The env.
      * @param object The object.
      * @param propertyName The name of property.
+     * @param errCode Throw the errCode if failed.
      * @return String property.
      */
-    static std::string GetStringProperty(napi_env env, napi_value object, const std::string &propertyName);
+    static std::string GetStringProperty(napi_env env, napi_value object,
+        const std::string &propertyName, ErrCode errCode);
     /**
      * @brief Match value type.
      *
@@ -177,7 +185,7 @@ public:
      * @param env The env.
      * @param errCode The error code.
      */
-    static bool HandleParamErr(const napi_env &env, const int32_t errCode);
+    static void HandleParamErr(const napi_env &env, const int32_t errCode);
     /**
      * @brief Find error message by code.
      *
