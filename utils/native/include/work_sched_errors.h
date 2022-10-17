@@ -61,7 +61,7 @@ enum ParamError {
 };
 
 static std::map<int32_t, std::string> saErrCodeMsgMap = {
-    {E_MEMORY_OPERATION_FAILED, "Parcel operation failed. Failed to read or write the parcel."},
+    {E_MEMORY_OPERATION_FAILED, "Memory operation failed. Failed to allocate the memory."},
     {E_PARCEL_OPERATION_FAILED, "Parcel operation failed. Failed to read or write the parcel."},
     {E_CLIENT_CONNECT_SERVICE_FAILED, "System service operation failed. Failed to connect the system service."},
     {E_SERVICE_NOT_READY, "System service operation failed. The service is not ready."},
