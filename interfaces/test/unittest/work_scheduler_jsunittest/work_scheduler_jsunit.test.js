@@ -931,14 +931,14 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.startWork(workInfo);
+        } catch (error) {}
+        let begin = getTime();
+        try{
+            workScheduler.stopAndClearWorks();
         } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
-        let begin = getTime();
-        try{
-            workScheduler.stopAndClearWorks();
-        } catch (error) {}
         let end = getTime();
         let times = end - begin;
         if (times < 50) {
