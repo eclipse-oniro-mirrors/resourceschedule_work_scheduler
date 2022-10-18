@@ -173,7 +173,7 @@ void WorkSchedulerService::OnStop()
 {
     WS_HILOGI("stop service.");
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    DeviceUsageStats::BundleActiveClient::GetInstance().UnregisterGroupCallBack(groupObserver_);
+    DeviceUsageStats::BundleActiveClient::GetInstance().UnRegisterAppGroupCallBack(groupObserver_);
     groupObserver_ = nullptr;
     hasGroupObserver = -1;
 #endif
@@ -757,7 +757,7 @@ void WorkSchedulerService::GroupObserverInit()
         groupObserver_ = new (std::nothrow) WorkBundleGroupChangeCallback(workQueueManager_);
     }
     if (groupObserver_ && hasGroupObserver != ERR_OK) {
-        hasGroupObserver = DeviceUsageStats::BundleActiveClient::GetInstance().RegisterGroupCallBack(groupObserver_);
+        hasGroupObserver = DeviceUsageStats::BundleActiveClient::GetInstance().RegisterAppGroupCallBack(groupObserver_);
     }
 }
 #endif

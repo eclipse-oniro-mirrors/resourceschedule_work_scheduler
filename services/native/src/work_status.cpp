@@ -273,8 +273,9 @@ bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
 bool WorkStatus::SetMinInterval()
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    int32_t group = DeviceUsageStats::BundleActiveClient::GetInstance().QueryPackageGroup(bundleName_, userId_);
-    if (group == -1) {
+    int32_t group = 0;
+    int32_t errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
+    if (errCode != ERR_OK) {
         WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
             userId_, bundleName_.c_str());
         return false;

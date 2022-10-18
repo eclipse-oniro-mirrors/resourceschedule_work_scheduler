@@ -16,24 +16,23 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_BUNDLE_GROUP_CHANGE_CALLBACK_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_BUNDLE_GROUP_CHANGE_CALLBACK_H
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-#include "bundle_active_group_callback_stub.h"
-#include "bundle_active_group_callback_info.h"
+#include "app_group_callback_stub.h"
+#include "app_group_callback_info.h"
 #include "work_queue_manager.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 class WorkQueueManager;
-class WorkBundleGroupChangeCallback : public DeviceUsageStats::BundleActiveGroupCallbackStub {
+class WorkBundleGroupChangeCallback : public DeviceUsageStats::AppGroupCallbackStub {
 public:
     explicit WorkBundleGroupChangeCallback(std::shared_ptr<WorkQueueManager> workQueueManager);
     virtual ~WorkBundleGroupChangeCallback() = default;
     /*
-    * function: OnBundleGroupChanged, bundleGroupChanged callback.
-    * parameters: bundleActiveGroupCallbackInfo
+    * function: OnAppGroupChanged, bundleGroupChanged callback.
+    * parameters: appGroupCallbackInfo
     * return: void.
     */
-    virtual void OnBundleGroupChanged(const DeviceUsageStats::BundleActiveGroupCallbackInfo
-        &bundleActiveGroupCallbackInfo) override;
+    virtual void OnAppGroupChanged(const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo) override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
 };
