@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-import workScheduler from '@ohos.workScheduler'
+import workScheduler from '@ohos.resourceschedule.workScheduler'
 
 import {describe, beforeAll, beforeEach, afterEach, afterAll, it, expect} from 'deccjsunit/index'
 
@@ -931,14 +931,14 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.startWork(workInfo);
+        } catch (error) {}
+        let begin = getTime();
+        try{
+            workScheduler.stopAndClearWorks();
         } catch (error) {
             expect(false).assertEqual(true)
             done();
         }
-        let begin = getTime();
-        try{
-            workScheduler.stopAndClearWorks();
-        } catch (error) {}
         let end = getTime();
         let times = end - begin;
         if (times < 50) {
