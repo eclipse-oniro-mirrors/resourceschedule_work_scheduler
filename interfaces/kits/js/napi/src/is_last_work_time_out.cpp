@@ -36,7 +36,7 @@ struct IsLastWorkTimeOutParamsInfo {
 struct AsyncCallbackIsLastWorkTimeOut : public AsyncWorkData {
     explicit AsyncCallbackIsLastWorkTimeOut(napi_env env) : AsyncWorkData(env) {}
     int32_t workId {-1};
-    bool result;
+    bool result {false};
 };
 
 napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, IsLastWorkTimeOutParamsInfo &params)
