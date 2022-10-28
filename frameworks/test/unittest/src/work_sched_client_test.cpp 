@@ -34,6 +34,7 @@ public:
  * @tc.name: WorkSchedClientTest_001
  * @tc.desc: Test StartWork
  * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_001, TestSize.Level1)
 {
@@ -46,6 +47,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_001, TestSize.Level1)
  * @tc.name: WorkSchedClientTest_002
  * @tc.desc: Test StopWork
  * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_002, TestSize.Level1)
 {
@@ -58,6 +60,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_002, TestSize.Level1)
  * @tc.name: WorkSchedClientTest_003
  * @tc.desc: Test StopAndCancelWork
  * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_003, TestSize.Level1)
 {
@@ -70,6 +73,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_003, TestSize.Level1)
  * @tc.name: WorkSchedClientTest_004
  * @tc.desc: Test StopAndClearWorks
  * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_004, TestSize.Level1)
 {
@@ -81,6 +85,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_004, TestSize.Level1)
  * @tc.name: WorkSchedClientTest_005
  * @tc.desc: Test IsLastWorkTimeout
  * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_005, TestSize.Level1)
 {
@@ -94,6 +99,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_005, TestSize.Level1)
  * @tc.name: WorkSchedClientTest_006
  * @tc.desc: Test GetWorkStatus
  * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_006, TestSize.Level1)
 {
@@ -107,6 +113,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_006, TestSize.Level1)
  * @tc.name: WorkSchedClientTest_007
  * @tc.desc: Test ObtainAllWorks
  * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_007, TestSize.Level1)
 {
