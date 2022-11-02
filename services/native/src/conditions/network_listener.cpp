@@ -83,7 +83,7 @@ void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
         }
 #else
         listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
-                std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
+            std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
 #endif
     }
 }
