@@ -18,17 +18,21 @@
 #include "common_event_support.h"
 #include "matching_skills.h"
 #include "want.h"
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
 #include "net_supplier_info.h"
+#endif
 #include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 const int32_t DEFAULT_VALUE = -1;
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
 const int32_t BEARER_CELLULAR = 0;
 const int32_t BEARER_WIFI = 1;
 const int32_t BEARER_BLUETOOTH = 2;
 const int32_t BEARER_ETHERNET = 3;
 const int32_t BEARER_WIFI_AWARE = 5;
+#endif
 
 NetworkEventSubscriber::NetworkEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     NetworkListener &listener) : CommonEventSubscriber(subscribeInfo), listener_(listener) {}
@@ -42,6 +46,7 @@ void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
         int32_t code = data.GetCode();
         int32_t netType = data.GetWant().GetIntParam("NetType", DEFAULT_VALUE);
         WS_HILOGI("Condition changed code:%{public}d, netType:%{public}d", code, netType);
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
         if (code == NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED) {
             if (netType == DEFAULT_VALUE) {
                 return;
@@ -76,6 +81,10 @@ void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
             listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
                 std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
         }
+#else
+        listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
+#endif
     }
 }
 

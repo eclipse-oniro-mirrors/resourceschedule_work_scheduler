@@ -18,7 +18,9 @@
 #include "battery_srv_client.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
 #include "net_supplier_info.h"
+#endif
 #include "want.h"
 #include "work_sched_hilog.h"
 
@@ -75,6 +77,7 @@ void EventPublisher::PublishEvent(std::string &result, std::string &eventType, s
 
 void EventPublisher::PublishNetworkEvent(std::string &result, std::string &eventValue)
 {
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
     EventFwk::Want want;
     if (eventValue == EV_NETWORK_TYPE_WIFI) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
@@ -97,6 +100,7 @@ void EventPublisher::PublishNetworkEvent(std::string &result, std::string &event
         result.append("dump need right param.");
         return;
     }
+#endif
 }
 
 void EventPublisher::PublishChargingEvent(std::string &result, std::string &eventValue)

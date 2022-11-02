@@ -24,8 +24,11 @@ config("worksched_public_config") {
   include_dirs = [
     "native/include",
     "//base/powermgr/battery_manager/interfaces/innerkits/native/include",
-    "//foundation/communication/netmanager_base/interfaces/innerkits/netconnclient/include",
   ]
+
+  if (workscheduler_with_communication_netmanager_base_enable) {
+    include_dirs += [ "//foundation/communication/netmanager_base/interfaces/innerkits/netconnclient/include" ]
+  }
 }
 
 ohos_shared_library("workschedservice") {
@@ -93,6 +96,10 @@ ohos_shared_library("workschedservice") {
   if (resourceschedule_bgtaskmgr_enable) {
     external_deps += [ "background_task_mgr:bgtaskmgr_innerkits" ]
     defines += [ "RESOURCESCHEDULE_BGTASKMGR_ENABLE" ]
+  }
+
+  if (workscheduler_with_communication_netmanager_base_enable) {
+    defines += [ "COMMUNICATION_NETMANAGER_BASE_ENABLE" ]
   }
 
   part_name = "${worksched_native_part_name}"
