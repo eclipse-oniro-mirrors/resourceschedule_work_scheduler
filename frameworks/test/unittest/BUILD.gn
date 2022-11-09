@@ -40,8 +40,39 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
   ]
 }
 
+ohos_unittest("WorkSchedulerClientTest") {
+  module_out_path = "work_scheduler/client_unittest"
+
+  sources = [ "src/work_sched_client_test.cpp" ]
+
+  include_dirs = [ "include" ]
+
+  cflags = []
+
+  if (target_cpu == "arm") {
+    cflags += [ "-DBINDER_IPC_32BIT" ]
+  }
+
+  deps = [
+    "${worksched_frameworks_path}:workschedclient",
+    "//third_party/googletest:gtest_main",
+    "//third_party/jsoncpp",
+  ]
+
+  external_deps = [
+    "ability_base:want",
+    "ability_runtime:ability_context_native",
+    "ability_runtime:abilitykit_native",
+    "ability_runtime:runtime",
+    "c_utils:utils",
+  ]
+}
+
 group("workinfotest") {
   testonly = true
 
-  deps = [ ":WorkSchedulerWorkInfoTest" ]
+  deps = [
+    ":WorkSchedulerClientTest",
+    ":WorkSchedulerWorkInfoTest",
+  ]
 }
