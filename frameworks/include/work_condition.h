@@ -15,7 +15,7 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_CONDITION_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_CONDITION_H
 
-#include <time.h>
+#include <ctime>
 
 namespace OHOS {
 namespace WorkScheduler {

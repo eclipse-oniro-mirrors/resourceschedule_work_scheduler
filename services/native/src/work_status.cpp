@@ -63,7 +63,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
     }
     this->persisted_ = workInfo.IsPersisted();
-    this->priority_ = DEFAULT_PRIORITY;
+    this->priority_ = defaultPriority;
     this->currentStatus_ = WAIT_CONDITION;
     this->minInterval_ = MIN_INTERVAL_DEFAULT;
     this->callbackFlag_ = false;

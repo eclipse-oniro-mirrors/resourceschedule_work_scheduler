@@ -37,6 +37,8 @@ using namespace OHOS::HiviewDFX;
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
+const int32_t MAX_RUNNING_COUNT = 3;
+const uint32_t MAX_WORK_COUNT_PER_UID = 10;
 const int32_t DELAY_TIME_LONG = 30000;
 const int32_t DELAY_TIME_SHORT = 5000;
 const uint32_t MAX_WATCHDOG_ID = 1000;
@@ -277,9 +279,9 @@ void WorkPolicyManager::AddToReadyQueue(shared_ptr<vector<shared_ptr<WorkStatus>
 
 int32_t WorkPolicyManager::GetMaxRunningCount()
 {
-    int32_t currentMaxRunning = IPolicyFilter::MAX_RUNNING_COUNT;
+    int32_t currentMaxRunning = MAX_RUNNING_COUNT;
     for (auto policyFilter : policyFilters_) {
-        int32_t policyMaxRunning = policyFilter->getPolicyMaxRunning();
+        int32_t policyMaxRunning = policyFilter->GetPolicyMaxRunning();
         if (policyMaxRunning < currentMaxRunning) {
             currentMaxRunning = policyMaxRunning;
         }

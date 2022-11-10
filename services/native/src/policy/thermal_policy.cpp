@@ -22,6 +22,10 @@ using namespace OHOS::PowerMgr;
 
 namespace OHOS {
 namespace WorkScheduler {
+const int32_t COUNT_THERMAL_CRUCIAL = 0;
+const int32_t COUNT_THERMAL_LOW = 1;
+const int32_t COUNT_THERMAL_NORMAL = 3;
+
 ThermalPolicy::ThermalPolicy(shared_ptr<WorkPolicyManager> workPolicyManager)
 {
     workPolicyManager_ = workPolicyManager;
@@ -31,7 +35,7 @@ ThermalPolicy::~ThermalPolicy()
 {
 }
 
-int32_t ThermalPolicy::getPolicyMaxRunning()
+int32_t ThermalPolicy::GetPolicyMaxRunning()
 {
     auto& thermalMgrClient = ThermalMgrClient::GetInstance();
     ThermalLevel thermalLevel = thermalMgrClient.GetThermalLevel();

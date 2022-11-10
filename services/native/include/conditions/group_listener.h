@@ -28,7 +28,7 @@ namespace WorkScheduler {
 class GroupListener : public IConditionListener {
 public:
     explicit GroupListener(std::shared_ptr<WorkQueueManager> workQueueManager);
-    ~GroupListener() = default;
+    ~GroupListener() override = default;
     /**
      * @brief The OnConditionChanged callback.
      *

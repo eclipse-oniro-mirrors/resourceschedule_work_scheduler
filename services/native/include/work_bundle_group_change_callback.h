@@ -26,13 +26,13 @@ class WorkQueueManager;
 class WorkBundleGroupChangeCallback : public DeviceUsageStats::AppGroupCallbackStub {
 public:
     explicit WorkBundleGroupChangeCallback(std::shared_ptr<WorkQueueManager> workQueueManager);
-    virtual ~WorkBundleGroupChangeCallback() = default;
+    ~WorkBundleGroupChangeCallback() override = default;
     /*
     * function: OnAppGroupChanged, bundleGroupChanged callback.
     * parameters: appGroupCallbackInfo
     * return: void.
     */
-    virtual void OnAppGroupChanged(const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo) override;
+    void OnAppGroupChanged(const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo) override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
 };

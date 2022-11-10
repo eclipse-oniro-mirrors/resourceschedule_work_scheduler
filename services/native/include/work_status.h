@@ -33,7 +33,7 @@ public:
         RUNNING,
         REMOVED
     };
-    const int32_t DEFAULT_PRIORITY = 100;
+    const int32_t defaultPriority = 100;
     WorkStatus(WorkInfo &workInfo, int32_t uid);
     ~WorkStatus();
 

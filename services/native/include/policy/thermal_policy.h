@@ -23,18 +23,15 @@ namespace WorkScheduler {
 class ThermalPolicy : public IPolicyFilter {
 public:
     explicit ThermalPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
-    ~ThermalPolicy();
+    ~ThermalPolicy() override;
     /**
      * @brief Get policy max running.
      *
      * @return Res.
      */
-    int32_t getPolicyMaxRunning() override;
+    int32_t GetPolicyMaxRunning() override;
 private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
-    const int32_t COUNT_THERMAL_CRUCIAL = 0;
-    const int32_t COUNT_THERMAL_LOW = 1;
-    const int32_t COUNT_THERMAL_NORMAL = 3;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

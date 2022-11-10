@@ -41,7 +41,7 @@ private:
 class StorageListener : public IConditionListener {
 public:
     explicit StorageListener(std::shared_ptr<WorkQueueManager> workQueueManager);
-    ~StorageListener();
+    ~StorageListener() override;
 
     /**
      * @brief The OnConditionChanged callback.
