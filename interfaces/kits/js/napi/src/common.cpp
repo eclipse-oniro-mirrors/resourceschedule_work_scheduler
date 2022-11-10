@@ -164,7 +164,7 @@ bool Common::GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInf
     if (storageRequest == UNSET_INT_PARAM) {
         WS_HILOGI("Unset StorageRequest.");
     } else if (storageRequest >= WorkCondition::Storage::STORAGE_LEVEL_LOW
-        && storageRequest <= WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY) {
+            && storageRequest <= WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY) {
         workInfo.RequestStorageLevel(WorkCondition::Storage(storageRequest));
         hasCondition = true;
     } else {
@@ -564,7 +564,7 @@ void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &inf
     }
 }
 
-void Common::HandleErrCode(const napi_env &env, int32_t errCode)
+void Common::HandleErrCode(const napi_env &env, const int32_t errCode)
 {
     WS_HILOGI("HandleErrCode errCode = %{public}d", errCode);
     if (errCode == ERR_OK) {
@@ -577,7 +577,7 @@ void Common::HandleErrCode(const napi_env &env, int32_t errCode)
     }
 }
 
-void Common::HandleParamErr(const napi_env &env, int32_t errCode)
+void Common::HandleParamErr(const napi_env &env, const int32_t errCode)
 {
     WS_HILOGI("HandleParamErr errCode = %{public}d", errCode);
     if (errCode == ERR_OK) {

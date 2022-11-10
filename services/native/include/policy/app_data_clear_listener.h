@@ -26,7 +26,7 @@ class WorkPolicyManager;
 class AppDataClearListener : public IPolicyListener {
 public:
     explicit AppDataClearListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
-    ~AppDataClearListener();
+    ~AppDataClearListener() override;
 
     /**
      * @brief The OnPolicyChanged callback.

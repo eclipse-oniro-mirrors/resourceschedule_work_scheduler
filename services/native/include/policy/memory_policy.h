@@ -25,20 +25,14 @@ namespace WorkScheduler {
 class MemoryPolicy : public IPolicyFilter {
 public:
     explicit MemoryPolicy(std::shared_ptr<WorkPolicyManager> workPolicyManager);
-    ~MemoryPolicy();
+    ~MemoryPolicy() override;
     /**
      * @brief Get policy max running.
      *
      * @return Res.
      */
-    int32_t getPolicyMaxRunning() override;
+    int32_t GetPolicyMaxRunning() override;
 
-    const int32_t INVALID_MEM = -1;
-    const int32_t MEM_CRUCIAL = 1 * 1024 * 1024;
-    const int32_t MEM_LOW = 2 * 1024 * 1024;
-    const int32_t COUNT_MEMORY_CRUCIAL = 1;
-    const int32_t COUNT_MEMORY_LOW = 2;
-    const int32_t COUNT_MEMORY_NORMAL = 3;
 private:
     int32_t GetMemAvailable();
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;

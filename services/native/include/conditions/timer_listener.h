@@ -28,7 +28,7 @@ namespace WorkScheduler {
 class TimerListener : public IConditionListener {
 public:
     explicit TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
-    ~TimerListener() = default;
+    ~TimerListener() override = default;
     /**
      * @brief The OnConditionChanged callback.
      *

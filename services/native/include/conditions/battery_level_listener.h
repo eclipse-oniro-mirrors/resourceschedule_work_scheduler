@@ -28,7 +28,7 @@ class WorkQueueManager;
 class BatteryLevelListener : public IConditionListener {
 public:
     explicit BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager);
-    ~BatteryLevelListener();
+    ~BatteryLevelListener() override;
 
     /**
      * @brief The OnConditionChanged callback.

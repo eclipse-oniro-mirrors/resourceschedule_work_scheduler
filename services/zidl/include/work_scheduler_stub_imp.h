@@ -28,7 +28,7 @@ public:
     explicit WorkSchedulerStubImp(const std::shared_ptr<JsWorkSchedulerExtension>& extension)
         : extension_(extension) {}
 
-    virtual ~WorkSchedulerStubImp() {}
+    ~WorkSchedulerStubImp() override {}
 
     /**
      * @brief The OnWorkStart callback.

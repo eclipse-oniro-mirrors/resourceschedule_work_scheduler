@@ -44,9 +44,6 @@ public:
     void OnWorkStop(WorkInfo& workInfo) override;
 
 private:
-    static constexpr int32_t COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;
-    static constexpr int32_t COMMAND_ON_WORK_STOP = MIN_TRANSACTION_ID + 1;
-
     static inline BrokerDelegator<WorkSchedulerProxy> delegator_;
 };
 } // namespace WorkScheduler

@@ -55,7 +55,7 @@ public:
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    static bool GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
+    static bool GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
     /**
      * @brief Get int property.
      *
@@ -202,12 +202,12 @@ public:
     static int32_t FindErrCode(const napi_env &env, const int32_t errCodeIn);
 
 private:
-    static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
+    static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
     static bool GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
 };
 } // namespace WorkScheduler

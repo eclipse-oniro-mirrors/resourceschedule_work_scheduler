@@ -100,7 +100,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
         },
-        (void *)asyncCallbackInfo,
+        static_cast<AsyncCallbackInfoObtainAllWorks *>(asyncCallbackInfo),
         &asyncCallbackInfo->asyncWork));
 
     NAPI_CALL(env, napi_queue_async_work(env, asyncCallbackInfo->asyncWork));
