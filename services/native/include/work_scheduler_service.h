@@ -249,8 +249,6 @@ private:
     };
 
 private:
-
-
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     std::mutex mutex_;
