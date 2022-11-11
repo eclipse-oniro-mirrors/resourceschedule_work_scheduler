@@ -73,11 +73,11 @@ const int32_t MAX_BUFFER = 256;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
+const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
+const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
-const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
-const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -759,7 +759,8 @@ void WorkSchedulerService::GroupObserverInit()
         groupObserver_ = new (std::nothrow) WorkBundleGroupChangeCallback(workQueueManager_);
     }
     if (groupObserver_ && g_hasGroupObserver != ERR_OK) {
-        g_hasGroupObserver = DeviceUsageStats::BundleActiveClient::GetInstance().RegisterAppGroupCallBack(groupObserver_);
+        g_hasGroupObserver =
+            DeviceUsageStats::BundleActiveClient::GetInstance().RegisterAppGroupCallBack(groupObserver_);
     }
 }
 #endif
