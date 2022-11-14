@@ -69,7 +69,7 @@ auto instance = DelayedSpSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.GetRefPtr();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
 const int32_t INIT_DELAY = 2 * 1000;
-const int32_t MAX_BUFFER = 256;
+const int32_t MAX_BUFFER = 2048;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
@@ -147,8 +147,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     }
     char buffer[MAX_BUFFER];
     ostringstream os;
-    while (!fin.eof()) {
-        fin.getline(buffer, MAX_BUFFER);
+    while (fin.getline(buffer, MAX_BUFFER)) {
         os << buffer;
     }
     string data = os.str();
