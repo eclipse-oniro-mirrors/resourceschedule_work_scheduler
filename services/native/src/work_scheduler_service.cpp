@@ -73,8 +73,8 @@ const int32_t MAX_BUFFER = 256;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
-const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
-const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
+const char* g_persistedFilePath = "/data/service/el1/public/WorkScheduler/persisted_work";
+const char* g_persistedPath = "/data/service/el1/public/WorkScheduler";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
@@ -135,7 +135,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     list<shared_ptr<WorkInfo>> workInfos;
     ifstream fin;
     std::string realPath;
-    if (!WorkSchedUtils::ConvertFullPath(PERSISTED_FILE_PATH, realPath)) {
+    if (!WorkSchedUtils::ConvertFullPath(g_persistedFilePath, realPath)) {
         WS_HILOGE("Get real path failed");
         return workInfos;
     }
@@ -679,11 +679,11 @@ void WorkSchedulerService::RefreshPersistedWorks()
     jsonWriter->write(root, &os);
     string result = os.str();
     WS_HILOGD("Work JSON os result %{public}s", result.c_str());
-    CreateNodeDir(PERSISTED_PATH);
-    CreateNodeFile(PERSISTED_FILE_PATH);
+    CreateNodeDir(g_persistedPath);
+    CreateNodeFile(g_persistedFilePath);
     ofstream fout;
     std::string realPath;
-    if (!WorkSchedUtils::ConvertFullPath(PERSISTED_FILE_PATH, realPath)) {
+    if (!WorkSchedUtils::ConvertFullPath(g_persistedFilePath, realPath)) {
         WS_HILOGE("Get real path failed");
         return;
     }
