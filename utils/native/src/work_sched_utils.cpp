@@ -21,6 +21,7 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+const int32_t INVALID_DATA = -1;
 int32_t WorkSchedUtils::GetCurrentAccountId()
 {
     std::vector<int32_t> osAccountIds;
@@ -73,8 +74,8 @@ int32_t WorkSchedUtils::GetUserIdByUid(int32_t uid)
         WS_HILOGE("uid is illegal: %{public}d", uid);
         return INVALID_DATA;
     }
-    const int32_t BASE_USER_RANGE = 200000;
-    return uid / BASE_USER_RANGE;
+    const int32_t baseUserRange = 200000;
+    return uid / baseUserRange;
 }
 
 bool WorkSchedUtils::ConvertFullPath(const std::string& partialPath, std::string& fullPath)

@@ -245,14 +245,10 @@ private:
     class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
     public:
         SystemAbilityStatusChangeListener() {};
-        virtual void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+        void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
     };
 
 private:
-    const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
-    const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
-    const char* PERSISTED_FILE = "persisted_work";
-
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     std::mutex mutex_;

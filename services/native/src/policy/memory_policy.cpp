@@ -24,6 +24,12 @@ namespace OHOS {
 namespace WorkScheduler {
 const int32_t BUF_LIMIT = 128;
 const int32_t NAME_SIZE = 128;
+const int32_t INVALID_MEM = -1;
+const int32_t MEM_CRUCIAL = 1 * 1024 * 1024;
+const int32_t MEM_LOW = 2 * 1024 * 1024;
+const int32_t COUNT_MEMORY_CRUCIAL = 1;
+const int32_t COUNT_MEMORY_LOW = 2;
+const int32_t COUNT_MEMORY_NORMAL = 3;
 
 MemoryPolicy::MemoryPolicy(shared_ptr<WorkPolicyManager> workPolicyManager)
 {
@@ -71,7 +77,7 @@ int32_t MemoryPolicy::GetMemAvailable()
     return memAvailable;
 }
 
-int32_t MemoryPolicy::getPolicyMaxRunning()
+int32_t MemoryPolicy::GetPolicyMaxRunning()
 {
     int32_t memAvailable = GetMemAvailable();
     WS_HILOGI("mem_available: %{public}d", memAvailable);

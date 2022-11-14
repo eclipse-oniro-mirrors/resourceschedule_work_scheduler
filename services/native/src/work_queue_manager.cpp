@@ -21,7 +21,7 @@ using namespace std;
 namespace OHOS {
 namespace WorkScheduler {
 const uint32_t TIME_CYCLE = 20 * 60 * 1000; // 20min
-static int32_t timeRetrigger_ = INT32_MAX;
+static int32_t g_timeRetrigger = INT32_MAX;
 
 WorkQueueManager::WorkQueueManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
 {
@@ -111,7 +111,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
     while (it != result.end()) {
         if ((*it)->needRetrigger_) {
             if (conditionType != WorkCondition::Type::TIMER
-                && conditionType != WorkCondition::Type::GROUP) {
+                    && conditionType != WorkCondition::Type::GROUP) {
                 WS_HILOGD("Need retrigger, start group listener.");
                 SetTimeRetrigger((*it)->timeRetrigger_);
                 listenerMap_.at(WorkCondition::Type::GROUP)->Start();
@@ -181,12 +181,12 @@ uint32_t WorkQueueManager::GetTimeCycle()
 
 void WorkQueueManager::SetTimeRetrigger(int32_t time)
 {
-    timeRetrigger_ = time;
+    g_timeRetrigger = time;
 }
 
 int32_t WorkQueueManager::GetTimeRetrigger()
 {
-    return timeRetrigger_;
+    return g_timeRetrigger;
 }
 
 void WorkQueueManager::SetMinIntervalByDump(int64_t interval)

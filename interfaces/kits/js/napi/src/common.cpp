@@ -164,7 +164,7 @@ bool Common::GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInf
     if (storageRequest == UNSET_INT_PARAM) {
         WS_HILOGI("Unset StorageRequest.");
     } else if (storageRequest >= WorkCondition::Storage::STORAGE_LEVEL_LOW
-        && storageRequest <= WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY) {
+            && storageRequest <= WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY) {
         workInfo.RequestStorageLevel(WorkCondition::Storage(storageRequest));
         hasCondition = true;
     } else {
@@ -493,7 +493,7 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     return napiWork;
 }
 
-napi_value Common::GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg)
+napi_value Common::GetCallbackErrorValue(napi_env env, int32_t errCode, const std::string errMsg)
 {
     if (errCode == ERR_OK) {
         return NapiGetNull(env);
@@ -511,7 +511,7 @@ napi_value Common::GetCallbackErrorValue(napi_env env, const int32_t errCode, co
 }
 
 void Common::SetCallback(
-    const napi_env &env, const napi_ref &callbackIn, const int32_t &errCode, const napi_value &result)
+    const napi_env &env, const napi_ref &callbackIn, int32_t errCode, const napi_value &result)
 {
     napi_value undefined = nullptr;
     napi_get_undefined(env, &undefined);
@@ -592,7 +592,7 @@ void Common::HandleParamErr(const napi_env &env, int32_t errCode)
     }
 }
 
-std::string Common::FindErrMsg(const napi_env &env, const int32_t errCode)
+std::string Common::FindErrMsg(const napi_env &env, int32_t errCode)
 {
     if (errCode == ERR_OK) {
         return "";
@@ -613,7 +613,7 @@ std::string Common::FindErrMsg(const napi_env &env, const int32_t errCode)
     return "Inner error.";
 }
 
-int32_t Common::FindErrCode(const napi_env &env, const int32_t errCodeIn)
+int32_t Common::FindErrCode(const napi_env &env, int32_t errCodeIn)
 {
     auto iter = paramErrCodeMsgMap.find(errCodeIn);
     if (iter != paramErrCodeMsgMap.end()) {

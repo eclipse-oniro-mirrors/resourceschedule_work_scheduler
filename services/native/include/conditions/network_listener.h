@@ -26,7 +26,7 @@ namespace WorkScheduler {
 class NetworkListener : public IConditionListener {
 public:
     explicit NetworkListener(std::shared_ptr<WorkQueueManager> workQueueManager);
-    ~NetworkListener();
+    ~NetworkListener() override;
     /**
      * @brief The OnConditionChanged callback.
      *

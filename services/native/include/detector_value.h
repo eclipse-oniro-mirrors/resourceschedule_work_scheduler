@@ -16,7 +16,7 @@
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_DETECTOR_VALUE_H
 
 #include <string>
-#include <time.h>
+#include <ctime>
 
 namespace OHOS {
 namespace WorkScheduler {

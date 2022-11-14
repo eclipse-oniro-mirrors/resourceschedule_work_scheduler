@@ -25,16 +25,16 @@ extern "C" {
 #endif
 
 __attribute__((constructor)) void RegisterModule(void);
-static napi_value InitApi(napi_env env, napi_value exports);
+napi_value InitApi(napi_env env, napi_value exports);
 
-static napi_value InitNetworkType(napi_env env, napi_value exports);
-static napi_value EnumNetworkTypeConstructor(napi_env env, napi_callback_info info);
-static napi_value InitChargingType(napi_env env, napi_value exports);
-static napi_value EnumChargingTypeConstructor(napi_env env, napi_callback_info info);
-static napi_value InitBatteryStatus(napi_env env, napi_value exports);
-static napi_value EnumBatteryStatusConstructor(napi_env env, napi_callback_info info);
-static napi_value InitStorageRequest(napi_env env, napi_value exports);
-static napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info info);
+napi_value InitNetworkType(napi_env env, napi_value exports);
+napi_value EnumNetworkTypeConstructor(napi_env env, napi_callback_info info);
+napi_value InitChargingType(napi_env env, napi_value exports);
+napi_value EnumChargingTypeConstructor(napi_env env, napi_callback_info info);
+napi_value InitBatteryStatus(napi_env env, napi_value exports);
+napi_value EnumBatteryStatusConstructor(napi_env env, napi_callback_info info);
+napi_value InitStorageRequest(napi_env env, napi_value exports);
+napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info info);
 
 #ifdef __cplusplus
 }
@@ -43,7 +43,7 @@ static napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info
 /*
  * Module define
  */
-napi_module _apiModule = {
+napi_module g_apiModule = {
     .nm_version = 1,
     .nm_flags = 0,
     .nm_filename = nullptr,

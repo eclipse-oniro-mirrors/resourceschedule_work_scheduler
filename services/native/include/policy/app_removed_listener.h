@@ -26,7 +26,7 @@ class WorkPolicyManager;
 class AppRemovedListener : public IPolicyListener {
 public:
     explicit AppRemovedListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
-    ~AppRemovedListener();
+    ~AppRemovedListener() override;
 
     /**
      * @brief The OnPolicyChanged callback.

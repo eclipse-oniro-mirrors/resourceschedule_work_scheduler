@@ -34,7 +34,6 @@ class AppDataClearListener;
 class Watchdog;
 class WorkPolicyManager {
 public:
-    const uint32_t MAX_WORK_COUNT_PER_UID = 10;
     explicit WorkPolicyManager(const wptr<WorkSchedulerService>& wss);
     ~WorkPolicyManager() = default;
     /**

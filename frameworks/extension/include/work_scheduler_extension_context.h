@@ -24,7 +24,7 @@ class WorkSchedulerExtensionContext : public AbilityRuntime::ExtensionContext {
 public:
     WorkSchedulerExtensionContext();
 
-    virtual ~WorkSchedulerExtensionContext();
+    ~WorkSchedulerExtensionContext() override;
 };
 }  // namespace WorkScheduler
 }  // namespace OHOS
