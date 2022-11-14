@@ -52,7 +52,6 @@ public:
      * @return True if success,else false.
      */
     static bool ConvertFullPath(const std::string &inOriPath, std::string &outRealPath);
-    static const int32_t INVALID_DATA = -1;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

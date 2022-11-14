@@ -33,7 +33,7 @@ namespace WorkScheduler {
 class WorkInfo : public Parcelable {
 public:
     explicit WorkInfo();
-    ~WorkInfo();
+    ~WorkInfo() override;
     /**
      * @brief Set the id of workId.
      *
@@ -245,7 +245,7 @@ private:
 private:
     static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
-    void ParseConditionFromJsonStr(const Json::Value root);
+    void ParseConditionFromJsonStr(const Json::Value value);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

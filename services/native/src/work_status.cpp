@@ -35,6 +35,7 @@ static const double ONE_SECOND = 1000.0;
 static bool debugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
+const int32_t DEFAULT_PRIORITY = 100;
 
 time_t getCurrentTime()
 {

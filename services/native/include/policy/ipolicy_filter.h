@@ -27,9 +27,7 @@ public:
      *
      * @return Res.
      */
-    virtual int32_t getPolicyMaxRunning();
-    static const int32_t CANNOT_RUNNING_MORE = -1;
-    static const int32_t MAX_RUNNING_COUNT = 3;
+    virtual int32_t GetPolicyMaxRunning();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

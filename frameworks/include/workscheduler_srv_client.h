@@ -84,8 +84,8 @@ private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:
         WorkSchedulerDeathRecipient() = default;
-        ~WorkSchedulerDeathRecipient() = default;
-        void OnRemoteDied(const wptr<IRemoteObject>& remote);
+        ~WorkSchedulerDeathRecipient() override = default;
+        void OnRemoteDied(const wptr<IRemoteObject>& remote) override;
     private:
         DISALLOW_COPY_AND_MOVE(WorkSchedulerDeathRecipient);
     };

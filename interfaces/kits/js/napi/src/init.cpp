@@ -33,10 +33,10 @@ EXTERN_C_START
 
 static const uint8_t ARG_FIRST = 1;
 
-napi_ref networkTypeConstructor_ = nullptr;
-napi_ref chargingTypeConstructor_ = nullptr;
-napi_ref batteryStatusConstructor_ = nullptr;
-napi_ref storageRequestConstructor_ = nullptr;
+napi_ref g_networkTypeConstructor = nullptr;
+napi_ref g_chargingTypeConstructor = nullptr;
+napi_ref g_batteryStatusConstructor = nullptr;
+napi_ref g_storageRequestConstructor = nullptr;
 
 napi_value InitApi(napi_env env, napi_value exports)
 {
@@ -63,40 +63,40 @@ napi_value InitApi(napi_env env, napi_value exports)
 
 napi_value InitNetworkType(napi_env env, napi_value exports)
 {
-    napi_value network_type_any;
-    napi_value network_type_mobile;
-    napi_value network_type_wifi;
-    napi_value network_type_bluetooth;
-    napi_value network_type_wifi_p2p;
-    napi_value network_type_ethernet;
+    napi_value networkTypeAny;
+    napi_value networkTypeMobile;
+    napi_value networkTypeWifi;
+    napi_value networkTypeBluetooth;
+    napi_value networkTypeWifiP2p;
+    napi_value networkTypeEthernet;
     int32_t refCount = 1;
 
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_ANY),
-        &network_type_any);
+        &networkTypeAny);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_MOBILE),
-        &network_type_mobile);
+        &networkTypeMobile);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_WIFI),
-        &network_type_wifi);
+        &networkTypeWifi);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_BLUETOOTH),
-        &network_type_bluetooth);
+        &networkTypeBluetooth);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_WIFI_P2P),
-        &network_type_wifi_p2p);
+        &networkTypeWifiP2p);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Network::NETWORK_TYPE_ETHERNET),
-        &network_type_ethernet);
+        &networkTypeEthernet);
 
     napi_property_descriptor desc[] = {
-        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_ANY", network_type_any),
-        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_MOBILE", network_type_mobile),
-        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_WIFI", network_type_wifi),
-        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_BLUETOOTH", network_type_bluetooth),
-        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_WIFI_P2P", network_type_wifi_p2p),
-        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_ETHERNET", network_type_ethernet),
+        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_ANY", networkTypeAny),
+        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_MOBILE", networkTypeMobile),
+        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_WIFI", networkTypeWifi),
+        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_BLUETOOTH", networkTypeBluetooth),
+        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_WIFI_P2P", networkTypeWifiP2p),
+        DECLARE_NAPI_STATIC_PROPERTY("NETWORK_TYPE_ETHERNET", networkTypeEthernet),
     };
 
     napi_value result = nullptr;
     napi_define_class(env, "NetworkType", NAPI_AUTO_LENGTH, EnumNetworkTypeConstructor,
         nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
-    napi_create_reference(env, result, refCount, &networkTypeConstructor_);
+    napi_create_reference(env, result, refCount, &g_networkTypeConstructor);
     napi_set_named_property(env, exports, "NetworkType", result);
     return exports;
 }
@@ -104,7 +104,7 @@ napi_value InitNetworkType(napi_env env, napi_value exports)
 napi_value EnumNetworkTypeConstructor(napi_env env, napi_callback_info info)
 {
     size_t argc = 0;
-    napi_value args[ARG_FIRST] = {0};
+    napi_value args[ARG_FIRST] = {nullptr};
     napi_value res = nullptr;
     void *data = nullptr;
 
@@ -118,32 +118,32 @@ napi_value EnumNetworkTypeConstructor(napi_env env, napi_callback_info info)
 
 napi_value InitChargingType(napi_env env, napi_value exports)
 {
-    napi_value charging_plugged_any;
-    napi_value charging_plugged_ac;
-    napi_value charging_plugged_usb;
-    napi_value charging_plugged_wireless;
+    napi_value chargingPluggedAny;
+    napi_value chargingPluggedAc;
+    napi_value chargingPluggedUsb;
+    napi_value chargingPluggedWireless;
     int32_t refCount = 1;
 
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY),
-        &charging_plugged_any);
+        &chargingPluggedAny);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGING_PLUGGED_AC),
-        &charging_plugged_ac);
+        &chargingPluggedAc);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGING_PLUGGED_USB),
-        &charging_plugged_usb);
+        &chargingPluggedUsb);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Charger::CHARGING_PLUGGED_WIRELESS),
-        &charging_plugged_wireless);
+        &chargingPluggedWireless);
 
     napi_property_descriptor desc[] = {
-        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_ANY", charging_plugged_any),
-        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_AC", charging_plugged_ac),
-        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_USB", charging_plugged_usb),
-        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_WIRELESS", charging_plugged_wireless),
+        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_ANY", chargingPluggedAny),
+        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_AC", chargingPluggedAc),
+        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_USB", chargingPluggedUsb),
+        DECLARE_NAPI_STATIC_PROPERTY("CHARGING_PLUGGED_WIRELESS", chargingPluggedWireless),
     };
 
     napi_value result = nullptr;
     napi_define_class(env, "ChargingType", NAPI_AUTO_LENGTH, EnumChargingTypeConstructor,
         nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
-    napi_create_reference(env, result, refCount, &chargingTypeConstructor_);
+    napi_create_reference(env, result, refCount, &g_chargingTypeConstructor);
     napi_set_named_property(env, exports, "ChargingType", result);
     return exports;
 }
@@ -151,7 +151,7 @@ napi_value InitChargingType(napi_env env, napi_value exports)
 napi_value EnumChargingTypeConstructor(napi_env env, napi_callback_info info)
 {
     size_t argc = 0;
-    napi_value args[ARG_FIRST] = {0};
+    napi_value args[ARG_FIRST] = {nullptr};
     napi_value res = nullptr;
     void *data = nullptr;
 
@@ -165,28 +165,28 @@ napi_value EnumChargingTypeConstructor(napi_env env, napi_callback_info info)
 
 napi_value InitBatteryStatus(napi_env env, napi_value exports)
 {
-    napi_value battery_status_low;
-    napi_value battery_status_okay;
-    napi_value battery_status_low_or_okay;
+    napi_value batteryStatusLow;
+    napi_value batteryStatusOkay;
+    napi_value batteryStatusLowOrOkay;
     int32_t refCount = 1;
 
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW),
-        &battery_status_low);
+        &batteryStatusLow);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY),
-        &battery_status_okay);
+        &batteryStatusOkay);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY),
-        &battery_status_low_or_okay);
+        &batteryStatusLowOrOkay);
 
     napi_property_descriptor desc[] = {
-        DECLARE_NAPI_STATIC_PROPERTY("BATTERY_STATUS_LOW", battery_status_low),
-        DECLARE_NAPI_STATIC_PROPERTY("BATTERY_STATUS_OKAY", battery_status_okay),
-        DECLARE_NAPI_STATIC_PROPERTY("BATTERY_STATUS_LOW_OR_OKAY", battery_status_low_or_okay),
+        DECLARE_NAPI_STATIC_PROPERTY("BATTERY_STATUS_LOW", batteryStatusLow),
+        DECLARE_NAPI_STATIC_PROPERTY("BATTERY_STATUS_OKAY", batteryStatusOkay),
+        DECLARE_NAPI_STATIC_PROPERTY("BATTERY_STATUS_LOW_OR_OKAY", batteryStatusLowOrOkay),
     };
 
     napi_value result = nullptr;
     napi_define_class(env, "BatteryStatus", NAPI_AUTO_LENGTH, EnumBatteryStatusConstructor, nullptr,
         sizeof(desc) / sizeof(*desc), desc, &result);
-    napi_create_reference(env, result, refCount, &batteryStatusConstructor_);
+    napi_create_reference(env, result, refCount, &g_batteryStatusConstructor);
     napi_set_named_property(env, exports, "BatteryStatus", result);
     return exports;
 }
@@ -194,7 +194,7 @@ napi_value InitBatteryStatus(napi_env env, napi_value exports)
 napi_value EnumBatteryStatusConstructor(napi_env env, napi_callback_info info)
 {
     size_t argc = 0;
-    napi_value args[ARG_FIRST] = {0};
+    napi_value args[ARG_FIRST] = {nullptr};
     napi_value res = nullptr;
     void *data = nullptr;
 
@@ -207,28 +207,28 @@ napi_value EnumBatteryStatusConstructor(napi_env env, napi_callback_info info)
 
 napi_value InitStorageRequest(napi_env env, napi_value exports)
 {
-    napi_value storage_level_low;
-    napi_value storage_level_okay;
-    napi_value storage_level_low_or_okay;
+    napi_value storageLeveLow;
+    napi_value storageLevelOkay;
+    napi_value storageLevelLowOrOkay;
     int32_t refCount = 1;
 
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_LOW),
-        &storage_level_low);
+        &storageLeveLow);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_OKAY),
-        &storage_level_okay);
+        &storageLevelOkay);
     napi_create_uint32(env, static_cast<uint32_t>(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY),
-        &storage_level_low_or_okay);
+        &storageLevelLowOrOkay);
 
     napi_property_descriptor desc[] = {
-        DECLARE_NAPI_STATIC_PROPERTY("STORAGE_LEVEL_LOW", storage_level_low),
-        DECLARE_NAPI_STATIC_PROPERTY("STORAGE_LEVEL_OKAY", storage_level_okay),
-        DECLARE_NAPI_STATIC_PROPERTY("STORAGE_LEVEL_LOW_OR_OKAY", storage_level_low_or_okay),
+        DECLARE_NAPI_STATIC_PROPERTY("STORAGE_LEVEL_LOW", storageLeveLow),
+        DECLARE_NAPI_STATIC_PROPERTY("STORAGE_LEVEL_OKAY", storageLevelOkay),
+        DECLARE_NAPI_STATIC_PROPERTY("STORAGE_LEVEL_LOW_OR_OKAY", storageLevelLowOrOkay),
     };
 
     napi_value result = nullptr;
     napi_define_class(env, "StorageRequest", NAPI_AUTO_LENGTH, EnumStorageRequestConstructor,
         nullptr, sizeof(desc) / sizeof(*desc), desc, &result);
-    napi_create_reference(env, result, refCount, &storageRequestConstructor_);
+    napi_create_reference(env, result, refCount, &g_storageRequestConstructor);
     napi_set_named_property(env, exports, "StorageRequest", result);
     return exports;
 }
@@ -236,7 +236,7 @@ napi_value InitStorageRequest(napi_env env, napi_value exports)
 napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info info)
 {
     size_t argc = 0;
-    napi_value args[ARG_FIRST] = {0};
+    napi_value args[ARG_FIRST] = {nullptr};
     napi_value res = nullptr;
     void *data = nullptr;
 
@@ -253,7 +253,7 @@ napi_value EnumStorageRequestConstructor(napi_env env, napi_callback_info info)
  */
 __attribute__((constructor)) void RegisterModule(void)
 {
-    napi_module_register(&_apiModule);
+    napi_module_register(&g_apiModule);
 }
 EXTERN_C_END
 } // namespace WorkScheduler

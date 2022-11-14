@@ -17,6 +17,8 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+static constexpr int32_t COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;
+static constexpr int32_t COMMAND_ON_WORK_STOP = MIN_TRANSACTION_ID + 1;
 void WorkSchedulerProxy::OnWorkStart(WorkInfo& workInfo)
 {
     MessageParcel data;

@@ -27,7 +27,7 @@ class WorkQueueManager;
 class ChargerListener : public IConditionListener {
 public:
     explicit ChargerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
-    ~ChargerListener();
+    ~ChargerListener() override;
 
     /**
      * @brief The OnConditionChanged callback.

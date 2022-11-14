@@ -55,7 +55,7 @@ public:
      * @param workInfo The info of work.
      * @return True if success,else false
      */
-    static bool GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
+    static bool GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
     /**
      * @brief Get int property.
      *
@@ -143,7 +143,7 @@ public:
      * @param errMsg The error message.
      * @return Callback error value.
      */
-    static napi_value GetCallbackErrorValue(napi_env env, const int32_t errCode, const std::string errMsg);
+    static napi_value GetCallbackErrorValue(napi_env env, int32_t errCode, const std::string errMsg);
     /**
      * @brief Set callback.
      *
@@ -153,7 +153,7 @@ public:
      * @param result The result.
      */
     static void SetCallback(const napi_env &env, const napi_ref &callbackIn,
-        const int32_t &errCode, const napi_value &result);
+        int32_t errCode, const napi_value &result);
     /**
      * @brief Set promise.
      *
@@ -178,36 +178,36 @@ public:
      * @param env The env.
      * @param errCode The error code.
      */
-    static void HandleErrCode(const napi_env &env, const int32_t errCode);
+    static void HandleErrCode(const napi_env &env, int32_t errCode);
     /**
      * @brief Handle param error code and throw param error.
      *
      * @param env The env.
      * @param errCode The error code.
      */
-    static void HandleParamErr(const napi_env &env, const int32_t errCode);
+    static void HandleParamErr(const napi_env &env, int32_t errCode);
     /**
      * @brief Find error message by code.
      *
      * @param env The env.
      * @param errCode The error code.
      */
-    static std::string FindErrMsg(const napi_env &env, const int32_t errCode);
+    static std::string FindErrMsg(const napi_env &env, int32_t errCode);
     /**
      * @brief Find the error code actually reported by code.
      *
      * @param env The env.
      * @param errCode The error code.
      */
-    static int32_t FindErrCode(const napi_env &env, const int32_t errCodeIn);
+    static int32_t FindErrCode(const napi_env &env, int32_t errCodeIn);
 
 private:
-    static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
-    static bool GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &WorkInfo);
+    static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
     static bool GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
 };
 } // namespace WorkScheduler

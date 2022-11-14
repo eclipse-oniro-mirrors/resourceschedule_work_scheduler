@@ -31,8 +31,8 @@ napi_value StopWork(napi_env env, napi_callback_info info)
 
     // Check params.
     size_t argc = STOP_WORK_PARAMS;
-    napi_value argv[STOP_WORK_PARAMS] = {0};
-    napi_get_cb_info(env, info, &argc, argv, NULL, NULL);
+    napi_value argv[STOP_WORK_PARAMS] = {nullptr};
+    napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
     if (argc != STOP_WORK_PARAMS) {
         Common::HandleParamErr(env, E_PARAM_NUMBER_ERR);
         return Common::NapiGetNull(env);
