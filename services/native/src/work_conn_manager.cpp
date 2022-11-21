@@ -136,7 +136,8 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
 
     // Notify work remove event to battery statistics
     int32_t pid = IPCSkeleton::GetCallingPid();
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_STOP", HiSysEvent::EventType::STATISTIC, "UID",
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
+        HiSysEvent::EventType::STATISTIC, "UID",
         workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
 
     return ret;
@@ -176,7 +177,8 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
         type = "Not Repeat";
     }
 
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_START", HiSysEvent::EventType::STATISTIC, "UID",
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_START",
+        HiSysEvent::EventType::STATISTIC, "UID",
         workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER",
         conditions, "TYPE", type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
 }
