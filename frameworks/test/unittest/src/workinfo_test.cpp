@@ -524,7 +524,6 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     extras.SetParam("key1", OHOS::AAFwk::String::Box("value1"));
     workInfo.RequestExtras(extras);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
-    EXPECT_EQ(workInfo.GetBundleName(), workInfoRead->GetBundleName());
 }
 
 /**
