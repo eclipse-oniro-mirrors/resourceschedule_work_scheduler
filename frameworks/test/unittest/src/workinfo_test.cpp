@@ -18,7 +18,6 @@
 #include "work_info.h"
 #include "work_sched_common.h"
 #include "work_sched_utils.h"
-using namespace OHOS::AAFwk;
 #include "string_wrapper.h"
 
 using namespace std;

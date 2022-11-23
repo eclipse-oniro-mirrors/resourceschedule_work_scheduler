@@ -65,7 +65,7 @@ static std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_PARCEL_OPERATION_FAILED, "Parcel operation failed. Failed to read or write the parcel."},
     {E_CLIENT_CONNECT_SERVICE_FAILED, "System service operation failed. Failed to connect the system service."},
     {E_SERVICE_NOT_READY, "System service operation failed. The service is not ready."},
-    {E_CHECK_WORKINFO_FAILED, "Check workInfo failed. Current bundleUid and input uid do not match."},
+    {E_CHECK_WORKINFO_FAILED, "Checking workInfo failed. Current bundleUid and input uid do not match."},
     {E_ADD_REPEAT_WORK_ERR, "StartWork failed. The work has been already added."},
     {E_REPEAT_CYCLE_TIME_ERR, "StartWork failed. The repeatTime must be greater than or equal to 20 minutes."},
     {E_WORK_EXCEED_UPPER_LIMIT, "StartWork failed. Each uid can add up to 10 works."},
