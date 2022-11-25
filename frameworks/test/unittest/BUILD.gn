@@ -48,7 +48,10 @@ ohos_unittest("WorkSchedulerClientTest") {
 
   sources = [ "src/work_sched_client_test.cpp" ]
 
-  include_dirs = [ "include" ]
+  include_dirs = [ 
+    "include",
+    "${worksched_service_path}/zidl/include"
+  ]
 
   cflags = []
 
@@ -68,6 +71,8 @@ ohos_unittest("WorkSchedulerClientTest") {
     "ability_runtime:abilitykit_native",
     "ability_runtime:runtime",
     "c_utils:utils",
+    "ipc:ipc_core",
+    "samgr:samgr_proxy",
   ]
 }
 
