@@ -21,7 +21,6 @@
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
-#include "work_sched_service_proxy.h"
 
 using namespace testing::ext;
 
@@ -145,8 +144,6 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_008, TestSize.Level1)
     deathRecipient_->OnRemoteDied(remoteObject_);
     WorkSchedulerSrvClient::GetInstance().iWorkSchedService_ = nullptr;
     deathRecipient_->OnRemoteDied(remoteObject_);
-    // auto client = new WorkSchedulerSrvClient();
-    // client.~WorkSchedulerSrvClient();
 }
 
 /**
