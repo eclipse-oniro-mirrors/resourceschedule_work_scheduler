@@ -141,11 +141,6 @@ ErrCode WorkSchedulerSrvClient::IsLastWorkTimeout(int32_t workId, bool &result)
         return errCode;
     }
     errCode = iWorkSchedService_->IsLastWorkTimeout(workId, result);
-    if (errCode == 1) {
-        result = true;
-    } else {
-        result = false;
-    }
     return errCode;
 }
 

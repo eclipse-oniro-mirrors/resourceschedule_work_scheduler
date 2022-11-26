@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#define private public
 #include "workinfo_test.h"
 #include <message_parcel.h>
 
@@ -215,6 +216,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest013, Function | MediumTest | Level0)
 {
     uint32_t timeInterval = 120;
     WorkInfo workInfo = WorkInfo();
+    EXPECT_EQ(workInfo.GetTimeInterval(), 0);
     EXPECT_EQ(workInfo.GetCycleCount(), INVALID_VALUE);
     workInfo.RequestRepeatCycle(timeInterval, 3);
     EXPECT_EQ(workInfo.GetTimeInterval(), timeInterval);
@@ -325,6 +327,11 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level0)
     extras.SetParam("key1", OHOS::AAFwk::String::Box("value1"));
     workInfo.RequestExtras(extras);
     res = workInfo.ParseToJsonStr();
+
+    std::shared_ptr<Condition> condUnknown = std::make_shared<Condition>();
+    condUnknown->boolVal = true;
+    workInfo.conditionMap_.emplace(WorkCondition::Type::UNKNOWN, condUnknown);
+    res = workInfo.ParseToJsonStr();
 }
 
 /**
@@ -430,7 +437,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson003, Function | MediumTest | Level0)
 
     conditions.clear();
     conditions["timer"] = 0;
-    conditions["repeat"] = INVALID_VALUE;
+    conditions["repeat"] = false;
     root["conditions"] = conditions;
     res = workInfo.ParseFromJson(root);
     EXPECT_TRUE(res);
@@ -503,6 +510,11 @@ HWTEST_F (WorkInfoTest, WorkInfoTest019, Function | MediumTest | Level0)
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
     EXPECT_EQ(workInfo.GetTimeInterval(), workInfoRead->GetTimeInterval());
+
+    workInfo.RequestRepeatCycle(timeInterval, 3);
+    WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
+    workInfoRead = data.ReadStrongParcelable<WorkInfo>();
+    EXPECT_EQ(workInfo.GetTimeInterval(), workInfoRead->GetTimeInterval());
 }
 
 /**
@@ -519,10 +531,18 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     MessageParcel data;
     AAFwk::WantParams extras;
     workInfo.RequestExtras(extras);
+    WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     sptr<WorkInfo> workInfoRead = data.ReadStrongParcelable<WorkInfo>();
 
     extras.SetParam("key1", OHOS::AAFwk::String::Box("value1"));
     workInfo.RequestExtras(extras);
+    WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
+    workInfoRead = data.ReadStrongParcelable<WorkInfo>();
+
+    std::shared_ptr<Condition> condUnknown = std::make_shared<Condition>();
+    condUnknown->boolVal = true;
+    workInfo.conditionMap_.emplace(WorkCondition::Type::UNKNOWN, condUnknown);
+    WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
 }
 
@@ -588,6 +608,21 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils004, Function | MediumTest | Level0)
     partialPath = "/data";
     res = WorkSchedUtils::ConvertFullPath(partialPath, fullPath);
     EXPECT_TRUE(res);
+}
+
+/**
+ * @tc.name WorkSchedUtils005
+ * @tc.desc test WorkSchedHilog
+ * @tc.type FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F (WorkInfoTest, WorkSchedUtils005, Function | MediumTest | Level0)
+{
+    WorkSchedLogLevel curLevel = {WorkSchedLogLevel::INFO};
+    WorkSchedHilog::SetLogLevel(curLevel);
+    bool res = WorkSchedHilog::JudgeLevel({WorkSchedLogLevel::DEBUG});
+    EXPECT_EQ(res, false);
+    WorkSchedHilog::GetBriefFileName(nullptr);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

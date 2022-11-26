@@ -12,11 +12,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
+#define private public
 #include <functional>
 #include <gtest/gtest.h>
 
 #include "workscheduler_srv_client.h"
+#include <if_system_ability_manager.h>
+#include <ipc_skeleton.h>
+#include <iservice_registry.h>
+#include <system_ability_definition.h>
 
 using namespace testing::ext;
 
@@ -107,6 +111,9 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_006, TestSize.Level1)
     std::shared_ptr<WorkInfo> work;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().GetWorkStatus(workId, work);
     EXPECT_NE(ret, ERR_OK);
+    workId = -1;
+    ret = WorkSchedulerSrvClient::GetInstance().GetWorkStatus(workId, work);
+    EXPECT_NE(ret, ERR_OK);
 }
 
 /**
@@ -120,6 +127,53 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_007, TestSize.Level1)
     std::list<std::shared_ptr<WorkInfo>> workInfos;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(workInfos);
     EXPECT_EQ(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_008
+ * @tc.desc: Test OnRemoteDied and ResetProxy
+ * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_008, TestSize.Level1)
+{
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_ = sptr<IRemoteObject::DeathRecipient>
+        (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient());
+    deathRecipient_->OnRemoteDied(remoteObject_);
+    WorkSchedulerSrvClient::GetInstance().iWorkSchedService_ = nullptr;
+    deathRecipient_->OnRemoteDied(remoteObject_);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_009
+ * @tc.desc: Test OnRemoteDied and ResetProxy
+ * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
+{
+    sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+    sptr<IRemoteObject::DeathRecipient> deathRecipient_ = sptr<IRemoteObject::DeathRecipient>
+        (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient());
+    deathRecipient_->OnRemoteDied(nullptr);
+    WorkSchedulerSrvClient::GetInstance().~WorkSchedulerSrvClient();
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_010
+ * @tc.desc: Test ~WorkSchedulerSrvClient
+ * @tc.type: FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level1)
+{
+    auto client = new WorkSchedulerSrvClient();
+    client->~WorkSchedulerSrvClient();
+    client->iWorkSchedService_ = nullptr;
+    client->~WorkSchedulerSrvClient();
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS
