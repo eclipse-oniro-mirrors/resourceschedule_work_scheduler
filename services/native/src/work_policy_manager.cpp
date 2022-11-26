@@ -146,7 +146,8 @@ int32_t WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t ui
         type = "Not Repeat";
     }
 
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_ADD", HiSysEvent::EventType::STATISTIC, "UID", uid,
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
+        "WORK_ADD", HiSysEvent::EventType::STATISTIC, "UID", uid,
         "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER", conditions, "TYPE",
         type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
 
@@ -169,7 +170,8 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
 
     // Notify work remove event to battery statistics
     int32_t pid = IPCSkeleton::GetCallingPid();
-    HiSysEvent::Write("WORKSCHEDULER", "WORK_REMOVE", HiSysEvent::EventType::STATISTIC, "UID", uid,
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
+        "WORK_REMOVE", HiSysEvent::EventType::STATISTIC, "UID", uid,
         "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
 
     return ret;
