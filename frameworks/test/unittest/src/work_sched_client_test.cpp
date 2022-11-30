@@ -161,19 +161,5 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
     deathRecipient_->OnRemoteDied(nullptr);
     WorkSchedulerSrvClient::GetInstance().~WorkSchedulerSrvClient();
 }
-
-/**
- * @tc.name: WorkSchedClientTest_010
- * @tc.desc: Test ~WorkSchedulerSrvClient
- * @tc.type: FUNC
- * @tc.require: issueI5Y6YK
- */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level1)
-{
-    auto client = new WorkSchedulerSrvClient();
-    client->~WorkSchedulerSrvClient();
-    client->iWorkSchedService_ = nullptr;
-    client->~WorkSchedulerSrvClient();
-}
 }  // namespace WorkScheduler
 }  // namespace OHOS
