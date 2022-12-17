@@ -52,6 +52,12 @@ public:
      * @return True if success,else false.
      */
     static bool ConvertFullPath(const std::string &inOriPath, std::string &outRealPath);
+    /**
+     * @brief Check if the calling app is system app.
+     *
+     * @return True if success,else false.
+     */
+    static bool IsSystemApp();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

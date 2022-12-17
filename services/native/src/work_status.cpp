@@ -275,6 +275,11 @@ bool WorkStatus::SetMinInterval()
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
+    if (WorkSchedUtils::IsSystemApp()) {
+        WS_HILOGD("Is system app, default group is active.");
+        group = 10;
+        return SetMinIntervalByGroup(group);
+    }
     int32_t errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
     if (errCode != ERR_OK) {
         WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
