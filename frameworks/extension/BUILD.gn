@@ -45,6 +45,7 @@ ohos_shared_library("workschedextension") {
     "${worksched_utils_path}:workschedutils",
     "//foundation/aafwk/standard/frameworks/kits/ability/ability_runtime:ability_context_native",
     "//foundation/aafwk/standard/frameworks/kits/ability/native:abilitykit_native",
+    "//foundation/aafwk/standard/frameworks/kits/appkit:app_context",
     "//foundation/ace/napi:ace_napi",
     "//third_party/jsoncpp",
   ]
