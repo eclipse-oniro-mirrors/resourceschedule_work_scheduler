@@ -18,10 +18,7 @@ config("worksched_private_config") {
 }
 
 config("worksched_public_config") {
-  include_dirs = [
-    "include",
-    "//foundation/communication/ipc/interfaces/innerkits/ipc_core/include",
-  ]
+  include_dirs = [ "include" ]
 }
 
 ohos_shared_library("workschedclient") {
@@ -40,7 +37,7 @@ ohos_shared_library("workschedclient") {
   external_deps = [
     "ability_base:want",
     "hiviewdfx_hilog_native:libhilog",
-    "ipc:ipc_core",
+    "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
 
