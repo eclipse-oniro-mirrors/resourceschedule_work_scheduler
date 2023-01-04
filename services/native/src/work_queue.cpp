@@ -30,12 +30,16 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
     switch (type) {
         case WorkCondition::Type::NETWORK:
         // fall-through
-        case WorkCondition::Type::CHARGER:
-        // fall-through
         case WorkCondition::Type::BATTERY_STATUS:
         // fall-through
         case WorkCondition::Type::STORAGE: {
             value->enumVal = conditionVal->intVal;
+            break;
+        }
+        case WorkCondition::Type::CHARGER: {
+            value->enumVal = conditionVal->intVal;
+            value->boolVal = (conditionVal->intVal > WorkCondition::Charger::CHARGING_PLUGGED_ANY
+                && conditionVal->intVal < WorkCondition::Charger::CHARGING_UNKNOWN);
             break;
         }
         case WorkCondition::Type::BATTERY_LEVEL: {
