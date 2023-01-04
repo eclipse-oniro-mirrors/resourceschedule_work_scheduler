@@ -406,7 +406,6 @@ void WorkStatus::Dump(string& result)
     workInfo_->Dump(result);
     result.append("}\n");
     result.append("\n");
-    WS_HILOGD("%s", result.c_str());
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -38,7 +38,7 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
         }
         case WorkCondition::Type::CHARGER: {
             value->enumVal = conditionVal->intVal;
-            value->boolVal = (conditionVal->intVal > 0 && conditionVal->intVal < 5);
+            value->boolVal = conditionVal->boolVal;
         }
         case WorkCondition::Type::BATTERY_LEVEL: {
             value->intVal = conditionVal->intVal;
