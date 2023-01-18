@@ -12,8 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+var ExtensionAbility = requireNapi("app.ability.ExtensionAbility")
 
-class WorkSchedulerExtensionAbility {
+class WorkSchedulerExtensionAbility extends ExtensionAbility {
     onWorkStart(workInfo) {
         console.log('onWorkStart');
     }

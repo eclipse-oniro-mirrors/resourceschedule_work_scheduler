@@ -36,6 +36,33 @@ JsWorkSchedulerExtension* JsWorkSchedulerExtension::Create(const std::unique_ptr
 JsWorkSchedulerExtension::JsWorkSchedulerExtension(AbilityRuntime::JsRuntime& jsRuntime) : jsRuntime_(jsRuntime) {}
 JsWorkSchedulerExtension::~JsWorkSchedulerExtension() = default;
 
+NativeValue *AttachWorkSchedulerExtensionContext(NativeEngine *engine, void *value, void *)
+{
+    WS_HILOGI("AttachWorkSchedulerExtensionContext");
+    if (value == nullptr) {
+        WS_HILOGE("invalid parameter.");
+        return nullptr;
+    }
+    auto ptr = reinterpret_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(value)->lock();
+    if (ptr == nullptr) {
+        WS_HILOGE("invalid context.");
+        return nullptr;
+    }
+    NativeValue *object = CreateJsWorkSchedulerExtensionContext(*engine, ptr);
+    auto contextObj = AbilityRuntime::JsRuntime::LoadSystemModuleByEngine(engine,
+        "WorkSchedulerExtensionContext", &object, 1)->Get();
+    NativeObject *nObject = AbilityRuntime::ConvertNativeValueTo<NativeObject>(contextObj);
+    nObject->ConvertToNativeBindingObject(engine, AbilityRuntime::DetachCallbackFunc,
+        AttachWorkSchedulerExtensionContext, value, nullptr);
+    auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(ptr);
+    nObject->SetNativePointer(workContext,
+        [](NativeEngine *, void *data, void *) {
+            WS_HILOGI("Finalizer for weak_ptr WorkSchedulerExtensionContext is called");
+            delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
+        }, nullptr);
+    return contextObj;
+}
+
 void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord>& record,
     const std::shared_ptr<AppExecFwk::OHOSApplication>& application,
     std::shared_ptr<AppExecFwk::AbilityHandler>& handler,
@@ -66,7 +93,13 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
         WS_HILOGE("WorkSchedulerExtension Failed to get JsWorkSchedulerExtension object");
         return;
     }
+    BindContext(engine, obj);
+    
+    WS_HILOGD("end.");
+}
 
+void JsWorkSchedulerExtension::BindContext(NativeEngine& engine, NativeObject* obj)
+{
     auto context = GetContext();
     if (context == nullptr) {
         WS_HILOGE("WorkSchedulerExtension Failed to get context");
@@ -76,9 +109,25 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
     auto shellContextRef = jsRuntime_.LoadSystemModule("WorkSchedulerExtensionContext",
         &contextObj, 1);
     contextObj = shellContextRef->Get();
+
+    NativeObject* nativeObj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(contextObj);
+    if (nativeObj == nullptr) {
+        WS_HILOGE("Failed to get context native object");
+        return;
+    }
+    auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(context);
+    nativeObj->ConvertToNativeBindingObject(&engine, AbilityRuntime::DetachCallbackFunc,
+        AttachWorkSchedulerExtensionContext, workContext, nullptr);
+    WS_HILOGI("JsWorkSchedulerExtension init bind and set property.");
     context->Bind(jsRuntime_, shellContextRef.release());
     obj->SetProperty("context", contextObj);
-    WS_HILOGD("end.");
+    WS_HILOGI("Set JsWorkSchedulerExtension context pointer is nullptr or not:%{public}d",
+        context.get() == nullptr);
+    nativeObj->SetNativePointer(workContext,
+        [](NativeEngine*, void* data, void*) {
+            WS_HILOGI("Finalizer for weak_ptr WorkSchedulerExtensionContext is called");
+            delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
+        }, nullptr);
 }
 
 void JsWorkSchedulerExtension::OnStart(const AAFwk::Want& want)

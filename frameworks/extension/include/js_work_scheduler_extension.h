@@ -92,6 +92,7 @@ public:
     void OnWorkStop(WorkInfo& workInfo) override;
 
 private:
+    void BindContext(NativeEngine& engine, NativeObject* obj);
     void GetSrcPath(std::string &srcPath);
     bool GetExtrasJsonStr(const WorkInfo& workInfo, std::string& extrasStr);
     AbilityRuntime::JsRuntime &jsRuntime_;
