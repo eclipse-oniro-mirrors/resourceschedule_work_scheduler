@@ -48,12 +48,12 @@ NativeValue *AttachWorkSchedulerExtensionContext(NativeEngine *engine, void *val
         WS_HILOGE("invalid context.");
         return nullptr;
     }
-    NativeValue *object = CreateJWorkSchedulerExtensionContext(*engine, ptr);
+    NativeValue *object = CreateJsWorkSchedulerExtensionContext(*engine, ptr);
     auto contextObj = AbilityRuntime::JsRuntime::LoadSystemModuleByEngine(engine,
         "WorkSchedulerExtensionContext", &object, 1)->Get();
     NativeObject *nObject = AbilityRuntime::ConvertNativeValueTo<NativeObject>(contextObj);
-    nObject->ConvertToNativeBindingObject(engine, DetachCallbackFunc, AttachWorkSchedulerExtensionContext,
-        value, nullptr);
+    nObject->ConvertToNativeBindingObject(engine, AbilityRuntime::DetachCallbackFunc,
+        AttachWorkSchedulerExtensionContext, value, nullptr);
     auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(ptr);
     nObject->SetNativePointer(workContext,
         [](NativeEngine *, void *data, void *) {
