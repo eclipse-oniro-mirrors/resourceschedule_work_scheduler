@@ -36,6 +36,7 @@ static bool debugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 100;
+const int32_t ACTIVE_GROUP = 10;
 
 time_t getCurrentTime()
 {
@@ -271,10 +272,19 @@ bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
     return true;
 }
 
+void WorkStatus::SetCallBySystemApp(bool callBySystemApp)
+{
+    callBySystemApp_ = callBySystemApp;
+}
+
 bool WorkStatus::SetMinInterval()
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
+    if (callBySystemApp_) {
+        WS_HILOGI("Is system app, default group is active.");
+        return SetMinIntervalByGroup(ACTIVE_GROUP);
+    }
     int32_t errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
     if (errCode != ERR_OK) {
         WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",

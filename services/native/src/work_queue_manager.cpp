@@ -15,6 +15,7 @@
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
 #include "work_sched_hilog.h"
+#include "work_sched_utils.h"
 
 using namespace std;
 
@@ -59,6 +60,10 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
             }
         }
         queueMap_.at(it.first)->Push(workStatus);
+    }
+    if (WorkSchedUtils::IsSystemApp()) {
+        WS_HILOGI("Is system app, default group is active.");
+        workStatus->SetCallBySystemApp(true);
     }
     return true;
 }

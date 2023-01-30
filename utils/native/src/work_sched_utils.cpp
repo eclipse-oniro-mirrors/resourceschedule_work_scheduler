@@ -17,6 +17,8 @@
 #include "errors.h"
 #include "ohos_account_kits.h"
 #include "os_account_manager.h"
+#include "tokenid_kit.h"
+#include "ipc_skeleton.h"
 #include "work_sched_hilog.h"
 
 namespace OHOS {
@@ -89,6 +91,12 @@ bool WorkSchedUtils::ConvertFullPath(const std::string& partialPath, std::string
     }
     fullPath = tmpPath;
     return true;
+}
+
+bool WorkSchedUtils::IsSystemApp()
+{
+    uint64_t fullTokenId = IPCSkeleton::GetCallingFullTokenID();
+    return Security::AccessToken::TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
