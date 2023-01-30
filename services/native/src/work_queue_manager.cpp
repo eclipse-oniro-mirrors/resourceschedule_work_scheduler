@@ -60,6 +60,10 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
         }
         queueMap_.at(it.first)->Push(workStatus);
     }
+    if (WorkSchedUtils::IsSystemApp()) {
+        WS_HILOGI("Is system app, default group is active.");
+        workStatus->SetCallBySystemApp(true);
+    }
     return true;
 }
 

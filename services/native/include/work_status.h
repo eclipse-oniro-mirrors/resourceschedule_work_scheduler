@@ -155,11 +155,16 @@ public:
      * @brief get min interval.
      */
     int64_t GetMinInterval();
+    /**
+     * @brief Set callBySystemApp flag.
+     */
+    void SetCallBySystemApp(bool callBySystemApp);
 private:
     Status currentStatus_;
     time_t baseTime_;
     int64_t minInterval_;
     bool callbackFlag_;
+    bool callBySystemApp_;
     static std::map<int32_t, time_t> s_uid_last_time_map;
     void MarkTimeout();
     bool IsSameUser();
