@@ -33,7 +33,7 @@ config("worksched_public_config") {
 
 ohos_shared_library("workschedservice") {
   shlib_type = "sa"
-  
+
   sources = [
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
