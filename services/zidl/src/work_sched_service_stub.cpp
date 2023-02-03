@@ -131,7 +131,8 @@ int32_t WorkSchedServiceStub::IsLastWorkTimeoutStub(MessageParcel& data, bool &r
 
 int32_t WorkSchedServiceStub::ObtainAllWorksStub(MessageParcel& data, std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
-    int32_t pid = 0, uid = 0;
+    int32_t pid = 0;
+    int32_t uid = 0;
     READ_PARCEL_WITHOUT_RET(data, Int32, uid);
     READ_PARCEL_WITHOUT_RET(data, Int32, pid);
     return ObtainAllWorks(uid, pid, workInfos);
