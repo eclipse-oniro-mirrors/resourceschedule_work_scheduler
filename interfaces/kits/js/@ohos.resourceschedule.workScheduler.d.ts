@@ -18,18 +18,18 @@ import {AsyncCallback} from './basic';
 /**
  * Work scheduler interface.
  *
- * @since 9
- * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+ * @namespace workScheduler
  * @StageModelOnly
+ * @since 9
  */
 declare namespace workScheduler {
     /**
      * The info of work.
      *
-     * @name WorkInfo
-     * @since 9
+     * @interface WorkInfo
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
+     * @since 9
      */
     export interface WorkInfo {
         /**
@@ -100,106 +100,152 @@ declare namespace workScheduler {
 
     /**
      * Add a work to the queue. A work can be executed only when it meets the preset triggering condition
-     * and complies with the rules of work scheduler manager.
+     * <p> and complies with the rules of work scheduler manager. </p>
      *
-     * @since 9
-     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
-     * @StageModelOnly
-     * @param work The info of work.
+     * @param { WorkInfo } work - The info of work.
      * @throws { BusinessError } 401 - Parameter error.
      * @throws { BusinessError } 9700001 - Memory operation failed.
      * @throws { BusinessError } 9700002 - Parcel operation failed.
      * @throws { BusinessError } 9700003 - System service operation failed.
      * @throws { BusinessError } 9700004 - Check workInfo failed.
      * @throws { BusinessError } 9700005 - StartWork failed.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
      */
     function startWork(work: WorkInfo): void;
 
     /**
      * Stop a work.
      *
-     * @since 9
-     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
-     * @StageModelOnly
-     * @param work The info of work.
-     * @param needCancel True if need to be canceled after being stopped, otherwise false.
+     * @param { WorkInfo } work - The info of work.
+     * @param { boolean } needCancel - True if need to be canceled after being stopped, otherwise false.
      * @throws { BusinessError } 401 - Parameter error.
      * @throws { BusinessError } 9700001 - Memory operation failed.
      * @throws { BusinessError } 9700002 - Parcel operation failed.
      * @throws { BusinessError } 9700003 - System service operation failed.
      * @throws { BusinessError } 9700004 - Check workInfo failed.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
      */
     function stopWork(work: WorkInfo, needCancel?: boolean): void;
 
     /**
      * Obtains the work info of the wordId.
      *
-     * @since 9
-     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
-     * @StageModelOnly
-     * @param workId The id of work.
+     * @param { number } workId - The id of work.
+     * @param { AsyncCallback<WorkInfo> } callback - The callback of the function.
      * @throws { BusinessError } 401 - Parameter error.
      * @throws { BusinessError } 9700001 - Memory operation failed.
      * @throws { BusinessError } 9700002 - Parcel operation failed.
      * @throws { BusinessError } 9700003 - System service operation failed.
      * @throws { BusinessError } 9700004 - Check workInfo failed.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
      */
     function getWorkStatus(workId: number, callback: AsyncCallback<WorkInfo>): void;
+
+    /**
+     * Obtains the work info of the wordId.
+     *
+     * @param { number } workId - The id of work.
+     * @returns { Promise<WorkInfo> } The promise returned by the function.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @throws { BusinessError } 9700004 - Check workInfo failed.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
+     */
     function getWorkStatus(workId: number): Promise<WorkInfo>;
 
     /**
      * Get all works of the calling application.
      *
-     * @since 9
-     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
-     * @StageModelOnly
+     * @param { AsyncCallback<void> } callback - The callback of the function.
+     * @returns { Array<WorkInfo> } the work info list.
      * @throws { BusinessError } 401 - Parameter error.
      * @throws { BusinessError } 9700001 - Memory operation failed.
      * @throws { BusinessError } 9700002 - Parcel operation failed.
      * @throws { BusinessError } 9700003 - System service operation failed.
-     * @return the work info list.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
      */
     function obtainAllWorks(callback: AsyncCallback<void>): Array<WorkInfo>;
+
+    /**
+     * Get all works of the calling application.
+     *
+     * @returns { Promise<Array<WorkInfo>> } The work info list.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
+     */
     function obtainAllWorks(): Promise<Array<WorkInfo>>;
 
     /**
      * Stop all and clear all works of the calling application.
      *
-     * @since 9
-     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
-     * @StageModelOnly
      * @throws { BusinessError } 401 - Parameter error.
      * @throws { BusinessError } 9700001 - Memory operation failed.
      * @throws { BusinessError } 9700002 - Parcel operation failed.
      * @throws { BusinessError } 9700003 - System service operation failed.
      * @throws { BusinessError } 9700004 - Check workInfo failed.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
      */
     function stopAndClearWorks(): void;
 
     /**
      * Check whether last work running is timeout. The interface is for repeating work.
      *
-     * @since 9
-     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
-     * @StageModelOnly
-     * @param workId The id of work.
+     * @param { number } workId - The id of work.
+     * @param { AsyncCallback<void> } callback - The callback of the function.
+     * @returns { boolean } true if last work running is timeout, otherwise false.
      * @throws { BusinessError } 401 - Parameter error.
      * @throws { BusinessError } 9700001 - Memory operation failed.
      * @throws { BusinessError } 9700002 - Parcel operation failed.
      * @throws { BusinessError } 9700003 - System service operation failed.
      * @throws { BusinessError } 9700004 - Check workInfo failed.
-     * @return true if last work running is timeout, otherwise false.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
      */
     function isLastWorkTimeOut(workId: number, callback: AsyncCallback<void>): boolean;
+
+    /**
+     * Check whether last work running is timeout. The interface is for repeating work.
+     *
+     * @param { number } workId - The id of work.
+     * @returns { Promise<boolean> } True if last work running is timeout, otherwise false.
+     * @throws { BusinessError } 401 - Parameter error.
+     * @throws { BusinessError } 9700001 - Memory operation failed.
+     * @throws { BusinessError } 9700002 - Parcel operation failed.
+     * @throws { BusinessError } 9700003 - System service operation failed.
+     * @throws { BusinessError } 9700004 - Check workInfo failed.
+     * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+     * @StageModelOnly
+     * @since 9
+     */
     function isLastWorkTimeOut(workId: number): Promise<boolean>;
 
     /**
      * Describes network type.
      *
      * @name NetworkType
-     * @since 9
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
+     * @since 9
     */
     export enum NetworkType {
         /**
@@ -232,9 +278,9 @@ declare namespace workScheduler {
      * Describes charging type.
      *
      * @name ChargingType
-     * @since 9
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
+     * @since 9
     */
     export enum ChargingType {
         /**
@@ -259,9 +305,9 @@ declare namespace workScheduler {
      * Describes the battery status.
      *
      * @name BatteryStatus
-     * @since 9
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
+     * @since 9
     */
     export enum BatteryStatus {
         /**
@@ -282,9 +328,9 @@ declare namespace workScheduler {
      * Describes the storage request.
      *
      * @name StorageRequest
-     * @since 9
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
+     * @since 9
     */
     export enum StorageRequest {
         /**
