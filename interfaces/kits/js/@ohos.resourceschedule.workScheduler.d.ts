@@ -95,7 +95,7 @@ declare namespace workScheduler {
         /**
          * The parameters of the work. The value is only supported basic type(Number, String, Boolean).
          */
-        parameters?: {[key: string]: any};
+        parameters?: {[key: string]: number | string | boolean};
     }
 
     /**
