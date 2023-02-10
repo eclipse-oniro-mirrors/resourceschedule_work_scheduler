@@ -34,17 +34,15 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
 
     WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED) {
-        if (data.GetCode() == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY) {
-            std::string KEY_CAPACITY = ToString(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
-            int32_t defaultCapacity = -1;
-            auto capacity = data.GetWant().GetIntParam(KEY_CAPACITY, defaultCapacity);
-            WS_HILOGD("capacity: %{public}d", capacity);
-            if (capacity == defaultCapacity) {
-                return;
-            }
-            listener_.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL,
-                std::make_shared<DetectorValue>(capacity, 0, 0, std::string()));
+        std::string KEY_CAPACITY = PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY;
+        int32_t defaultCapacity = -1;
+        auto capacity = data.GetWant().GetIntParam(KEY_CAPACITY, defaultCapacity);
+        WS_HILOGD("capacity: %{public}d", capacity);
+        if (capacity == defaultCapacity) {
+            return;
         }
+        listener_.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL,
+            std::make_shared<DetectorValue>(capacity, 0, 0, std::string()));
     } else {
         WS_HILOGI("action is invalid");
     }

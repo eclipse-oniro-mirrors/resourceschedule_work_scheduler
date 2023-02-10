@@ -110,23 +110,19 @@ void EventPublisher::PublishChargingEvent(std::string &result, std::string &even
     if (eventValue == EV_CHARGING_TYPE_AC) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         data.SetWant(want);
-        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
-        data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC)));
+        data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC));
     } else if (eventValue == EV_CHARGING_TYPE_USB) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         data.SetWant(want);
-        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
-        data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB)));
+        data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB));
     } else if (eventValue == EV_CHARGING_TYPE_WIRELESS) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
         data.SetWant(want);
-        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
-        data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS)));
+        data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS));
     } else if (eventValue == EV_CHARGING_TYPE_NONE) {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
         data.SetWant(want);
-        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE);
-        data.SetData(std::to_string(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE)));
+        data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE));
     } else {
         result.append("dump need right param.");
         return;
@@ -167,8 +163,8 @@ void EventPublisher::PublishBatteryStatusEvent(std::string &result, std::string 
         result.append("publishing COMMON_EVENT_BATTERY_LOW\n");
         EventFwk::CommonEventData data;
         data.SetWant(want);
-        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
-        data.SetData("0");
+        const int32_t lowCapacity = 0;
+        data.SetCode(lowCapacity);
         bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
         result.append("publish result: " + std::to_string(isSuccess));
     } else if (eventValue == EV_STORAGE_OKAY) {
@@ -176,8 +172,8 @@ void EventPublisher::PublishBatteryStatusEvent(std::string &result, std::string 
         result.append("publishing COMMON_EVENT_BATTERY_OKAY\n");
         EventFwk::CommonEventData data;
         data.SetWant(want);
-        data.SetCode(PowerMgr::BatteryInfo::COMMON_EVENT_CODE_CAPACITY);
-        data.SetData("100");
+        const int32_t fullCapacity = 100;
+        data.SetCode(fullCapacity);
         bool isSuccess = EventFwk::CommonEventManager::PublishCommonEvent(data);
         result.append("publish result: " + std::to_string(isSuccess));
     } else {
