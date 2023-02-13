@@ -32,46 +32,40 @@ void ChargerEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
     WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
 
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED) {
-        int32_t code = data.GetCode();
-        if (code == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE) {
-            int32_t type = stoi(data.GetData());
-            switch (type) {
-                case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC):
-                    WS_HILOGI("Condition changed: CHARGER_PLUGGED_AC");
-                    listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
-                        std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_AC,
-                        0, 0, std::string()));
-                    break;
-                case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB):
-                    WS_HILOGI("Condition changed: CHARGER_PLUGGED_USB");
-                    listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
-                        std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_USB,
-                        0, 0, std::string()));
-                    break;
-                case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS):
-                    WS_HILOGI("Condition changed: CHARGER_WIRELESS");
-                    listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
-                        std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_WIRELESS,
-                        0, 0, std::string()));
-                    break;
-                default:
-                    break;
-            }
+        int32_t type = data.GetCode();
+        switch (type) {
+            case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC):
+                WS_HILOGI("Condition changed: CHARGER_PLUGGED_AC");
+                listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
+                    std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_AC,
+                    0, 0, std::string()));
+                break;
+            case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB):
+                WS_HILOGI("Condition changed: CHARGER_PLUGGED_USB");
+                listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
+                    std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_USB,
+                    0, 0, std::string()));
+                break;
+            case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS):
+                WS_HILOGI("Condition changed: CHARGER_WIRELESS");
+                listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
+                    std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_WIRELESS,
+                    0, 0, std::string()));
+                break;
+            default:
+                break;
         }
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED) {
-        int32_t code = data.GetCode();
-        if (code == PowerMgr::BatteryInfo::COMMON_EVENT_CODE_PLUGGED_TYPE) {
-            int32_t type = stoi(data.GetData());
-            switch (type) {
-                case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE):
-                case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_BUTT):
-                    WS_HILOGI("Condition changed: CHARGER_PLUGGED_UNPLUGGED");
-                    listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
-                        std::make_shared<DetectorValue>(WorkCondition::CHARGING_UNPLUGGED, 0, 0, std::string()));
-                    break;
-                default:
-                    break;
-            }
+        int32_t type = data.GetCode();
+        switch (type) {
+            case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE):
+            case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_BUTT):
+                WS_HILOGI("Condition changed: CHARGER_PLUGGED_UNPLUGGED");
+                listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
+                    std::make_shared<DetectorValue>(WorkCondition::CHARGING_UNPLUGGED, 0, 0, std::string()));
+                break;
+            default:
+                break;
         }
     }
 }
