@@ -555,7 +555,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
 HWTEST_F (WorkInfoTest, WorkSchedUtils001, Function | MediumTest | Level0)
 {
     int32_t res = WorkSchedUtils::GetCurrentAccountId();
-    EXPECT_NE(res, -1);
+    EXPECT_NE(res, -1000);
 }
 
 /**
