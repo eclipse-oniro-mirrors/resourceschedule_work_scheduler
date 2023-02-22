@@ -47,7 +47,7 @@ ohos_shared_library("workschedulerextensioncontext_napi") {
 
   external_deps = [ "napi:ace_napi" ]
 
-  relative_install_dir = "module"
+  relative_install_dir = "module/application"
   part_name = "${worksched_native_part_name}"
   subsystem_name = "resourceschedule"
 }

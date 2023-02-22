@@ -50,7 +50,7 @@ NativeValue *AttachWorkSchedulerExtensionContext(NativeEngine *engine, void *val
     }
     NativeValue *object = CreateJsWorkSchedulerExtensionContext(*engine, ptr);
     auto contextObj = AbilityRuntime::JsRuntime::LoadSystemModuleByEngine(engine,
-        "WorkSchedulerExtensionContext", &object, 1)->Get();
+        "application.WorkSchedulerExtensionContext", &object, 1)->Get();
     NativeObject *nObject = AbilityRuntime::ConvertNativeValueTo<NativeObject>(contextObj);
     nObject->ConvertToNativeBindingObject(engine, AbilityRuntime::DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, value, nullptr);
@@ -106,7 +106,7 @@ void JsWorkSchedulerExtension::BindContext(NativeEngine& engine, NativeObject* o
         return;
     }
     NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
-    auto shellContextRef = jsRuntime_.LoadSystemModule("WorkSchedulerExtensionContext",
+    auto shellContextRef = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
         &contextObj, 1);
     contextObj = shellContextRef->Get();
 
