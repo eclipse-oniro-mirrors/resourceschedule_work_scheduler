@@ -49,7 +49,7 @@ ohos_shared_library("workschedextension") {
   external_deps = [
     "ability_base:want",
     "ability_runtime:ability_context_native",
-    "ability_runtime:extensionkit_native",
+    "ability_runtime:abilitykit_native",
     "ability_runtime:runtime",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_single",
