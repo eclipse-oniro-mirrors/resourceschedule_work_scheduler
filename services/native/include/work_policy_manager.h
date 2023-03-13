@@ -92,9 +92,10 @@ public:
      *
      * @param workId The id of work.
      * @param uid The uid.
-     * @return True if success,else false.
+     * @param result True if success,else false.
+     * @return The error code.
      */
-    bool IsLastWorkTimeout(int32_t workId, int32_t uid);
+    int32_t IsLastWorkTimeout(int32_t workId, int32_t uid, bool &result);
     /**
      * @brief Find work status.
      *
