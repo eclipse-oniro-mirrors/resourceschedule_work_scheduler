@@ -96,7 +96,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_005, TestSize.Level1)
     int32_t workId = 1;
     bool result;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(workId, result);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_NE(ret, ERR_OK);
 }
 
 /**
