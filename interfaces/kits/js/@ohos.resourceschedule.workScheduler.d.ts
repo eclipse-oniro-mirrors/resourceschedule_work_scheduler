@@ -199,7 +199,6 @@ declare namespace workScheduler {
      * @throws { BusinessError } 9700001 - Memory operation failed.
      * @throws { BusinessError } 9700002 - Parcel operation failed.
      * @throws { BusinessError } 9700003 - System service operation failed.
-     * @throws { BusinessError } 9700004 - Check workInfo failed.
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @since 9
