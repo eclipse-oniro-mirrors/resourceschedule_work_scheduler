@@ -250,7 +250,7 @@ bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
     return true;
 }
 
-bool WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid)
+int32_t WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid, bool &result)
 {
     std::lock_guard<std::mutex> lock(uidMapMutex_);
     string workIdStr = WorkStatus::MakeWorkId(workId, uid);
@@ -260,7 +260,7 @@ bool WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid)
             return workStatus->IsLastWorkTimeout();
         }
     }
-    return false;
+    return E_WORK_NOT_EXIST_FAILED;
 }
 
 void WorkPolicyManager::OnConditionReady(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)

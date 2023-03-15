@@ -342,8 +342,8 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
 
 bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
 {
-    if (workInfo.GetConditionMap()->size() > 1) {
-        return true;
+    if (workInfo.GetConditionMap()->size() < 1) {
+        return false;
     }
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         uint32_t time = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER)->uintVal;
@@ -494,12 +494,7 @@ int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId, bool &result)
         return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    if (workPolicyManager_->IsLastWorkTimeout(workId, uid)) {
-        result = true;
-    } else {
-        result = false;
-    }
-    return ERR_OK;
+    return workPolicyManager_->IsLastWorkTimeout(workId, uid, result);
 }
 
 void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)

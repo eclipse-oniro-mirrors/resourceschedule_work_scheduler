@@ -390,7 +390,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.startWork(workInfo);
-            workScheduler.stopAndClearWorks(workInfo, false);
+            workScheduler.stopAndClearWorks();
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
@@ -406,6 +406,18 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest014", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest014---------------------------');
+        let workInfo = {
+            workId: 14,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        try{
+            workScheduler.stopAndClearWorks();
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         try{
             workScheduler.isLastWorkTimeOut(14, (err, res) =>{
                 if (err) {
@@ -431,6 +443,18 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest015", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest015---------------------------');
+        let workInfo = {
+            workId: 15,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        try{
+            workScheduler.stopAndClearWorks();
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         try{
             workScheduler.isLastWorkTimeOut(15)
                 .then(res => {
@@ -1003,6 +1027,18 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         let begin = getTime();
+        let workInfo = {
+            workId: 29,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        try{
+            workScheduler.stopAndClearWorks();
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         try{
             workScheduler.isLastWorkTimeOut(29, (err, res) =>{
                 let end = getTime();
@@ -1033,6 +1069,18 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         let begin = getTime();
+        let workInfo = {
+            workId: 30,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        try{
+            workScheduler.stopAndClearWorks();
+            workScheduler.startWork(workInfo);
+        } catch (error) {
+            expect(false).assertEqual(true)
+        }
         try{
             workScheduler.isLastWorkTimeOut(30)
                 .then(res => {
