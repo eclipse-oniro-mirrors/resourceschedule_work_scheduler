@@ -15,7 +15,6 @@
 
 #include "work_scheduler_extension.h"
 
-#include "ability_loader.h"
 #include "js_work_scheduler_extension.h"
 
 namespace OHOS {
