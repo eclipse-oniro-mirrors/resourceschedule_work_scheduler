@@ -19,6 +19,7 @@
 #include <mutex>
 #include <vector>
 
+#include <event_runner.h>
 #include "policy_type.h"
 #include "policy/ipolicy_filter.h"
 #include "work_conn_manager.h"
