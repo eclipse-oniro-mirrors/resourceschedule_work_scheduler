@@ -27,7 +27,8 @@ namespace OHOS {
 namespace WorkScheduler {
 class TimerListener : public IConditionListener {
 public:
-    explicit TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager);
+    explicit TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager,
+        const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     ~TimerListener() override = default;
     /**
      * @brief The OnConditionChanged callback.

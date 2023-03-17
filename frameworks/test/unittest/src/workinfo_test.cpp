@@ -624,5 +624,17 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils005, Function | MediumTest | Level0)
     EXPECT_EQ(res, false);
     WorkSchedHilog::GetBriefFileName(nullptr);
 }
+
+/**
+ * @tc.name WorkSchedUtils006
+ * @tc.desc test IsSystemApp
+ * @tc.type FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F (WorkInfoTest, WorkSchedUtils006, Function | MediumTest | Level0)
+{
+    bool res = WorkSchedUtils::IsSystemApp();
+    EXPECT_EQ(res, false);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

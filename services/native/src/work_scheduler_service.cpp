@@ -102,7 +102,7 @@ void WorkSchedulerService::OnStart()
     handler_ = std::make_shared<WorkEventHandler>(eventRunner_, wss);
 
     // Try to init.
-    Init();
+    Init(eventRunner_);
     WS_HILOGD("On start success.");
 }
 
@@ -190,15 +190,15 @@ void WorkSchedulerService::OnStop()
     ready_ = false;
 }
 
-bool WorkSchedulerService::Init()
+bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     if (!IsBaseAbilityReady()) {
         WS_HILOGE("request system service is not ready yet!");
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
         return false;
     }
-    WorkQueueManagerInit();
-    if (!WorkPolicyManagerInit()) {
+    WorkQueueManagerInit(runner);
+    if (!WorkPolicyManagerInit(runner)) {
         WS_HILOGE("init failed due to work policy manager init.");
         return false;
     }
@@ -258,7 +258,7 @@ ErrCode WorkSchedulerService::QueryResAppliedUid()
     return ERR_OK;
 }
 
-void WorkSchedulerService::WorkQueueManagerInit()
+void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     WS_HILOGD("come in");
     if (workQueueManager_ == nullptr) {
@@ -270,8 +270,8 @@ void WorkSchedulerService::WorkQueueManagerInit()
     auto batteryStatusListener = make_shared<BatteryStatusListener>(workQueueManager_);
     auto batteryLevelListener = make_shared<BatteryLevelListener>(workQueueManager_);
     auto storageListener = make_shared<StorageListener>(workQueueManager_);
-    auto timerListener = make_shared<TimerListener>(workQueueManager_);
-    auto groupListener = make_shared<GroupListener>(workQueueManager_);
+    auto timerListener = make_shared<TimerListener>(workQueueManager_, runner);
+    auto groupListener = make_shared<GroupListener>(workQueueManager_, runner);
 
     workQueueManager_->AddListener(WorkCondition::Type::NETWORK, networkListener);
     workQueueManager_->AddListener(WorkCondition::Type::CHARGER, chargerListener);
@@ -286,13 +286,13 @@ void WorkSchedulerService::WorkQueueManagerInit()
 #endif
 }
 
-bool WorkSchedulerService::WorkPolicyManagerInit()
+bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     WS_HILOGD("come in");
     if (workPolicyManager_ == nullptr) {
         workPolicyManager_ = make_shared<WorkPolicyManager>(wss);
     }
-    if (!workPolicyManager_->Init()) {
+    if (!workPolicyManager_->Init(runner)) {
         WS_HILOGE("work policy manager init failed!");
         return false;
     }

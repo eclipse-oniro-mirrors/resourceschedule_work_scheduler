@@ -23,11 +23,11 @@ namespace OHOS {
 namespace WorkScheduler {
 const std::string WORK_SCHEDULER_WATCHDOG = "WorkSchedulerWatchdog";
 
-Watchdog::Watchdog(const std::shared_ptr<WorkPolicyManager>& service) : service_(service)
+Watchdog::Watchdog(const std::shared_ptr<WorkPolicyManager>& service,
+    const std::shared_ptr<AppExecFwk::EventRunner>& runner) : service_(service)
 {
-    std::shared_ptr<AppExecFwk::EventRunner> eventRunner = AppExecFwk::EventRunner::Create(WORK_SCHEDULER_WATCHDOG);
-    if (eventRunner.get() != nullptr) {
-        SetEventRunner(eventRunner);
+    if (!runner) {
+        SetEventRunner(runner);
     }
 }
 

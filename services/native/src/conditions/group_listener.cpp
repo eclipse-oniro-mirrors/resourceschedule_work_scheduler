@@ -19,9 +19,13 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-GroupListener::GroupListener(std::shared_ptr<WorkQueueManager> workQueueManager)
+GroupListener::GroupListener(std::shared_ptr<WorkQueueManager> workQueueManager,
+    const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     workQueueManager_ = workQueueManager;
+    if (!runner) {
+        eventRunner_ = runner;
+    }
 }
 
 void GroupListener::OnConditionChanged(WorkCondition::Type conditionType,
@@ -33,11 +37,8 @@ void GroupListener::OnConditionChanged(WorkCondition::Type conditionType,
 bool GroupListener::Start()
 {
     if (!eventRunner_) {
-        eventRunner_ = AppExecFwk::EventRunner::Create(GROUP_LISTENER);
-        if (eventRunner_ == nullptr) {
-            WS_HILOGE("Failed to create EventHandler");
-            return false;
-        }
+        WS_HILOGE("Init failed due to create EventHandler");
+        return false;
     }
     if (!handler_) {
         handler_ = std::make_shared<WorkQueueEventHandler>(eventRunner_, workQueueManager_);

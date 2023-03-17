@@ -45,7 +45,7 @@ void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& 
             break;
         }
         case SERVICE_INIT_MSG: {
-            wssptr->Init();
+            wssptr->Init(GetEventRunner());
             break;
         }
         default:

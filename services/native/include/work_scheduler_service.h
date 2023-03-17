@@ -166,7 +166,7 @@ public:
      *
      * @return True if success,else false.
      */
-    bool Init();
+    bool Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
 
     /**
      * @brief Get handler.
@@ -261,8 +261,8 @@ private:
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif
 
-    void WorkQueueManagerInit();
-    bool WorkPolicyManagerInit();
+    void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     void GroupObserverInit();
 #endif

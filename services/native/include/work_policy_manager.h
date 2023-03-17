@@ -41,7 +41,7 @@ public:
      *
      * @return True if success,else false.
      */
-    bool Init();
+    bool Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     /**
      * @brief Add listener.
      *
