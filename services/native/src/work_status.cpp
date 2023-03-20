@@ -37,7 +37,7 @@ static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 100;
 const int32_t ACTIVE_GROUP = 10;
-std::mutex WorkScheduler::s_uid_last_time_mutex;
+std::mutex WorkStatus::s_uid_last_time_mutex;
 
 time_t getCurrentTime()
 {
