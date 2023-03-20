@@ -328,12 +328,14 @@ int64_t WorkStatus::GetMinInterval()
 
 void WorkStatus::UpdateUidLastTimeMap()
 {
+    std::lock_guard<std::mutex> lock(uidLastTimeMapMutex_);
     time_t lastTime = getCurrentTime();
     s_uid_last_time_map[uid_] = lastTime;
 }
 
 void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
+    std::lock_guard<std::mutex> lock(uidLastTimeMapMutex_);
     s_uid_last_time_map.erase(uid);
 }
 

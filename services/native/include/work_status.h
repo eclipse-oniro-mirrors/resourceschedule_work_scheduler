@@ -19,6 +19,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <mutex>
 
 #include "timer.h"
 #include "work_info.h"
@@ -165,6 +166,7 @@ private:
     int64_t minInterval_;
     bool callbackFlag_;
     bool callBySystemApp_;
+    std::mutex uidLastTimeMapMutex_;
     static std::map<int32_t, time_t> s_uid_last_time_map;
     void MarkTimeout();
     bool IsSameUser();
