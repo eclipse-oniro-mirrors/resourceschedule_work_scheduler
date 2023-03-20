@@ -27,7 +27,8 @@ namespace OHOS {
 namespace WorkScheduler {
 class GroupListener : public IConditionListener {
 public:
-    explicit GroupListener(std::shared_ptr<WorkQueueManager> workQueueManager);
+    explicit GroupListener(std::shared_ptr<WorkQueueManager> workQueueManager,
+        const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     ~GroupListener() override = default;
     /**
      * @brief The OnConditionChanged callback.

@@ -25,7 +25,8 @@ namespace WorkScheduler {
 class WorkPolicyManager;
 class Watchdog : public AppExecFwk::EventHandler {
 public:
-    explicit Watchdog(const std::shared_ptr<WorkPolicyManager>& service);
+    explicit Watchdog(const std::shared_ptr<WorkPolicyManager>& service,
+        const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     ~Watchdog() override = default;
     /**
      * @brief Add watchdog.

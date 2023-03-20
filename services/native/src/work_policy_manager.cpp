@@ -59,7 +59,7 @@ WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : ws
     watchdogTime_ = WATCHDOG_TIME;
 }
 
-bool WorkPolicyManager::Init()
+bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     WS_HILOGD("Work policy manager init.");
     workConnManager_ = make_shared<WorkConnManager>();
@@ -73,7 +73,7 @@ bool WorkPolicyManager::Init()
         WS_HILOGE("failed due to handler_ is nullptr");
         return false;
     }
-    watchdog_ = std::make_shared<Watchdog>(wmsptr->GetWorkPolicyManager());
+    watchdog_ = std::make_shared<Watchdog>(wmsptr->GetWorkPolicyManager(), runner);
     return true;
 }
 

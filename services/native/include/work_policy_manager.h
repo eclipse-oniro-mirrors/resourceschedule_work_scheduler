@@ -19,6 +19,7 @@
 #include <mutex>
 #include <vector>
 
+#include <event_runner.h>
 #include "policy_type.h"
 #include "policy/ipolicy_filter.h"
 #include "work_conn_manager.h"
@@ -41,7 +42,7 @@ public:
      *
      * @return True if success,else false.
      */
-    bool Init();
+    bool Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     /**
      * @brief Add listener.
      *
