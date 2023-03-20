@@ -180,6 +180,7 @@ bool WorkStatus::IsReady()
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
     }
+    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
     auto itMap = s_uid_last_time_map.find(uid_);
     if (itMap == s_uid_last_time_map.end()) {
         return true;
