@@ -37,6 +37,7 @@ static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 100;
 const int32_t ACTIVE_GROUP = 10;
+std::mutex WorkStatus::s_uid_last_time_mutex;
 
 time_t getCurrentTime()
 {
@@ -179,6 +180,7 @@ bool WorkStatus::IsReady()
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
     }
+    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
     auto itMap = s_uid_last_time_map.find(uid_);
     if (itMap == s_uid_last_time_map.end()) {
         return true;
@@ -328,12 +330,14 @@ int64_t WorkStatus::GetMinInterval()
 
 void WorkStatus::UpdateUidLastTimeMap()
 {
+    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
     time_t lastTime = getCurrentTime();
     s_uid_last_time_map[uid_] = lastTime;
 }
 
 void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
+    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
     s_uid_last_time_map.erase(uid);
 }
 
