@@ -299,6 +299,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest018, Function | MediumTest | Level0)
     workInfo.GetConditionMap();
     std::string result;
     workInfo.Dump(result);
+    EXPECT_NE(result, "");
 }
 
 /**
@@ -332,6 +333,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level0)
     condUnknown->boolVal = true;
     workInfo.conditionMap_.emplace(WorkCondition::Type::UNKNOWN, condUnknown);
     res = workInfo.ParseToJsonStr();
+    EXPECT_NE(result, "");
 }
 
 /**
@@ -533,17 +535,22 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     workInfo.RequestExtras(extras);
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     sptr<WorkInfo> workInfoRead = data.ReadStrongParcelable<WorkInfo>();
+    EXPECT_EQ(workInfo.GetBundleName(), workInfoRead->GetBundleName());
 
     extras.SetParam("key1", OHOS::AAFwk::String::Box("value1"));
     workInfo.RequestExtras(extras);
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
+    std::string valueRead = workInfoRead->GetExtras()->GetStringParam("value1");
+    EXPECT_EQ(valueRead, "value1");
 
     std::shared_ptr<Condition> condUnknown = std::make_shared<Condition>();
     condUnknown->boolVal = true;
     workInfo.conditionMap_.emplace(WorkCondition::Type::UNKNOWN, condUnknown);
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
+    auto condRead = workInfoRead->GetConditionMap()->at(WorkCondition::Type::UNKNOWN);
+    EXPECT_TRUE(condRead->boolVal);
 }
 
 /**
