@@ -333,7 +333,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level0)
     condUnknown->boolVal = true;
     workInfo.conditionMap_.emplace(WorkCondition::Type::UNKNOWN, condUnknown);
     res = workInfo.ParseToJsonStr();
-    EXPECT_NE(result, "");
+    EXPECT_NE(res, "");
 }
 
 /**
