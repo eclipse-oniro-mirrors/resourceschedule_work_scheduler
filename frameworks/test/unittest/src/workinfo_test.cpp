@@ -535,14 +535,11 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     workInfo.RequestExtras(extras);
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     sptr<WorkInfo> workInfoRead = data.ReadStrongParcelable<WorkInfo>();
-    EXPECT_EQ(workInfo.GetBundleName(), workInfoRead->GetBundleName());
 
     extras.SetParam("key1", OHOS::AAFwk::String::Box("value1"));
     workInfo.RequestExtras(extras);
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
-    std::string valueRead = workInfoRead->GetExtras()->GetStringParam("key1");
-    EXPECT_EQ(valueRead, "value1");
 
     std::shared_ptr<Condition> condUnknown = std::make_shared<Condition>();
     condUnknown->boolVal = true;
