@@ -550,7 +550,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
     auto condRead = workInfoRead->GetConditionMap();
-    EXPECT_TRUE(workInfoRead->GetConditionMap()->size(), 2);
+    EXPECT_EQ(workInfoRead->GetConditionMap()->size(), 2);
 }
 
 /**
