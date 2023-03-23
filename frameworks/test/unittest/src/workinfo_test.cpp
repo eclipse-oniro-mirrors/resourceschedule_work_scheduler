@@ -541,7 +541,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     workInfo.RequestExtras(extras);
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
-    std::string valueRead = workInfoRead->GetExtras()->GetStringParam("value1");
+    std::string valueRead = workInfoRead->GetExtras()->GetStringParam("key1");
     EXPECT_EQ(valueRead, "value1");
 
     std::shared_ptr<Condition> condUnknown = std::make_shared<Condition>();

@@ -161,7 +161,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
         (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient());
     deathRecipient_->OnRemoteDied(nullptr);
     WorkSchedulerSrvClient::GetInstance().~WorkSchedulerSrvClient();
-    EXPECT_NE(WorkSchedulerSrvClient::GetInstance().iWorkSchedService_, nullptr);
+    EXPECT_EQ(WorkSchedulerSrvClient::GetInstance().iWorkSchedService_, nullptr);
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS
