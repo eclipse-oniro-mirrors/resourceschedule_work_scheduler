@@ -910,6 +910,7 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         try{
+            workScheduler.stopAndClearWorks();
             workScheduler.startWork(workInfo);
         } catch (error) {
             expect(false).assertEqual(true)
@@ -1026,7 +1027,6 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        let begin = getTime();
         let workInfo = {
             workId: 29,
             bundleName: "com.example.myapplication",
@@ -1039,6 +1039,7 @@ describe("WorkSchedulerJsTest", function () {
         } catch (error) {
             expect(false).assertEqual(true)
         }
+        let begin = getTime();
         try{
             workScheduler.isLastWorkTimeOut(29, (err, res) =>{
                 let end = getTime();
