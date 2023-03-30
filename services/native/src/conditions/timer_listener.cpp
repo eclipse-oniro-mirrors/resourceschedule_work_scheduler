@@ -23,7 +23,7 @@ TimerListener::TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager,
     const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     workQueueManager_ = workQueueManager;
-    if (runner != nullptr) {
+    if (!runner) {
         eventRunner_ = runner;
     }
 }
