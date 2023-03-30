@@ -466,7 +466,7 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
         this->RequestStorageLevel(WorkCondition::Storage(conditions["storage"].asInt()));
     }
     if (conditions.isMember("timer") && conditions.isMember("repeat")) {
-        if (!conditions["repeat"].asBool()) {
+        if (conditions["repeat"].asBool()) {
             this->RequestRepeatCycle(conditions["timer"].asInt());
         } else {
             if (conditions.isMember("cycle")) {
