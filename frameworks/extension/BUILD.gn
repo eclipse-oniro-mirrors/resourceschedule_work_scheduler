@@ -51,6 +51,7 @@ ohos_shared_library("workschedextension") {
     "ability_runtime:ability_context_native",
     "ability_runtime:extensionkit_native",
     "ability_runtime:runtime",
+    "common_event_service:cesfwk_innerkits",
     "hiviewdfx_hilog_native:libhilog",
     "ipc:ipc_single",
   ]
