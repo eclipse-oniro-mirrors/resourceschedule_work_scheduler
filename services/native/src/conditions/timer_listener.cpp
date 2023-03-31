@@ -23,7 +23,7 @@ TimerListener::TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager,
     const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     workQueueManager_ = workQueueManager;
-    if (!runner) {
+    if (runner != nullptr) {
         eventRunner_ = runner;
     }
 }
@@ -36,7 +36,7 @@ void TimerListener::OnConditionChanged(WorkCondition::Type conditionType,
 
 bool TimerListener::Start()
 {
-    if (eventRunner_ == nullptr) {
+    if (!eventRunner_) {
         WS_HILOGE("Init failed due to create EventHandler");
         return false;
     }
