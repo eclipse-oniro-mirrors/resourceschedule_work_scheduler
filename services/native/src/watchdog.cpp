@@ -26,7 +26,7 @@ const std::string WORK_SCHEDULER_WATCHDOG = "WorkSchedulerWatchdog";
 Watchdog::Watchdog(const std::shared_ptr<WorkPolicyManager>& service,
     const std::shared_ptr<AppExecFwk::EventRunner>& runner) : service_(service)
 {
-    if (!runner) {
+    if (runner != nullptr) {
         SetEventRunner(runner);
     }
 }
