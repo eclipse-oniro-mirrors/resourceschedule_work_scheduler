@@ -23,7 +23,7 @@ GroupListener::GroupListener(std::shared_ptr<WorkQueueManager> workQueueManager,
     const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     workQueueManager_ = workQueueManager;
-    if (!runner) {
+    if (runner != nullptr) {
         eventRunner_ = runner;
     }
 }
