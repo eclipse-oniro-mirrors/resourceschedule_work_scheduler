@@ -64,6 +64,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
             timeCondition->intVal = workTimerCondition->intVal;
         }
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
+        workInfo_->RequestBaseTimeAndCycle(baseTime_, workTimerCondition->intVal);
     }
     this->persisted_ = workInfo.IsPersisted();
     this->priority_ = DEFAULT_PRIORITY;
@@ -128,6 +129,7 @@ void WorkStatus::UpdateTimerIfNeed()
         }
         int32_t cycleLeft = conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
         conditionMap_.at(WorkCondition::Type::TIMER)->intVal = cycleLeft - 1;
+        workInfo_->RequestBaseTimeAndCycle(baseTime_, cycleLeft - 1);
     }
 }
 

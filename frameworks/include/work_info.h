@@ -98,6 +98,13 @@ public:
      */
     void RequestRepeatCycle(uint32_t timeInterval);
     /**
+     * @brief Request base time and repeat cycle.
+     *
+     * @param baseTime The base time.
+     * @param cycle The cycle.
+     */
+    void RequestBaseTimeAndCycle(time_t baseTime, int32_t cycle);
+    /**
      * @brief Request extra parameters.
      *
      * @param extras extra parameters.

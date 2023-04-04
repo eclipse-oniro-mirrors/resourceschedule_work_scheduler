@@ -101,6 +101,14 @@ void WorkInfo::RequestRepeatCycle(uint32_t timeInterval)
     conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
 }
 
+void WorkInfo::RequestBaseTimeAndCycle(time_t baseTime, int32_t cycle)
+{
+    if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
+        conditionMap_.at(WorkCondition::Type::TIMER)->timeVal = baseTime;
+        conditionMap_.at(WorkCondition::Type::TIMER)->intVal = cycle;
+    }
+}
+
 void WorkInfo::RequestExtras(AAFwk::WantParams extras)
 {
     extras_ = std::make_shared<AAFwk::WantParams>(extras);
