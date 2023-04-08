@@ -54,12 +54,15 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
     auto map = workStatus->workInfo_->GetConditionMap();
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
+            WS_HILOGI("queueMap_.count(it.first) == 0.....");
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
             if (listenerMap_.count(it.first) != 0) {
                 listenerMap_.at(it.first)->Start();
+                WS_HILOGI("listenerMap_.at(it.first)->Start()");
             }
         }
         queueMap_.at(it.first)->Push(workStatus);
+        WS_HILOGI("queueMap_.at(it.first)->Push(workStatus).....");
     }
     if (WorkSchedUtils::IsSystemApp()) {
         WS_HILOGI("Is system app, default group is active.");
