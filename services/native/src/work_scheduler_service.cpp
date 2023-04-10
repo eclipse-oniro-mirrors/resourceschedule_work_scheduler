@@ -391,7 +391,7 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
     WS_HILOGD("come in");
     if (workInfo.GetUid() > 0) {
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
-        if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid())) {
+        if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid()) == ERR_OK) {
             workQueueManager_->AddWork(workStatus);
         }
     } else {
