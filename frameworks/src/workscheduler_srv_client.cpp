@@ -26,15 +26,7 @@ namespace OHOS {
 namespace WorkScheduler {
 WorkSchedulerSrvClient::WorkSchedulerSrvClient() {}
 
-WorkSchedulerSrvClient::~WorkSchedulerSrvClient()
-{
-    if (iWorkSchedService_ != nullptr) {
-        auto remoteObject = iWorkSchedService_->AsObject();
-        if (remoteObject != nullptr) {
-            remoteObject->RemoveDeathRecipient(deathRecipient_);
-        }
-    }
-}
+WorkSchedulerSrvClient::~WorkSchedulerSrvClient() {}
 
 ErrCode WorkSchedulerSrvClient::Connect()
 {
@@ -52,7 +44,7 @@ ErrCode WorkSchedulerSrvClient::Connect()
         WS_HILOGE("GetSystemAbility failed!");
         return E_CLIENT_CONNECT_SERVICE_FAILED;
     }
-    deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new WorkSchedulerDeathRecipient());
+    deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new WorkSchedulerDeathRecipient(*this));
     if (deathRecipient_ == nullptr) {
         WS_HILOGE("Failed to create WorkScheduelrDeathRecipient!");
         return E_CLIENT_CONNECT_SERVICE_FAILED;
@@ -66,27 +58,22 @@ ErrCode WorkSchedulerSrvClient::Connect()
     return ERR_OK;
 }
 
-void WorkSchedulerSrvClient::ResetProxy(const wptr<IRemoteObject>& remote)
+void WorkSchedulerSrvClient::ResetProxy()
 {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (iWorkSchedService_ == nullptr) {
-        return;
+    if (iWorkSchedService_ != nullptr && (iWorkSchedService_->AsObject() != nullptr)) {
+        iWorkSchedService_->AsObject()->RemoveDeathRecipient(deathRecipient_);
     }
-    auto serviceRemote = iWorkSchedService_->AsObject();
-    if ((serviceRemote != nullptr) && (serviceRemote == remote.promote())) {
-        serviceRemote->RemoveDeathRecipient(deathRecipient_);
-        iWorkSchedService_ = nullptr;
-    }
+    iWorkSchedService_ = nullptr;
 }
+
+WorkSchedulerSrvClient::WorkSchedulerDeathRecipient::WorkSchedulerDeathRecipient(
+    WorkSchedulerSrvClient &workSchedulerSrvClient) : workSchedulerSrvClient_(workSchedulerSrvClient) {}
 
 void WorkSchedulerSrvClient::WorkSchedulerDeathRecipient::OnRemoteDied(const wptr<IRemoteObject>& remote)
 {
-    if (remote == nullptr) {
-        WS_HILOGE("failed, remote is nullptr");
-        return;
-    }
-    WorkSchedulerSrvClient::GetInstance().ResetProxy(remote);
     WS_HILOGD("Work Scheduler Death Recipient Recv death notice.");
+    workSchedulerSrvClient_.ResetProxy();
 }
 
 ErrCode WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)

@@ -749,6 +749,9 @@ void WorkSchedulerService::SystemAbilityStatusChangeListener::OnAddSystemAbility
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 void WorkSchedulerService::GroupObserverInit()
 {
+    if (!workQueueManager_) {
+        return;
+    }
     if (!groupObserver_) {
         groupObserver_ = new (std::nothrow) WorkBundleGroupChangeCallback(workQueueManager_);
     }
