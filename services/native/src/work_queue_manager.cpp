@@ -12,6 +12,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <hisysevent.h>
+#include <ipc_skeleton.h>
+
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
 #include "work_sched_hilog.h"
@@ -94,6 +97,11 @@ bool WorkQueueManager::CancelWork(shared_ptr<WorkStatus> workStatus)
             listenerMap_.at(it.first)->Stop();
         }
     }
+    // Notify work remove event to battery statistics
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
+        "WORK_REMOVE", HiviewDFX::HiSysEvent::EventType::STATISTIC, "UID", workStatus->uid_,
+        "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
     return true;
 }
 
