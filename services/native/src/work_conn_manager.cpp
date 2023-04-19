@@ -134,11 +134,13 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
     }
     RemoveConnInfo(workStatus->workId_);
 
-    // Notify work remove event to battery statistics
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
-        HiSysEvent::EventType::STATISTIC, "UID",
-        workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
+    // Notify work remove event to battery statistics only work has started
+    if (ret) {
+        int32_t pid = IPCSkeleton::GetCallingPid();
+        HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
+            HiSysEvent::EventType::STATISTIC, "UID",
+            workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
+    }
 
     return ret;
 }

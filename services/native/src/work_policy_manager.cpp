@@ -167,13 +167,6 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
             uidQueueMap_.erase(uid);
         }
     }
-
-    // Notify work remove event to battery statistics
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
-        "WORK_REMOVE", HiSysEvent::EventType::STATISTIC, "UID", uid,
-        "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
-
     return ret;
 }
 
