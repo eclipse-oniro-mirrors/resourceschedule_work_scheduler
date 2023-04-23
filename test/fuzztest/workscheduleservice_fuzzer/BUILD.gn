@@ -27,7 +27,8 @@ config("worksched_private_config") {
 ##############################fuzztest##########################################
 ohos_fuzztest("WorkScheduleServiceFuzzTest") {
   module_out_path = module_output_path
-  fuzz_config_file = "//foundation/resourceschedule/work_scheduler/test/fuzztest/workscheduleservice_fuzzer"
+  fuzz_config_file =
+      "${worksched_test_path}/fuzztest/workscheduleservice_fuzzer"
 
   configs = [ ":worksched_private_config" ]
   cflags = [
@@ -64,8 +65,7 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "thermal_manager:thermalsrv_client",
   ]
 
-  resource_config_file =
-      "//foundation/resourceschedule/work_scheduler/test/resource/ohos_test.xml"
+  resource_config_file = "${worksched_test_path}/resource/ohos_test.xml"
 }
 
 ###############################################################################

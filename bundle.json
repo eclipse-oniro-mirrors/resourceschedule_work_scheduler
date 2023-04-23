@@ -24,7 +24,6 @@
       "deps": {
         "components": [
           "thermal_manager",
-          "netmanager_base",
           "bundle_framework",
           "safwk",
           "jsoncpp",
@@ -40,9 +39,11 @@
           "battery_manager",
           "ability_base",
           "eventhandler",
-          "background_task_mgr"
+          "background_task_mgr",
+          "device_usage_statistics",
+          "access_token"
         ],
-        "third_party": [ "googletest" ]
+        "third_party": []
       },
       "build": {
         "group_type": {

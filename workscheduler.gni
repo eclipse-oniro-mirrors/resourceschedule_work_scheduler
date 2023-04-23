@@ -31,6 +31,8 @@ worksched_interfaces_path = "${worksched_root_path}/interfaces"
 
 worksched_frameworks_path = "${worksched_root_path}/frameworks"
 
+worksched_test_path = "${worksched_root_path}/test"
+
 system_type = "default"
 
 declare_args() {
