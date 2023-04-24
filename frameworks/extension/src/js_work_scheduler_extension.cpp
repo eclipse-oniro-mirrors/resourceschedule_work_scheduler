@@ -130,7 +130,7 @@ void JsWorkSchedulerExtension::BindContext(NativeEngine& engine, NativeObject* o
     nativeObj->ConvertToNativeBindingObject(&engine, AbilityRuntime::DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, workContext, nullptr);
     WS_HILOGI("JsWorkSchedulerExtension init bind and set property.");
-    context->Bind(jsRuntime_, shellContextRef_.release());
+    context->Bind(jsRuntime_, shellContextRef_.get());
     obj->SetProperty("context", contextObj);
     WS_HILOGI("Set JsWorkSchedulerExtension context pointer is nullptr or not:%{public}d",
         context.get() == nullptr);
