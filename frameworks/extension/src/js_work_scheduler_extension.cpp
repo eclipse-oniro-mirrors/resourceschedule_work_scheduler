@@ -34,7 +34,17 @@ JsWorkSchedulerExtension* JsWorkSchedulerExtension::Create(const std::unique_ptr
 }
 
 JsWorkSchedulerExtension::JsWorkSchedulerExtension(AbilityRuntime::JsRuntime& jsRuntime) : jsRuntime_(jsRuntime) {}
-JsWorkSchedulerExtension::~JsWorkSchedulerExtension() = default;
+JsWorkSchedulerExtension::~JsWorkSchedulerExtension()
+{
+    WS_HILOGD("Js WorkScheduler extension destructor.");
+    auto context = GetContext();
+    if (context) {
+        context->Unbind();
+    }
+
+    jsRuntime_.FreeNativeReference(std::move(jsObj_));
+    jsRuntime_.FreeNativeReference(std::move(shellContextRef_));
+}
 
 void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLocalRecord>& record,
     const std::shared_ptr<AppExecFwk::OHOSApplication>& application,
@@ -73,10 +83,10 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
         return;
     }
     NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
-    auto shellContextRef = jsRuntime_.LoadSystemModule("WorkSchedulerExtensionContext",
+    shellContextRef_ = jsRuntime_.LoadSystemModule("WorkSchedulerExtensionContext",
         &contextObj, 1);
-    contextObj = shellContextRef->Get();
-    context->Bind(jsRuntime_, shellContextRef.release());
+    contextObj = shellContextRef_->Get();
+    context->Bind(jsRuntime_, shellContextRef_.release());
     obj->SetProperty("context", contextObj);
     WS_HILOGD("end.");
 }
