@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include "conditions/battery_status_listener.h"
 
 #include "common_event_manager.h"
@@ -93,3 +94,4 @@ void BatteryStatusListener::OnConditionChanged(WorkCondition::Type conditionType
 }
 } // namespace WorkScheduler
 } // namespace OHOS
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE

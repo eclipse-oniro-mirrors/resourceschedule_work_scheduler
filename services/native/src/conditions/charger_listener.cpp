@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include "conditions/charger_listener.h"
 
 #include "battery_info.h"
@@ -120,3 +121,4 @@ void ChargerListener::OnConditionChanged(WorkCondition::Type conditionType,
 }
 } // namespace WorkScheduler
 } // namespace OHOS
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE

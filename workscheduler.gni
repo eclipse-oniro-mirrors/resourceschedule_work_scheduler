@@ -53,4 +53,16 @@ declare_args() {
       !defined(global_parts_info.communication_netmanager_base)) {
     workscheduler_with_communication_netmanager_base_enable = false
   }
+
+  powermgr_battery_manager_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.powermgr_battery_manager)) {
+    powermgr_battery_manager_enable = false
+  }
+
+  powermgr_thermal_manager_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.powermgr_thermal_manager)) {
+    powermgr_thermal_manager_enable = false
+  }
 }

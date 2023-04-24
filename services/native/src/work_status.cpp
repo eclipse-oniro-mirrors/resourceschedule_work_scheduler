@@ -15,7 +15,6 @@
 
 #include "work_status.h"
 
-#include "battery_srv_client.h"
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "work_scheduler_service.h"
@@ -27,7 +26,6 @@
 #endif
 
 using namespace std;
-using namespace OHOS::PowerMgr;
 
 namespace OHOS {
 namespace WorkScheduler {

@@ -41,7 +41,8 @@
           "eventhandler",
           "background_task_mgr",
           "device_usage_statistics",
-          "access_token"
+          "access_token",
+          "netmanager_base"
         ],
         "third_party": []
       },

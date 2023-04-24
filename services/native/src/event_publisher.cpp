@@ -15,7 +15,9 @@
 
 #include "event_publisher.h"
 
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include "battery_srv_client.h"
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
@@ -105,6 +107,7 @@ void EventPublisher::PublishNetworkEvent(std::string &result, std::string &event
 
 void EventPublisher::PublishChargingEvent(std::string &result, std::string &eventValue)
 {
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     EventFwk::Want want;
     EventFwk::CommonEventData data;
     if (eventValue == EV_CHARGING_TYPE_AC) {
@@ -134,6 +137,7 @@ void EventPublisher::PublishChargingEvent(std::string &result, std::string &even
     } else {
         result.append("publish charging event ret: false");
     }
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE
 }
 
 void EventPublisher::PublishStorageEvent(std::string &result, std::string &eventValue)

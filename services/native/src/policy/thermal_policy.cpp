@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#ifdef POWERMGR_THERMAL_MANAGER_ENABLE
 #include "policy/thermal_policy.h"
 
 #include "thermal_mgr_client.h"
@@ -52,3 +53,4 @@ int32_t ThermalPolicy::GetPolicyMaxRunning()
 }
 } // namespace WorkScheduler
 } // namespace OHOS
+#endif // POWERMGR_THERMAL_MANAGER_ENABLE
