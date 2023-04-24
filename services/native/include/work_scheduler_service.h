@@ -238,6 +238,7 @@ public:
     ErrCode QueryResAppliedUid();
 private:
     std::set<int32_t> whitelist_;
+    std::mutex whitelistMutex_;
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif
