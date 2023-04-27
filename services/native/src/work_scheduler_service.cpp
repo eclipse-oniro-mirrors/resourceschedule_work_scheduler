@@ -243,6 +243,7 @@ ErrCode WorkSchedulerService::QueryResAppliedUid()
         WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d", result);
         return result;
     }
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     for (const auto& info : appList) {
         if ((info->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
             whitelist_.emplace(info->GetUid());
@@ -622,6 +623,7 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
 
 std::string WorkSchedulerService::GetEffiResApplyUid()
 {
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     if (whitelist_.empty()) {
         return "empty";
     }
@@ -724,6 +726,7 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 
 void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
 {
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     if (isAdd) {
         whitelist_.emplace(uid);
     } else {
@@ -733,6 +736,7 @@ void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
 
 bool WorkSchedulerService::CheckEffiResApplyInfo(int32_t uid)
 {
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     return whitelist_.find(uid) != whitelist_.end();
 }
 
@@ -749,6 +753,9 @@ void WorkSchedulerService::SystemAbilityStatusChangeListener::OnAddSystemAbility
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 void WorkSchedulerService::GroupObserverInit()
 {
+    if (!workQueueManager_) {
+        return;
+    }
     if (!groupObserver_) {
         groupObserver_ = new (std::nothrow) WorkBundleGroupChangeCallback(workQueueManager_);
     }
