@@ -96,6 +96,7 @@ private:
     bool GetExtrasJsonStr(const WorkInfo& workInfo, std::string& extrasStr);
     AbilityRuntime::JsRuntime &jsRuntime_;
     std::unique_ptr<NativeReference> jsObj_;
+    std::shared_ptr<NativeReference> shellContextRef_ = nullptr;
 };
 }  // namespace WorkScheduler
 }  // namespace OHOS
