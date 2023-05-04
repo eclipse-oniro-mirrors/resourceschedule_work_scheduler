@@ -30,7 +30,6 @@ namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerService;
 class WorkEventHandler;
-class AppRemovedListener;
 class AppDataClearListener;
 class Watchdog;
 class WorkPolicyManager {
@@ -158,12 +157,6 @@ public:
      */
     void SendRetrigger(int32_t delayTime);
     /**
-     * @brief Add app remove listener.
-     *
-     * @param listener The listener.
-     */
-    void AddAppRemoveListener(std::shared_ptr<AppRemovedListener> listener);
-    /**
      * @brief Add app data clear listener.
      *
      * @param listener The listener.
@@ -236,7 +229,6 @@ private:
     std::shared_ptr<WorkQueue> conditionReadyQueue_;
 
     std::list<std::shared_ptr<IPolicyFilter>> policyFilters_;
-    std::shared_ptr<AppRemovedListener> appRemovedListener_;
     std::shared_ptr<AppDataClearListener> appDataClearListener_;
 
     std::shared_ptr<Watchdog> watchdog_;
