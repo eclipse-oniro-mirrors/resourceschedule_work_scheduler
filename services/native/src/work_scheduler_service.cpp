@@ -301,8 +301,6 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
     workPolicyManager_->AddPolicyFilter(thermalFilter);
     workPolicyManager_->AddPolicyFilter(memoryFilter);
 
-    workPolicyManager_->AddAppRemoveListener(appRemoveListener);
-
     auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
     workPolicyManager_->AddAppDataClearListener(appDataClearListener);
 
