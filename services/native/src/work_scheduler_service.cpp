@@ -44,7 +44,6 @@
 #include "event_publisher.h"
 #include "json/json.h"
 #include "policy/app_data_clear_listener.h"
-#include "policy/app_removed_listener.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
@@ -302,7 +301,6 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
     workPolicyManager_->AddPolicyFilter(thermalFilter);
     workPolicyManager_->AddPolicyFilter(memoryFilter);
 
-    auto appRemoveListener = make_shared<AppRemovedListener>(workPolicyManager_);
     workPolicyManager_->AddAppRemoveListener(appRemoveListener);
 
     auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
