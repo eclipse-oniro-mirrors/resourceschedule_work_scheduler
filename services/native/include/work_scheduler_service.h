@@ -32,6 +32,7 @@
 #include "work_status.h"
 #include "work_event_handler.h"
 #include "delayed_sp_singleton.h"
+#include "work_standby_state_change_callback.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -236,17 +237,18 @@ public:
      * @return ErrCode ERR_OK if succeed, others if failed
      */
     ErrCode QueryResAppliedUid();
+    /**
+     * @brief check bundleName has device_standby allow permission or not.
+     *
+     * @param bundleName bundleName of the application.
+     * @return true mean the application has device_stadnby allow permission, false or not.
+     */
+    bool CheckStandbyApplyInfo(std::string& bundleName);
 private:
     std::set<int32_t> whitelist_;
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif
-private:
-    class SystemAbilityStatusChangeListener : public OHOS::SystemAbilityStatusChangeStub {
-    public:
-        SystemAbilityStatusChangeListener() {};
-        void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-    };
 
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
@@ -260,9 +262,13 @@ private:
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif
-
+#ifdef  DEVICE_STANDBY_ENABLE
+    sptr<WorkStandbyStateChangeCallback> standbyStateObserver_;
+#endif
+    void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     void GroupObserverInit();
 #endif

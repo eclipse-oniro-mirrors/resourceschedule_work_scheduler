@@ -34,6 +34,10 @@
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #endif
+#ifdef DEVICE_STANDBY_ENABLE
+#include "standby_service_client.h"
+#include "allow_type.h"
+#endif
 #include "conditions/battery_level_listener.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
@@ -78,6 +82,7 @@ const char* g_persistedPath = "/data/service/el1/public/WorkScheduler";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
+const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -102,6 +107,12 @@ void WorkSchedulerService::OnStart()
     handler_ = std::make_shared<WorkEventHandler>(eventRunner_, wss);
 
     // Try to init.
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    AddSystemAbilityListener(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID);
+#endif
+#ifdef DEVICE_STANDBY_ENABLE
+    AddSystemAbilityListener(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID);
+#endif
     Init(eventRunner_);
     WS_HILOGD("On start success.");
 }
@@ -177,6 +188,10 @@ void WorkSchedulerService::OnStop()
     DeviceUsageStats::BundleActiveClient::GetInstance().UnRegisterAppGroupCallBack(groupObserver_);
     groupObserver_ = nullptr;
     g_hasGroupObserver = -1;
+#endif
+#ifdef DEVICE_STANDBY_ENABLE
+    DevStandbyMgr::StandbyServiceClient::GetInstance().UnsubscribeStandbyCallback(standbyStateObserver_);
+    standbyStateObserver_ = nullptr;
 #endif
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::UnsubscribeBackgroundTask(*subscriber_);
@@ -284,6 +299,7 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     GroupObserverInit();
 #endif
+    RegisterStandbyStateObserver();
 }
 
 bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
@@ -736,14 +752,34 @@ bool WorkSchedulerService::CheckEffiResApplyInfo(int32_t uid)
     return whitelist_.find(uid) != whitelist_.end();
 }
 
-void WorkSchedulerService::SystemAbilityStatusChangeListener::OnAddSystemAbility
-    (int32_t systemAbilityId, const std::string& deviceId)
+bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
 {
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    WS_HILOGD("%{public}s is checking standby applyInfo", bundleName.c_str());
+#ifdef  DEVICE_STANDBY_ENABLE
+    if (!standbyStateObserver_) {
+        true;
+    }
+    std::vector<DevStandbyMgr::AllowInfo> allowInfoArray;
+    DevStandbyMgr::StandbyServiceClient::GetInstance().GetAllowList(DevStandbyMgr::AllowType::WORK_SCHEDULER,
+        allowInfoArray, DevStandbyMgr::ReasonCodeEnum::REASON_APP_API);
+    WS_HILOGD("allowInfoArray size is %{public}ld", allowInfoArray.size());
+    for (const auto& item : allowInfoArray) {
+        if (item.GetName() == bundleName) {
+            return true;
+        }
+    }
+#endif
+    return false;
+}
+
+void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
+{
     if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
         instance->GroupObserverInit();
     }
-#endif
+    if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
+        instance->RegisterStandbyStateObserver();
+    }
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
@@ -758,5 +794,26 @@ void WorkSchedulerService::GroupObserverInit()
     }
 }
 #endif
+
+void WorkSchedulerService::RegisterStandbyStateObserver()
+{
+    if (!workQueueManager_) {
+        return;
+    }
+#ifdef  DEVICE_STANDBY_ENABLE
+    if (!standbyStateObserver_) {
+        standbyStateObserver_ = new (std::nothrow) WorkStandbyStateChangeCallback(workQueueManager_);
+    }
+    if (!standbyStateObserver_) {
+        return;
+    }
+    standbyStateObserver_->SetSubscriberName(STRATEGY_NAME);
+    ErrCode ret = DevStandbyMgr::StandbyServiceClient::GetInstance().SubscribeStandbyCallback(standbyStateObserver_);
+    if (ret != ERR_OK) {
+        WS_HILOGE("Subscriber standbyStateObserver_ failed.");
+        standbyStateObserver_ = nullptr;
+    }
+#endif
+}
 } // namespace WorkScheduler
 } // namespace OHOS

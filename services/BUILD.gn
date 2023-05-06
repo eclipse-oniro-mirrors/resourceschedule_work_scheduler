@@ -59,6 +59,7 @@ ohos_shared_library("workschedservice") {
     "native/src/work_scheduler_connection.cpp",
     "native/src/work_scheduler_service.cpp",
     "native/src/work_status.cpp",
+    "native/src/work_standby_state_change_callback.cpp",
     "zidl/src/work_sched_service_stub.cpp",
     "zidl/src/work_scheduler_proxy.cpp",
   ]
@@ -94,6 +95,10 @@ ohos_shared_library("workschedservice") {
   if (bundle_active_enable) {
     external_deps += [ "device_usage_statistics:usagestatsinner" ]
     defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
+  if (device_standby_enable) {
+    external_deps += [ "device_standby:standby_innerkits" ]
+    defines += [ "DEVICE_STANDBY_ENABLE" ]
   }
   if (resourceschedule_bgtaskmgr_enable) {
     external_deps += [ "background_task_mgr:bgtaskmgr_innerkits" ]
