@@ -269,6 +269,7 @@ private:
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+    void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     void GroupObserverInit();
 #endif

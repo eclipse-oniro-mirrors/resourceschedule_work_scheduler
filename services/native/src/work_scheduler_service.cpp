@@ -784,8 +784,10 @@ void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std
 
 void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
 {
-    workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
-        std::make_shared<DetectorValue>(0, 0, false, std::string()));
+    if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
+        workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
+            std::make_shared<DetectorValue>(0, 0, false, std::string()));
+    }
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
