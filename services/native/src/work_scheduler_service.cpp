@@ -787,6 +787,9 @@ void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const 
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
         workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
+#ifdef  DEVICE_STANDBY_ENABLE
+        standbyStateObserver_ = nullptr;
+#endif
     }
 }
 
