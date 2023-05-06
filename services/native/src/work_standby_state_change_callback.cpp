@@ -46,10 +46,8 @@ void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::
         WS_HILOGD("current device_standby state is not sleep");
         return;
     }
-    if ( && !added) {
-        workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
-            std::make_shared<DetectorValue>(0, 0, isSleep_, std::string()));
-    }
+    workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
+        std::make_shared<DetectorValue>(0, 0, isSleep_, std::string()));
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS
