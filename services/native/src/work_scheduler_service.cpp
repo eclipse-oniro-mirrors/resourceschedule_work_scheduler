@@ -775,11 +775,17 @@ bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
 void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
 {
     if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
-        instance->GroupObserverInit();
+        GroupObserverInit();
     }
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
-        instance->RegisterStandbyStateObserver();
+        RegisterStandbyStateObserver();
     }
+}
+
+void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
+{
+    workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
+        std::make_shared<DetectorValue>(0, 0, false, std::string()));
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE

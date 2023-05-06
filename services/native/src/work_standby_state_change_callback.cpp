@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2023 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -25,17 +25,17 @@ WorkStandbyStateChangeCallback::WorkStandbyStateChangeCallback(std::shared_ptr<W
     workQueueManager_ = workQueueManager;
 }
 
-void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeped)
+void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping)
 {
     WS_HILOGD("work_scheduler get OnDeviceIdleMode callback");
     if (napped && !isSleep_) {
         WS_HILOGD("device_standby state is nap, do not need process");
         return;
     }
-    WS_HILOGI("work_scheduler get OnDeviceIdleMode callback, sleeped is %{public}d", sleeped);
+    WS_HILOGI("work_scheduler get OnDeviceIdleMode callback, sleeping is %{public}d", sleeping);
     workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
-        std::make_shared<DetectorValue>(0, 0, sleeped, std::string()));
-    isSleep_ = sleeped;
+        std::make_shared<DetectorValue>(0, 0, sleeping, std::string()));
+    isSleep_ = sleeping;
 }
 
 void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::string& name,
