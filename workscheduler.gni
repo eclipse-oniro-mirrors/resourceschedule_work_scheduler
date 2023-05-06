@@ -42,6 +42,12 @@ declare_args() {
     bundle_active_enable = false
   }
 
+  device_standby_enable = true
+  if (defined(global_parts_info) &&
+      !defined(global_parts_info.resourceschedule_device_standby)) {
+    device_standby_enable = false
+  }
+
   resourceschedule_bgtaskmgr_enable = true
   if (defined(global_parts_info) &&
       !defined(global_parts_info.resourceschedule_background_task_mgr)) {

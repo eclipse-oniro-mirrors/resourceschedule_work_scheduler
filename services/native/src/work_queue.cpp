@@ -56,6 +56,9 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
             value->strVal = conditionVal->strVal;
             break;
         }
+        case WorkCondition::Type::STANDBY: {
+            value->boolVal = conditionVal->boolVal;
+        }
         default: {}
     }
     vector<shared_ptr<WorkStatus>> result;

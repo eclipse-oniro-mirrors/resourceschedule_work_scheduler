@@ -94,6 +94,12 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
             return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
     }
+    if (type == WorkCondition::Type::STANDBY && value) {
+        isStandby_ = value->boolVal;
+    }
+    if (isStandby_ && !DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckStandbyApplyInfo(bundleName_)) {
+        return E_GROUP_CHANGE_NOT_MATCH_HAP;
+    }
     if (IsReady()) {
         MarkStatus(Status::CONDITION_READY);
     }
