@@ -809,9 +809,11 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
         return;
     }
 #ifdef  DEVICE_STANDBY_ENABLE
-    if (!standbyStateObserver_) {
-        standbyStateObserver_ = new (std::nothrow) WorkStandbyStateChangeCallback(workQueueManager_);
+    if (standbyStateObserver_) {
+        WS_HILOGD("standbyStateObserver_ is already exist, do not need repeat process.");
+        return;
     }
+    standbyStateObserver_ = new (std::nothrow) WorkStandbyStateChangeCallback(workQueueManager_);
     if (!standbyStateObserver_) {
         return;
     }
