@@ -41,5 +41,6 @@ ohos_shared_library("workschedclient") {
     "samgr:samgr_proxy",
   ]
 
+  subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
 }

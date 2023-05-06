@@ -266,17 +266,21 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
     }
 
     auto networkListener = make_shared<NetworkListener>(workQueueManager_);
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     auto chargerListener = make_shared<ChargerListener>(workQueueManager_);
     auto batteryStatusListener = make_shared<BatteryStatusListener>(workQueueManager_);
     auto batteryLevelListener = make_shared<BatteryLevelListener>(workQueueManager_);
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE
     auto storageListener = make_shared<StorageListener>(workQueueManager_);
     auto timerListener = make_shared<TimerListener>(workQueueManager_, runner);
     auto groupListener = make_shared<GroupListener>(workQueueManager_, runner);
 
     workQueueManager_->AddListener(WorkCondition::Type::NETWORK, networkListener);
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     workQueueManager_->AddListener(WorkCondition::Type::CHARGER, chargerListener);
     workQueueManager_->AddListener(WorkCondition::Type::BATTERY_STATUS, batteryStatusListener);
     workQueueManager_->AddListener(WorkCondition::Type::BATTERY_LEVEL, batteryLevelListener);
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE
     workQueueManager_->AddListener(WorkCondition::Type::STORAGE, storageListener);
     workQueueManager_->AddListener(WorkCondition::Type::TIMER, timerListener);
     workQueueManager_->AddListener(WorkCondition::Type::GROUP, groupListener);
@@ -297,9 +301,11 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
         return false;
     }
 
+#ifdef POWERMGR_THERMAL_MANAGER_ENABLE
     auto thermalFilter = make_shared<ThermalPolicy>(workPolicyManager_);
-    auto memoryFilter = make_shared<MemoryPolicy>(workPolicyManager_);
     workPolicyManager_->AddPolicyFilter(thermalFilter);
+#endif // POWERMGR_THERMAL_MANAGER_ENABLE
+    auto memoryFilter = make_shared<MemoryPolicy>(workPolicyManager_);
     workPolicyManager_->AddPolicyFilter(memoryFilter);
 
     auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
