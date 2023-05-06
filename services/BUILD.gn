@@ -58,8 +58,8 @@ ohos_shared_library("workschedservice") {
     "native/src/work_queue_manager.cpp",
     "native/src/work_scheduler_connection.cpp",
     "native/src/work_scheduler_service.cpp",
-    "native/src/work_status.cpp",
     "native/src/work_standby_state_change_callback.cpp",
+    "native/src/work_status.cpp",
     "zidl/src/work_sched_service_stub.cpp",
     "zidl/src/work_scheduler_proxy.cpp",
   ]
