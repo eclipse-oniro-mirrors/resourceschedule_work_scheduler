@@ -190,6 +190,7 @@ void WorkSchedulerService::OnStop()
     g_hasGroupObserver = -1;
 #endif
 #ifdef DEVICE_STANDBY_ENABLE
+    std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
     DevStandbyMgr::StandbyServiceClient::GetInstance().UnsubscribeStandbyCallback(standbyStateObserver_);
     standbyStateObserver_ = nullptr;
 #endif
@@ -756,6 +757,7 @@ bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
 {
     WS_HILOGD("%{public}s is checking standby applyInfo", bundleName.c_str());
 #ifdef  DEVICE_STANDBY_ENABLE
+    std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
     if (!standbyStateObserver_) {
         return true;
     }
@@ -788,6 +790,7 @@ void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const 
         workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
 #ifdef  DEVICE_STANDBY_ENABLE
+        std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
         standbyStateObserver_ = nullptr;
 #endif
     }
@@ -812,6 +815,7 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
         return;
     }
 #ifdef  DEVICE_STANDBY_ENABLE
+    std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
     if (standbyStateObserver_) {
         WS_HILOGD("standbyStateObserver_ is already exist, do not need repeat process.");
         return;
