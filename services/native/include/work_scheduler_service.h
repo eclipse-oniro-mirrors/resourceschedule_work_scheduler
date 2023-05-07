@@ -255,6 +255,7 @@ private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     std::mutex mutex_;
+    std::mutex standbyObserverMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
     std::shared_ptr<WorkEventHandler> handler_;
