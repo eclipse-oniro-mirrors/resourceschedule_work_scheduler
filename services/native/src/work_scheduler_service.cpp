@@ -763,7 +763,7 @@ bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
     WS_HILOGD("%{public}s is checking standby applyInfo", bundleName.c_str());
 #ifdef  DEVICE_STANDBY_ENABLE
     if (!standbyStateObserver_) {
-        true;
+        return true;
     }
     std::vector<DevStandbyMgr::AllowInfo> allowInfoArray;
     DevStandbyMgr::StandbyServiceClient::GetInstance().GetAllowList(DevStandbyMgr::AllowType::WORK_SCHEDULER,
