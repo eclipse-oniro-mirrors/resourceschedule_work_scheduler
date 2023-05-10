@@ -107,13 +107,13 @@ void WorkSchedulerService::OnStart()
     handler_ = std::make_shared<WorkEventHandler>(eventRunner_, wss);
 
     // Try to init.
+    Init(eventRunner_);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     AddSystemAbilityListener(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID);
 #endif
 #ifdef DEVICE_STANDBY_ENABLE
     AddSystemAbilityListener(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID);
 #endif
-    Init(eventRunner_);
     WS_HILOGD("On start success.");
 }
 
@@ -787,6 +787,9 @@ void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std
 void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
 {
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
+        if (!workQueueManager_) {
+            return;
+        }
         workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
 #ifdef  DEVICE_STANDBY_ENABLE
