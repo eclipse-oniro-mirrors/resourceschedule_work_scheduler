@@ -15,6 +15,6 @@ import("//build/ohos/sa_profile/sa_profile.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 ohos_sa_profile("worksched_sa_profile") {
-  sources = [ "1904.xml" ]
+  sources = [ "1904.json" ]
   part_name = "${worksched_native_part_name}"
 }
