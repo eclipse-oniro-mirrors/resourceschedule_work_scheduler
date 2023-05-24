@@ -1,0 +1,12 @@
+{
+    "process": "bgtaskmgr_service",
+    "systemability": [
+        {
+            "name": 1904,
+            "libpath": "libworkschedservice.z.so",
+            "run-on-create": true,
+            "distributed": false,
+            "dump_level": 1
+        }
+    ]
+}
