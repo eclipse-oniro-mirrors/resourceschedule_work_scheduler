@@ -52,7 +52,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
     this->workId_ = MakeWorkId(workInfo.GetWorkId(), uid);
     this->bundleName_ = workInfo.GetBundleName();
     this->abilityName_ = workInfo.GetAbilityName();
-    this->baseTime_ = getCurrentTime();
+    this->baseTime_ = workInfo.GetBaseTime();
     this->uid_ = uid;
     this->userId_ = WorkSchedUtils::GetUserIdByUid(uid);
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
@@ -130,6 +130,7 @@ void WorkStatus::UpdateTimerIfNeed()
         int32_t cycleLeft = conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
         conditionMap_.at(WorkCondition::Type::TIMER)->intVal = cycleLeft - 1;
         workInfo_->RequestBaseTimeAndCycle(baseTime_, cycleLeft - 1);
+        DelayedSpSingleton<WorkSchedulerService>::GetInstance()->RefreshPersistedWorks();
     }
 }
 

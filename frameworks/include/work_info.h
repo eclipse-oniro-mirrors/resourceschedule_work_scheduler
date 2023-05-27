@@ -105,6 +105,12 @@ public:
      */
     void RequestBaseTimeAndCycle(time_t baseTime, int32_t cycle);
     /**
+     * @brief Request base time.
+     *
+     * @param baseTime The base time.
+     */
+    void RequestBaseTime(time_t baseTime);
+    /**
      * @brief Request extra parameters.
      *
      * @param extras extra parameters.
@@ -195,6 +201,12 @@ public:
      * @return The count of cycle.
      */
     int32_t GetCycleCount();
+    /**
+     * @brief Get the base time.
+     *
+     * @return The base time.
+     */
+    time_t GetBaseTime();
     /**
      * @brief Get the map of condition.
      *
