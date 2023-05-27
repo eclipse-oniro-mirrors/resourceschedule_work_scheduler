@@ -40,7 +40,8 @@
           "battery_manager",
           "ability_base",
           "eventhandler",
-          "background_task_mgr"
+          "background_task_mgr",
+          "device_standby"
         ],
         "third_party": [ "googletest" ]
       },
