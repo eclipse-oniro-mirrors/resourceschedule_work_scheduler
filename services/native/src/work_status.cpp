@@ -64,7 +64,6 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
             timeCondition->intVal = workTimerCondition->intVal;
         }
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
-        workInfo_->RequestBaseTimeAndCycle(baseTime_, workTimerCondition->intVal);
     }
     this->persisted_ = workInfo.IsPersisted();
     this->priority_ = DEFAULT_PRIORITY;
