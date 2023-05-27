@@ -75,6 +75,7 @@ struct Condition {
     uint32_t uintVal;
     bool boolVal;
     std::string strVal;
+    time_t timeVal; //for baseTime
 };
 } // namespace WorkScheduler
 } // namespace OHOS

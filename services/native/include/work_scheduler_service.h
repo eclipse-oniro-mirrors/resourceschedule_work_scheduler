@@ -124,6 +124,10 @@ public:
      */
     void InitPersisted();
     /**
+     * @brief Refresh persisted works.
+     */
+    void RefreshPersistedWorks();
+    /**
      * @brief Stop and clear works by uid.
      *
      * @param uid The uid.
@@ -275,7 +279,6 @@ private:
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     void GroupObserverInit();
 #endif
-    void RefreshPersistedWorks();
     std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
     void InitPersistedWork(WorkInfo& workInfo);
     void DumpAllInfo(std::string &result);

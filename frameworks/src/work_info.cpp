@@ -101,6 +101,21 @@ void WorkInfo::RequestRepeatCycle(uint32_t timeInterval)
     conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
 }
 
+void WorkInfo::RequestBaseTimeAndCycle(time_t baseTime, int32_t cycle)
+{
+    if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
+        conditionMap_.at(WorkCondition::Type::TIMER)->timeVal = baseTime;
+        conditionMap_.at(WorkCondition::Type::TIMER)->intVal = cycle;
+    }
+}
+
+void WorkInfo::RequestBaseTime(time_t baseTime)
+{
+    if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
+        conditionMap_.at(WorkCondition::Type::TIMER)->timeVal = baseTime;
+    }
+}
+
 void WorkInfo::RequestExtras(AAFwk::WantParams extras)
 {
     extras_ = std::make_shared<AAFwk::WantParams>(extras);
@@ -209,6 +224,16 @@ int32_t WorkInfo::GetCycleCount()
         return conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
     }
     return INVALID_VALUE;
+}
+
+time_t WorkInfo::GetBaseTime()
+{
+    if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
+        return conditionMap_.at(WorkCondition::Type::TIMER)->timeVal;
+    }
+    time_t result;
+    time(&result);
+    return result;
 }
 
 std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> WorkInfo::GetConditionMap()
@@ -399,6 +424,7 @@ void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
             case WorkCondition::Type::TIMER: {
                 conditions["timer"] = it.second->uintVal;
                 conditions["repeat"] = it.second->boolVal;
+                conditions["baseTime"] = it.second->timeVal;
                 if (!it.second->boolVal) {
                     conditions["cycle"] = it.second->intVal;
                 }
@@ -472,6 +498,10 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
             if (conditions.isMember("cycle")) {
                 this->RequestRepeatCycle(conditions["timer"].asInt(), conditions["cycle"].asInt());
             }
+        }
+        if (conditions.isMember("baseTime")) {
+            time_t baseTime = (time_t)(conditions["baseTime"].asInt64());
+            this->RequestBaseTime(baseTime);
         }
     }
 }

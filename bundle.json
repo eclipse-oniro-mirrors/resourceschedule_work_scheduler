@@ -40,6 +40,7 @@
           "ability_base",
           "eventhandler",
           "background_task_mgr",
+          "device_standby",
           "device_usage_statistics",
           "access_token",
           "netmanager_base"
