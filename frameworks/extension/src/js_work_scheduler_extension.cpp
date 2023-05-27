@@ -34,7 +34,17 @@ JsWorkSchedulerExtension* JsWorkSchedulerExtension::Create(const std::unique_ptr
 }
 
 JsWorkSchedulerExtension::JsWorkSchedulerExtension(AbilityRuntime::JsRuntime& jsRuntime) : jsRuntime_(jsRuntime) {}
-JsWorkSchedulerExtension::~JsWorkSchedulerExtension() = default;
+JsWorkSchedulerExtension::~JsWorkSchedulerExtension()
+{
+    WS_HILOGD("Js WorkScheduler extension destructor.");
+    auto context = GetContext();
+    if (context) {
+        context->Unbind();
+    }
+
+    jsRuntime_.FreeNativeReference(std::move(jsObj_));
+    jsRuntime_.FreeNativeReference(std::move(shellContextRef_));
+}
 
 NativeValue *AttachWorkSchedulerExtensionContext(NativeEngine *engine, void *value, void *)
 {
@@ -83,7 +93,8 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
     auto& engine = jsRuntime_.GetNativeEngine();
 
-    jsObj_ = jsRuntime_.LoadModule(moduleName, srcPath, abilityInfo_->hapPath);
+    jsObj_ = jsRuntime_.LoadModule(moduleName, srcPath, abilityInfo_->hapPath,
+        abilityInfo_->compileMode == AbilityRuntime::CompileMode::ES_MODULE);
     if (jsObj_ == nullptr) {
         WS_HILOGE("WorkSchedulerExtension Failed to get jsObj_");
         return;
@@ -106,9 +117,9 @@ void JsWorkSchedulerExtension::BindContext(NativeEngine& engine, NativeObject* o
         return;
     }
     NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
-    auto shellContextRef = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
+    shellContextRef_ = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
         &contextObj, 1);
-    contextObj = shellContextRef->Get();
+    contextObj = shellContextRef_->Get();
 
     NativeObject* nativeObj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(contextObj);
     if (nativeObj == nullptr) {
@@ -119,7 +130,7 @@ void JsWorkSchedulerExtension::BindContext(NativeEngine& engine, NativeObject* o
     nativeObj->ConvertToNativeBindingObject(&engine, AbilityRuntime::DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, workContext, nullptr);
     WS_HILOGI("JsWorkSchedulerExtension init bind and set property.");
-    context->Bind(jsRuntime_, shellContextRef.release());
+    context->Bind(jsRuntime_, shellContextRef_.get());
     obj->SetProperty("context", contextObj);
     WS_HILOGI("Set JsWorkSchedulerExtension context pointer is nullptr or not:%{public}d",
         context.get() == nullptr);

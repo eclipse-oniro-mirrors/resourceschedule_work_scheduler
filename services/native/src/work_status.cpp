@@ -15,7 +15,6 @@
 
 #include "work_status.h"
 
-#include "battery_srv_client.h"
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "work_scheduler_service.h"
@@ -27,7 +26,6 @@
 #endif
 
 using namespace std;
-using namespace OHOS::PowerMgr;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -95,6 +93,12 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
         } else {
             return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
+    }
+    if (type == WorkCondition::Type::STANDBY && value) {
+        isStandby_ = value->boolVal;
+    }
+    if (isStandby_ && !DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckStandbyApplyInfo(bundleName_)) {
+        return E_GROUP_CHANGE_NOT_MATCH_HAP;
     }
     if (IsReady()) {
         MarkStatus(Status::CONDITION_READY);

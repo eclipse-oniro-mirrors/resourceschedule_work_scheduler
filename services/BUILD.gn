@@ -21,14 +21,7 @@ config("worksched_private_config") {
 }
 
 config("worksched_public_config") {
-  include_dirs = [
-    "native/include",
-    "//base/powermgr/battery_manager/interfaces/innerkits/native/include",
-  ]
-
-  if (workscheduler_with_communication_netmanager_base_enable) {
-    include_dirs += [ "//foundation/communication/netmanager_base/interfaces/innerkits/netconnclient/include" ]
-  }
+  include_dirs = [ "native/include" ]
 }
 
 ohos_shared_library("workschedservice") {
@@ -44,7 +37,6 @@ ohos_shared_library("workschedservice") {
     "native/src/conditions/timer_listener.cpp",
     "native/src/event_publisher.cpp",
     "native/src/policy/app_data_clear_listener.cpp",
-    "native/src/policy/app_removed_listener.cpp",
     "native/src/policy/memory_policy.cpp",
     "native/src/policy/thermal_policy.cpp",
     "native/src/scheduler_bg_task_subscriber.cpp",
@@ -58,6 +50,7 @@ ohos_shared_library("workschedservice") {
     "native/src/work_queue_manager.cpp",
     "native/src/work_scheduler_connection.cpp",
     "native/src/work_scheduler_service.cpp",
+    "native/src/work_standby_state_change_callback.cpp",
     "native/src/work_status.cpp",
     "zidl/src/work_sched_service_stub.cpp",
     "zidl/src/work_scheduler_proxy.cpp",
@@ -76,7 +69,6 @@ ohos_shared_library("workschedservice") {
     "ability_base:want",
     "ability_runtime:ability_manager",
     "ability_runtime:wantagent_innerkits",
-    "battery_manager:batterysrv_client",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
@@ -87,7 +79,6 @@ ohos_shared_library("workschedservice") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
-    "thermal_manager:thermalsrv_client",
   ]
 
   defines = []
@@ -95,14 +86,26 @@ ohos_shared_library("workschedservice") {
     external_deps += [ "device_usage_statistics:usagestatsinner" ]
     defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
   }
+  if (device_standby_enable) {
+    external_deps += [ "device_standby:standby_innerkits" ]
+    defines += [ "DEVICE_STANDBY_ENABLE" ]
+  }
   if (resourceschedule_bgtaskmgr_enable) {
     external_deps += [ "background_task_mgr:bgtaskmgr_innerkits" ]
     defines += [ "RESOURCESCHEDULE_BGTASKMGR_ENABLE" ]
   }
-
+  if (powermgr_battery_manager_enable) {
+    external_deps += [ "battery_manager:batterysrv_client" ]
+    defines += [ "POWERMGR_BATTERY_MANAGER_ENABLE" ]
+  }
+  if (powermgr_thermal_manager_enable) {
+    external_deps += [ "thermal_manager:thermalsrv_client" ]
+    defines += [ "POWERMGR_THERMAL_MANAGER_ENABLE" ]
+  }
   if (workscheduler_with_communication_netmanager_base_enable) {
     defines += [ "COMMUNICATION_NETMANAGER_BASE_ENABLE" ]
+    external_deps += [ "netmanager_base:net_conn_manager_if" ]
   }
-
+  subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
 }

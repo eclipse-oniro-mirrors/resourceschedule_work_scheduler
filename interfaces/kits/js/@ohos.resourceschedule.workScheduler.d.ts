@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-import {AsyncCallback} from './basic';
+import {AsyncCallback} from './@ohos.base';
 
 /**
  * Work scheduler interface.
@@ -34,66 +34,114 @@ declare namespace workScheduler {
     export interface WorkInfo {
         /**
          * The id of the current work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         workId: number;
         /**
          * The bundle name of the current work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         bundleName: string;
         /**
          * The ability name of the current work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         abilityName: string;
         /**
          * Whether the current work will be saved.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         isPersisted?: boolean;
         /**
          * The network type of the current work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         networkType?: NetworkType;
         /**
          * Whether a charging state has been set for triggering the work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         isCharging?: boolean;
         /**
          * The charger type based on which the work is triggered.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         chargerType?: ChargingType;
         /**
          * The battery level for triggering a work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         batteryLevel?: number;
         /**
          * The battery status for triggering a work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         batteryStatus?: BatteryStatus;
         /**
          * Whether a storage state has been set for triggering the work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         storageRequest?: StorageRequest;
         /**
          * The interval at which the work is repeated.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         repeatCycleTime?: number;
         /**
          * Whether the work has been set to repeat at the specified interval.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         isRepeat?: boolean;
         /**
          * The repeat of the current work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         repeatCount?: number;
         /**
          * Whether the device deep idle state has been set for triggering the work.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         isDeepIdle?: boolean;
         /**
          * The idle wait time based on which the work is triggered.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         idleWaitTime?: number;
         /**
          * The parameters of the work. The value is only supported basic type(Number, String, Boolean).
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         parameters?: {[key: string]: number | string | boolean};
     }
@@ -242,6 +290,7 @@ declare namespace workScheduler {
      * Describes network type.
      *
      * @name NetworkType
+     * @enum { number }
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @since 9
@@ -249,26 +298,44 @@ declare namespace workScheduler {
     export enum NetworkType {
         /**
          * Describes any network connection.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         NETWORK_TYPE_ANY = 0,
         /**
          * Describes a mobile network connection.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         NETWORK_TYPE_MOBILE,
         /**
          * Describes a wifi network connection.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         NETWORK_TYPE_WIFI,
         /**
          * Describes a bluetooth network connection.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         NETWORK_TYPE_BLUETOOTH,
         /**
          * Describes a wifi p2p network connection.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         NETWORK_TYPE_WIFI_P2P,
         /**
          * Describes a wifi wire network connection.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         NETWORK_TYPE_ETHERNET
     }
@@ -277,6 +344,7 @@ declare namespace workScheduler {
      * Describes charging type.
      *
      * @name ChargingType
+     * @enum { number }
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @since 9
@@ -284,18 +352,30 @@ declare namespace workScheduler {
     export enum ChargingType {
         /**
          * Describes any charger is connected.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         CHARGING_PLUGGED_ANY = 0,
         /**
          * Describes ac charger is connected.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         CHARGING_PLUGGED_AC,
         /**
          * Describes usb charger is connected.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         CHARGING_PLUGGED_USB,
         /**
          * Describes wireless charger is connected.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         CHARGING_PLUGGED_WIRELESS
     }
@@ -304,6 +384,7 @@ declare namespace workScheduler {
      * Describes the battery status.
      *
      * @name BatteryStatus
+     * @enum { number }
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @since 9
@@ -311,14 +392,23 @@ declare namespace workScheduler {
     export enum BatteryStatus {
         /**
          * Describes battery status is to low.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         BATTERY_STATUS_LOW = 0,
         /**
          * Describes battery status is to ok.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         BATTERY_STATUS_OKAY,
         /**
          * Describes battery status is to low or ok.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         BATTERY_STATUS_LOW_OR_OKAY
     }
@@ -327,6 +417,7 @@ declare namespace workScheduler {
      * Describes the storage request.
      *
      * @name StorageRequest
+     * @enum { number }
      * @syscap SystemCapability.ResourceSchedule.WorkScheduler
      * @StageModelOnly
      * @since 9
@@ -334,14 +425,23 @@ declare namespace workScheduler {
     export enum StorageRequest {
         /**
          * Describes storage is to low.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         STORAGE_LEVEL_LOW = 0,
         /**
          * Describes storage is to ok.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         STORAGE_LEVEL_OKAY,
         /**
          * Describes storage is to low or ok.
+         *
+         * @syscap SystemCapability.ResourceSchedule.WorkScheduler
+         * @since 9
          */
         STORAGE_LEVEL_LOW_OR_OKAY
     }

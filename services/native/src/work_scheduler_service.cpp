@@ -34,6 +34,10 @@
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #endif
+#ifdef DEVICE_STANDBY_ENABLE
+#include "standby_service_client.h"
+#include "allow_type.h"
+#endif
 #include "conditions/battery_level_listener.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
@@ -44,7 +48,6 @@
 #include "event_publisher.h"
 #include "json/json.h"
 #include "policy/app_data_clear_listener.h"
-#include "policy/app_removed_listener.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
@@ -78,6 +81,7 @@ const char* g_persistedPath = "/data/service/el1/public/WorkScheduler";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
+const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -103,6 +107,12 @@ void WorkSchedulerService::OnStart()
 
     // Try to init.
     Init(eventRunner_);
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    AddSystemAbilityListener(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID);
+#endif
+#ifdef DEVICE_STANDBY_ENABLE
+    AddSystemAbilityListener(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID);
+#endif
     WS_HILOGD("On start success.");
 }
 
@@ -178,6 +188,11 @@ void WorkSchedulerService::OnStop()
     groupObserver_ = nullptr;
     g_hasGroupObserver = -1;
 #endif
+#ifdef DEVICE_STANDBY_ENABLE
+    std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
+    DevStandbyMgr::StandbyServiceClient::GetInstance().UnsubscribeStandbyCallback(standbyStateObserver_);
+    standbyStateObserver_ = nullptr;
+#endif
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::UnsubscribeBackgroundTask(*subscriber_);
     if (ret != ERR_OK) {
@@ -243,6 +258,7 @@ ErrCode WorkSchedulerService::QueryResAppliedUid()
         WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d", result);
         return result;
     }
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     for (const auto& info : appList) {
         if ((info->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
             whitelist_.emplace(info->GetUid());
@@ -266,17 +282,21 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
     }
 
     auto networkListener = make_shared<NetworkListener>(workQueueManager_);
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     auto chargerListener = make_shared<ChargerListener>(workQueueManager_);
     auto batteryStatusListener = make_shared<BatteryStatusListener>(workQueueManager_);
     auto batteryLevelListener = make_shared<BatteryLevelListener>(workQueueManager_);
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE
     auto storageListener = make_shared<StorageListener>(workQueueManager_);
     auto timerListener = make_shared<TimerListener>(workQueueManager_, runner);
     auto groupListener = make_shared<GroupListener>(workQueueManager_, runner);
 
     workQueueManager_->AddListener(WorkCondition::Type::NETWORK, networkListener);
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     workQueueManager_->AddListener(WorkCondition::Type::CHARGER, chargerListener);
     workQueueManager_->AddListener(WorkCondition::Type::BATTERY_STATUS, batteryStatusListener);
     workQueueManager_->AddListener(WorkCondition::Type::BATTERY_LEVEL, batteryLevelListener);
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE
     workQueueManager_->AddListener(WorkCondition::Type::STORAGE, storageListener);
     workQueueManager_->AddListener(WorkCondition::Type::TIMER, timerListener);
     workQueueManager_->AddListener(WorkCondition::Type::GROUP, groupListener);
@@ -284,6 +304,7 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     GroupObserverInit();
 #endif
+    RegisterStandbyStateObserver();
 }
 
 bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
@@ -297,13 +318,12 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
         return false;
     }
 
+#ifdef POWERMGR_THERMAL_MANAGER_ENABLE
     auto thermalFilter = make_shared<ThermalPolicy>(workPolicyManager_);
-    auto memoryFilter = make_shared<MemoryPolicy>(workPolicyManager_);
     workPolicyManager_->AddPolicyFilter(thermalFilter);
+#endif // POWERMGR_THERMAL_MANAGER_ENABLE
+    auto memoryFilter = make_shared<MemoryPolicy>(workPolicyManager_);
     workPolicyManager_->AddPolicyFilter(memoryFilter);
-
-    auto appRemoveListener = make_shared<AppRemovedListener>(workPolicyManager_);
-    workPolicyManager_->AddAppRemoveListener(appRemoveListener);
 
     auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
     workPolicyManager_->AddAppDataClearListener(appDataClearListener);
@@ -391,7 +411,7 @@ void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
     WS_HILOGD("come in");
     if (workInfo.GetUid() > 0) {
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
-        if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid())) {
+        if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid()) == ERR_OK) {
             workQueueManager_->AddWork(workStatus);
         }
     } else {
@@ -622,6 +642,7 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
 
 std::string WorkSchedulerService::GetEffiResApplyUid()
 {
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     if (whitelist_.empty()) {
         return "empty";
     }
@@ -724,6 +745,7 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 
 void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
 {
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     if (isAdd) {
         whitelist_.emplace(uid);
     } else {
@@ -733,22 +755,62 @@ void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
 
 bool WorkSchedulerService::CheckEffiResApplyInfo(int32_t uid)
 {
+    std::lock_guard<std::mutex> lock(whitelistMutex_);
     return whitelist_.find(uid) != whitelist_.end();
 }
 
-void WorkSchedulerService::SystemAbilityStatusChangeListener::OnAddSystemAbility
-    (int32_t systemAbilityId, const std::string& deviceId)
+bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
 {
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
-        instance->GroupObserverInit();
+    WS_HILOGD("%{public}s is checking standby applyInfo", bundleName.c_str());
+#ifdef  DEVICE_STANDBY_ENABLE
+    std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
+    if (!standbyStateObserver_) {
+        return true;
+    }
+    std::vector<DevStandbyMgr::AllowInfo> allowInfoArray;
+    DevStandbyMgr::StandbyServiceClient::GetInstance().GetAllowList(DevStandbyMgr::AllowType::WORK_SCHEDULER,
+        allowInfoArray, DevStandbyMgr::ReasonCodeEnum::REASON_APP_API);
+    WS_HILOGD("allowInfoArray size is %{public}ld", allowInfoArray.size());
+    for (const auto& item : allowInfoArray) {
+        if (item.GetName() == bundleName) {
+            return true;
+        }
     }
 #endif
+    return false;
+}
+
+void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
+{
+    if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
+        GroupObserverInit();
+    }
+    if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
+        RegisterStandbyStateObserver();
+    }
+}
+
+void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
+{
+    if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
+        if (!workQueueManager_) {
+            return;
+        }
+        workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
+            std::make_shared<DetectorValue>(0, 0, false, std::string()));
+#ifdef  DEVICE_STANDBY_ENABLE
+        std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
+        standbyStateObserver_ = nullptr;
+#endif
+    }
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 void WorkSchedulerService::GroupObserverInit()
 {
+    if (!workQueueManager_) {
+        return;
+    }
     if (!groupObserver_) {
         groupObserver_ = new (std::nothrow) WorkBundleGroupChangeCallback(workQueueManager_);
     }
@@ -758,5 +820,29 @@ void WorkSchedulerService::GroupObserverInit()
     }
 }
 #endif
+
+void WorkSchedulerService::RegisterStandbyStateObserver()
+{
+    if (!workQueueManager_) {
+        return;
+    }
+#ifdef  DEVICE_STANDBY_ENABLE
+    std::lock_guard<std::mutex> observerLock(standbyObserverMutex_);
+    if (standbyStateObserver_) {
+        WS_HILOGD("standbyStateObserver_ is already exist, do not need repeat process.");
+        return;
+    }
+    standbyStateObserver_ = new (std::nothrow) WorkStandbyStateChangeCallback(workQueueManager_);
+    if (!standbyStateObserver_) {
+        return;
+    }
+    standbyStateObserver_->SetSubscriberName(STRATEGY_NAME);
+    ErrCode ret = DevStandbyMgr::StandbyServiceClient::GetInstance().SubscribeStandbyCallback(standbyStateObserver_);
+    if (ret != ERR_OK) {
+        WS_HILOGE("Subscriber standbyStateObserver_ failed.");
+        standbyStateObserver_ = nullptr;
+    }
+#endif
+}
 } // namespace WorkScheduler
 } // namespace OHOS

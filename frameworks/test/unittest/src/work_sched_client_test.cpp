@@ -140,7 +140,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_008, TestSize.Level1)
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = sptr<IRemoteObject::DeathRecipient>
-        (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient());
+        (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient(WorkSchedulerSrvClient::GetInstance()));
     deathRecipient_->OnRemoteDied(remoteObject_);
     WorkSchedulerSrvClient::GetInstance().iWorkSchedService_ = nullptr;
     deathRecipient_->OnRemoteDied(remoteObject_);
@@ -158,7 +158,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = sptr<IRemoteObject::DeathRecipient>
-        (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient());
+        (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient(WorkSchedulerSrvClient::GetInstance()));
     deathRecipient_->OnRemoteDied(nullptr);
     WorkSchedulerSrvClient::GetInstance().~WorkSchedulerSrvClient();
     EXPECT_EQ(WorkSchedulerSrvClient::GetInstance().iWorkSchedService_, nullptr);

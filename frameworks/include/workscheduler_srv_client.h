@@ -83,17 +83,17 @@ public:
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:
-        WorkSchedulerDeathRecipient() = default;
+        explicit WorkSchedulerDeathRecipient(WorkSchedulerSrvClient &workSchedulerSrvClient);
         ~WorkSchedulerDeathRecipient() override = default;
         void OnRemoteDied(const wptr<IRemoteObject>& remote) override;
     private:
-        DISALLOW_COPY_AND_MOVE(WorkSchedulerDeathRecipient);
+        WorkSchedulerSrvClient &workSchedulerSrvClient_;
     };
 
     ErrCode Connect();
     sptr<IWorkSchedService> iWorkSchedService_ {nullptr};
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ {nullptr};
-    void ResetProxy(const wptr<IRemoteObject>& remote);
+    void ResetProxy();
     std::mutex mutex_;
 };
 } // namespace WorkScheduler

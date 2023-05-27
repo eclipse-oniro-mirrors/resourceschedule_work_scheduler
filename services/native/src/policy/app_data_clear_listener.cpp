@@ -40,6 +40,13 @@ void AppDataClearSubscriber::OnReceiveEvent(const CommonEventData &data)
         WS_HILOGI("bundleName: %{public}s , uid: %{public}d", bundle.c_str(), uid);
         auto detectorVal = make_shared<DetectorValue>(uid, 0, 0, bundle);
         listener_.OnPolicyChanged(PolicyType::APP_DATA_CLEAR, detectorVal);
+    } else if ((action == CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED)
+        || (action == CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED)) {
+        string bundle = data.GetWant().GetBundle();
+        int32_t uid = data.GetWant().GetIntParam(UID_PARAM, -1);
+        WS_HILOGI("bundleName: %{public}s , uid: %{public}d", bundle.c_str(), uid);
+        auto detectorVal = make_shared<DetectorValue>(uid, 0, 0, bundle);
+        listener_.OnPolicyChanged(PolicyType::APP_REMOVED, detectorVal);
     }
 }
 
@@ -47,6 +54,8 @@ shared_ptr<CommonEventSubscriber> CreateAppDataClearSubscriber(AppDataClearListe
 {
     MatchingSkills skill = MatchingSkills();
     skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_DATA_CLEARED);
+    skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
+    skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED);
     CommonEventSubscribeInfo info(skill);
     return make_shared<AppDataClearSubscriber>(info, listener);
 }

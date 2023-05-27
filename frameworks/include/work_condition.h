@@ -31,6 +31,7 @@ public:
         STORAGE,
         TIMER, // uint32_t intervalTime, int32_t cycle, bool repeat
         GROUP, // int32_t newGroup, int32_t userId, bool groupChange, string bundleName
+        STANDBY,
         UNKNOWN,
     };
 

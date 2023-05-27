@@ -23,7 +23,6 @@
 #include <system_ability_definition.h>
 
 #include "policy/app_data_clear_listener.h"
-#include "policy/app_removed_listener.h"
 #include "work_scheduler_service.h"
 #include "work_event_handler.h"
 #include "work_sched_hilog.h"
@@ -80,12 +79,6 @@ bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& run
 void WorkPolicyManager::AddPolicyFilter(shared_ptr<IPolicyFilter> filter)
 {
     policyFilters_.emplace_back(filter);
-}
-
-void WorkPolicyManager::AddAppRemoveListener(shared_ptr<AppRemovedListener> listener)
-{
-    appRemovedListener_ = listener;
-    appRemovedListener_->Start();
 }
 
 void WorkPolicyManager::AddAppDataClearListener(std::shared_ptr<AppDataClearListener> listener)
@@ -167,13 +160,6 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
             uidQueueMap_.erase(uid);
         }
     }
-
-    // Notify work remove event to battery statistics
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
-        "WORK_REMOVE", HiSysEvent::EventType::STATISTIC, "UID", uid,
-        "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
-
     return ret;
 }
 
