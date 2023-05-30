@@ -128,6 +128,8 @@ void WorkStatus::UpdateTimerIfNeed()
     if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
         baseTime_ = getCurrentTime();
         if (conditionMap_.at(WorkCondition::Type::TIMER)->boolVal) {
+            workInfo_->RequestBaseTime(baseTime_);
+            DelayedSpSingleton<WorkSchedulerService>::GetInstance()->RefreshPersistedWorks();
             return;
         }
         int32_t cycleLeft = conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
