@@ -42,5 +42,6 @@ ohos_shared_library("workschedclient") {
   ]
 
   subsystem_name = "resourceschedule"
+  innerapi_tags = [ "platformsdk" ]
   part_name = "${worksched_native_part_name}"
 }
