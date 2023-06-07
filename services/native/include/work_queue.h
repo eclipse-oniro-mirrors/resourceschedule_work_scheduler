@@ -124,6 +124,7 @@ public:
      */
     void SetMinIntervalByDump(int64_t interval);
 private:
+    std::mutex workListMutex_;
     std::list<std::shared_ptr<WorkStatus>> workList_;
 };
 class WorkComp {
