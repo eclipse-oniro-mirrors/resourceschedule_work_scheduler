@@ -61,6 +61,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
         if (!workTimerCondition->boolVal) {
             timeCondition->intVal = workTimerCondition->intVal;
         }
+        std::lock_guard<std::mutex> lock(conditionMapMutex_);
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
     }
     this->persisted_ = workInfo.IsPersisted();
@@ -78,6 +79,7 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
     if (workInfo_->GetConditionMap()->count(type) > 0
         && type != WorkCondition::Type::TIMER
         && type != WorkCondition::Type::GROUP) {
+        std::lock_guard<std::mutex> lock(conditionMapMutex_);
         if (conditionMap_.count(type) > 0) {
             conditionMap_.at(type) = value;
         } else {
@@ -125,6 +127,7 @@ void WorkStatus::MarkRound() {}
 
 void WorkStatus::UpdateTimerIfNeed()
 {
+    std::lock_guard<std::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
         baseTime_ = getCurrentTime();
         if (conditionMap_.at(WorkCondition::Type::TIMER)->boolVal) {
@@ -141,6 +144,7 @@ void WorkStatus::UpdateTimerIfNeed()
 
 bool WorkStatus::NeedRemove()
 {
+    std::lock_guard<std::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return true;
     }
@@ -371,6 +375,7 @@ bool WorkStatus::IsLastWorkTimeout()
 
 bool WorkStatus::IsRepeating()
 {
+    std::lock_guard<std::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return false;
     }
@@ -393,6 +398,7 @@ void WorkStatus::Dump(string& result)
     result.append(string("\"bundleName\":") + bundleName_ + ",\n");
     result.append(string("\"status\":") + to_string(currentStatus_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
+    std::lock_guard<std::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
         result.append(string("\"networkType\":") +
             to_string(conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal) + ",\n");

@@ -167,6 +167,7 @@ private:
     bool callbackFlag_;
     bool callBySystemApp_ {false};
     bool isStandby_ {false};
+    std::mutex conditionMapMutex_;
     static std::mutex s_uid_last_time_mutex;
     static std::map<int32_t, time_t> s_uid_last_time_map;
     void MarkTimeout();
