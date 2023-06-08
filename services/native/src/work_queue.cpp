@@ -64,7 +64,7 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
     }
     vector<shared_ptr<WorkStatus>> result;
     std::set<int32_t> uidList;
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     for (auto it : workList_) {
         if (it->OnConditionChanged(type, value) == E_GROUP_CHANGE_NOT_MATCH_HAP) {
             continue;
@@ -92,13 +92,13 @@ void WorkQueue::Push(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector
     for (auto it : *workStatusVector) {
         Push(it);
     }
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     workList_.sort(WorkComp());
 }
 
 void WorkQueue::Push(shared_ptr<WorkStatus> workStatus)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     if (this->Contains(make_shared<string>(workStatus->workId_))) {
         for (auto it : workList_) {
             if (it->workId_.compare(workStatus->workId_) == 0) {
@@ -112,7 +112,7 @@ void WorkQueue::Push(shared_ptr<WorkStatus> workStatus)
 
 bool WorkQueue::Remove(shared_ptr<WorkStatus> workStatus)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     auto iter = std::find(workList_.cbegin(), workList_.cend(), workStatus);
     if (iter != workList_.end()) {
         workList_.remove(*iter);
@@ -127,7 +127,7 @@ uint32_t WorkQueue::GetSize()
 
 bool WorkQueue::Contains(std::shared_ptr<std::string> workId)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     auto iter = std::find_if(workList_.cbegin(), workList_.cend(), [&workId]
         (const shared_ptr<WorkStatus> &workStatus) { return workId->compare(workStatus->workId_) == 0; });
     if (iter != workList_.end()) {
@@ -138,7 +138,7 @@ bool WorkQueue::Contains(std::shared_ptr<std::string> workId)
 
 shared_ptr<WorkStatus> WorkQueue::Find(string workId)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     auto iter = std::find_if(workList_.cbegin(), workList_.cend(),
         [&workId](const shared_ptr<WorkStatus> &workStatus) { return workStatus->workId_ == workId; });
     if (iter != workList_.end()) {
@@ -149,7 +149,7 @@ shared_ptr<WorkStatus> WorkQueue::Find(string workId)
 
 shared_ptr<WorkStatus> WorkQueue::GetWorkToRunByPriority()
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     workList_.sort(WorkComp());
     auto work = workList_.begin();
     shared_ptr<WorkStatus> workStatus = nullptr;
@@ -165,20 +165,20 @@ shared_ptr<WorkStatus> WorkQueue::GetWorkToRunByPriority()
 
 bool WorkQueue::CancelWork(shared_ptr<WorkStatus> workStatus)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     workList_.remove(workStatus);
     return true;
 }
 
 list<shared_ptr<WorkStatus>> WorkQueue::GetWorkList()
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     return workList_;
 }
 
 void WorkQueue::RemoveUnReady()
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     workList_.remove_if([](shared_ptr<WorkStatus> value) {
         return (value->GetStatus() != WorkStatus::Status::CONDITION_READY);
     });
@@ -187,7 +187,7 @@ void WorkQueue::RemoveUnReady()
 int32_t WorkQueue::GetRunningCount()
 {
     int32_t count = 0;
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     for (shared_ptr<WorkStatus> work : workList_) {
         if (work->IsRunning()) {
             count++;
@@ -198,7 +198,7 @@ int32_t WorkQueue::GetRunningCount()
 
 void WorkQueue::GetWorkIdStr(string& result)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     for (auto it : workList_) {
         result.append(it->workId_ + ", ");
     }
@@ -206,7 +206,7 @@ void WorkQueue::GetWorkIdStr(string& result)
 
 void WorkQueue::Dump(string& result)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     for (auto it : workList_) {
         it->Dump(result);
     }
@@ -214,7 +214,7 @@ void WorkQueue::Dump(string& result)
 
 void WorkQueue::ClearAll()
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     workList_.clear();
 }
 
@@ -225,7 +225,7 @@ bool WorkComp::operator () (const shared_ptr<WorkStatus> w1, const shared_ptr<Wo
 
 void WorkQueue::SetMinIntervalByDump(int64_t interval)
 {
-    std::lock_guard<std::mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     for (auto it : workList_) {
         it->SetMinIntervalByDump(interval);
     }
