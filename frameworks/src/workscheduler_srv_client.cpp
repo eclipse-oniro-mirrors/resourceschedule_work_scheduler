@@ -30,7 +30,6 @@ WorkSchedulerSrvClient::~WorkSchedulerSrvClient() {}
 
 ErrCode WorkSchedulerSrvClient::Connect()
 {
-    std::lock_guard<std::mutex> lock(mutex_);
     if (iWorkSchedService_ != nullptr) {
         return ERR_OK;
     }
@@ -79,6 +78,7 @@ void WorkSchedulerSrvClient::WorkSchedulerDeathRecipient::OnRemoteDied(const wpt
 ErrCode WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
 {
     WS_HILOGD("Start Work");
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode ret = Connect();
     if (ret != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", ret);
@@ -90,6 +90,7 @@ ErrCode WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
 ErrCode WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
 {
     WS_HILOGD("Stop Work");
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode ret = Connect();
     if (ret != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", ret);
@@ -101,6 +102,7 @@ ErrCode WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
 ErrCode WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)
 {
     WS_HILOGD("Stop And Cancel Work");
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode ret = Connect();
     if (ret != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", ret);
@@ -112,6 +114,7 @@ ErrCode WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)
 ErrCode WorkSchedulerSrvClient::StopAndClearWorks()
 {
     WS_HILOGD("Stop And Clear Works");
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode ret = Connect();
     if (ret != ERR_OK) {
         WS_HILOGE("Connect() failed, errno: %{public}d", ret);
@@ -123,6 +126,7 @@ ErrCode WorkSchedulerSrvClient::StopAndClearWorks()
 ErrCode WorkSchedulerSrvClient::IsLastWorkTimeout(int32_t workId, bool &result)
 {
     WS_HILOGD("Is LastWork Timeout");
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode errCode = Connect();
     if (errCode != ERR_OK) {
         return errCode;
@@ -134,6 +138,7 @@ ErrCode WorkSchedulerSrvClient::IsLastWorkTimeout(int32_t workId, bool &result)
 ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos)
 {
     WS_HILOGD("Obtain All Works");
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode errCode = Connect();
     if (errCode != ERR_OK) {
         return errCode;
@@ -149,6 +154,7 @@ ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<Wo
     if (workId <= 0) {
         return E_WORKID_ERR;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode code = Connect();
     if (code != ERR_OK) {
         return code;
