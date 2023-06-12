@@ -80,6 +80,13 @@ public:
      */
     ErrCode ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos);
 
+    /**
+     * @brief Get the Running Work Scheduler Work object
+     *
+     * @param workInfos The infos of work.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos);
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

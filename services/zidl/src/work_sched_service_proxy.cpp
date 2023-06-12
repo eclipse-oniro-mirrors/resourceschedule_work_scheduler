@@ -222,5 +222,43 @@ int32_t WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int32_t &workId, std:
     workInfo = std::make_shared<WorkInfo>(*workInfoSptr);
     return errCode;
 }
+
+int32_t WorkSchedServiceProxy::GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
+{
+    WS_HILOGD("get all running work sheduler work");
+    sptr<IRemoteObject> remote = Remote();
+    RETURN_IF_WITH_RET(remote == nullptr, E_MEMORY_OPERATION_FAILED);
+
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
+        WS_HILOGE("write descriptor failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::GET_ALL_RUNNING_WORKS), data, reply, option);
+    if (ret != ERR_OK) {
+        WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    ErrCode errCode;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, errCode);
+    int32_t worksize = 0;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, worksize);
+    WS_HILOGD("GetAllRunningWorks worksize from read parcel is: %{public}d", worksize);
+    for (int32_t i = 0; i < worksize; i++) {
+        sptr<WorkInfo> workInfo = reply.ReadStrongParcelable<WorkInfo>();
+        if (workInfo == nullptr) {
+            continue;
+        }
+        WS_HILOGD("WP read from parcel, workInfo ID: %{public}d", workInfo->GetWorkId());
+        workInfos.emplace_back(std::make_shared<WorkInfo>(*workInfo));
+    }
+    WS_HILOGD("return list size: %{public}zu", workInfos.size());
+    return errCode;
+}
 } // namespace WorkScheduler
 } // namespace OHOS

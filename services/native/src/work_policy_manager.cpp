@@ -473,6 +473,20 @@ list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllWorkStatus(int32_t &u
     return allWorks;
 }
 
+std::list<std::shared_ptr<WorkInfo>> WorkPolicyManager::GetAllRunningWorks()
+{
+    WS_HILOGD("enter");
+    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    list<shared_ptr<WorkInfo>> allWorks;
+    auto it = uidQueueMap_.begin();
+    while (it != uidQueueMap_.end()) {
+        allWorks.insert(allWorks.end(), it->second->GetRunningWorks().begin(),
+            it->second->GetRunningWorks().end());
+        it++;
+    }
+    return allWorks;
+}
+
 void WorkPolicyManager::DumpConditionReadyQueue(string& result)
 {
     std::lock_guard<std::mutex> lock(conditionReadyMutex_);
