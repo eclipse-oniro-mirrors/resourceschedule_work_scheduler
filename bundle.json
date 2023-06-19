@@ -45,7 +45,7 @@
           "access_token",
           "netmanager_base"
         ],
-        "third_party": []
+        "third_party": [ "jsoncpp" ]
       },
       "build": {
         "group_type": {
