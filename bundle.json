@@ -15,8 +15,6 @@
       "syscap": [ "SystemCapability.ResourceSchedule.WorkScheduler" ],
       "features": [],
       "adapted_system_type": [
-        "mini",
-        "small",
         "standard"
       ],
       "rom": "2048KB",
@@ -45,7 +43,7 @@
           "access_token",
           "netmanager_base"
         ],
-        "third_party": []
+        "third_party": [ "jsoncpp" ]
       },
       "build": {
         "group_type": {
