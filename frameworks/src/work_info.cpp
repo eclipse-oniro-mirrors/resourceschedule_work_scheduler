@@ -253,6 +253,7 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
     ret = ret && parcel.WriteString(bundleName_);
     ret = ret && parcel.WriteString(abilityName_);
     ret = ret && parcel.WriteBool(persisted_);
+    ret = ret && parcel.WriteInt32(uid_);
     ret = ret && parcel.WriteUint32(conditionMap_.size());
     for (auto it : conditionMap_) {
         switch (it.first) {
@@ -305,6 +306,7 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     read->bundleName_ = parcel.ReadString();
     read->abilityName_ = parcel.ReadString();
     read->persisted_ = parcel.ReadBool();
+    read->uid_ = parcel.ReadInt32();
     uint32_t mapsize = parcel.ReadUint32();
     if (mapsize >= MAX_SIZE) {
         WS_HILOGE("mapsize is too big.");
