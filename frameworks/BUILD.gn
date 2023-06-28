@@ -36,7 +36,7 @@ ohos_shared_library("workschedclient") {
 
   external_deps = [
     "ability_base:want",
-    "hiviewdfx_hilog_native:libhilog",
+    "hilog:libhilog",
     "ipc:ipc_single",
     "samgr:samgr_proxy",
   ]
