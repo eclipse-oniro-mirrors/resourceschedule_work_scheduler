@@ -17,6 +17,7 @@
 #include <message_parcel.h>
 #include <string_ex.h>
 
+#include "iwork_sched_service_ipc_interface_code.h"
 #include "work_sched_common.h"
 #include "work_sched_errors.h"
 
@@ -33,34 +34,34 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
         return E_PARCEL_OPERATION_FAILED;
     }
     switch (code) {
-        case static_cast<int32_t>(IWorkSchedService::START_WORK): {
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::START_WORK): {
             int32_t ret = StartWorkStub(data);
             reply.WriteInt32(ret);
             return ret;
         }
-        case static_cast<int32_t>(IWorkSchedService::STOP_WORK): {
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK): {
             int32_t ret = StopWorkStub(data);
             reply.WriteInt32(ret);
             return ret;
         }
-        case static_cast<int32_t>(IWorkSchedService::STOP_AND_CANCEL_WORK): {
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CANCEL_WORK): {
             int32_t ret = StopAndCancelWorkStub(data);
             reply.WriteInt32(ret);
             return ret;
         }
-        case static_cast<int32_t>(IWorkSchedService::STOP_AND_CLEAR_WORKS): {
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CLEAR_WORKS): {
             int32_t ret = StopAndClearWorksStub(data);
             reply.WriteInt32(ret);
             return ret;
         }
-        case static_cast<int32_t>(IWorkSchedService::IS_LAST_WORK_TIMEOUT): {
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::IS_LAST_WORK_TIMEOUT): {
             bool isLastWorkTimeout;
             int32_t ret = IsLastWorkTimeoutStub(data, isLastWorkTimeout);
             reply.WriteInt32(ret);
             reply.WriteBool(isLastWorkTimeout);
             return ret;
         }
-        case static_cast<int32_t>(IWorkSchedService::OBTAIN_ALL_WORKS): {
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::OBTAIN_ALL_WORKS): {
             std::list<std::shared_ptr<WorkInfo>> workInfos;
             int32_t ret = ObtainAllWorksStub(data, workInfos);
             uint32_t worksize = workInfos.size();
@@ -71,7 +72,7 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
             }
             return ERR_OK;
         }
-        case static_cast<int32_t>(IWorkSchedService::GET_WORK_STATUS): {
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_WORK_STATUS): {
             WS_HILOGI("call GetWorkStatus");
             std::shared_ptr<WorkInfo> workInfo;
             int32_t ret = GetWorkStatusStub(data, workInfo);
@@ -79,23 +80,11 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
             reply.WriteParcelable(&*workInfo);
             return ERR_OK;
         }
-        case static_cast<int32_t>(IWorkSchedService::GET_ALL_RUNNING_WORKS): {
-            std::list<std::shared_ptr<WorkInfo>> workInfos;
-            int32_t ret = GetAllRunningWorksStub(workInfos);
-            uint32_t worksize = workInfos.size();
-            reply.WriteInt32(ret);
-            reply.WriteInt32(worksize);
-            for (auto workInfo : workInfos) {
-                reply.WriteParcelable(&*workInfo);
-            }
-            return ERR_OK;
-        }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
         }
     }
-
     return ERR_OK;
 }
 
@@ -156,11 +145,6 @@ int32_t WorkSchedServiceStub::GetWorkStatusStub(MessageParcel& data, std::shared
     READ_PARCEL_WITHOUT_RET(data, Int32, uid);
     READ_PARCEL_WITHOUT_RET(data, Int32, workId);
     return GetWorkStatus(uid, workId, workInfo);
-}
-
-int32_t WorkSchedServiceStub::GetAllRunningWorksStub(std::list<std::shared_ptr<WorkInfo>>& workInfos)
-{
-    return GetAllRunningWorks(workInfos);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -238,7 +238,8 @@ int32_t WorkSchedServiceProxy::GetAllRunningWorks(std::list<std::shared_ptr<Work
         return E_PARCEL_OPERATION_FAILED;
     }
 
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::GET_ALL_RUNNING_WORKS), data, reply, option);
+    int32_t ret = remote->SendRequest(
+        static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_ALL_RUNNING_WORKS), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
         return E_PARCEL_OPERATION_FAILED;
