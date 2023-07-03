@@ -80,6 +80,17 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
             reply.WriteParcelable(&*workInfo);
             return ERR_OK;
         }
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_ALL_RUNNING_WORKS): {
+            std::list<std::shared_ptr<WorkInfo>> workInfos;
+            int32_t ret = GetAllRunningWorksStub(workInfos);
+            uint32_t worksize = workInfos.size();
+            reply.WriteInt32(ret);
+            reply.WriteInt32(worksize);
+            for (auto workInfo : workInfos) {
+                reply.WriteParcelable(&*workInfo);
+            }
+            return ERR_OK;
+        }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
