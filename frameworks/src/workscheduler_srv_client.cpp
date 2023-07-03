@@ -162,5 +162,18 @@ ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<Wo
     int32_t uid = IPCSkeleton::GetCallingUid();
     return iWorkSchedService_->GetWorkStatus(uid, workId, workInfo);
 }
+
+ErrCode WorkSchedulerSrvClient::GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
+{
+    WS_HILOGD("Get Running Work Scheduler Work");
+    if (!workInfos.empty()) {
+        return E_PARAM_ERROR;
+    }
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->GetAllRunningWorks(workInfos);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

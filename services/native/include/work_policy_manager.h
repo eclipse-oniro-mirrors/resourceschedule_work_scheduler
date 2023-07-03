@@ -139,6 +139,14 @@ public:
      * @return All status of work.
      */
     std::list<std::shared_ptr<WorkStatus>> GetAllWorkStatus(int32_t &uid);
+
+    /**
+     * @brief Get the All Running Works object.
+     *
+     * @return All running works;
+     */
+    std::list<std::shared_ptr<WorkInfo>> GetAllRunningWorks();
+
     /**
      * @brief The Dump.
      *
