@@ -146,5 +146,10 @@ int32_t WorkSchedServiceStub::GetWorkStatusStub(MessageParcel& data, std::shared
     READ_PARCEL_WITHOUT_RET(data, Int32, workId);
     return GetWorkStatus(uid, workId, workInfo);
 }
+
+int32_t WorkSchedServiceStub::GetAllRunningWorksStub(std::list<std::shared_ptr<WorkInfo>>& workInfos)
+{
+    return GetAllRunningWorks(workInfos);
+}
 } // namespace WorkScheduler
 } // namespace OHOS
