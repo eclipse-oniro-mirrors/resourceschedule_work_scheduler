@@ -86,6 +86,14 @@ public:
      */
     virtual int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) = 0;
 
+    /**
+     * @brief Get the Running Work Scheduler Work object
+     *
+     * @param workInfos The infos of work.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    virtual int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) = 0;
+
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.workscheduler.iworkschedservice");
 };
 } // namespace WorkScheduler

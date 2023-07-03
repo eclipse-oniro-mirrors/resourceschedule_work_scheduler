@@ -93,6 +93,14 @@ public:
      * @return error code, ERR_OK if success.
      */
     int32_t GetWorkStatusStub(MessageParcel& data, std::shared_ptr<WorkInfo>& workInfo);
+
+    /**
+     * @brief Get the Running Work Scheduler Work object
+     *
+     * @param workInfos The infos of work.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t GetAllRunningWorksStub(std::list<std::shared_ptr<WorkInfo>>& workInfos);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

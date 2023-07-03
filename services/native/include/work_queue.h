@@ -104,6 +104,12 @@ public:
      */
     int32_t GetRunningCount();
     /**
+     * @brief Get work info of running tasks.
+     *
+     * @return get all running works.
+     */
+    std::list<std::shared_ptr<WorkInfo>> GetRunningWorks();
+    /**
      * @brief Get work id str.
      *
      * @param result The result.

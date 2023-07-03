@@ -86,6 +86,14 @@ public:
      * @return error code, ERR_OK if success.
      */
     int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) override;
+
+    /**
+     * @brief Get the Running Work Scheduler Work object
+     *
+     * @param workInfos The infos of work.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) override;
 private:
     static inline BrokerDelegator<WorkSchedServiceProxy> delegator_;
 };

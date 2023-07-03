@@ -544,6 +544,16 @@ int32_t WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &workId, std::
     return ERR_OK;
 }
 
+int32_t WorkSchedulerService::GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    workInfos = workPolicyManager_->GetAllRunningWorks();
+    return ERR_OK;
+}
+
 void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus> work)
 {
     if (work == nullptr) {

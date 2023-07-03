@@ -15,8 +15,6 @@
       "syscap": [ "SystemCapability.ResourceSchedule.WorkScheduler" ],
       "features": [],
       "adapted_system_type": [
-        "mini",
-        "small",
         "standard"
       ],
       "rom": "2048KB",
@@ -32,9 +30,9 @@
           "ipc",
           "c_utils",
           "ability_runtime",
-          "hiviewdfx_hilog_native",
+          "hilog",
           "samgr",
-          "hisysevent_native",
+          "hisysevent",
           "napi",
           "battery_manager",
           "ability_base",
@@ -45,7 +43,7 @@
           "access_token",
           "netmanager_base"
         ],
-        "third_party": []
+        "third_party": [ "jsoncpp" ]
       },
       "build": {
         "group_type": {
@@ -62,7 +60,20 @@
             "//foundation/resourceschedule/work_scheduler/sa_profile:worksched_sa_profile"
           ]
         },
-        "inner_kits": [],
+        "inner_kits": [
+          {
+            "header": {
+                "header_base": "//foundation/resourceschedule/work_scheduler/frameworks/include",
+                "header_files": [
+                    "iwork_sched_service.h",
+                    "work_condition.h",
+                    "work_info.h",
+                    "workscheduler_srv_client.h"
+                ]
+            },
+            "name": "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient"
+          }
+        ],
         "test": [
             "//foundation/resourceschedule/work_scheduler/frameworks/test/unittest:workinfotest",
             "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest/work_scheduler_jsunittest:js_unittest",
