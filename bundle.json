@@ -24,7 +24,6 @@
           "thermal_manager",
           "bundle_framework",
           "safwk",
-          "jsoncpp",
           "os_account",
           "common_event_service",
           "ipc",
