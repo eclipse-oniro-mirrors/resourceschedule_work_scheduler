@@ -31,16 +31,6 @@ public:
     ~IWorkSchedService() override = default;
     DISALLOW_COPY_AND_MOVE(IWorkSchedService);
 
-    enum {
-        START_WORK = 0,
-        STOP_WORK,
-        STOP_AND_CANCEL_WORK,
-        STOP_AND_CLEAR_WORKS,
-        IS_LAST_WORK_TIMEOUT,
-        OBTAIN_ALL_WORKS,
-        GET_WORK_STATUS,
-    };
-
     /**
      * @brief Start work.
      *

@@ -16,6 +16,7 @@
 
 #include <ipc_types.h>
 #include <message_parcel.h>
+#include "iwork_sched_service_ipc_interface_code.h"
 #include "work_sched_errors.h"
 
 #include "work_sched_common.h"
@@ -39,7 +40,8 @@ int32_t WorkSchedServiceProxy::StartWork(WorkInfo& workInfo)
 
     WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
 
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::START_WORK), data, reply, option);
+    int32_t ret = remote->SendRequest(
+        static_cast<uint32_t>(IWorkSchedServiceInterfaceCode::START_WORK), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, error code: %{public}d", ret);
         return E_PARCEL_OPERATION_FAILED;
@@ -66,7 +68,8 @@ int32_t WorkSchedServiceProxy::StopWork(WorkInfo& workInfo)
 
     WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
 
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::STOP_WORK), data, reply, option);
+    int32_t ret = remote->SendRequest(
+        static_cast<uint32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
         return E_PARCEL_OPERATION_FAILED;
@@ -91,8 +94,8 @@ int32_t WorkSchedServiceProxy::StopAndCancelWork(WorkInfo& workInfo)
     }
 
     WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::STOP_AND_CANCEL_WORK),
-        data, reply, option);
+    int32_t ret = remote->SendRequest(
+        static_cast<uint32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CANCEL_WORK), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
         return E_PARCEL_OPERATION_FAILED;
@@ -115,7 +118,7 @@ int32_t WorkSchedServiceProxy::StopAndClearWorks()
         return E_PARCEL_OPERATION_FAILED;
     }
 
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::STOP_AND_CLEAR_WORKS),
+    int32_t ret = remote->SendRequest(static_cast<uint32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CLEAR_WORKS),
         data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
@@ -140,8 +143,8 @@ int32_t WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId, bool &result)
     }
 
     WRITE_PARCEL_WITHOUT_RET(data, Int32, workId);
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::IS_LAST_WORK_TIMEOUT),
-        data, reply, option);
+    int32_t ret = remote->SendRequest(
+        static_cast<uint32_t>(IWorkSchedServiceInterfaceCode::IS_LAST_WORK_TIMEOUT), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
         return E_PARCEL_OPERATION_FAILED;
@@ -171,7 +174,8 @@ int32_t WorkSchedServiceProxy::ObtainAllWorks(int32_t &uid, int32_t &pid,
     WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
     WRITE_PARCEL_WITHOUT_RET(data, Int32, pid);
 
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::OBTAIN_ALL_WORKS), data, reply, option);
+    int32_t ret = remote->SendRequest(
+        static_cast<uint32_t>(IWorkSchedServiceInterfaceCode::OBTAIN_ALL_WORKS), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
         return E_PARCEL_OPERATION_FAILED;
@@ -208,7 +212,8 @@ int32_t WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int32_t &workId, std:
     }
     WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
     WRITE_PARCEL_WITHOUT_RET(data, Int32, workId);
-    int32_t ret = remote->SendRequest(static_cast<int32_t>(IWorkSchedService::GET_WORK_STATUS), data, reply, option);
+    int32_t ret = remote->SendRequest(
+        static_cast<uint32_t>(IWorkSchedServiceInterfaceCode::GET_WORK_STATUS), data, reply, option);
     if (ret != ERR_OK) {
         WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
         return E_PARCEL_OPERATION_FAILED;
