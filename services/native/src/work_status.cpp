@@ -23,6 +23,7 @@
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #include "bundle_active_group_map.h"
+#include "time_service_client.h"
 #endif
 
 using namespace std;
@@ -41,6 +42,8 @@ time_t getCurrentTime()
 {
     time_t result;
     time(&result);
+    DelayedSpSingleton<TimeServiceClient>::GetInstance()->GetBootTimeMs(result);
+    WS_HILOGD("xuahanyang result: %{public}d", result);
     return result;
 }
 
