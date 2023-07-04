@@ -14,11 +14,10 @@
  */
 
 #include "work_scheduler_proxy.h"
+#include "work_scheduler_stub_ipc_interface_code.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-static constexpr int32_t COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;
-static constexpr int32_t COMMAND_ON_WORK_STOP = MIN_TRANSACTION_ID + 1;
 void WorkSchedulerProxy::OnWorkStart(WorkInfo& workInfo)
 {
     MessageParcel data;
@@ -29,7 +28,8 @@ void WorkSchedulerProxy::OnWorkStart(WorkInfo& workInfo)
         return;
     }
     data.WriteParcelable(&workInfo);
-    Remote()->SendRequest(COMMAND_ON_WORK_START, data, reply, option);
+    Remote()->SendRequest(
+        static_cast<uint32_t>(WorkSchedulerStubInterfaceCode::COMMAND_ON_WORK_START), data, reply, option);
 }
 
 void WorkSchedulerProxy::OnWorkStop(WorkInfo& workInfo)
@@ -42,7 +42,8 @@ void WorkSchedulerProxy::OnWorkStop(WorkInfo& workInfo)
         return;
     }
     data.WriteParcelable(&workInfo);
-    Remote()->SendRequest(COMMAND_ON_WORK_STOP, data, reply, option);
+    Remote()->SendRequest(
+        static_cast<uint32_t>(WorkSchedulerStubInterfaceCode::COMMAND_ON_WORK_STOP), data, reply, option);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -14,11 +14,10 @@
  */
 
 #include "work_scheduler_stub.h"
+#include "work_scheduler_stub_ipc_interface_code.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-static constexpr int32_t COMMAND_ON_WORK_START = MIN_TRANSACTION_ID;
-static constexpr int32_t COMMAND_ON_WORK_STOP = MIN_TRANSACTION_ID + 1;
 int32_t WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply,
     MessageOption& option)
 {
@@ -28,7 +27,7 @@ int32_t WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, M
         return ERR_INVALID_STATE;
     }
     switch (code) {
-        case COMMAND_ON_WORK_START: {
+        case static_cast<uint32_t>(WorkSchedulerStubInterfaceCode::COMMAND_ON_WORK_START): {
             sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
             if (workInfo == nullptr) {
                 WS_HILOGE("workInfo is nullptr");
@@ -37,7 +36,7 @@ int32_t WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, M
             OnWorkStart(*workInfo);
             return ERR_NONE;
         }
-        case COMMAND_ON_WORK_STOP: {
+        case static_cast<uint32_t>(WorkSchedulerStubInterfaceCode::COMMAND_ON_WORK_STOP): {
             sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
             if (workInfo == nullptr) {
                 WS_HILOGE("workInfo is nullptr");
@@ -50,7 +49,7 @@ int32_t WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, M
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
     }
 
-    return ERR_TRANSACTION_FAILED;
+    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
