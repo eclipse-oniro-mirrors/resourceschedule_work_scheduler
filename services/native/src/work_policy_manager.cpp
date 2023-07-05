@@ -480,8 +480,8 @@ std::list<std::shared_ptr<WorkInfo>> WorkPolicyManager::GetAllRunningWorks()
     list<shared_ptr<WorkInfo>> allWorks;
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
-        allWorks.insert(allWorks.end(), it->second->GetRunningWorks().begin(),
-            it->second->GetRunningWorks().end());
+        std::list<std::shared_ptr<WorkInfo>> workList = it->second->GetRunningWorks();
+        allWorks.insert(allWorks.end(), workList.begin(), workList.end());
         it++;
     }
     return allWorks;
