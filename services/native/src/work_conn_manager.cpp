@@ -25,6 +25,10 @@
 #include "work_sched_hilog.h"
 #include "errors.h"
 
+#ifdef DEVICE_STANDBY_ENABLE
+#include "standby_service_client.h"
+#endif // DEVICE_STANDBY_ENABLE
+
 using namespace std;
 using namespace OHOS::AAFwk;
 using namespace OHOS::HiviewDFX;
@@ -140,8 +144,12 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
         HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
             HiSysEvent::EventType::STATISTIC, "UID",
             workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
+#ifdef DEVICE_STANDBY_ENABLE
+        WS_HILOGI("OnWorkStop uid: %{public}d", workStatus->uid_);
+        DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,
+            workStatus->uid_, workStatus->bundleName_);
+#endif // DEVICE_STANDBY_ENABLE
     }
-
     return ret;
 }
 
@@ -183,6 +191,11 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
         HiSysEvent::EventType::STATISTIC, "UID",
         workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER",
         conditions, "TYPE", type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
+#ifdef DEVICE_STANDBY_ENABLE
+    WS_HILOGI("OnWorkStart uid: %{public}d", workStatus->uid_);
+    DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(true,
+        workStatus->uid_, workStatus->bundleName_);
+#endif // DEVICE_STANDBY_ENABLE
 }
 } // namespace WorkScheduler
 } // namespace OHOS
