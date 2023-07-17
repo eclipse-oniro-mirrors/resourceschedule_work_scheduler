@@ -780,7 +780,7 @@ bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
     std::vector<DevStandbyMgr::AllowInfo> allowInfoArray;
     DevStandbyMgr::StandbyServiceClient::GetInstance().GetAllowList(DevStandbyMgr::AllowType::WORK_SCHEDULER,
         allowInfoArray, DevStandbyMgr::ReasonCodeEnum::REASON_APP_API);
-    WS_HILOGD("allowInfoArray size is %{public}ld", allowInfoArray.size());
+    WS_HILOGD("allowInfoArray size is %{public}d", static_cast<int32_t>(allowInfoArray.size()));
     for (const auto& item : allowInfoArray) {
         if (item.GetName() == bundleName) {
             return true;
