@@ -60,7 +60,7 @@ enum ParamError {
     E_NEED_CANCLE_TYPE_ERR,
 };
 
-static std::map<int32_t, std::string> saErrCodeMsgMap = {
+const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_MEMORY_OPERATION_FAILED, "Memory operation failed. Failed to allocate the memory."},
     {E_PARCEL_OPERATION_FAILED, "Parcel operation failed. Failed to read or write the parcel."},
     {E_CLIENT_CONNECT_SERVICE_FAILED, "System service operation failed. Failed to connect the system service."},
@@ -72,7 +72,7 @@ static std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
 };
 
-static std::map<int32_t, std::string> paramErrCodeMsgMap = {
+const inline std::map<int32_t, std::string> paramErrCodeMsgMap = {
     {E_PARAM_NUMBER_ERR, "The number of arguments is wrong."},
     {E_WORK_INFO_TYPE_ERR, "The type of workInfo must be {key: value} object."},
     {E_BUNDLE_OR_ABILITY_NAME_ERR, "The bundleName and abilityName cannot be empty and must be string."},
