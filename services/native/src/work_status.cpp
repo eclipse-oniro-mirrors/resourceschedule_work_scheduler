@@ -291,7 +291,7 @@ bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
             double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
             double oppositedel = difftime(getOppositeTime(), lastTime);
             double del = currentdel > oppositedel ? currentdel : oppositedel;
-            WS_HILOGD("del time: %{public}lf, intervalTime: %{public}u, currentdel time: %{public}lf, 
+            WS_HILOGD("del time: %{public}lf, intervalTime: %{public}u, currentdel time: %{public}lf,
                 oppositedel time: %{public}lf", del, intervalTime, currentdel, oppositedel);
             if (del < intervalTime) {
                 return false;
