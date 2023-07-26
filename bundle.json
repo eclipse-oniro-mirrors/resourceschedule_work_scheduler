@@ -40,7 +40,8 @@
           "device_standby",
           "device_usage_statistics",
           "access_token",
-          "netmanager_base"
+          "netmanager_base",
+          "time_service"
         ],
         "third_party": [ "jsoncpp" ]
       },
