@@ -15,6 +15,7 @@
 
 #include "work_status.h"
 
+#include "time_service_client.h"
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "work_scheduler_service.h"
@@ -23,7 +24,6 @@
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #include "bundle_active_group_map.h"
-#include "time_service_client.h"
 #endif
 
 using namespace std;
@@ -42,8 +42,14 @@ time_t getCurrentTime()
 {
     time_t result;
     time(&result);
-    DelayedSpSingleton<TimeServiceClient>::GetInstance()->GetBootTimeMs(result);
-    WS_HILOGD("xuahanyang result: %{public}d", result);
+    return result;
+}
+
+time_t getOppositeTime()
+{
+    time_t result;
+    sptr<MiscServices::TimeServiceClient> timer = MiscServices::TimeServiceClient::GetInstance();
+    result = static_cast<time_t>(timer->GetBootTimeMs());
     return result;
 }
 
@@ -180,6 +186,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     auto workConditionMap = workInfo_->GetConditionMap();
+    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
             return false;
@@ -195,16 +202,15 @@ bool WorkStatus::IsReady()
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
         return false;
     }
-    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
+
     auto itMap = s_uid_last_time_map.find(uid_);
     if (itMap == s_uid_last_time_map.end()) {
         return true;
     }
     time_t lastTime = s_uid_last_time_map[uid_];
-    double del = difftime(getCurrentTime(), lastTime) * ONE_SECOND;
+    double del = difftime(getOppositeTime(), lastTime);
     WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
         callbackFlag_, minInterval_, del);
-
     if (del < minInterval_) {
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
@@ -276,7 +282,15 @@ bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
         }
         case WorkCondition::Type::TIMER: {
             uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-            double del = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
+            time_t lastTime;
+            if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+                lastTime = 0;
+            } else {
+                lastTime = s_uid_last_time_map[uid_];
+            }
+            double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
+            double oppositedel = difftime(getOppositeTime(), lastTime)
+            double del = currentdel > getOppositedel ? currentdel:oppositedel;
             WS_HILOGD("del time:%{public}lf, intervalTime:%{public}u", del, intervalTime);
             if (del < intervalTime) {
                 return false;
@@ -346,7 +360,7 @@ int64_t WorkStatus::GetMinInterval()
 void WorkStatus::UpdateUidLastTimeMap()
 {
     std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
-    time_t lastTime = getCurrentTime();
+    time_t lastTime = getOppositeTime();
     s_uid_last_time_map[uid_] = lastTime;
 }
 
