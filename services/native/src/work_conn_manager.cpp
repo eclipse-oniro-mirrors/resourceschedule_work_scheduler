@@ -22,6 +22,7 @@
 #include <system_ability_definition.h>
 
 #include "ability_manager_client.h"
+#include "ability_manager_proxy.h"
 #include "work_sched_hilog.h"
 #include "errors.h"
 
