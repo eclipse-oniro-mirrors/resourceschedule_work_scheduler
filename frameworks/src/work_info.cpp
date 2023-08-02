@@ -289,6 +289,7 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
             }
         }
     }
+    parcel.WriteBool(extras_ ? true : false);
     if (extras_) {
         ret = ret && extras_->Marshalling(parcel);
     }
@@ -314,6 +315,10 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     }
 
     UnmarshallCondition(parcel, read, mapsize);
+    bool hasExtras = parcel.ReadBool();
+    if (!hasExtras) {
+        return read;
+    }
     AAFwk::WantParams *wantParams = AAFwk::WantParams::Unmarshalling(parcel);
     if (wantParams != nullptr) {
         read->extras_ = std::make_shared<AAFwk::WantParams>(*wantParams);
