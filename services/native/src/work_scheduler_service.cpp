@@ -132,7 +132,7 @@ bool WorkSchedulerService::IsBaseAbilityReady()
 
 void WorkSchedulerService::InitPersisted()
 {
-    WS_HILOGI("init persisted work");
+    WS_HILOGD("init persisted work");
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
     for (auto it : persistedWorks) {
         WS_HILOGI("get persisted work, id: %{public}d", it->GetWorkId());
@@ -175,7 +175,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
         shared_ptr<WorkInfo> workInfo = make_shared<WorkInfo>();
         if (workInfo->ParseFromJson(workJson)) {
             workInfos.emplace_back(workInfo);
-            string workId = string("u") + to_string(workInfo->GetUid()) + "_" + to_string(workInfo->GetWorkId());
+            string workId = "u" + to_string(workInfo->GetUid()) + "_" + to_string(workInfo->GetWorkId());
             persistedMap_[workId] = workInfo;
         }
     }
