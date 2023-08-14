@@ -561,7 +561,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
  */
 HWTEST_F (WorkInfoTest, WorkInfoTest021, Function | MediumTest | Level0)
 {
-    WorkInfo wotkInfo = WorkInfo();
+    WorkInfo workInfo = WorkInfo();
     workInfo.SetCallBySystemApp(true);
     EXPECT_TRUE(workInfo.IsCallBySystemApp());
 }
