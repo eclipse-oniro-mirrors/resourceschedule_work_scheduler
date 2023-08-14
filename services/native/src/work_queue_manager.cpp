@@ -66,7 +66,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
     }
     if (WorkSchedUtils::IsSystemApp()) {
         WS_HILOGI("Is system app, default group is active.");
-        workStatus->SetCallBySystemApp(true);
+        workStatus->workInfo_->SetCallBySystemApp(true);
     }
     return true;
 }

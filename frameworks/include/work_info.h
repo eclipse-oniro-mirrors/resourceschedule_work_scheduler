@@ -123,6 +123,10 @@ public:
      */
     void RefreshUid(int32_t uid);
     /**
+     * @brief Set callBySystemApp flag.
+     */
+    void SetCallBySystemApp(bool callBySystemApp);
+    /**
      * @brief Get uid.
      *
      * @return The uid.
@@ -220,6 +224,10 @@ public:
      */
     std::shared_ptr<AAFwk::WantParams> GetExtras() const;
     /**
+     * @brief Get callBySystemApp flag.
+     */
+    bool IsCallBySystemApp();
+    /**
      * @brief Marshalling.
      *
      * @param parcel The parcel.
@@ -261,6 +269,7 @@ private:
     int32_t uid_;
     std::shared_ptr<AAFwk::WantParams> extras_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
+    bool callBySystemApp_ {false};
 private:
     static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
