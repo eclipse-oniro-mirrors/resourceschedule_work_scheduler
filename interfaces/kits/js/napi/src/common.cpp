@@ -89,7 +89,7 @@ bool Common::GetNetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInf
     bool hasCondition = false;
     int32_t networkType = GetIntProperty(env, objValue, "networkType", E_NETWORK_TYPE_ERR);
     if (networkType == UNSET_INT_PARAM) {
-        WS_HILOGI("Unset networkType.");
+        WS_HILOGD("Unset networkType.");
     } else if (networkType >= WorkCondition::Network::NETWORK_TYPE_ANY &&
         networkType <= WorkCondition::Network::NETWORK_TYPE_ETHERNET) {
         workInfo.RequestNetworkType(WorkCondition::Network(networkType));
@@ -107,7 +107,7 @@ bool Common::GetChargeInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     int32_t isCharging = GetBoolToIntProperty(env, objValue, "isCharging", E_IS_CHARGING_ERR);
     int32_t chargerType = GetIntProperty(env, objValue, "chargerType", E_CHARGER_TYPE_ERR);
     if (isCharging == UNSET_INT_PARAM) {
-        WS_HILOGI("Unset isCharging, ignore ChargerType set also.");
+        WS_HILOGD("Unset isCharging, ignore ChargerType set also.");
     } else if (isCharging == FALSE_PARAM) {
         workInfo.RequestChargerType(false, WorkCondition::Charger::CHARGING_UNPLUGGED);
         hasCondition = true;
@@ -133,7 +133,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
     // Get battery level info.
     int32_t batteryLevel = GetIntProperty(env, objValue, "batteryLevel", E_BATTERY_LEVEL_ERR);
     if (batteryLevel == UNSET_INT_PARAM) {
-        WS_HILOGI("Unset batteryLevel.");
+        WS_HILOGD("Unset batteryLevel.");
     } else if (batteryLevel >= BATTERY_LEVEL_MIN && batteryLevel <= BATTERY_LEVEL_MAX) {
         workInfo.RequestBatteryLevel(batteryLevel);
         hasCondition = true;
@@ -145,7 +145,7 @@ bool Common::GetBatteryInfo(napi_env env, napi_value objValue, WorkInfo &workInf
     // Get battery status info.
     int32_t batteryStatus = GetIntProperty(env, objValue, "batteryStatus", E_BATTERY_STATUS_ERR);
     if (batteryStatus == UNSET_INT_PARAM) {
-        WS_HILOGI("Unset batteryStatus.");
+        WS_HILOGD("Unset batteryStatus.");
     } else if (batteryStatus >= WorkCondition::BatteryStatus::BATTERY_STATUS_LOW &&
         batteryStatus <= WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY) {
         workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus(batteryStatus));
@@ -162,7 +162,7 @@ bool Common::GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInf
     bool hasCondition = false;
     int32_t storageRequest = GetIntProperty(env, objValue, "storageRequest", E_STORAGE_REQUEST_ERR);
     if (storageRequest == UNSET_INT_PARAM) {
-        WS_HILOGI("Unset StorageRequest.");
+        WS_HILOGD("Unset StorageRequest.");
     } else if (storageRequest >= WorkCondition::Storage::STORAGE_LEVEL_LOW
             && storageRequest <= WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY) {
         workInfo.RequestStorageLevel(WorkCondition::Storage(storageRequest));
@@ -178,14 +178,14 @@ bool Common::GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
 {
     int32_t repeatCycleTime = GetIntProperty(env, objValue, "repeatCycleTime", E_REPEAT_CYCLE_TIME_TYPE_ERR);
     if (repeatCycleTime == UNSET_INT_PARAM) {
-        WS_HILOGI("RepeatCycleTime not set, just ignore other repeat set.");
+        WS_HILOGD("RepeatCycleTime not set, just ignore other repeat set.");
         return false;
     }
 
     bool isRepeat = GetBoolProperty(env, objValue, "isRepeat", E_IS_REPEAT_ERR);
     int32_t repeatCount = GetIntProperty(env, objValue, "repeatCount", E_REPEAT_COUNT_ERR);
     if (!isRepeat && repeatCount == UNSET_INT_PARAM) {
-        WS_HILOGI("Not set isRepeat or repeatCount, ignore.");
+        WS_HILOGD("Not set isRepeat or repeatCount, ignore.");
         return false;
     }
     if (isRepeat) {

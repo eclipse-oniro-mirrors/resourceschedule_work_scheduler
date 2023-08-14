@@ -126,6 +126,11 @@ void WorkInfo::RefreshUid(int32_t uid)
     uid_ = uid;
 }
 
+void WorkInfo::SetCallBySystemApp(bool callBySystemApp)
+{
+    callBySystemApp_ = callBySystemApp;
+}
+
 int32_t WorkInfo::GetUid()
 {
     return uid_;
@@ -244,6 +249,11 @@ std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> WorkI
 std::shared_ptr<AAFwk::WantParams> WorkInfo::GetExtras() const
 {
     return extras_;
+}
+
+bool WorkInfo::IsCallBySystemApp()
+{
+    return callBySystemApp_;
 }
 
 bool WorkInfo::Marshalling(Parcel &parcel) const
@@ -375,6 +385,7 @@ std::string WorkInfo::ParseToJsonStr()
     root["bundleName"] = bundleName_;
     root["abilityName"] = abilityName_;
     root["persisted"] = persisted_;
+    root["callBySystemApp"] = callBySystemApp_;
     ParseConditionToJsonStr(root);
     if (extras_) {
         Json::Value extras;
@@ -455,6 +466,7 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     this->bundleName_ = value["bundleName"].asString();
     this->abilityName_ = value["abilityName"].asString();
     this->persisted_ = value["persisted"].asBool();
+    this->callBySystemApp_ = value["callBySystemApp"].asBool();
     ParseConditionFromJsonStr(value);
     if (!value.isMember("parameters")) {
         return true;

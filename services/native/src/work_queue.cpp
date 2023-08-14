@@ -18,6 +18,7 @@
 #include "work_condition.h"
 #include "work_sched_hilog.h"
 #include "work_sched_errors.h"
+#include "work_scheduler_service.h"
 
 using namespace std;
 
@@ -69,7 +70,9 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
         if (it->OnConditionChanged(type, value) == E_GROUP_CHANGE_NOT_MATCH_HAP) {
             continue;
         }
-        if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0) {
+        if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0 &&
+            !DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(it->uid_)) {
+            WS_HILOGI("One uid can start only one work.");
             continue;
         }
         if (it->IsReady()) {

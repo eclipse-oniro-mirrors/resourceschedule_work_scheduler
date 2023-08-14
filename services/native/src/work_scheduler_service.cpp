@@ -399,9 +399,8 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
         workQueueManager_->AddWork(workStatus);
         if (workInfo.IsPersisted()) {
             std::lock_guard<std::mutex> lock(mutex_);
-            std::shared_ptr<WorkInfo> persistedInfo = make_shared<WorkInfo>(workInfo);
-            persistedInfo->RefreshUid(uid);
-            persistedMap_.emplace(workStatus->workId_, persistedInfo);
+            workStatus->workInfo_->RefreshUid(uid);
+            persistedMap_.emplace(workStatus->workId_, workStatus->workInfo_);
             RefreshPersistedWorks();
         }
     }

@@ -48,6 +48,7 @@ bool TimerListener::Start()
         return false;
     }
     uint32_t time = workQueueManager_->GetTimeCycle();
+    WS_HILOGI("TimerListener start with time = %{public}u.", time);
     handler_->SendEvent(AppExecFwk::InnerEvent::Get(WorkQueueEventHandler::TIMER_TICK, 0), time);
     return true;
 }

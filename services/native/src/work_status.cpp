@@ -178,11 +178,11 @@ bool WorkStatus::IsReady()
 {
     WS_HILOGD("IsReady");
     if (!IsSameUser()) {
-        WS_HILOGD("Not same user. WorkId:%{public}s", workId_.c_str());
+        WS_HILOGI("Not same user. WorkId:%{public}s", workId_.c_str());
         return false;
     }
     if (IsRunning()) {
-        WS_HILOGD("Work is running");
+        WS_HILOGI("Work is running");
         return false;
     }
     auto workConditionMap = workInfo_->GetConditionMap();
@@ -304,16 +304,11 @@ bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
     return true;
 }
 
-void WorkStatus::SetCallBySystemApp(bool callBySystemApp)
-{
-    callBySystemApp_ = callBySystemApp;
-}
-
 bool WorkStatus::SetMinInterval()
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
-    if (callBySystemApp_) {
+    if (workInfo_->IsCallBySystemApp()) {
         WS_HILOGI("Is system app, default group is active.");
         return SetMinIntervalByGroup(ACTIVE_GROUP);
     }

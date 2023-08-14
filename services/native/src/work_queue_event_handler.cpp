@@ -30,7 +30,7 @@ WorkQueueEventHandler::WorkQueueEventHandler(const shared_ptr<AppExecFwk::EventR
 
 void WorkQueueEventHandler::ProcessEvent([[maybe_unused]] const AppExecFwk::InnerEvent::Pointer& event)
 {
-    WS_HILOGD("eventId: %{public}u", event->GetInnerEventId());
+    WS_HILOGI("eventId: %{public}u", event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
         case TIMER_TICK: {
             if (manager_ == nullptr) {
