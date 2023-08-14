@@ -138,7 +138,7 @@ bool UnwrapWantParams(napi_env env, napi_value param, AAFwk::WantParams &wantPar
     for (uint32_t index = 0; index < jsProCount; index++) {
         napi_get_element(env, jsProNameList, index, &jsProName);
         std::string strProName = UnwrapStringFromJS(env, jsProName, "");
-        WS_HILOGI("Property name=%{public}s.", strProName.c_str());
+        WS_HILOGD("Property name=%{public}s.", strProName.c_str());
         if (!InnerUnwrapJS(env, param, wantParams, strProName)) {
             return false;
         }
@@ -228,7 +228,7 @@ bool InnerWrapWantParamsDouble(
 
 napi_value WrapWantParams(napi_env env, const AAFwk::WantParams &wantParams)
 {
-    WS_HILOGI("Start wrap wantParams.");
+    WS_HILOGD("Start wrap wantParams.");
     napi_value jsObject = nullptr;
     NAPI_CALL(env, napi_create_object(env, &jsObject));
 
