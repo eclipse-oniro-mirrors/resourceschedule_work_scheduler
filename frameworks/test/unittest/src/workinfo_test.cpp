@@ -384,6 +384,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level0)
 
     root["workId"] = 1;
     root["persisted"] = false;
+    root["callBySystemApp"] = false;
     res = workInfo.ParseFromJson(root);
     EXPECT_TRUE(res);
 }
@@ -551,6 +552,17 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
     auto condRead = workInfoRead->GetConditionMap();
     EXPECT_EQ(workInfoRead->GetConditionMap()->size(), 2);
+}
+/**
+ * @tc.name WorkInfoTest021
+ * @tc.desc test SetCallBySystemApp.
+ * @tc.type FUNC
+ * @tc.require: issueI5Y6YK 
+ */
+HWTEST_F (WorkInfoTest, WorkInfoTest021, Function | MediumTest | Level0){
+    WorkInfo wotkInfo = WorkInfo();
+    workInfo.SetCallBySystemApp(true);
+    EXPECT_TRUE(workInfo.IsCallBySystemApp());
 }
 
 /**
