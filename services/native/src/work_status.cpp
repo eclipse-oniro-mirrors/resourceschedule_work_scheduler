@@ -316,7 +316,7 @@ bool WorkStatus::SetMinInterval()
     if (errCode != ERR_OK) {
         WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
             userId_, bundleName_.c_str());
-        return false;
+        group = 10;
     }
 #else
     int32_t group = 10;
