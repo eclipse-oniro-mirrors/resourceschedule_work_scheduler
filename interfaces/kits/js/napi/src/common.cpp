@@ -425,6 +425,38 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     napi_get_boolean(env, workInfo->IsPersisted(), &napiIsPersisted);
     napi_set_named_property(env, napiWork, "isPersisted", napiIsPersisted);
 
+    GetConditionInfo(env, workInfo, napiWork);
+
+    // Set timer info.
+    uint32_t timeInterval = workInfo->GetTimeInterval();
+    if (timeInterval > 0) {
+        napi_value napiTimer = nullptr;
+        napi_create_int32(env, static_cast<int32_t>(timeInterval), &napiTimer);
+        napi_set_named_property(env, napiWork, "repeatCycleTime", napiTimer);
+        if  (workInfo->IsRepeat()) {
+            napi_value napiIsRepeat = nullptr;
+            napi_get_boolean(env, true, &napiIsRepeat);
+            napi_set_named_property(env, napiWork, "isRepeat", napiIsRepeat);
+        } else {
+            napi_value napiCount = nullptr;
+            napi_create_int32(env, workInfo->GetCycleCount(), &napiCount);
+            napi_set_named_property(env, napiWork, "repeatCount", napiCount);
+        }
+    }
+
+    if (workInfo->GetExtras()) {
+        napi_value parameters = WrapWantParams(env, *workInfo->GetExtras());
+        napi_set_named_property(env, napiWork, "parameters", parameters);
+    }
+    return napiWork;
+}
+
+void Common::GetConditionInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork)
+{
+    if (workInfo == nullptr) {
+        return;
+    }
+
     // Set net info.
     if (workInfo->GetNetworkType() != WorkCondition::Network::NETWORK_UNKNOWN) {
         napi_value napiNetworkType = nullptr;
@@ -468,29 +500,6 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
         napi_create_int32(env, static_cast<int32_t>(workInfo->GetStorageLevel()), &napiStorageRequest);
         napi_set_named_property(env, napiWork, "storageRequest", napiStorageRequest);
     }
-
-    // Set timer info.
-    uint32_t timeInterval = workInfo->GetTimeInterval();
-    if (timeInterval > 0) {
-        napi_value napiTimer = nullptr;
-        napi_create_int32(env, static_cast<int32_t>(timeInterval), &napiTimer);
-        napi_set_named_property(env, napiWork, "repeatCycleTime", napiTimer);
-        if  (workInfo->IsRepeat()) {
-            napi_value napiIsRepeat = nullptr;
-            napi_get_boolean(env, true, &napiIsRepeat);
-            napi_set_named_property(env, napiWork, "isRepeat", napiIsRepeat);
-        } else {
-            napi_value napiCount = nullptr;
-            napi_create_int32(env, workInfo->GetCycleCount(), &napiCount);
-            napi_set_named_property(env, napiWork, "repeatCount", napiCount);
-        }
-    }
-
-    if (workInfo->GetExtras()) {
-        napi_value parameters = WrapWantParams(env, *workInfo->GetExtras());
-        napi_set_named_property(env, napiWork, "parameters", parameters);
-    }
-    return napiWork;
 }
 
 napi_value Common::GetCallbackErrorValue(napi_env env, int32_t errCode, const std::string errMsg)

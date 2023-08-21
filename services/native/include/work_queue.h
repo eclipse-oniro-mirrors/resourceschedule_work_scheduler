@@ -36,6 +36,14 @@ public:
     std::vector<std::shared_ptr<WorkStatus>> OnConditionChanged(
         WorkCondition::Type type, std::shared_ptr<DetectorValue> conditionVal);
     /**
+     * @brief ParseCondition.
+     *
+     * @param type The type.
+     * @param conditionVal The condition val.
+     */
+    std::shared_ptr<Condition> ParseCondition(WorkCondition::Type type,
+        std::shared_ptr<DetectorValue> conditionVal)
+    /**
      * @brief Push.
      *
      * @param workStatusVector The work status vector.

@@ -136,6 +136,14 @@ public:
      */
     static napi_value GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo);
     /**
+     * @brief Get the info of condition.
+     *
+     * @param env The env.
+     * @param workInfo The info of work.
+     * @return Napi work info.
+     */
+    static void GetConditionInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork);
+    /**
      * @brief Get callback error value.
      *
      * @param env The env.
