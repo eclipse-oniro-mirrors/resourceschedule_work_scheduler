@@ -27,6 +27,37 @@ namespace WorkScheduler {
 vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type type,
     shared_ptr<DetectorValue> conditionVal)
 {
+    shared_ptr<Condition> value = ParseCondition(type, conditionVal);
+    vector<shared_ptr<WorkStatus>> result;
+    std::set<int32_t> uidList;
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
+    for (auto it : workList_) {
+        if (it->OnConditionChanged(type, value) == E_GROUP_CHANGE_NOT_MATCH_HAP) {
+            continue;
+        }
+        if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0 &&
+            !DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(it->uid_)) {
+            WS_HILOGI("One uid can start only one work.");
+            continue;
+        }
+        if (it->IsReady()) {
+            result.emplace_back(it);
+            uidList.insert(it->uid_);
+        } else {
+            if (it->IsReadyStatus()) {
+                it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+            }
+        }
+        if (it->needRetrigger_) {
+            result.emplace_back(it);
+        }
+    }
+    return result;
+}
+
+shared_ptr<Condition> WorkQueue::ParseCondition(WorkCondition::Type type,
+    shared_ptr<DetectorValue> conditionVal)
+{
     shared_ptr<Condition> value = make_shared<Condition>();
     switch (type) {
         case WorkCondition::Type::NETWORK:
@@ -63,31 +94,7 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
         }
         default: {}
     }
-    vector<shared_ptr<WorkStatus>> result;
-    std::set<int32_t> uidList;
-    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
-    for (auto it : workList_) {
-        if (it->OnConditionChanged(type, value) == E_GROUP_CHANGE_NOT_MATCH_HAP) {
-            continue;
-        }
-        if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0 &&
-            !DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(it->uid_)) {
-            WS_HILOGI("One uid can start only one work.");
-            continue;
-        }
-        if (it->IsReady()) {
-            result.emplace_back(it);
-            uidList.insert(it->uid_);
-        } else {
-            if (it->IsReadyStatus()) {
-                it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
-            }
-        }
-        if (it->needRetrigger_) {
-            result.emplace_back(it);
-        }
-    }
-    return result;
+    return value;
 }
 
 void WorkQueue::Push(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)
