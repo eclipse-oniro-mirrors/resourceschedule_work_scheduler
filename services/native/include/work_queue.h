@@ -42,7 +42,7 @@ public:
      * @param conditionVal The condition val.
      */
     std::shared_ptr<Condition> ParseCondition(WorkCondition::Type type,
-        std::shared_ptr<DetectorValue> conditionVal)
+        std::shared_ptr<DetectorValue> conditionVal);
     /**
      * @brief Push.
      *
