@@ -24,8 +24,6 @@ namespace WorkScheduler {
 class SchedulerBgTaskSubscriber : public BackgroundTaskMgr::BackgroundTaskSubscriber {
 public:
     SchedulerBgTaskSubscriber() = default;
-    void OnConnected() override;
-    void OnDisconnected() override;
     void OnProcEfficiencyResourcesApply(
         const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
     void OnProcEfficiencyResourcesReset(
