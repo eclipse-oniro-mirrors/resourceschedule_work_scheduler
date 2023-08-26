@@ -22,16 +22,6 @@
 namespace OHOS {
 namespace WorkScheduler {
 using namespace OHOS::BackgroundTaskMgr;
-void SchedulerBgTaskSubscriber::OnConnected()
-{
-    WS_HILOGD("OnConnected called");
-}
-
-void SchedulerBgTaskSubscriber::OnDisconnected()
-{
-    WS_HILOGD("OnDisconnected called");
-}
-
 void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesApply(
     const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo)
 {
