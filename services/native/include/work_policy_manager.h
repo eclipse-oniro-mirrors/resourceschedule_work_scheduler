@@ -233,7 +233,6 @@ private:
     std::mutex uidMapMutex_;
     std::map<int32_t, std::shared_ptr<WorkQueue>> uidQueueMap_;
 
-    std::mutex conditionReadyMutex_;
     std::shared_ptr<WorkQueue> conditionReadyQueue_;
 
     std::list<std::shared_ptr<IPolicyFilter>> policyFilters_;
