@@ -51,7 +51,6 @@ static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 
 WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
 {
-    std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_ = std::make_shared<WorkQueue>();
     watchdogId_ = INIT_WATCHDOG_ID;
     dumpSetMemory_ = INIT_DUMP_SET_MEMORY;
@@ -186,7 +185,6 @@ void WorkPolicyManager::RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatu
 
 void WorkPolicyManager::RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus)
 {
-    std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_->RemoveUnReady();
 }
 
@@ -261,7 +259,6 @@ void WorkPolicyManager::OnConditionReady(shared_ptr<vector<shared_ptr<WorkStatus
 
 void WorkPolicyManager::AddToReadyQueue(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)
 {
-    std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_->Push(workStatusVector);
 }
 
@@ -336,13 +333,11 @@ void WorkPolicyManager::CheckWorkToRun()
 
 void WorkPolicyManager::RemoveAllUnReady()
 {
-    std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_->RemoveUnReady();
 }
 
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkToRun()
 {
-    std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     shared_ptr<WorkStatus> topWork = conditionReadyQueue_->GetWorkToRunByPriority();
     return topWork;
 }
@@ -489,7 +484,6 @@ std::list<std::shared_ptr<WorkInfo>> WorkPolicyManager::GetAllRunningWorks()
 
 void WorkPolicyManager::DumpConditionReadyQueue(string& result)
 {
-    std::lock_guard<std::mutex> lock(conditionReadyMutex_);
     conditionReadyQueue_->Dump(result);
 }
 
