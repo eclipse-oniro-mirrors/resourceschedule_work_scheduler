@@ -89,7 +89,7 @@ void WorkPolicyManager::AddAppDataClearListener(std::shared_ptr<AppDataClearList
 int32_t WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
 {
     WS_HILOGD("Add work");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         if (uidQueueMap_.at(uid)->Contains(make_shared<string>(workStatus->workId_))) {
             WS_HILOGE("Workid has been added, should remove first.");
@@ -151,7 +151,7 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
 {
     WS_HILOGD("Remove work.");
     bool ret = false;
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         WS_HILOGD("Remove workStatus ID: %{public}s form uidQueue(%{public}d)", workStatus->workId_.c_str(), uid);
         ret = uidQueueMap_.at(uid)->Remove(workStatus);
@@ -165,7 +165,7 @@ bool WorkPolicyManager::RemoveWork(shared_ptr<WorkStatus> workStatus, int32_t ui
 shared_ptr<WorkStatus> WorkPolicyManager::FindWorkStatus(WorkInfo& workInfo, int32_t uid)
 {
     WS_HILOGD("Find work status start.");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         return uidQueueMap_.at(uid)->Find(WorkStatus::MakeWorkId(workInfo.GetWorkId(), uid));
     }
@@ -174,7 +174,7 @@ shared_ptr<WorkStatus> WorkPolicyManager::FindWorkStatus(WorkInfo& workInfo, int
 
 void WorkPolicyManager::RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatus, int32_t uid)
 {
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         uidQueueMap_.at(uid)->CancelWork(workStatus);
         if (uidQueueMap_.at(uid)->GetSize() <= 0) {
@@ -219,7 +219,7 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
 bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
 {
     WS_HILOGD("enter");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         for (auto it : queue->GetWorkList()) {
@@ -236,7 +236,7 @@ bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
 
 int32_t WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid, bool &result)
 {
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     string workIdStr = WorkStatus::MakeWorkId(workId, uid);
     if (uidQueueMap_.count(uid) > 0) {
         shared_ptr<WorkStatus> workStatus = uidQueueMap_.at(uid)->Find(workIdStr);
@@ -277,7 +277,7 @@ int32_t WorkPolicyManager::GetMaxRunningCount()
 int32_t WorkPolicyManager::GetRunningCount()
 {
     WS_HILOGD("enter");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     int32_t count = 0;
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
@@ -432,7 +432,7 @@ std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
 list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
 {
     WS_HILOGD("Wenter");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     list<shared_ptr<WorkInfo>> allWorks;
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
@@ -446,7 +446,7 @@ list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
 shared_ptr<WorkInfo> WorkPolicyManager::GetWorkStatus(int32_t &uid, int32_t &workId)
 {
     WS_HILOGD("enter");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         auto workStatus = queue->Find(string("u") + to_string(uid) + "_" + to_string(workId));
@@ -460,7 +460,7 @@ shared_ptr<WorkInfo> WorkPolicyManager::GetWorkStatus(int32_t &uid, int32_t &wor
 list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllWorkStatus(int32_t &uid)
 {
     WS_HILOGD("enter");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     list<shared_ptr<WorkStatus>> allWorks;
     if (uidQueueMap_.count(uid) > 0) {
         allWorks = uidQueueMap_.at(uid)->GetWorkList();
@@ -471,7 +471,7 @@ list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllWorkStatus(int32_t &u
 std::list<std::shared_ptr<WorkInfo>> WorkPolicyManager::GetAllRunningWorks()
 {
     WS_HILOGD("enter");
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     list<shared_ptr<WorkInfo>> allWorks;
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
@@ -489,7 +489,7 @@ void WorkPolicyManager::DumpConditionReadyQueue(string& result)
 
 void WorkPolicyManager::DumpUidQueueMap(string& result)
 {
-    std::lock_guard<std::mutex> lock(uidMapMutex_);
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     for (auto it : uidQueueMap_) {
         result.append("uid: " + std::to_string(it.first) + ":\n");
         it.second->Dump(result);

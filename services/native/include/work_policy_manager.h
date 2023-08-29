@@ -230,7 +230,7 @@ private:
     std::shared_ptr<WorkConnManager> workConnManager_;
     std::shared_ptr<WorkEventHandler> handler_;
 
-    std::mutex uidMapMutex_;
+    std::recursive_mutex uidMapMutex_;
     std::map<int32_t, std::shared_ptr<WorkQueue>> uidQueueMap_;
 
     std::shared_ptr<WorkQueue> conditionReadyQueue_;
