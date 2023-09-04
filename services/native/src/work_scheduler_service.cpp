@@ -200,7 +200,6 @@ void WorkSchedulerService::OnStop()
     if (ret != ERR_OK) {
         WS_HILOGE("unscribe bgtask failed.");
     }
-    subscriber_.reset();
 #endif
     eventRunner_.reset();
     handler_.reset();
