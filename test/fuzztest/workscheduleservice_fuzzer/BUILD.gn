@@ -14,7 +14,7 @@
 #####################hydra-fuzz###################
 import("//build/config/features.gni")
 import("//build/test.gni")
-module_output_path = "work_scheduler/workscheduleservice"
+module_output_path = "work_scheduler/work_scheduler"
 
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 config("worksched_private_config") {
