@@ -550,5 +550,72 @@ int32_t WorkPolicyManager::WorkPolicyManager::GetWatchdogTime()
 {
     return watchdogTime_;
 }
+
+void WorkPolicyManager::DumpCheckIdeWorkToRun(const std::string &bundleName, const std::string &abilityName)
+{
+    ideDebugList = GetAllIdeWorkStatus(bundleName, abilityName);
+    if (ideDebugList.empty()) {
+        WS_HILOGE("ideDebugList is empty, please add one work");
+        return;
+    }
+    SendIdeWorkRetriggerEvent(0);
+}
+
+void WorkPolicyManager::TriggerIdeWork()
+{
+    if (ideDebugList.empty()) {
+        WS_HILOGI("ideDebugList has been empty, all the works have been done");
+        return;
+    }
+
+    auto topWork = ideDebugList.front();
+    ideDebugList.pop_front();
+    if (topWork->IsRunning()) {
+        SendIdeWorkRetriggerEvent(watchdogTime_ + DELAY_TIME_SHORT);
+        return;
+    }
+    topWork->MarkStatus(WorkStatus::Status::RUNNING);
+    bool ret = workConnManager_->StartWork(topWork);
+    if (ret) {
+        WS_HILOGI("TriggerIdeWork ok");
+        AddWatchdogForWork(topWork);
+    } else {
+        WS_HILOGE("TriggerIdeWork error");
+        ideDebugList.clear();
+        return;
+    }
+    SendIdeWorkRetriggerEvent(watchdogTime_ + DELAY_TIME_SHORT);
+}
+
+void WorkPolicyManager::SendIdeWorkRetriggerEvent(int32_t delaytime)
+{
+    if (handler_ == nullptr) {
+        WS_HILOGE("handle is nullptr");
+        return;
+    }
+    handler_->SendEvent(InnerEvent::Get(WorkEventHandler::IDE_RETRIGGER_MSG, 0), delaytime);
+}
+
+std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllIdeWorkStatus(const std::string &bundleName,
+    const std::string &abilityName)
+{
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
+    std::list<shared_ptr<WorkStatus>> allWorks;
+    auto it = uidQueueMap_.begin();
+    while (it != uidQueueMap_.end()) {
+        if (it->second->GetWorkList().empty()) {
+            it++;
+            continue;
+        }
+        auto work = it->second->GetWorkList().front();
+        if (work->workInfo_->GetBundleName() != bundleName || work->workInfo_->GetAbilityName() != abilityName) {
+            it++;
+            continue;
+        }
+        allWorks = uidQueueMap_.at(work->uid_)->GetWorkList();
+        return allWorks;
+    }
+    return allWorks;
+}
 } // namespace WorkScheduler
 } // namespace OHOS

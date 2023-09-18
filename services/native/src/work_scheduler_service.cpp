@@ -606,6 +606,8 @@ int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>
             if (argsInStr[DUMP_OPTION] == "-d") {
                 EventPublisher eventPublisher;
                 eventPublisher.Dump(result, argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX]);
+            } else if (argsInStr[DUMP_OPTION] == "-t") {
+                DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else {
                 result.append("Error params.");
             }
@@ -627,6 +629,7 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -a: show all info.\n")
         .append("    -d event info: show the event info.\n")
         .append("    -d (eventType) (TypeValue): publish the event.\n")
+        .append("    -t (bundleName) (abilityName): trigger the work.\n")
         .append("    -memory (number): set the available memory.\n")
         .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
         .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
@@ -649,6 +652,45 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
         .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
         .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n")
         .append("whitelist:" + GetEffiResApplyUid());
+}
+
+bool WorkSchedulerService::IsDebugApp(const std::string &bundleName)
+{
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        WS_HILOGE("fail to get system ability mgr.");
+        return false;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        WS_HILOGE("fail to get bundle manager proxy.");
+        return false;
+    }
+    sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
+    BundleInfo bundleInfo;
+    int32_t currentAccountId = WorkSchedUtils::GetCurrentAccountId();
+    if (bundleMgr->GetBundleInfo(bundleName, BundleFlag::GET_BUNDLE_WITH_ABILITIES,
+        bundleInfo, currentAccountId)) {
+        WS_HILOGD("bundleUid : %{public}d , debug : %{public}d.", bundleInfo.uid, bundleInfo.applicationInfo.debug);
+        return bundleInfo.applicationInfo.debug;
+    }
+    WS_HILOGE("Get bundle info failed.");
+    return false;
+}
+
+void WorkSchedulerService::DumpProcessWorks(const std::string &bundleName, const std::string &abilityName,
+    std::string &result)
+{
+    if (bundleName.empty() || abilityName.empty()) {
+        result.append("param error");
+        return;
+    }
+    if (!IsDebugApp(bundleName)) {
+        result.append("is not debug app");
+        return;
+    }
+    workPolicyManager_->DumpCheckIdeWorkToRun(bundleName, abilityName);
 }
 
 std::string WorkSchedulerService::GetEffiResApplyUid()

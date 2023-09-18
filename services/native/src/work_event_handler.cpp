@@ -48,6 +48,10 @@ void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& 
             wssptr->Init(GetEventRunner());
             break;
         }
+        case IDE_RETRIGGER_MSG: {
+            wssptr->GetWorkPolicyManager()->TriggerIdeWork();
+            break;
+        }
         default:
             return;
     }

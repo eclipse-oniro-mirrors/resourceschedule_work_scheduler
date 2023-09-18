@@ -27,7 +27,8 @@ class WorkEventHandler : public AppExecFwk::EventHandler {
 public:
     enum {
         RETRIGGER_MSG = 0,
-        SERVICE_INIT_MSG
+        SERVICE_INIT_MSG,
+        IDE_RETRIGGER_MSG
     };
     WorkEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner,
         const wptr<WorkSchedulerService>& service);
