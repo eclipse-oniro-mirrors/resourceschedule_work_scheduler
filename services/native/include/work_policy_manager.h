@@ -206,6 +206,16 @@ public:
      * @return The time of watchdog.
      */
     int32_t GetWatchdogTime();
+    /**
+     * @brief Trigger the ide work.
+     */
+    void TriggerIdeWork();
+    /**
+     * @brief Provide a command to exec onStart and onStop of the matched service extension.
+     * @param bunlerName The bundleName.
+     * @param abilityName The abilityName.
+     */
+    void DumpCheckIdeWorkToRun(const std::string &bundleName, const std::string &abilityName);
 
 private:
     int32_t GetMaxRunningCount();
@@ -225,6 +235,9 @@ private:
     std::shared_ptr<WorkStatus> GetWorkFromWatchdog(uint32_t id);
     void UpdateWatchdogTime(const wptr<WorkSchedulerService> &wmsptr,
         std::shared_ptr<WorkStatus> &topWork);
+    std::list<std::shared_ptr<WorkStatus>> GetAllIdeWorkStatus(const std::string &bundleName,
+        const std::string &abilityName);
+    void SendIdeWorkRetriggerEvent(int32_t delaytime);
 
     const wptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
@@ -246,6 +259,8 @@ private:
     uint32_t watchdogId_;
     int32_t dumpSetMemory_;
     int32_t watchdogTime_;
+
+    std::list<std::shared_ptr<WorkStatus>> ideDebugList;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
