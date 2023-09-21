@@ -46,7 +46,12 @@ JsWorkSchedulerExtension::~JsWorkSchedulerExtension()
     jsRuntime_.FreeNativeReference(std::move(shellContextRef_));
 }
 
-NativeValue *AttachWorkSchedulerExtensionContext(NativeEngine *engine, void *value, void *)
+inline void *DetachCallbackFunc(napi_env env, void *value, void *)
+{
+    return value;
+}
+
+napi_value AttachWorkSchedulerExtensionContext(napi_env env, void *value, void *)
 {
     WS_HILOGI("AttachWorkSchedulerExtensionContext");
     if (value == nullptr) {
@@ -58,18 +63,22 @@ NativeValue *AttachWorkSchedulerExtensionContext(NativeEngine *engine, void *val
         WS_HILOGE("invalid context.");
         return nullptr;
     }
-    NativeValue *object = CreateJsWorkSchedulerExtensionContext(*engine, ptr);
-    auto contextObj = AbilityRuntime::JsRuntime::LoadSystemModuleByEngine(engine,
-        "application.WorkSchedulerExtensionContext", &object, 1)->Get();
-    NativeObject *nObject = AbilityRuntime::ConvertNativeValueTo<NativeObject>(contextObj);
-    nObject->ConvertToNativeBindingObject(engine, AbilityRuntime::DetachCallbackFunc,
+    napi_value object = CreateJsWorkSchedulerExtensionContext(env, ptr);
+    napi_value contextObj = AbilityRuntime::JsRuntime::LoadSystemModuleByEngine(env,
+        "application.WorkSchedulerExtensionContext", &object, 1)->GetNapiValue();
+    napi_coerce_to_native_binding_object(env, contextObj, DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, value, nullptr);
     auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(ptr);
-    nObject->SetNativePointer(workContext,
-        [](NativeEngine *, void *data, void *) {
+    napi_status status = napi_wrap(env, contextObj, workContext,
+        [](napi_env env, void *data, void *) {
             WS_HILOGI("Finalizer for weak_ptr WorkSchedulerExtensionContext is called");
             delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
-        }, nullptr);
+        }, nullptr, nullptr);
+    if (status != napi_ok) {
+        WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
+        return nullptr;
+    }
+    
     return contextObj;
 }
 
@@ -91,7 +100,7 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
     moduleName.append("::").append(abilityInfo_->name);
     WS_HILOGD("moduleName:%{public}s, srcPath:%{public}s.", moduleName.c_str(), srcPath.c_str());
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
-    auto& engine = jsRuntime_.GetNativeEngine();
+    napi_env env = jsRuntime_.GetNapiEnv();
 
     jsObj_ = jsRuntime_.LoadModule(moduleName, srcPath, abilityInfo_->hapPath,
         abilityInfo_->compileMode == AbilityRuntime::CompileMode::ES_MODULE);
@@ -99,46 +108,45 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
         WS_HILOGE("WorkSchedulerExtension Failed to get jsObj_");
         return;
     }
-    NativeObject* obj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(jsObj_->Get());
+    napi_value obj = jsObj_->GetNapiValue();
     if (obj == nullptr) {
         WS_HILOGE("WorkSchedulerExtension Failed to get JsWorkSchedulerExtension object");
         return;
     }
-    BindContext(engine, obj);
+    BindContext(env, obj);
     
     WS_HILOGD("end.");
 }
 
-void JsWorkSchedulerExtension::BindContext(NativeEngine& engine, NativeObject* obj)
+void JsWorkSchedulerExtension::BindContext(napi_env env, napi_value obj)
 {
     auto context = GetContext();
     if (context == nullptr) {
         WS_HILOGE("WorkSchedulerExtension Failed to get context");
         return;
     }
-    NativeValue* contextObj = CreateJsWorkSchedulerExtensionContext(engine, context);
+    napi_value contextObj = CreateJsWorkSchedulerExtensionContext(env, context);
     shellContextRef_ = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
         &contextObj, 1);
-    contextObj = shellContextRef_->Get();
+    contextObj = shellContextRef_->GetNapiValue();
 
-    NativeObject* nativeObj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(contextObj);
-    if (nativeObj == nullptr) {
-        WS_HILOGE("Failed to get context native object");
-        return;
-    }
     auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(context);
-    nativeObj->ConvertToNativeBindingObject(&engine, AbilityRuntime::DetachCallbackFunc,
+    napi_coerce_to_native_binding_object(env, contextObj, DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, workContext, nullptr);
     WS_HILOGI("JsWorkSchedulerExtension init bind and set property.");
     context->Bind(jsRuntime_, shellContextRef_.get());
-    obj->SetProperty("context", contextObj);
+    napi_set_named_property(env, obj, "context", contextObj);
     WS_HILOGI("Set JsWorkSchedulerExtension context pointer is nullptr or not:%{public}d",
         context.get() == nullptr);
-    nativeObj->SetNativePointer(workContext,
-        [](NativeEngine*, void* data, void*) {
+
+    napi_status status = napi_wrap(env, contextObj, workContext,
+        [](napi_env env, void* data, void*) {
             WS_HILOGI("Finalizer for weak_ptr WorkSchedulerExtensionContext is called");
             delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
-        }, nullptr);
+        }, nullptr, nullptr);
+    if (status != napi_ok) {
+        WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
+    }
 }
 
 void JsWorkSchedulerExtension::OnStart(const AAFwk::Want& want)
@@ -196,71 +204,114 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     WorkSchedulerExtension::OnWorkStart(workInfo);
     auto task = [=]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
-        NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
+        napi_env env = jsRuntime_.GetNapiEnv();
 
-        NativeValue* jworkInfoData = nativeEngine.CreateObject();
-        NativeObject* workInfoData = AbilityRuntime::ConvertNativeValueTo<NativeObject>(jworkInfoData);
-        workInfoData->SetProperty("workId", nativeEngine.CreateNumber(workId));
+        napi_value workInfoData;
+        if (napi_create_object(env, &workInfoData) != napi_ok) {
+            WS_HILOGE("WorkSchedulerExtension failed to create workInfoData OnWorkStart");
+            return;
+        }
+        napi_value workIdValue;
+        napi_create_int32(env, workId, &workIdValue);
+        napi_set_named_property(env, workInfoData, "workId", workIdValue);
 
-        workInfoData->SetProperty("bundleName", nativeEngine.CreateString(bundleName.c_str(), bundleName.size()));
+        napi_value bundleNameValue;
+        napi_create_string_utf8(env, bundleName.c_str(), bundleName.size(), &bundleNameValue);
+        napi_set_named_property(env, workInfoData, "bundleName", bundleNameValue);
 
-        workInfoData->SetProperty("abilityName", nativeEngine.CreateString(abilityName.c_str(), abilityName.size()));
+        napi_value abilityNameValue;
+        napi_create_string_utf8(env, abilityName.c_str(), abilityName.size(), &abilityNameValue);
+        napi_set_named_property(env, workInfoData, "abilityName", abilityNameValue);
 
         if (getExtrasRet) {
-            workInfoData->SetProperty("parameters", nativeEngine.CreateString(extrasStr.c_str(), extrasStr.size()));
+            napi_value parametersValue;
+            napi_create_string_utf8(env, extrasStr.c_str(), extrasStr.size(), &parametersValue);
+            napi_set_named_property(env, workInfoData, "parameters", parametersValue);
         }
 
-        workInfoData->SetProperty("isPersisted", nativeEngine.CreateBoolean(isPersisted));
+        napi_value isPersistedValue;
+        napi_get_boolean(env, isPersisted, &isPersistedValue);
+        napi_set_named_property(env, workInfoData, "isPersisted", isPersistedValue);
         if (networkType != WorkCondition::Network::NETWORK_UNKNOWN) {
-            workInfoData->SetProperty("networkType", nativeEngine.CreateNumber(networkType));
+            napi_value networkTypeValue;
+            napi_create_int32(env, networkType, &networkTypeValue);
+            napi_set_named_property(env, workInfoData, "networkType", networkTypeValue);
         }
         if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
             if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
-                workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(false));
+                napi_value isChargingValue;
+                napi_get_boolean(env, false, &isChargingValue);
+                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
             } else {
-                workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(true));
-                workInfoData->SetProperty("chargerType", nativeEngine.CreateNumber(charger));
+                napi_value isChargingValue;
+                napi_get_boolean(env, true, &isChargingValue);
+                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
+
+                napi_value chargerTypeValue;
+                napi_create_int32(env, charger, &chargerTypeValue);
+                napi_set_named_property(env, workInfoData, "chargerType", chargerTypeValue);
             }
         }
         if (batteryLevel != INVALID_VALUE) {
-            workInfoData->SetProperty("batteryLevel", nativeEngine.CreateNumber(batteryLevel));
+            napi_value batteryLevelValue;
+            napi_create_int32(env, batteryLevel, &batteryLevelValue);
+            napi_set_named_property(env, workInfoData, "batteryLevel", batteryLevelValue);
         }
         if (batteryStatus != WorkCondition::BatteryStatus::BATTERY_UNKNOWN) {
-            workInfoData->SetProperty("batteryStatus", nativeEngine.CreateNumber(batteryStatus));
+            napi_value batteryStatusValue;
+            napi_create_int32(env, batteryStatus, &batteryStatusValue);
+            napi_set_named_property(env, workInfoData, "batteryStatus", batteryStatusValue);
         }
         if (storageLevel != WorkCondition::Storage::STORAGE_UNKNOWN) {
-            workInfoData->SetProperty("storageRequest", nativeEngine.CreateNumber(storageLevel));
+            napi_value storageLevelValue;
+            napi_create_int32(env, storageLevel, &storageLevelValue);
+            napi_set_named_property(env, workInfoData, "storageRequest", storageLevelValue);
         }
 
         if (timeInterval > 0) {
             if (isRepeat) {
-                workInfoData->SetProperty("isRepeat", nativeEngine.CreateBoolean(true));
-                workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
+                napi_value isRepeatValue;
+                napi_get_boolean(env, true, &isRepeatValue);
+                napi_set_named_property(env, workInfoData, "isRepeat", isRepeatValue);
+
+                napi_value repeatCycleTimeValue;
+                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
+                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
             } else {
-                workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
-                workInfoData->SetProperty("repeatCount", nativeEngine.CreateNumber(cycleCount));
+                napi_value repeatCycleTimeValue;
+                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
+                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
+
+                napi_value repeatCountValue;
+                napi_create_int32(env, cycleCount, &repeatCountValue);
+                napi_set_named_property(env, workInfoData, "repeatCount", repeatCountValue);
             }
         }
 
-        NativeValue* argv[] = {jworkInfoData};
+        napi_value argv[] = {workInfoData};
         if (!jsObj_) {
             WS_HILOGE("WorkSchedulerExtension Not found js");
             return;
         }
 
-        NativeValue* value = jsObj_->Get();
-        NativeObject* obj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(value);
-        if (obj == nullptr) {
+        napi_value value = jsObj_->GetNapiValue();
+        if (value == nullptr) {
             WS_HILOGE("WorkSchedulerExtension Failed to get WorkSchedulerExtension object");
             return;
         }
 
-        NativeValue* method = obj->GetProperty("onWorkStart");
+        napi_value method;
+        napi_get_named_property(env, value, "onWorkStart", &method);
         if (method == nullptr) {
             WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStart from WorkSchedulerExtension object");
             return;
         }
-        nativeEngine.CallFunction(value, method, argv, 1);
+
+        napi_value callFunctionResult;
+        if (napi_call_function(env, value, method, 1, argv, &callFunctionResult) != napi_ok) {
+            WS_HILOGE("WorkSchedulerExtension call funcation onWorkStart error");
+            return;
+        }
     };
     handler_->PostTask(task);
 }
@@ -288,71 +339,115 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
     WorkSchedulerExtension::OnWorkStop(workInfo);
     auto task = [=]() {
         AbilityRuntime::HandleScope handleScope(jsRuntime_);
-        NativeEngine& nativeEngine = jsRuntime_.GetNativeEngine();
+        napi_env env = jsRuntime_.GetNapiEnv();
 
-        NativeValue* jworkInfoData = nativeEngine.CreateObject();
-        NativeObject* workInfoData = AbilityRuntime::ConvertNativeValueTo<NativeObject>(jworkInfoData);
-        workInfoData->SetProperty("workId", nativeEngine.CreateNumber(workId));
-
-        workInfoData->SetProperty("bundleName", nativeEngine.CreateString(bundleName.c_str(), bundleName.size()));
-
-        workInfoData->SetProperty("abilityName", nativeEngine.CreateString(abilityName.c_str(), abilityName.size()));
-
-        if (getExtrasRet) {
-            workInfoData->SetProperty("parameters", nativeEngine.CreateString(extrasStr.c_str(), extrasStr.size()));
+        napi_value workInfoData;
+        if (napi_create_object(env, &workInfoData) != napi_ok) {
+            WS_HILOGE("WorkSchedulerExtension failed to create workInfoData OnWorkStop");
+            return;
         }
 
-        workInfoData->SetProperty("isPersisted", nativeEngine.CreateBoolean(isPersisted));
+        napi_value workIdValue;
+        napi_create_int32(env, workId, &workIdValue);
+        napi_set_named_property(env, workInfoData, "workId", workIdValue);
+
+        napi_value bundleNameValue;
+        napi_create_string_utf8(env, bundleName.c_str(), bundleName.size(), &bundleNameValue);
+        napi_set_named_property(env, workInfoData, "bundleName", bundleNameValue);
+
+        napi_value abilityNameValue;
+        napi_create_string_utf8(env, abilityName.c_str(), abilityName.size(), &abilityNameValue);
+        napi_set_named_property(env, workInfoData, "abilityName", abilityNameValue);
+
+        if (getExtrasRet) {
+            napi_value parametersValue;
+            napi_create_string_utf8(env, extrasStr.c_str(), extrasStr.size(), &parametersValue);
+            napi_set_named_property(env, workInfoData, "parameters", parametersValue);
+        }
+
+        napi_value isPersistedValue;
+        napi_get_boolean(env, isPersisted, &isPersistedValue);
+        napi_set_named_property(env, workInfoData, "isPersisted", isPersistedValue);
         if (networkType != WorkCondition::Network::NETWORK_UNKNOWN) {
-            workInfoData->SetProperty("networkType", nativeEngine.CreateNumber(networkType));
+            napi_value networkTypeValue;
+            napi_create_int32(env, networkType, &networkTypeValue);
+            napi_set_named_property(env, workInfoData, "networkType", networkTypeValue);
         }
         if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
             if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
-                workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(false));
+                napi_value isChargingValue;
+                napi_get_boolean(env, false, &isChargingValue);
+                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
             } else {
-                workInfoData->SetProperty("isCharging", nativeEngine.CreateBoolean(true));
-                workInfoData->SetProperty("chargerType", nativeEngine.CreateNumber(charger));
+                napi_value isChargingValue;
+                napi_get_boolean(env, true, &isChargingValue);
+                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
+
+                napi_value chargerTypeValue;
+                napi_create_int32(env, charger, &chargerTypeValue);
+                napi_set_named_property(env, workInfoData, "chargerType", chargerTypeValue);
             }
         }
         if (batteryLevel != INVALID_VALUE) {
-            workInfoData->SetProperty("batteryLevel", nativeEngine.CreateNumber(batteryLevel));
+            napi_value batteryLevelValue;
+            napi_create_int32(env, batteryLevel, &batteryLevelValue);
+            napi_set_named_property(env, workInfoData, "batteryLevel", batteryLevelValue);
         }
         if (batteryStatus != WorkCondition::BatteryStatus::BATTERY_UNKNOWN) {
-            workInfoData->SetProperty("batteryStatus", nativeEngine.CreateNumber(batteryStatus));
+            napi_value batteryStatusValue;
+            napi_create_int32(env, batteryStatus, &batteryStatusValue);
+            napi_set_named_property(env, workInfoData, "batteryStatus", batteryStatusValue);
         }
         if (storageLevel != WorkCondition::Storage::STORAGE_UNKNOWN) {
-            workInfoData->SetProperty("storageRequest", nativeEngine.CreateNumber(storageLevel));
+            napi_value storageLevelValue;
+            napi_create_int32(env, storageLevel, &storageLevelValue);
+            napi_set_named_property(env, workInfoData, "storageRequest", storageLevelValue);
         }
 
         if (timeInterval > 0) {
             if (isRepeat) {
-                workInfoData->SetProperty("isRepeat", nativeEngine.CreateBoolean(true));
-                workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
+                napi_value isRepeatValue;
+                napi_get_boolean(env, true, &isRepeatValue);
+                napi_set_named_property(env, workInfoData, "isRepeat", isRepeatValue);
+
+                napi_value repeatCycleTimeValue;
+                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
+                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
             } else {
-                workInfoData->SetProperty("repeatCycleTime", nativeEngine.CreateNumber(timeInterval));
-                workInfoData->SetProperty("repeatCount", nativeEngine.CreateNumber(cycleCount));
+                napi_value repeatCycleTimeValue;
+                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
+                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
+
+                napi_value repeatCountValue;
+                napi_create_int32(env, cycleCount, &repeatCountValue);
+                napi_set_named_property(env, workInfoData, "repeatCount", repeatCountValue);
             }
         }
 
-        NativeValue* argv[] = {jworkInfoData};
+        napi_value argv[] = {workInfoData};
         if (!jsObj_) {
             WS_HILOGE("WorkSchedulerExtension Not found js");
             return;
         }
 
-        NativeValue* value = jsObj_->Get();
-        NativeObject* obj = AbilityRuntime::ConvertNativeValueTo<NativeObject>(value);
-        if (obj == nullptr) {
+        napi_value value = jsObj_->GetNapiValue();
+        if (value == nullptr) {
             WS_HILOGE("WorkSchedulerExtension Failed to get object");
             return;
         }
 
-        NativeValue* method = obj->GetProperty("onWorkStop");
+        napi_value method;
+        napi_get_named_property(env, value, "onWorkStop", &method);
         if (method == nullptr) {
             WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStop from object");
             return;
         }
-        nativeEngine.CallFunction(value, method, argv, 1);
+
+        napi_value callFunctionResult;
+        if (napi_call_function(env, value, method, 1, argv, &callFunctionResult) != napi_ok) {
+            WS_HILOGE("WorkSchedulerExtensioncall funcation onWorkStop error");
+            return;
+        }
     };
     handler_->PostTask(task);
 }

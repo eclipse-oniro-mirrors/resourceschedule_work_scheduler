@@ -24,7 +24,7 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-NativeValue* CreateJsWorkSchedulerExtensionContext(NativeEngine& engine,
+napi_value CreateJsWorkSchedulerExtensionContext(napi_env env,
     std::shared_ptr<WorkSchedulerExtensionContext> context);
 } // namespace WorkScheduler
 } // namespace OHOS

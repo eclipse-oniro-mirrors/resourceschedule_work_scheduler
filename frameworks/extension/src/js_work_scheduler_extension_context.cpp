@@ -29,7 +29,7 @@ public:
         : context_(context) {}
     ~JsWorkSchedulerExtensionContext() = default;
 
-    static void Finalizer(NativeEngine* engine, void* data, void* hint)
+    static void Finalizer(napi_env env, void* data, void* hint)
     {
         std::unique_ptr<JsWorkSchedulerExtensionContext>(
             static_cast<JsWorkSchedulerExtensionContext*>(data));
@@ -39,15 +39,18 @@ private:
 };
 } // namespace
 
-NativeValue* CreateJsWorkSchedulerExtensionContext(NativeEngine& engine,
+napi_value CreateJsWorkSchedulerExtensionContext(napi_env env,
     std::shared_ptr<WorkSchedulerExtensionContext> context)
 {
-    NativeValue *objValue = AbilityRuntime::CreateJsExtensionContext(engine, context);
-    NativeObject *object = AbilityRuntime::ConvertNativeValueTo<NativeObject>(objValue);
+    napi_value objValue = AbilityRuntime::CreateJsExtensionContext(env, context);
 
     std::unique_ptr<JsWorkSchedulerExtensionContext> jsContext =
         std::make_unique<JsWorkSchedulerExtensionContext>(context);
-    object->SetNativePointer(jsContext.release(), JsWorkSchedulerExtensionContext::Finalizer, nullptr);
+        
+    if (napi_wrap(env, objValue, jsContext.release(), JsWorkSchedulerExtensionContext::Finalizer, nullptr, nullptr) != napi_ok) {
+        WS_HILOGE("JsWorkSchedulerExtensionContext failed to wrap the object");
+        return nullptr;
+    }
     return objValue;
 }
 } // namespace WorkScheduler
