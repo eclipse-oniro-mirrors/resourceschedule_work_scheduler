@@ -181,6 +181,143 @@ void JsWorkSchedulerExtension::OnDisconnect(const AAFwk::Want& want)
     AbilityRuntime::Extension::OnDisconnect(want);
 }
 
+void SetCommonInfo(napi_env env, napi_value workInfoData, int32_t workId, std::string bundleName,
+    std::string abilityName)
+{
+    napi_value workIdValue;
+    napi_create_int32(env, workId, &workIdValue);
+    napi_set_named_property(env, workInfoData, "workId", workIdValue);
+
+    napi_value bundleNameValue;
+    napi_create_string_utf8(env, bundleName.c_str(), bundleName.size(), &bundleNameValue);
+    napi_set_named_property(env, workInfoData, "bundleName", bundleNameValue);
+
+    napi_value abilityNameValue;
+    napi_create_string_utf8(env, abilityName.c_str(), abilityName.size(), &abilityNameValue);
+    napi_set_named_property(env, workInfoData, "abilityName", abilityNameValue);
+}
+
+void SetPersistedInfo(napi_env env, napi_value workInfoData, bool isPersisted)
+{
+    napi_value isPersistedValue;
+    napi_get_boolean(env, isPersisted, &isPersistedValue);
+    napi_set_named_property(env, workInfoData, "isPersisted", isPersistedValue);
+}
+
+void SetExtrasInfo(napi_env env, napi_value workInfoData, bool getExtrasRet, std::string extrasStr)
+{
+    if (getExtrasRet) {
+        napi_value parametersValue;
+        napi_create_string_utf8(env, extrasStr.c_str(), extrasStr.size(), &parametersValue);
+        napi_set_named_property(env, workInfoData, "parameters", parametersValue);
+    }
+}
+
+void SetNetWorkInfo(napi_env env, napi_value workInfoData, WorkCondition::Network networkType)
+{
+    if (networkType != WorkCondition::Network::NETWORK_UNKNOWN) {
+        napi_value networkTypeValue;
+        napi_create_int32(env, networkType, &networkTypeValue);
+        napi_set_named_property(env, workInfoData, "networkType", networkTypeValue);
+    }
+}
+
+void SetChargerTypeInfo(napi_env env, napi_value workInfoData, WorkCondition::Charger charger)
+{
+    if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
+        if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
+            napi_value isChargingValue;
+            napi_get_boolean(env, false, &isChargingValue);
+            napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
+        } else {
+            napi_value isChargingValue;
+            napi_get_boolean(env, true, &isChargingValue);
+            napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
+
+            napi_value chargerTypeValue;
+            napi_create_int32(env, charger, &chargerTypeValue);
+            napi_set_named_property(env, workInfoData, "chargerType", chargerTypeValue);
+        }
+    }
+}
+
+void SetBatteryInfo(napi_env env, napi_value workInfoData, int32_t batteryLevel,
+    WorkCondition::BatteryStatus batteryStatus)
+{
+    if (batteryLevel != INVALID_VALUE) {
+        napi_value batteryLevelValue;
+        napi_create_int32(env, batteryLevel, &batteryLevelValue);
+        napi_set_named_property(env, workInfoData, "batteryLevel", batteryLevelValue);
+    }
+    if (batteryStatus != WorkCondition::BatteryStatus::BATTERY_UNKNOWN) {
+        napi_value batteryStatusValue;
+        napi_create_int32(env, batteryStatus, &batteryStatusValue);
+        napi_set_named_property(env, workInfoData, "batteryStatus", batteryStatusValue);
+    }
+}
+
+void SetStorageInfo(napi_env env, napi_value workInfoData, WorkCondition::Storage storageLevel)
+{
+    if (storageLevel != WorkCondition::Storage::STORAGE_UNKNOWN) {
+        napi_value storageLevelValue;
+        napi_create_int32(env, storageLevel, &storageLevelValue);
+        napi_set_named_property(env, workInfoData, "storageRequest", storageLevelValue);
+    }
+}
+
+void SetRepeatInfo(napi_env env, napi_value workInfoData, bool isRepeat,
+    uint32_t timeInterval, int32_t cycleCount)
+{
+    if (isRepeat) {
+        napi_value isRepeatValue;
+        napi_get_boolean(env, true, &isRepeatValue);
+        napi_set_named_property(env, workInfoData, "isRepeat", isRepeatValue);
+
+        napi_value repeatCycleTimeValue;
+        napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
+        napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
+    } else {
+        napi_value repeatCycleTimeValue;
+        napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
+        napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
+
+        napi_value repeatCountValue;
+        napi_create_int32(env, cycleCount, &repeatCountValue);
+        napi_set_named_property(env, workInfoData, "repeatCount", repeatCountValue);
+    }
+}
+
+bool CallFuncation(napi_env env, napi_value workInfoData,
+    std::unique_ptr<NativeReference> &jsObj_, const char* functionName)
+{
+    napi_value argv[] = {workInfoData};
+    if (!jsObj_) {
+        WS_HILOGE("WorkSchedulerExtension Not found js");
+        return false;
+    }
+
+    napi_value value = jsObj_->GetNapiValue();
+    if (value == nullptr) {
+        WS_HILOGE("WorkSchedulerExtension Failed to get WorkSchedulerExtension object");
+        return false;
+    }
+
+    napi_value method;
+    napi_get_named_property(env, value, functionName, &method);
+    if (method == nullptr) {
+        WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStart from WorkSchedulerExtension object");
+        return false;
+    }
+
+    napi_value callFunctionResult;
+    if (napi_call_function(env, value, method, 1, argv, &callFunctionResult) != napi_ok) {
+        WS_HILOGE("WorkSchedulerExtension call funcation onWorkStart error");
+        return false;
+    }
+
+    return true;
+}
+
 void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
 {
     if (handler_ == nullptr) {
@@ -211,105 +348,20 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
             WS_HILOGE("WorkSchedulerExtension failed to create workInfoData OnWorkStart");
             return;
         }
-        napi_value workIdValue;
-        napi_create_int32(env, workId, &workIdValue);
-        napi_set_named_property(env, workInfoData, "workId", workIdValue);
 
-        napi_value bundleNameValue;
-        napi_create_string_utf8(env, bundleName.c_str(), bundleName.size(), &bundleNameValue);
-        napi_set_named_property(env, workInfoData, "bundleName", bundleNameValue);
-
-        napi_value abilityNameValue;
-        napi_create_string_utf8(env, abilityName.c_str(), abilityName.size(), &abilityNameValue);
-        napi_set_named_property(env, workInfoData, "abilityName", abilityNameValue);
-
-        if (getExtrasRet) {
-            napi_value parametersValue;
-            napi_create_string_utf8(env, extrasStr.c_str(), extrasStr.size(), &parametersValue);
-            napi_set_named_property(env, workInfoData, "parameters", parametersValue);
-        }
-
-        napi_value isPersistedValue;
-        napi_get_boolean(env, isPersisted, &isPersistedValue);
-        napi_set_named_property(env, workInfoData, "isPersisted", isPersistedValue);
-        if (networkType != WorkCondition::Network::NETWORK_UNKNOWN) {
-            napi_value networkTypeValue;
-            napi_create_int32(env, networkType, &networkTypeValue);
-            napi_set_named_property(env, workInfoData, "networkType", networkTypeValue);
-        }
-        if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
-            if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
-                napi_value isChargingValue;
-                napi_get_boolean(env, false, &isChargingValue);
-                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
-            } else {
-                napi_value isChargingValue;
-                napi_get_boolean(env, true, &isChargingValue);
-                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
-
-                napi_value chargerTypeValue;
-                napi_create_int32(env, charger, &chargerTypeValue);
-                napi_set_named_property(env, workInfoData, "chargerType", chargerTypeValue);
-            }
-        }
-        if (batteryLevel != INVALID_VALUE) {
-            napi_value batteryLevelValue;
-            napi_create_int32(env, batteryLevel, &batteryLevelValue);
-            napi_set_named_property(env, workInfoData, "batteryLevel", batteryLevelValue);
-        }
-        if (batteryStatus != WorkCondition::BatteryStatus::BATTERY_UNKNOWN) {
-            napi_value batteryStatusValue;
-            napi_create_int32(env, batteryStatus, &batteryStatusValue);
-            napi_set_named_property(env, workInfoData, "batteryStatus", batteryStatusValue);
-        }
-        if (storageLevel != WorkCondition::Storage::STORAGE_UNKNOWN) {
-            napi_value storageLevelValue;
-            napi_create_int32(env, storageLevel, &storageLevelValue);
-            napi_set_named_property(env, workInfoData, "storageRequest", storageLevelValue);
-        }
+        SetCommonInfo(env, workInfoData, workId, bundleName, abilityName);
+        SetExtrasInfo(env, workInfoData, getExtrasRet, extrasStr);
+        SetPersistedInfo(env, workInfoData, isPersisted);
+        SetNetWorkInfo(env, workInfoData, networkType);
+        SetChargerTypeInfo(env, workInfoData, charger);
+        SetBatteryInfo(env, workInfoData, batteryLevel, batteryStatus);
+        SetStorageInfo(env, workInfoData, storageLevel);
 
         if (timeInterval > 0) {
-            if (isRepeat) {
-                napi_value isRepeatValue;
-                napi_get_boolean(env, true, &isRepeatValue);
-                napi_set_named_property(env, workInfoData, "isRepeat", isRepeatValue);
-
-                napi_value repeatCycleTimeValue;
-                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
-                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
-            } else {
-                napi_value repeatCycleTimeValue;
-                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
-                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
-
-                napi_value repeatCountValue;
-                napi_create_int32(env, cycleCount, &repeatCountValue);
-                napi_set_named_property(env, workInfoData, "repeatCount", repeatCountValue);
-            }
+            SetRepeatInfo(env, workInfoData, isRepeat, timeInterval, cycleCount);
         }
 
-        napi_value argv[] = {workInfoData};
-        if (!jsObj_) {
-            WS_HILOGE("WorkSchedulerExtension Not found js");
-            return;
-        }
-
-        napi_value value = jsObj_->GetNapiValue();
-        if (value == nullptr) {
-            WS_HILOGE("WorkSchedulerExtension Failed to get WorkSchedulerExtension object");
-            return;
-        }
-
-        napi_value method;
-        napi_get_named_property(env, value, "onWorkStart", &method);
-        if (method == nullptr) {
-            WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStart from WorkSchedulerExtension object");
-            return;
-        }
-
-        napi_value callFunctionResult;
-        if (napi_call_function(env, value, method, 1, argv, &callFunctionResult) != napi_ok) {
-            WS_HILOGE("WorkSchedulerExtension call funcation onWorkStart error");
+        if (!CallFuncation(env, workInfoData, jsObj_, "onWorkStart")) {
             return;
         }
     };
@@ -347,105 +399,19 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
             return;
         }
 
-        napi_value workIdValue;
-        napi_create_int32(env, workId, &workIdValue);
-        napi_set_named_property(env, workInfoData, "workId", workIdValue);
-
-        napi_value bundleNameValue;
-        napi_create_string_utf8(env, bundleName.c_str(), bundleName.size(), &bundleNameValue);
-        napi_set_named_property(env, workInfoData, "bundleName", bundleNameValue);
-
-        napi_value abilityNameValue;
-        napi_create_string_utf8(env, abilityName.c_str(), abilityName.size(), &abilityNameValue);
-        napi_set_named_property(env, workInfoData, "abilityName", abilityNameValue);
-
-        if (getExtrasRet) {
-            napi_value parametersValue;
-            napi_create_string_utf8(env, extrasStr.c_str(), extrasStr.size(), &parametersValue);
-            napi_set_named_property(env, workInfoData, "parameters", parametersValue);
-        }
-
-        napi_value isPersistedValue;
-        napi_get_boolean(env, isPersisted, &isPersistedValue);
-        napi_set_named_property(env, workInfoData, "isPersisted", isPersistedValue);
-        if (networkType != WorkCondition::Network::NETWORK_UNKNOWN) {
-            napi_value networkTypeValue;
-            napi_create_int32(env, networkType, &networkTypeValue);
-            napi_set_named_property(env, workInfoData, "networkType", networkTypeValue);
-        }
-        if (charger != WorkCondition::Charger::CHARGING_UNKNOWN) {
-            if (charger == WorkCondition::Charger::CHARGING_UNPLUGGED) {
-                napi_value isChargingValue;
-                napi_get_boolean(env, false, &isChargingValue);
-                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
-            } else {
-                napi_value isChargingValue;
-                napi_get_boolean(env, true, &isChargingValue);
-                napi_set_named_property(env, workInfoData, "isCharging", isChargingValue);
-
-                napi_value chargerTypeValue;
-                napi_create_int32(env, charger, &chargerTypeValue);
-                napi_set_named_property(env, workInfoData, "chargerType", chargerTypeValue);
-            }
-        }
-        if (batteryLevel != INVALID_VALUE) {
-            napi_value batteryLevelValue;
-            napi_create_int32(env, batteryLevel, &batteryLevelValue);
-            napi_set_named_property(env, workInfoData, "batteryLevel", batteryLevelValue);
-        }
-        if (batteryStatus != WorkCondition::BatteryStatus::BATTERY_UNKNOWN) {
-            napi_value batteryStatusValue;
-            napi_create_int32(env, batteryStatus, &batteryStatusValue);
-            napi_set_named_property(env, workInfoData, "batteryStatus", batteryStatusValue);
-        }
-        if (storageLevel != WorkCondition::Storage::STORAGE_UNKNOWN) {
-            napi_value storageLevelValue;
-            napi_create_int32(env, storageLevel, &storageLevelValue);
-            napi_set_named_property(env, workInfoData, "storageRequest", storageLevelValue);
-        }
-
+        SetCommonInfo(env, workInfoData, workId, bundleName, abilityName);
+        SetExtrasInfo(env, workInfoData, getExtrasRet, extrasStr);
+        SetPersistedInfo(env, workInfoData, isPersisted);
+        SetNetWorkInfo(env, workInfoData, networkType);
+        SetChargerTypeInfo(env, workInfoData, charger);
+        SetBatteryInfo(env, workInfoData, batteryLevel, batteryStatus);
+        SetStorageInfo(env, workInfoData, storageLevel);
+        
         if (timeInterval > 0) {
-            if (isRepeat) {
-                napi_value isRepeatValue;
-                napi_get_boolean(env, true, &isRepeatValue);
-                napi_set_named_property(env, workInfoData, "isRepeat", isRepeatValue);
-
-                napi_value repeatCycleTimeValue;
-                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
-                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
-            } else {
-                napi_value repeatCycleTimeValue;
-                napi_create_uint32(env, timeInterval, &repeatCycleTimeValue);
-                napi_set_named_property(env, workInfoData, "repeatCycleTime", repeatCycleTimeValue);
-
-                napi_value repeatCountValue;
-                napi_create_int32(env, cycleCount, &repeatCountValue);
-                napi_set_named_property(env, workInfoData, "repeatCount", repeatCountValue);
-            }
+            SetRepeatInfo(env, workInfoData, isRepeat, timeInterval, cycleCount);
         }
 
-        napi_value argv[] = {workInfoData};
-        if (!jsObj_) {
-            WS_HILOGE("WorkSchedulerExtension Not found js");
-            return;
-        }
-
-        napi_value value = jsObj_->GetNapiValue();
-        if (value == nullptr) {
-            WS_HILOGE("WorkSchedulerExtension Failed to get object");
-            return;
-        }
-
-        napi_value method;
-        napi_get_named_property(env, value, "onWorkStop", &method);
-        if (method == nullptr) {
-            WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStop from object");
-            return;
-        }
-
-        napi_value callFunctionResult;
-        if (napi_call_function(env, value, method, 1, argv, &callFunctionResult) != napi_ok) {
-            WS_HILOGE("WorkSchedulerExtensioncall funcation onWorkStop error");
+        if (!CallFuncation(env, workInfoData, jsObj_, "onWorkStop")) {
             return;
         }
     };

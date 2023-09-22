@@ -46,8 +46,9 @@ napi_value CreateJsWorkSchedulerExtensionContext(napi_env env,
 
     std::unique_ptr<JsWorkSchedulerExtensionContext> jsContext =
         std::make_unique<JsWorkSchedulerExtensionContext>(context);
-        
-    if (napi_wrap(env, objValue, jsContext.release(), JsWorkSchedulerExtensionContext::Finalizer, nullptr, nullptr) != napi_ok) {
+    napi_status status = napi_wrap(env, objValue, jsContext.release(), JsWorkSchedulerExtensionContext::Finalizer,
+        nullptr, nullptr);
+    if (status != napi_ok) {
         WS_HILOGE("JsWorkSchedulerExtensionContext failed to wrap the object");
         return nullptr;
     }
