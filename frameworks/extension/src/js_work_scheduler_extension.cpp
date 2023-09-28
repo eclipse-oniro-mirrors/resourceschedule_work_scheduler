@@ -181,8 +181,8 @@ void JsWorkSchedulerExtension::OnDisconnect(const AAFwk::Want& want)
     AbilityRuntime::Extension::OnDisconnect(want);
 }
 
-void SetCommonInfo(napi_env env, napi_value workInfoData, int32_t workId, std::string bundleName,
-    std::string abilityName)
+void SetCommonInfo(napi_env env, napi_value workInfoData, int32_t workId,
+    const std::string& bundleName, const std::string& abilityName)
 {
     napi_value workIdValue;
     napi_create_int32(env, workId, &workIdValue);
@@ -204,7 +204,7 @@ void SetPersistedInfo(napi_env env, napi_value workInfoData, bool isPersisted)
     napi_set_named_property(env, workInfoData, "isPersisted", isPersistedValue);
 }
 
-void SetExtrasInfo(napi_env env, napi_value workInfoData, bool getExtrasRet, std::string extrasStr)
+void SetExtrasInfo(napi_env env, napi_value workInfoData, bool getExtrasRet, const std::string& extrasStr)
 {
     if (getExtrasRet) {
         napi_value parametersValue;
