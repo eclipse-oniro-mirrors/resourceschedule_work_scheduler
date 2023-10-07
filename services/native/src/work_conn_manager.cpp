@@ -60,7 +60,7 @@ sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
 bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 {
     if (connMap_.count(workStatus->workId_) > 0) {
-        WS_HILOGD("Work has started with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
+        WS_HILOGE("Work has started with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
             workStatus->workId_.c_str(), workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str());
         return false;
     }
