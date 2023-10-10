@@ -117,7 +117,7 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
         WS_HILOGE("failed, descriptor is not matched!");
         return E_PARCEL_OPERATION_FAILED;
     }
-    return HandleRequest(code, data, reply, *this);
+    return HandleRequest(code, data, reply, option, *this);
 }
 
 int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
