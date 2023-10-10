@@ -260,6 +260,7 @@ private:
     int32_t dumpSetMemory_;
     int32_t watchdogTime_;
 
+    std::recursive_mutex ideDebugListMutex_;
     std::list<std::shared_ptr<WorkStatus>> ideDebugList;
 };
 } // namespace WorkScheduler
