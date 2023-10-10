@@ -61,8 +61,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
     }
 
     napi_value promise = nullptr;
-    AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo =
-        new (std::nothrow) AsyncCallbackInfoObtainAllWorks(env);
+    AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = new (std::nothrow) AsyncCallbackInfoObtainAllWorks(env);
     if (!asyncCallbackInfo) {
         return Common::JSParaError(env, callback);
     }
@@ -72,9 +71,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
     napi_value resourceName = nullptr;
     NAPI_CALL(env, napi_create_string_latin1(env, "ObtainAllWorks", NAPI_AUTO_LENGTH, &resourceName));
 
-    NAPI_CALL(env, napi_create_async_work(env,
-        nullptr,
-        resourceName,
+    NAPI_CALL(env, napi_create_async_work(env, nullptr, resourceName,
         [](napi_env env, void *data) {
             AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = static_cast<AsyncCallbackInfoObtainAllWorks *>(data);
             asyncCallbackInfo->errorCode =
@@ -99,9 +96,7 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
                 }
                 Common::ReturnCallbackPromise(env, *asyncCallbackInfo, result);
             }
-        },
-        static_cast<AsyncCallbackInfoObtainAllWorks *>(asyncCallbackInfo),
-        &asyncCallbackInfo->asyncWork));
+        }, static_cast<AsyncCallbackInfoObtainAllWorks *>(asyncCallbackInfo), &asyncCallbackInfo->asyncWork));
 
     NAPI_CALL(env, napi_queue_async_work(env, asyncCallbackInfo->asyncWork));
     callbackPtr.release();
