@@ -80,8 +80,7 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
     }
 
     napi_value promise = nullptr;
-    AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo =
-        new (std::nothrow) AsyncCallbackIsLastWorkTimeOut(env);
+    AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = new (std::nothrow) AsyncCallbackIsLastWorkTimeOut(env);
     if (!asyncCallbackInfo) {
         return Common::JSParaError(env, params.callback);
     }
@@ -93,9 +92,7 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
     napi_value resourceName = nullptr;
     NAPI_CALL(env, napi_create_string_latin1(env, "IsLastWorkTimeOut", NAPI_AUTO_LENGTH, &resourceName));
 
-    NAPI_CALL(env, napi_create_async_work(env,
-        nullptr,
-        resourceName,
+    NAPI_CALL(env, napi_create_async_work(env, nullptr, resourceName,
         [](napi_env env, void *data) {
             AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = static_cast<AsyncCallbackIsLastWorkTimeOut *>(data);
             asyncCallbackInfo->errorCode =
