@@ -567,7 +567,7 @@ void WorkPolicyManager::TriggerIdeWork()
     auto topWork = ideDebugList.front();
     ideDebugList.pop_front();
     if (topWork->IsRunning()) {
-        SendIdeWorkRetriggerEvent(WATCHDOG_TIME + DELAY_TIME_SHORT);
+        SendIdeWorkRetriggerEvent(g_lastWatchdogTime + DELAY_TIME_SHORT);
         return;
     }
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
@@ -580,7 +580,7 @@ void WorkPolicyManager::TriggerIdeWork()
         ideDebugList.clear();
         return;
     }
-    SendIdeWorkRetriggerEvent(WATCHDOG_TIME + DELAY_TIME_SHORT);
+    SendIdeWorkRetriggerEvent(g_lastWatchdogTime + DELAY_TIME_SHORT);
 }
 
 void WorkPolicyManager::SendIdeWorkRetriggerEvent(int32_t delaytime)
