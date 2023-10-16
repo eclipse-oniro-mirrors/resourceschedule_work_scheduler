@@ -117,7 +117,8 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
     if (conditionType == WorkCondition::Type::GROUP || conditionType == WorkCondition::Type::STANDBY) {
         for (auto it : queueMap_) {
             shared_ptr<WorkQueue> workQueue = it.second;
-            result = workQueue->OnConditionChanged(conditionType, conditionVal);
+            auto works = workQueue->OnConditionChanged(conditionType, conditionVal);
+            result.insert(result.end(), works.begin(), works.end());
         }
     }
     auto it = result.begin();
