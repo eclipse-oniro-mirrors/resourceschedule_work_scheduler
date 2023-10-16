@@ -23,16 +23,45 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+int32_t WorkSchedServiceStub::HandleObtainAllWorksRequest(MessageParcel &data, MessageParcel &reply)
+{
+    std::list<std::shared_ptr<WorkInfo>> workInfos;
+    int32_t ret = ObtainAllWorksStub(data, workInfos);
+    uint32_t worksize = workInfos.size();
+    reply.WriteInt32(ret);
+    reply.WriteInt32(worksize);
+    for (auto workInfo : workInfos) {
+        reply.WriteParcelable(&*workInfo);
+    }
+    return ERR_OK;
+}
+
+int32_t WorkSchedServiceStub::HandleGetWorkStatusRequest(MessageParcel &data, MessageParcel &reply)
+{
+    WS_HILOGI("call GetWorkStatus");
+    std::shared_ptr<WorkInfo> workInfo;
+    int32_t ret = GetWorkStatusStub(data, workInfo);
+    reply.WriteInt32(ret);
+    reply.WriteParcelable(&*workInfo);
+    return ERR_OK;
+}
+
+int32_t WorkSchedServiceStub::HandleGetAllRunningWorksRequest(MessageParcel &reply)
+{
+    std::list<std::shared_ptr<WorkInfo>> workInfos;
+    int32_t ret = GetAllRunningWorksStub(workInfos);
+    uint32_t worksize = workInfos.size();
+    reply.WriteInt32(ret);
+    reply.WriteInt32(worksize);
+    for (auto workInfo : workInfos) {
+        reply.WriteParcelable(&*workInfo);
+    }
+    return ERR_OK;
+}
+
+int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
-    WS_HILOGD("cmd = %{public}u, flags = %{public}d", code, option.GetFlags());
-    std::u16string descriptor = WorkSchedServiceStub::GetDescriptor();
-    std::u16string remoteDescriptor = data.ReadInterfaceToken();
-    if (descriptor != remoteDescriptor) {
-        WS_HILOGE("failed, descriptor is not matched!");
-        return E_PARCEL_OPERATION_FAILED;
-    }
     switch (code) {
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::START_WORK): {
             int32_t ret = StartWorkStub(data);
@@ -62,34 +91,13 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::OBTAIN_ALL_WORKS): {
-            std::list<std::shared_ptr<WorkInfo>> workInfos;
-            int32_t ret = ObtainAllWorksStub(data, workInfos);
-            uint32_t worksize = workInfos.size();
-            reply.WriteInt32(ret);
-            reply.WriteInt32(worksize);
-            for (auto workInfo : workInfos) {
-                reply.WriteParcelable(&*workInfo);
-            }
-            return ERR_OK;
+            return HandleObtainAllWorksRequest(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_WORK_STATUS): {
-            WS_HILOGI("call GetWorkStatus");
-            std::shared_ptr<WorkInfo> workInfo;
-            int32_t ret = GetWorkStatusStub(data, workInfo);
-            reply.WriteInt32(ret);
-            reply.WriteParcelable(&*workInfo);
-            return ERR_OK;
+            return HandleGetWorkStatusRequest(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_ALL_RUNNING_WORKS): {
-            std::list<std::shared_ptr<WorkInfo>> workInfos;
-            int32_t ret = GetAllRunningWorksStub(workInfos);
-            uint32_t worksize = workInfos.size();
-            reply.WriteInt32(ret);
-            reply.WriteInt32(worksize);
-            for (auto workInfo : workInfos) {
-                reply.WriteParcelable(&*workInfo);
-            }
-            return ERR_OK;
+            return HandleGetAllRunningWorksRequest(reply);
         }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
@@ -97,6 +105,19 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
         }
     }
     return ERR_OK;
+}
+
+int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
+    MessageOption &option)
+{
+    WS_HILOGD("cmd = %{public}u, flags = %{public}d", code, option.GetFlags());
+    std::u16string descriptor = WorkSchedServiceStub::GetDescriptor();
+    std::u16string remoteDescriptor = data.ReadInterfaceToken();
+    if (descriptor != remoteDescriptor) {
+        WS_HILOGE("failed, descriptor is not matched!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return HandleRequest(code, data, reply, option);
 }
 
 int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)

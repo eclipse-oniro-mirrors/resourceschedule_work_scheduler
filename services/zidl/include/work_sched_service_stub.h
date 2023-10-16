@@ -101,6 +101,11 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t GetAllRunningWorksStub(std::list<std::shared_ptr<WorkInfo>>& workInfos);
+private:
+    int32_t HandleObtainAllWorksRequest(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetWorkStatusRequest(MessageParcel &data, MessageParcel &reply);
+    int32_t HandleGetAllRunningWorksRequest(MessageParcel &reply);
+    int32_t HandleRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
