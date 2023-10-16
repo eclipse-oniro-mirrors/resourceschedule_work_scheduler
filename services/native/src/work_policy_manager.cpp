@@ -547,6 +547,7 @@ int32_t WorkPolicyManager::WorkPolicyManager::GetWatchdogTime()
 
 void WorkPolicyManager::DumpCheckIdeWorkToRun(const std::string &bundleName, const std::string &abilityName)
 {
+    std::lock_guard<std::recursive_mutex> lock(ideDebugListMutex_);
     ideDebugList = GetAllIdeWorkStatus(bundleName, abilityName);
     if (ideDebugList.empty()) {
         WS_HILOGE("ideDebugList is empty, please add one work");
@@ -557,6 +558,7 @@ void WorkPolicyManager::DumpCheckIdeWorkToRun(const std::string &bundleName, con
 
 void WorkPolicyManager::TriggerIdeWork()
 {
+    std::lock_guard<std::recursive_mutex> lock(ideDebugListMutex_);
     if (ideDebugList.empty()) {
         WS_HILOGI("ideDebugList has been empty, all the works have been done");
         return;
@@ -565,7 +567,7 @@ void WorkPolicyManager::TriggerIdeWork()
     auto topWork = ideDebugList.front();
     ideDebugList.pop_front();
     if (topWork->IsRunning()) {
-        SendIdeWorkRetriggerEvent(watchdogTime_ + DELAY_TIME_SHORT);
+        SendIdeWorkRetriggerEvent(g_lastWatchdogTime + DELAY_TIME_SHORT);
         return;
     }
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
@@ -578,7 +580,7 @@ void WorkPolicyManager::TriggerIdeWork()
         ideDebugList.clear();
         return;
     }
-    SendIdeWorkRetriggerEvent(watchdogTime_ + DELAY_TIME_SHORT);
+    SendIdeWorkRetriggerEvent(g_lastWatchdogTime + DELAY_TIME_SHORT);
 }
 
 void WorkPolicyManager::SendIdeWorkRetriggerEvent(int32_t delaytime)
