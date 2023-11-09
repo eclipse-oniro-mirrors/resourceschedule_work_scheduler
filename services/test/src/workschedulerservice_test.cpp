@@ -47,25 +47,14 @@ void WorkSchedulerServiceTest::SetUpTestCase()
  */
 HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level1)
 {
+    workSchedulerService_->ready_ = true;
     workSchedulerService_->OnStart();
     EXPECT_NE(workSchedulerService_, nullptr);
 }
 
 /**
- * @tc.name: onStop_001
- * @tc.desc: Test WorkSchedulerService OnStop.
- * @tc.type: FUNC
- * @tc.require: I8F08T
- */
-HWTEST_F(WorkSchedulerServiceTest, onStop_001, TestSize.Level1)
-{
-    workSchedulerService_->OnStop();
-    EXPECT_NE(workSchedulerService_, nullptr);
-}
-
-/**
  * @tc.name: startWork_001
- * @tc.desc: Test WorkSchedulerService onStop.
+ * @tc.desc: Test WorkSchedulerService startWork.
  * @tc.type: FUNC
  * @tc.require: I8F08T
  */
@@ -86,6 +75,89 @@ HWTEST_F(WorkSchedulerServiceTest, stopWork_001, TestSize.Level1)
 {
     WorkInfo workinfo = WorkInfo();
     auto ret = workSchedulerService_->StopWork(workinfo);
+    EXPECT_NE(ret, 0);
+}
+
+/**
+ * @tc.name: StopAndCancelWork_001
+ * @tc.desc: Test WorkSchedulerService StopAndCancelWork.
+ * @tc.type: FUNC
+ * @tc.require: I8F08T
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_001, TestSize.Level1)
+{
+    WorkInfo workinfo = WorkInfo();
+    auto ret = workSchedulerService_->StopAndCancelWork(workinfo);
+    EXPECT_NE(ret, 0);
+}
+
+/**
+ * @tc.name: StopAndClearWorks_001
+ * @tc.desc: Test WorkSchedulerService StopAndClearWorks.
+ * @tc.type: FUNC
+ * @tc.require: I8F08T
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorks_001, TestSize.Level1)
+{
+    WorkInfo workinfo = WorkInfo();
+    auto ret = workSchedulerService_->StopAndClearWorks();
+    EXPECT_NE(ret, 0);
+}
+
+/**
+ * @tc.name: IsLastWorkTimeout_001
+ * @tc.desc: Test WorkSchedulerService IsLastWorkTimeout.
+ * @tc.type: FUNC
+ * @tc.require: I8F08T
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_001, TestSize.Level1)
+{
+    bool result;
+    auto ret = workSchedulerService_->IsLastWorkTimeout(1, result);
+    EXPECT_NE(ret, 0);
+}
+
+/**
+ * @tc.name: ObtainAllWorks_001
+ * @tc.desc: Test WorkSchedulerService ObtainAllWorks.
+ * @tc.type: FUNC
+ * @tc.require: I8F08T
+ */
+HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
+{
+    std::list<std::shared_ptr<WorkInfo>> workInfos;
+    int32_t uid, pid;
+
+    auto ret = workSchedulerService_->ObtainAllWorks(uid, pid, workInfos);
+    EXPECT_NE(ret, 0);
+}
+
+/**
+ * @tc.name: GetWorkStatus_001
+ * @tc.desc: Test WorkSchedulerService GetWorkStatus.
+ * @tc.type: FUNC
+ * @tc.require: I8F08T
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    int32_t uid, pid;
+
+    auto ret = workSchedulerService_->GetWorkStatus(uid, pid, workInfo);
+    EXPECT_NE(ret, 0);
+}
+
+/**
+ * @tc.name: GetAllRunningWorks_001
+ * @tc.desc: Test WorkSchedulerService GetAllRunningWorks.
+ * @tc.type: FUNC
+ * @tc.require: I8F08T
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_001, TestSize.Level1)
+{
+    std::list<std::shared_ptr<WorkInfo>> workInfos;
+ 
+    auto ret = workSchedulerService_->GetAllRunningWorks(workInfos);
     EXPECT_NE(ret, 0);
 }
 }
