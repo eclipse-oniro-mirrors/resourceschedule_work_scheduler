@@ -32,7 +32,7 @@ public:
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 
-std::shared_ptr<WorkSchedulerService> workSchedulerService_ = nullptr;
+std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ = nullptr;
 
 void WorkSchedulerServiceTest::SetUpTestCase()
 {
@@ -88,5 +88,5 @@ HWTEST_F(WorkSchedulerServiceTest, stopWork_001, TestSize.Level1)
     auto ret = workSchedulerService_->StopWork(workinfo);
     EXPECT_NE(ret, 0);
 }
-}  // namespace BackgroundTaskMgr
-}  // namespace OHOS
+}
+}
