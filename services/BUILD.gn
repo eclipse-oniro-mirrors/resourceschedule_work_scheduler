@@ -195,3 +195,4 @@ ohos_static_library("workschedservice_static") {
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
 }
+
