@@ -26,7 +26,13 @@ config("worksched_public_config") {
 
 ohos_shared_library("workschedservice") {
   shlib_type = "sa"
+  branch_protector_ret = "pac_ret"
 
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
@@ -112,6 +118,13 @@ ohos_shared_library("workschedservice") {
 }
 
 ohos_static_library("workschedservice_static") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",

@@ -22,6 +22,13 @@ config("worksched_public_config") {
 }
 
 ohos_shared_library("workschedclient") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "${worksched_frameworks_path}/src/work_info.cpp",
     "${worksched_frameworks_path}/src/workscheduler_srv_client.cpp",
