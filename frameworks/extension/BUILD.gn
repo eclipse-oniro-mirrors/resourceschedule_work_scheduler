@@ -26,6 +26,13 @@ config("worksched_public_config") {
 }
 
 ohos_shared_library("workschedextension") {
+  branch_protector_ret = "pac_ret"
+
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "${worksched_service_path}/zidl/src/work_scheduler_stub.cpp",
     "${worksched_service_path}/zidl/src/work_scheduler_stub_imp.cpp",
