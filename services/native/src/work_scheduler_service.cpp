@@ -30,6 +30,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include "parameters.h"
+#include "accesstoken_kit.h"
 #include "bundle_mgr_proxy.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
@@ -82,6 +84,7 @@ const char* g_persistedPath = "/data/service/el1/public/WorkScheduler";
 static int g_hasGroupObserver = -1;
 #endif
 const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
+const int32_t ENG_MODE = OHOS::system::GetIntParameter("const.debuggable", 0);
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -565,24 +568,23 @@ void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus>
     }
 }
 
-int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>& args)
+bool WorkSchedulerService::AllowDump()
 {
-    std::string result;
-    if (!ready_) {
-        WS_HILOGE("service is not ready.");
-        result.append("service is not ready.");
-        if (!SaveStringToFd(fd, result)) {
-            WS_HILOGE("save to fd failed.");
-        }
-        return ERR_OK;
+    if (ENG_MODE == 0) {
+        WS_HILOGE("Not eng mode");
+        return false;
     }
+    Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetFirstTokenID();
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenId, "ohos.permission.DUMP");
+    if (ret != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+        WS_HILOGE("CheckPermission failed");
+        return false;
+    }
+    return true;
+}
 
-    std::vector<std::string> argsInStr;
-    std::transform(args.begin(), args.end(), std::back_inserter(argsInStr),
-        [](const std::u16string &arg) {
-        return Str16ToStr8(arg);
-    });
-
+void WorkSchedulerService::DumpProcess(std::vector<std::string> &argsInStr, std::string &result)
+{
     switch (argsInStr.size()) {
         case 0:
             // hidumper -s said '-h'
@@ -614,7 +616,29 @@ int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>
         default:
             result.append("Error params.");
     }
+}
 
+int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>& args)
+{
+    if (!AllowDump()) {
+        return ERR_OK;
+    }
+    std::string result;
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        result.append("service is not ready.");
+        if (!SaveStringToFd(fd, result)) {
+            WS_HILOGE("save to fd failed.");
+        }
+        return ERR_OK;
+    }
+
+    std::vector<std::string> argsInStr;
+    std::transform(args.begin(), args.end(), std::back_inserter(argsInStr),
+        [](const std::u16string &arg) {
+        return Str16ToStr8(arg);
+    });
+    DumpProcess(argsInStr, result);
     if (!SaveStringToFd(fd, result)) {
         WS_HILOGE("save to fd failed.");
     }
