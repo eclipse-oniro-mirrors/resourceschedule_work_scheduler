@@ -41,7 +41,8 @@
           "device_usage_statistics",
           "access_token",
           "netmanager_base",
-          "time_service"
+          "time_service",
+          "init"
         ],
         "third_party": [ "jsoncpp" ]
       },
