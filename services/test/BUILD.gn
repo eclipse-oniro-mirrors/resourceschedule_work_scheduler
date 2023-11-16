@@ -36,7 +36,10 @@ ohos_unittest("WorkScheduleServiceTest") {
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
   ]
-  sources = [ "src/workschedulerservice_test.cpp" ]
+  sources = [
+    "src/event_publisher_test.cpp",
+    "src/workschedulerservice_test.cpp",
+  ]
 
   deps = [
     "${worksched_frameworks_path}:workschedclient",
