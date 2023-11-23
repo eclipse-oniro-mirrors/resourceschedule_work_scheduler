@@ -161,7 +161,7 @@ void JsWorkSchedulerExtension::OnStop()
     WS_HILOGD("end.");
 }
 
-sptr<IRemoteObject> JsWorkSchedulerExtension::OnConnect(const AAFwk::Want& want)
+__attribute__((no_sanitize("cfi"))) sptr<IRemoteObject> JsWorkSchedulerExtension::OnConnect(const AAFwk::Want& want)
 {
     AbilityRuntime::Extension::OnConnect(want);
     WS_HILOGD("begin.");
