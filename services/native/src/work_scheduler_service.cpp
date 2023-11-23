@@ -84,7 +84,6 @@ const char* g_persistedPath = "/data/service/el1/public/WorkScheduler";
 static int g_hasGroupObserver = -1;
 #endif
 const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
-const int32_t ENG_MODE = OHOS::system::GetIntParameter("const.debuggable", 0);
 }
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
@@ -570,17 +569,20 @@ void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus>
 
 bool WorkSchedulerService::AllowDump()
 {
-    if (ENG_MODE == 0) {
-        WS_HILOGE("Not eng mode");
-        return false;
-    }
     Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetFirstTokenID();
     int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(tokenId, "ohos.permission.DUMP");
     if (ret != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
         WS_HILOGE("CheckPermission failed");
         return false;
     }
-    return true;
+    int32_t ENG_MODE = OHOS::system::GetIntParameter("const.debuggable", 0);
+    bool SECURE_MODE = OHOS::system::GetBoolParameter("const.security.developermode.state", false);
+    if (ENG_MODE == 1 || SECURE_MODE) {
+        return true;
+    }
+    
+    WS_HILOGE("Not eng mode and developer mode");
+    return false;
 }
 
 void WorkSchedulerService::DumpProcess(std::vector<std::string> &argsInStr, std::string &result)
@@ -707,10 +709,6 @@ void WorkSchedulerService::DumpProcessWorks(const std::string &bundleName, const
 {
     if (bundleName.empty() || abilityName.empty()) {
         result.append("param error");
-        return;
-    }
-    if (!IsDebugApp(bundleName)) {
-        result.append("is not debug app");
         return;
     }
     workPolicyManager_->DumpCheckIdeWorkToRun(bundleName, abilityName);
