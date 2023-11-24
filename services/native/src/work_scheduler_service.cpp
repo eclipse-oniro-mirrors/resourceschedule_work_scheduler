@@ -70,8 +70,8 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
-auto instance = DelayedSpSingleton<WorkSchedulerService>::GetInstance();
-auto wss = instance.GetRefPtr();
+auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
+auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
 const int32_t INIT_DELAY = 2 * 1000;
 const int32_t MAX_BUFFER = 2048;

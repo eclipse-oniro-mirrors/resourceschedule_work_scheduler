@@ -108,7 +108,7 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
     if (type == WorkCondition::Type::STANDBY && value) {
         isStandby_ = value->boolVal;
     }
-    if (isStandby_ && !DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckStandbyApplyInfo(bundleName_)) {
+    if (isStandby_ && !DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckStandbyApplyInfo(bundleName_)) {
         return E_GROUP_CHANGE_NOT_MATCH_HAP;
     }
     if (IsReady()) {
@@ -141,13 +141,13 @@ void WorkStatus::UpdateTimerIfNeed()
         baseTime_ = getCurrentTime();
         if (conditionMap_.at(WorkCondition::Type::TIMER)->boolVal) {
             workInfo_->RequestBaseTime(baseTime_);
-            DelayedSpSingleton<WorkSchedulerService>::GetInstance()->RefreshPersistedWorks();
+            DelayedSingleton<WorkSchedulerService>::GetInstance()->RefreshPersistedWorks();
             return;
         }
         int32_t cycleLeft = conditionMap_.at(WorkCondition::Type::TIMER)->intVal;
         conditionMap_.at(WorkCondition::Type::TIMER)->intVal = cycleLeft - 1;
         workInfo_->RequestBaseTimeAndCycle(baseTime_, cycleLeft - 1);
-        DelayedSpSingleton<WorkSchedulerService>::GetInstance()->RefreshPersistedWorks();
+        DelayedSingleton<WorkSchedulerService>::GetInstance()->RefreshPersistedWorks();
     }
 }
 
@@ -195,7 +195,7 @@ bool WorkStatus::IsReady()
             return false;
         }
     }
-    if (DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
+    if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
         return true;
     }
     if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
