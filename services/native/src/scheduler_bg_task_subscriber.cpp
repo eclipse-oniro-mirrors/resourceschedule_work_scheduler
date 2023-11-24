@@ -31,7 +31,7 @@ void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesApply(
         return;
     }
     int32_t uid = resourceInfo->GetUid();
-    DelayedSpSingleton<WorkSchedulerService>::GetInstance()->UpdateEffiResApplyInfo(uid, true);
+    DelayedSingleton<WorkSchedulerService>::GetInstance()->UpdateEffiResApplyInfo(uid, true);
 }
 
 void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesReset(
@@ -43,7 +43,7 @@ void SchedulerBgTaskSubscriber::OnProcEfficiencyResourcesReset(
         return;
     }
     int32_t uid = resourceInfo->GetUid();
-    DelayedSpSingleton<WorkSchedulerService>::GetInstance()->UpdateEffiResApplyInfo(uid, false);
+    DelayedSingleton<WorkSchedulerService>::GetInstance()->UpdateEffiResApplyInfo(uid, false);
 }
 
 void SchedulerBgTaskSubscriber::OnAppEfficiencyResourcesApply(

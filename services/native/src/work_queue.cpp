@@ -36,7 +36,7 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
             continue;
         }
         if (uidList.count(it->uid_) > 0 && it->GetMinInterval() != 0 &&
-            !DelayedSpSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(it->uid_)) {
+            !DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(it->uid_)) {
             WS_HILOGI("One uid can start only one work.");
             continue;
         }
