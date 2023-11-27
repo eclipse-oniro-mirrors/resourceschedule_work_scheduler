@@ -38,6 +38,7 @@ ohos_unittest("WorkScheduleServiceTest") {
   ]
   sources = [
     "src/event_publisher_test.cpp",
+    "src/watchdog_test.cpp",
     "src/workschedulerservice_test.cpp",
   ]
 
