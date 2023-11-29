@@ -49,7 +49,7 @@ const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
 static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 }
 
-WorkPolicyManager::WorkPolicyManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
+WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>& wss) : wss_(wss)
 {
     conditionReadyQueue_ = std::make_shared<WorkQueue>();
     watchdogId_ = INIT_WATCHDOG_ID;
@@ -61,17 +61,12 @@ bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& run
 {
     WS_HILOGD("Work policy manager init.");
     workConnManager_ = make_shared<WorkConnManager>();
-    auto wmsptr = wss_.promote();
-    if (wmsptr == nullptr) {
-        WS_HILOGE("failed due to wmsptr is nullptr");
-        return false;
-    }
-    handler_ = wmsptr->GetHandler();
+    handler_ = wss_->GetHandler();
     if (handler_ == nullptr) {
         WS_HILOGE("failed due to handler_ is nullptr");
         return false;
     }
-    watchdog_ = std::make_shared<Watchdog>(wmsptr->GetWorkPolicyManager(), runner);
+    watchdog_ = std::make_shared<Watchdog>(wss_->GetWorkPolicyManager(), runner);
     return true;
 }
 
@@ -297,8 +292,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             [[fallthrough]];
         }
         case PolicyType::APP_DATA_CLEAR: {
-            auto ws = wss_.promote();
-            ws->StopAndClearWorksByUid(detectorVal->intVal);
+            wss_->StopAndClearWorksByUid(detectorVal->intVal);
             break;
         }
         default: {}
@@ -345,14 +339,9 @@ std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkToRun()
 void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 {
     WS_HILOGD("RealStartWork topWork ID: %{public}s", topWork->workId_.c_str());
-    auto wmsptr = wss_.promote();
-    if (wmsptr == nullptr) {
-        WS_HILOGE("Workscheduler service is null");
-        return;
-    }
-    UpdateWatchdogTime(wmsptr, topWork);
+    UpdateWatchdogTime(wss_, topWork);
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
-    wmsptr->UpdateWorkBeforeRealStart(topWork);
+    wss_->UpdateWorkBeforeRealStart(topWork);
     RemoveFromReadyQueue(topWork);
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
@@ -368,7 +357,7 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     }
 }
 
-void WorkPolicyManager::UpdateWatchdogTime(const wptr<WorkSchedulerService> &wmsptr,
+void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
     std::shared_ptr<WorkStatus> &topWork)
 {
     if (!wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
@@ -415,12 +404,7 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 {
     WS_HILOGD("WatchdogTimeOut.");
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
-    auto wmsptr = wss_.promote();
-    if (wmsptr == nullptr) {
-        WS_HILOGE("Workscheduler service is null");
-        return;
-    }
-    wmsptr->WatchdogTimeOut(workStatus);
+    wss_->WatchdogTimeOut(workStatus);
 }
 
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)

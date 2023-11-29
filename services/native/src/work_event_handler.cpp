@@ -25,7 +25,7 @@ using namespace OHOS::AppExecFwk;
 namespace OHOS {
 namespace WorkScheduler {
 WorkEventHandler::WorkEventHandler(const shared_ptr<EventRunner>& runner,
-    const wptr<WorkSchedulerService>& service) : EventHandler(runner), service_(service)
+    const std::shared_ptr<WorkSchedulerService>& service) : EventHandler(runner), service_(service)
 {
     WS_HILOGD("instance created.");
 }
@@ -33,23 +33,18 @@ WorkEventHandler::WorkEventHandler(const shared_ptr<EventRunner>& runner,
 void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& event)
 {
     WS_HILOGD("begin");
-    auto wssptr = service_.promote();
-    if (wssptr == nullptr) {
-        WS_HILOGE("service.promote() returns nullptr");
-        return;
-    }
     WS_HILOGD("eventid = %{public}u", event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
         case RETRIGGER_MSG: {
-            wssptr->GetWorkPolicyManager()->CheckWorkToRun();
+            service_->GetWorkPolicyManager()->CheckWorkToRun();
             break;
         }
         case SERVICE_INIT_MSG: {
-            wssptr->Init(GetEventRunner());
+            service_->Init(GetEventRunner());
             break;
         }
         case IDE_RETRIGGER_MSG: {
-            wssptr->GetWorkPolicyManager()->TriggerIdeWork();
+            service_->GetWorkPolicyManager()->TriggerIdeWork();
             break;
         }
         default:

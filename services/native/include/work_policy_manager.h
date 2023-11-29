@@ -34,7 +34,7 @@ class AppDataClearListener;
 class Watchdog;
 class WorkPolicyManager {
 public:
-    explicit WorkPolicyManager(const wptr<WorkSchedulerService>& wss);
+    explicit WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>& wss);
     ~WorkPolicyManager() = default;
     /**
      * @brief Init.
@@ -233,13 +233,13 @@ private:
     uint32_t NewWatchdogId();
     void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
     std::shared_ptr<WorkStatus> GetWorkFromWatchdog(uint32_t id);
-    void UpdateWatchdogTime(const wptr<WorkSchedulerService> &wmsptr,
+    void UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
         std::shared_ptr<WorkStatus> &topWork);
     std::list<std::shared_ptr<WorkStatus>> GetAllIdeWorkStatus(const std::string &bundleName,
         const std::string &abilityName);
     void SendIdeWorkRetriggerEvent(int32_t delaytime);
 
-    const wptr<WorkSchedulerService> wss_;
+    const std::shared_ptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
     std::shared_ptr<WorkEventHandler> handler_;
 
