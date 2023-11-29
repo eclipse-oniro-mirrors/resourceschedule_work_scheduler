@@ -105,7 +105,7 @@ void WorkSchedulerService::OnStart()
         WS_HILOGE("Init failed due to create EventRunner");
         return;
     }
-    handler_ = std::make_shared<WorkEventHandler>(eventRunner_, wss);
+    handler_ = std::make_shared<WorkEventHandler>(eventRunner_, instance);
 
     // Try to init.
     Init(eventRunner_);
@@ -281,7 +281,7 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
 {
     WS_HILOGD("come in");
     if (workQueueManager_ == nullptr) {
-        workQueueManager_ = make_shared<WorkQueueManager>(wss);
+        workQueueManager_ = make_shared<WorkQueueManager>(instance);
     }
 
     auto networkListener = make_shared<NetworkListener>(workQueueManager_);
@@ -314,7 +314,7 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
 {
     WS_HILOGD("come in");
     if (workPolicyManager_ == nullptr) {
-        workPolicyManager_ = make_shared<WorkPolicyManager>(wss);
+        workPolicyManager_ = make_shared<WorkPolicyManager>(instance);
     }
     if (!workPolicyManager_->Init(runner)) {
         WS_HILOGE("work policy manager init failed!");

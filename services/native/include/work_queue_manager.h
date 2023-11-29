@@ -29,7 +29,7 @@ namespace WorkScheduler {
 class WorkSchedulerService;
 class WorkQueueManager : std::enable_shared_from_this<WorkQueueManager> {
 public:
-    explicit WorkQueueManager(const wptr<WorkSchedulerService>& wss);
+    explicit WorkQueueManager(const std::shared_ptr<WorkSchedulerService>& wss);
     ~WorkQueueManager() = default;
     /**
      * @brief Init.
@@ -120,7 +120,7 @@ private:
     std::vector<std::shared_ptr<WorkStatus>> GetReayQueue(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
     std::mutex mutex_;
-    const wptr<WorkSchedulerService> wss_;
+    const std::weak_ptr<WorkSchedulerService> wss_;
     std::map<WorkCondition::Type, std::shared_ptr<WorkQueue>> queueMap_;
     std::map<WorkCondition::Type, std::shared_ptr<IConditionListener>> listenerMap_;
 

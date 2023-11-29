@@ -27,7 +27,7 @@ namespace WorkScheduler {
 const uint32_t TIME_CYCLE = 20 * 60 * 1000; // 20min
 static int32_t g_timeRetrigger = INT32_MAX;
 
-WorkQueueManager::WorkQueueManager(const wptr<WorkSchedulerService>& wss) : wss_(wss)
+WorkQueueManager::WorkQueueManager(const std::shared_ptr<WorkSchedulerService>& wss) : wss_(wss)
 {
     timeCycle_ = TIME_CYCLE;
 }
@@ -150,8 +150,11 @@ void WorkQueueManager::OnConditionChanged(WorkCondition::Type conditionType,
     for (auto it : readyWorkVector) {
         it->MarkStatus(WorkStatus::Status::CONDITION_READY);
     }
-    auto ws = wss_.promote();
-    ws->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
+    if (wss_.expired()) {
+        WS_HILOGE("wss_ expired");
+        return;
+    }
+    wss_.lock()->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
 }
 
 bool WorkQueueManager::StopAndClearWorks(list<shared_ptr<WorkStatus>> workList)

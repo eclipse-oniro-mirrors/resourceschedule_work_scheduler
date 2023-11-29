@@ -31,7 +31,7 @@ public:
         IDE_RETRIGGER_MSG
     };
     WorkEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner,
-        const wptr<WorkSchedulerService>& service);
+        const std::shared_ptr<WorkSchedulerService>& service);
     ~WorkEventHandler() override = default;
     /**
      * @brief Process event.
@@ -41,7 +41,7 @@ public:
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;
 
 private:
-    wptr<WorkSchedulerService> service_;
+    std::weak_ptr<WorkSchedulerService> service_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
