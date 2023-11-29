@@ -150,7 +150,11 @@ void WorkQueueManager::OnConditionChanged(WorkCondition::Type conditionType,
     for (auto it : readyWorkVector) {
         it->MarkStatus(WorkStatus::Status::CONDITION_READY);
     }
-    wss_->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
+    if (wss_.expired()) {
+        WS_HILOGE("wss_ expired");
+        return;
+    }
+    wss_.lock()->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
 }
 
 bool WorkQueueManager::StopAndClearWorks(list<shared_ptr<WorkStatus>> workList)

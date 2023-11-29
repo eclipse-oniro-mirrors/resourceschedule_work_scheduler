@@ -60,13 +60,17 @@ WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>
 bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     WS_HILOGD("Work policy manager init.");
+    if (wss_.expired()) {
+        WS_HILOGE("wss_ expired");
+        return false;
+    }
     workConnManager_ = make_shared<WorkConnManager>();
-    handler_ = wss_->GetHandler();
+    handler_ = wss_.lock()->GetHandler();
     if (handler_ == nullptr) {
         WS_HILOGE("failed due to handler_ is nullptr");
         return false;
     }
-    watchdog_ = std::make_shared<Watchdog>(wss_->GetWorkPolicyManager(), runner);
+    watchdog_ = std::make_shared<Watchdog>(wss_.lock()->GetWorkPolicyManager(), runner);
     return true;
 }
 
@@ -285,6 +289,10 @@ int32_t WorkPolicyManager::GetRunningCount()
 void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<DetectorValue> detectorVal)
 {
     WS_HILOGD("enter");
+    if (wss_.expired()) {
+       WS_HILOGE("wss_ expired"); 
+       return;
+    }
     switch (policyType) {
         case PolicyType::APP_REMOVED: {
             int32_t uid = detectorVal->intVal;
@@ -292,7 +300,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             [[fallthrough]];
         }
         case PolicyType::APP_DATA_CLEAR: {
-            wss_->StopAndClearWorksByUid(detectorVal->intVal);
+            wss_.lock()->StopAndClearWorksByUid(detectorVal->intVal);
             break;
         }
         default: {}
@@ -339,9 +347,13 @@ std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkToRun()
 void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 {
     WS_HILOGD("RealStartWork topWork ID: %{public}s", topWork->workId_.c_str());
-    UpdateWatchdogTime(wss_, topWork);
+    if (wss_.expired()) {
+       WS_HILOGE("wss_ expired");
+       return;
+    }
+    UpdateWatchdogTime(wss_.lock(), topWork);
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
-    wss_->UpdateWorkBeforeRealStart(topWork);
+    wss_.lock()->UpdateWorkBeforeRealStart(topWork);
     RemoveFromReadyQueue(topWork);
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
@@ -402,9 +414,13 @@ void WorkPolicyManager::SendRetrigger(int32_t delaytime)
 
 void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 {
+    if (wss_.expired()) {
+       WS_HILOGE("wss_ expired");
+       return;
+    }
     WS_HILOGD("WatchdogTimeOut.");
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
-    wss_->WatchdogTimeOut(workStatus);
+    wss_.lock()->WatchdogTimeOut(workStatus);
 }
 
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)

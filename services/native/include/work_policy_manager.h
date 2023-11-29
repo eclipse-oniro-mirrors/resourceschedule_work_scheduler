@@ -239,7 +239,7 @@ private:
         const std::string &abilityName);
     void SendIdeWorkRetriggerEvent(int32_t delaytime);
 
-    const std::shared_ptr<WorkSchedulerService> wss_;
+    const std::weak_ptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
     std::shared_ptr<WorkEventHandler> handler_;
 

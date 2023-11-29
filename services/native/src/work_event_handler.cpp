@@ -33,18 +33,22 @@ WorkEventHandler::WorkEventHandler(const shared_ptr<EventRunner>& runner,
 void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& event)
 {
     WS_HILOGD("begin");
+    if (service_.expired()) {
+        WS_HILOGE("service_ expired");
+        return;
+    }
     WS_HILOGD("eventid = %{public}u", event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
         case RETRIGGER_MSG: {
-            service_->GetWorkPolicyManager()->CheckWorkToRun();
+            service_.lock()->GetWorkPolicyManager()->CheckWorkToRun();
             break;
         }
         case SERVICE_INIT_MSG: {
-            service_->Init(GetEventRunner());
+            service_.lock()->Init(GetEventRunner());
             break;
         }
         case IDE_RETRIGGER_MSG: {
-            service_->GetWorkPolicyManager()->TriggerIdeWork();
+            service_.lock()->GetWorkPolicyManager()->TriggerIdeWork();
             break;
         }
         default:

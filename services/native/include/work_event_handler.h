@@ -41,7 +41,7 @@ public:
     void ProcessEvent(const AppExecFwk::InnerEvent::Pointer& event) override;
 
 private:
-    std::shared_ptr<WorkSchedulerService> service_;
+    std::weak_ptr<WorkSchedulerService> service_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
