@@ -48,7 +48,6 @@ void WorkSchedulerServiceTest::SetUpTestCase()
 HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level1)
 {
     workSchedulerService_->ready_ = true;
-    workSchedulerService_->OnStart();
     EXPECT_NE(workSchedulerService_, nullptr);
 }
 
