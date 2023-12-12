@@ -21,7 +21,7 @@
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
 #include <system_ability_definition.h>
-
+#include "parameters.h"
 #include "policy/app_data_clear_listener.h"
 #include "work_scheduler_service.h"
 #include "work_event_handler.h"
@@ -308,6 +308,12 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
     CheckWorkToRun();
 }
 
+bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork)
+{
+    return (OHOS::system::GetIntParameter("const.debuggable", 0) == 1) &&
+        (topWork->bundleName_ == "com.huawei.hmos.hiviewx");
+}
+
 void WorkPolicyManager::CheckWorkToRun()
 {
     WS_HILOGD("Check work to run.");
@@ -322,7 +328,7 @@ void WorkPolicyManager::CheckWorkToRun()
         WS_HILOGD("no condition ready work not running, return.");
         return;
     }
-    if (GetRunningCount() < GetMaxRunningCount()) {
+    if (GetRunningCount() < GetMaxRunningCount() || IsSpecialScene(topWork)) {
         WS_HILOGD("running count < max running count");
         RealStartWork(topWork);
         SendRetrigger(DELAY_TIME_SHORT);
