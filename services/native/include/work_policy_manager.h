@@ -238,6 +238,7 @@ private:
     std::list<std::shared_ptr<WorkStatus>> GetAllIdeWorkStatus(const std::string &bundleName,
         const std::string &abilityName);
     void SendIdeWorkRetriggerEvent(int32_t delaytime);
+    bool IsSpecialScene(std::shared_ptr<WorkStatus> topWork);
 
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
