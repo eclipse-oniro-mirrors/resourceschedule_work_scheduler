@@ -290,8 +290,8 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 {
     WS_HILOGD("enter");
     if (wss_.expired()) {
-       WS_HILOGE("wss_ expired"); 
-       return;
+        WS_HILOGE("wss_ expired");
+        return;
     }
     switch (policyType) {
         case PolicyType::APP_REMOVED: {
@@ -354,8 +354,8 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 {
     WS_HILOGD("RealStartWork topWork ID: %{public}s", topWork->workId_.c_str());
     if (wss_.expired()) {
-       WS_HILOGE("wss_ expired");
-       return;
+        WS_HILOGE("wss_ expired");
+        return;
     }
     UpdateWatchdogTime(wss_.lock(), topWork);
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
@@ -421,8 +421,8 @@ void WorkPolicyManager::SendRetrigger(int32_t delaytime)
 void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 {
     if (wss_.expired()) {
-       WS_HILOGE("wss_ expired");
-       return;
+        WS_HILOGE("wss_ expired");
+        return;
     }
     WS_HILOGD("WatchdogTimeOut.");
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
