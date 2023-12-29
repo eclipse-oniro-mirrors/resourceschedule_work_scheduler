@@ -580,7 +580,10 @@ void WorkPolicyManager::TriggerIdeWork()
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
         WS_HILOGI("TriggerIdeWork ok");
+        int time = watchdogTime_;
+        watchdogTime_ = g_lastWatchdogTime;
         AddWatchdogForWork(topWork);
+        watchdogTime_ = time;
     } else {
         WS_HILOGE("TriggerIdeWork error");
         ideDebugList.clear();
