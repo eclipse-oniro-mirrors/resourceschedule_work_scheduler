@@ -74,14 +74,14 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest002", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest002---------------------------');
-        let workInfo = {
+        let workInfo2 = {
             workId: 0,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo2);
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
@@ -97,13 +97,13 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest003", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest003---------------------------');
-        let workInfo = {
+        let workInfo3 = {
             workId: 3,
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo3);
         } catch (error) {
             expect(true).assertEqual(true)
         }
@@ -118,13 +118,13 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest004", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest004---------------------------');
-        let workInfo = {
+        let workInfo4 = {
             workId: 4,
             bundleName: "com.example.myapplication",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo4);
         } catch (error) {
             expect(true).assertEqual(true)
         }
@@ -139,13 +139,13 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest005", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest005---------------------------');
-        let workInfo = {
+        let workInfo5 = {
             workId: 5,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName"
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo5);
         } catch (error) {
             expect(true).assertEqual(true)
         }
@@ -160,14 +160,14 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest006", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest006---------------------------');
-        let workInfo = {
+        let workInfo6 = {
             workId: 6,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo6);
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
@@ -183,15 +183,15 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest007", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest007---------------------------');
-        let workInfo = {
+        let workInfo7 = {
             workId: 7,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
-            workScheduler.stopWork(workInfo, false);
+            workScheduler.startWork(workInfo7);
+            workScheduler.stopWork(workInfo7, false);
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
@@ -207,15 +207,15 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest008", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest008---------------------------');
-        let workInfo = {
+        let workInfo8 = {
             workId: 8,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
-            workScheduler.stopWork(workInfo, false);
+            workScheduler.startWork(workInfo8);
+            workScheduler.stopWork(workInfo8, false);
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
@@ -231,14 +231,14 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest009", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest009---------------------------');
-        let workInfo = {
+        let workInfo9 = {
             workId: 9,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo9);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -255,6 +255,7 @@ describe("WorkSchedulerJsTest", function () {
                 }
             });
         } catch (error) {
+            console.info('WORK_SCHEDULER getWorkStatuscallback callback exception');
             expect(false).assertEqual(true)
         }
         setTimeout(()=>{
@@ -270,7 +271,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest010", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest010---------------------------');
-        let workInfo = {
+        let workInfo10 = {
             workId: 10,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -278,7 +279,7 @@ describe("WorkSchedulerJsTest", function () {
             batteryLevel: 15
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo10);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -293,6 +294,7 @@ describe("WorkSchedulerJsTest", function () {
                 expect(false).assertEqual(true)
             })
         } catch (error) {
+            console.info('WORK_SCHEDULER getWorkStatuscallback promise exception');
             expect(false).assertEqual(true)
         }
 
@@ -309,14 +311,14 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest011", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest011---------------------------');
-        let workInfo = {
+        let workInfo11 = {
             workId: 11,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo11);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -331,6 +333,7 @@ describe("WorkSchedulerJsTest", function () {
                 }
             });
         } catch (error) {
+            console.info('WORK_SCHEDULER obtainAllWorks callback exception');
             expect(false).assertEqual(true)
         }
 
@@ -347,7 +350,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest012", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest012---------------------------');
-        let workInfo = {
+        let workInfo12 = {
             workId: 12,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -355,7 +358,7 @@ describe("WorkSchedulerJsTest", function () {
             batteryLevel: 15
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo12);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -382,14 +385,14 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest013", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest013---------------------------');
-        let workInfo = {
+        let workInfo13 = {
             workId: 13,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo13);
             workScheduler.stopAndClearWorks();
             expect(true).assertEqual(true)
         } catch (error) {
@@ -406,7 +409,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest014", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest014---------------------------');
-        let workInfo = {
+        let workInfo14 = {
             workId: 14,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -414,7 +417,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.stopAndClearWorks();
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo14);
         } catch (error) {
             expect(false).assertEqual(true)
         }
@@ -428,6 +431,7 @@ describe("WorkSchedulerJsTest", function () {
                 }
             });
         } catch (error) {
+            console.info('WORK_SCHEDULER isLastWorkTimeOut callback exception');
             expect(false).assertEqual(true)
         }
         setTimeout(()=>{
@@ -443,7 +447,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest015", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest015---------------------------');
-        let workInfo = {
+        let workInfo15 = {
             workId: 15,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -451,7 +455,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.stopAndClearWorks();
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo15);
         } catch (error) {
             expect(false).assertEqual(true)
         }
@@ -465,6 +469,7 @@ describe("WorkSchedulerJsTest", function () {
                     expect(false).assertEqual(true)
             });
         } catch (error) {
+            console.info('WORK_SCHEDULER isLastWorkTimeOut promise exception');
             expect(false).assertEqual(true)
         }
         setTimeout(()=>{
@@ -480,7 +485,13 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest016", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest016---------------------------');
-        let workInfo = {
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
+        }
+        let begin = getTime();
+        let workInfo16 = {
             workId: 16,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -493,15 +504,10 @@ describe("WorkSchedulerJsTest", function () {
                 mykey4: 2.55
             }
         }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
-        let begin = getTime();
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo16);
         } catch (error) {
+            console.info('WORK_SCHEDULER startWork startWork exception');
             expect(false).assertEqual(true)
             done();
         }
@@ -522,22 +528,24 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest017", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest017---------------------------');
-        let workInfo = {
-            workId: 17,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
         function getTime(){
             var time = new Date();
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
         let begin = getTime();
+        let workInfo17 = {
+            workId: 17,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
         for (var i = 0 ; i < 20 ; i++) {
             try{
-                workScheduler.startWork(workInfo);
-            } catch (error) {}
+                workScheduler.startWork(workInfo17);
+            } catch (error) {
+                console.info('WORK_SCHEDULER startWork takes 20 times startWork exception');
+            }
         }
         let end = getTime();
         let times = end - begin;
@@ -557,7 +565,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest018", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest018---------------------------');
-        let workInfo = {
+        let workInfo18 = {
             workId: 18,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -569,9 +577,9 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo18);
             let begin = getTime();
-            workScheduler.stopWork(workInfo, false);
+            workScheduler.stopWork(workInfo18, false);
             let end = getTime();
             let times = end - begin;
             if (times < 50) {
@@ -591,28 +599,30 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest019", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest019---------------------------');
-        let workInfo = {
-            workId: 19,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
         function getTime(){
             var time = new Date();
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
+        let workInfo19 = {
+            workId: 19,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo19);
         } catch (error) {
+            console.info('WORK_SCHEDULER stopWork startWork exception');
             expect(false).assertEqual(true)
             done();
         }
 
         let begin = getTime();
         try{
-            workScheduler.stopWork(workInfo, true);
+            workScheduler.stopWork(workInfo19, true);
         } catch (error) {
+            console.info('WORK_SCHEDULER stopWork stopWork exception');
             expect(false).assertEqual(true)
             done();
         }
@@ -633,24 +643,26 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest020", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest020---------------------------');
-        let workInfo = {
-            workId: 20,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
         function getTime(){
             var time = new Date();
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
         let begin = getTime();
+        let workInfo20 = {
+            workId: 20,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
         let end = 0;
         let times = 0;
         for (var i = 0 ; i < 20 ; i++) {
             try{
-                workScheduler.startWork(workInfo);
-            } catch (error) {}
+                workScheduler.startWork(workInfo20);
+            } catch (error) {
+                console.info('WORK_SCHEDULER stopWork takes 20 times startWork exception');
+            }
             end = getTime();
             times = end - begin;
         }
@@ -670,11 +682,16 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest021", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest021---------------------------');
-        let workInfo = {
+        let workInfo21 = {
             workId: 21,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        function getTime(){
+            var time = new Date();
+            var Milliseconds = time.getTime();
+            return Milliseconds;
         }
         function workSchedulerCallback(err, res){
             let end = getTime();
@@ -688,14 +705,10 @@ describe("WorkSchedulerJsTest", function () {
                 done();
             }, 500);
         }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo21);
         } catch (error) {
+            console.info('WORK_SCHEDULER getWorkStatus callback startWork exception');
             expect(false).assertEqual(true)
             done();
         }
@@ -703,6 +716,7 @@ describe("WorkSchedulerJsTest", function () {
         try{
             workScheduler.getWorkStatus(21, workSchedulerCallback);
         } catch (error) {
+            console.info('WORK_SCHEDULER getWorkStatus callback getWorkStatus exception');
             expect(false).assertEqual(true)
             done();
         }
@@ -716,7 +730,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest022", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest022---------------------------');
-        let workInfo = {
+        let workInfo22 = {
             workId: 22,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -728,8 +742,9 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo22);
         } catch (error) {
+            console.info('WORK_SCHEDULER getWorkStatus promise startWork promise exception');
             expect(false).assertEqual(true)
             done();
         }
@@ -752,6 +767,7 @@ describe("WorkSchedulerJsTest", function () {
                 }
             })
         } catch (error) {
+            console.info('WORK_SCHEDULER getWorkStatus promise exception');
             expect(false).assertEqual(true)
             done();
         }
@@ -765,7 +781,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest023", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest023---------------------------');
-        let workInfo = {
+        let workInfo23 = {
             workId: 23,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -776,22 +792,25 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
+        let begin = getTime();
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo23);
         } catch (error) {
+            console.info('WORK_SCHEDULER getWorkStatus takes 20 times startWork exception');
             expect(false).assertEqual(true)
             done();
         }
         let end = 0;
         let times = 0;
-        let begin = getTime();
         for (var i = 0 ; i < 20 ; i++) {
             try{
                 workScheduler.getWorkStatus(23, (err, res) => {
                     end = getTime();
                     times = end - begin;
                 });
-            } catch (error) {}
+            } catch (error) {
+                console.info('WORK_SCHEDULER getWorkStatus takes 20 times exception');
+            }
         }
         if (times/20 < 50) {
             expect(true).assertTrue();
@@ -811,7 +830,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest024", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest024---------------------------');
-        let workInfo = {
+        let workInfo24 = {
             workId: 24,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -823,7 +842,7 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo24);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -839,7 +858,9 @@ describe("WorkSchedulerJsTest", function () {
                     expect(false).assertTrue()
                 }
             });
-        } catch (error) {}
+        } catch (error) {
+            console.info('WORK_SCHEDULER obtainAllWorks callback exception');
+        }
         setTimeout(() => {
             done();
         }, 500);
@@ -853,7 +874,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest025", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest025---------------------------');
-        let workInfo = {
+        let workInfo25 = {
             workId: 25,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -865,7 +886,7 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo25);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -884,7 +905,9 @@ describe("WorkSchedulerJsTest", function () {
             }).catch((err) => {
                 console.info('workschedulerLog obtainAllWorks promise failed, because:' + err.data);
             })
-        } catch (error) {}
+        } catch (error) {
+            console.info('WORK_SCHEDULER obtainAllWorks promise exception');
+        }
         setTimeout(() => {
             done();
         }, 500);
@@ -898,7 +921,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest026", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest026---------------------------');
-        let workInfo = {
+        let workInfo26 = {
             workId: 26,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -911,7 +934,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.stopAndClearWorks();
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo26);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -928,7 +951,9 @@ describe("WorkSchedulerJsTest", function () {
                         expect(false).assertTrue()
                     }
                 });
-            } catch (error) {}
+            } catch (error) {
+                console.info('WORK_SCHEDULER obtainAllWorks takes 20 times exception');
+            }
         }
         setTimeout(() => {
             done();
@@ -943,7 +968,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest027", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest027---------------------------');
-        let workInfo = {
+        let workInfo27 = {
             workId: 27,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -955,12 +980,13 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo27);
         } catch (error) {}
         let begin = getTime();
         try{
             workScheduler.stopAndClearWorks();
         } catch (error) {
+            console.info('WORK_SCHEDULER stopAndClearWorks exception');
             expect(false).assertEqual(true)
             done();
         }
@@ -981,7 +1007,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest028", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest028---------------------------');
-        let workInfo = {
+        let workInfo28 = {
             workId: 28,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -993,7 +1019,7 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo28);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -1004,7 +1030,9 @@ describe("WorkSchedulerJsTest", function () {
         for (var i = 0 ; i < 20 ; i++) {
             try{
                 workScheduler.stopAndClearWorks();
-            } catch (error) {}
+            } catch (error) {
+                console.info('WORK_SCHEDULER stopWork takes 20 times exception');
+            }
             end = getTime();
             times = end - begin;
         }
@@ -1027,7 +1055,7 @@ describe("WorkSchedulerJsTest", function () {
             var Milliseconds = time.getTime();
             return Milliseconds;
         }
-        let workInfo = {
+        let workInfo29 = {
             workId: 29,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1035,7 +1063,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.stopAndClearWorks();
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo29);
         } catch (error) {
             expect(false).assertEqual(true)
         }
@@ -1050,7 +1078,9 @@ describe("WorkSchedulerJsTest", function () {
                     expect(false).assertTrue();
                 }
             });
-        } catch (error) {}
+        } catch (error) {
+            console.info('WORK_SCHEDULER isLastWorkTimeOut callback exception');
+        }
         setTimeout(() => {
             done();
         }, 500);
@@ -1070,7 +1100,7 @@ describe("WorkSchedulerJsTest", function () {
             return Milliseconds;
         }
         let begin = getTime();
-        let workInfo = {
+        let workInfo30 = {
             workId: 30,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1078,7 +1108,7 @@ describe("WorkSchedulerJsTest", function () {
         }
         try{
             workScheduler.stopAndClearWorks();
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo30);
         } catch (error) {
             expect(false).assertEqual(true)
         }
@@ -1097,7 +1127,9 @@ describe("WorkSchedulerJsTest", function () {
                 .catch(err =>  {
                     expect(false).assertEqual(true)
             });
-        } catch (error) {}
+        } catch (error) {
+            console.info('WORK_SCHEDULER isLastWorkTimeOut promise exception');
+        }
         setTimeout(() => {
             done();
         }, 500);
@@ -1128,7 +1160,9 @@ describe("WorkSchedulerJsTest", function () {
                         expect(false).assertTrue();
                     }
                 });
-            } catch (error) {}
+            } catch (error) {
+                console.info('WORK_SCHEDULER isLastWorkTimeOut takes 20 times exception');
+            }
         }
         setTimeout(() => {
             done();
@@ -1143,7 +1177,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest032", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest032---------------------------');
-        let workInfo = {
+        let workInfo32 = {
             workId: 32,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1153,11 +1187,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: 2.56
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo32);
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
@@ -1173,7 +1207,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest033", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest033---------------------------');
-        let workInfo = {
+        let workInfo33 = {
             workId: 33,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1186,7 +1220,7 @@ describe("WorkSchedulerJsTest", function () {
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo33);
         } catch (error) {
             expect(true).assertEqual(true)
         }
@@ -1201,7 +1235,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest034", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest034---------------------------');
-        let workInfo = {
+        let workInfo34 = {
             workId: 34,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1212,11 +1246,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: 2.57
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo34);
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
@@ -1232,7 +1266,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest035", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest035---------------------------');
-        let workInfo = {
+        let workInfo35 = {
             workId: 35,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1240,7 +1274,7 @@ describe("WorkSchedulerJsTest", function () {
             parameters: 1
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo35);
         } catch (error) {
             expect(true).assertEqual(true)
         }
@@ -1255,7 +1289,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest036", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest036---------------------------');
-        let workInfo = {
+        let workInfo36 = {
             workId: 36,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1265,11 +1299,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: 2.58
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo36);
             workScheduler.stopWork(workInfo, false);
             expect(true).assertEqual(true)
         } catch (error) {
@@ -1286,7 +1320,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest037", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest037---------------------------');
-        let workInfo = {
+        let workInfo37 = {
             workId: 37,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1296,11 +1330,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: 2.59
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo37);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -1328,7 +1362,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest038", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest038---------------------------');
-        let workInfo = {
+        let workInfo38 = {
             workId: 38,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1339,11 +1373,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: 2.60
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo38);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -1370,7 +1404,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest039", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest039---------------------------');
-        let workInfo = {
+        let workInfo39 = {
             workId: 39,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1380,11 +1414,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: 2.61
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo39);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -1412,7 +1446,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest040", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest040---------------------------');
-        let workInfo = {
+        let workInfo40 = {
             workId: 40,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
@@ -1423,11 +1457,11 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: 2.62
             }
         }
         try{
-            workScheduler.startWork(workInfo);
+            workScheduler.startWork(workInfo40);
         } catch (error) {
             expect(false).assertEqual(true)
             done();
@@ -1439,6 +1473,7 @@ describe("WorkSchedulerJsTest", function () {
             }
             expect(true).assertEqual(true)
         }).catch((err) => {
+            console.info('WORK_SCHEDULER getWorkStatus promise exception');
             expect(false).assertEqual(true)
         })
 
