@@ -189,6 +189,8 @@ void WorkQueueManager::Dump(string& result)
 void WorkQueueManager::SetTimeCycle(uint32_t time)
 {
     timeCycle_ = time;
+    listenerMap_.at(WorkCondition::Type::TIMER)->Stop();
+    listenerMap_.at(WorkCondition::Type::TIMER)->Start();
 }
 
 uint32_t WorkQueueManager::GetTimeCycle()
