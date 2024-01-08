@@ -170,6 +170,7 @@ private:
     bool SetMinInterval();
     bool IsBatteryAndNetworkReady(WorkCondition::Type type);
     bool IsStorageAndChargerAndTimerReady(WorkCondition::Type type);
+    int GetPriority();
 };
 } // namespace WorkScheduler
 } // namespace OHOS
