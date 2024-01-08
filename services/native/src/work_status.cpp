@@ -25,6 +25,7 @@
 #include "bundle_active_client.h"
 #include "bundle_active_group_map.h"
 #endif
+#include "parameters.h"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ static bool debugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 100;
+const int32_t HIGH_PRIORITY = 1000;
 const int32_t ACTIVE_GROUP = 10;
 std::mutex WorkStatus::s_uid_last_time_mutex;
 
@@ -74,7 +76,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
     }
     this->persisted_ = workInfo.IsPersisted();
-    this->priority_ = DEFAULT_PRIORITY;
+    this->priority_ = GetPriority();
     this->currentStatus_ = WAIT_CONDITION;
     this->minInterval_ = MIN_INTERVAL_DEFAULT;
     this->callbackFlag_ = false;
@@ -404,12 +406,22 @@ WorkStatus::Status WorkStatus::GetStatus()
     return currentStatus_;
 }
 
+int WorkStatus::GetPriority()
+{
+    if ((OHOS::system::GetIntParameter("const.debuggable", 0) == 1) &&
+        (bundleName_ == "com.huawei.hmos.hiviewx")) {
+        return HIGH_PRIORITY;
+    }
+    return DEFAULT_PRIORITY;
+}
+
 void WorkStatus::Dump(string& result)
 {
     result.append("{\n");
     result.append(string("\"workId\":") + workId_ + ",\n");
     result.append(string("\"bundleName\":") + bundleName_ + ",\n");
     result.append(string("\"status\":") + to_string(currentStatus_) + ",\n");
+    result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
     std::lock_guard<std::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
