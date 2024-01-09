@@ -66,6 +66,16 @@ describe("WorkSchedulerJsTest", function () {
         done();
     })
 
+    function formatWorkInfo(workIdParms) {
+        var workInfo = {
+            workId: workIdParms,
+            bundleName: "com.example.myapplication",
+            abilityName: "com.mytest.abilityName",
+            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
+        }
+        return workInfo;
+    }
+
     /*
      * @tc.name: WorkSchedulerJsTest002
      * @tc.desc: test work scheduler work id = 0
@@ -74,12 +84,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest002", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest002---------------------------');
-        let workInfo2 = {
-            workId: 0,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo2 = formatWorkInfo(0);
         try{
             workScheduler.startWork(workInfo2);
             expect(true).assertEqual(true)
@@ -160,12 +165,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest006", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest006---------------------------');
-        let workInfo6 = {
-            workId: 6,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo6 = formatWorkInfo(6);
         try{
             workScheduler.startWork(workInfo6);
             expect(true).assertEqual(true)
@@ -183,12 +183,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest007", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest007---------------------------');
-        let workInfo7 = {
-            workId: 7,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo7 = formatWorkInfo(7);
         try{
             workScheduler.startWork(workInfo7);
             workScheduler.stopWork(workInfo7, false);
@@ -207,12 +202,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest008", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest008---------------------------');
-        let workInfo8 = {
-            workId: 8,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo8 = formatWorkInfo(8);
         try{
             workScheduler.startWork(workInfo8);
             workScheduler.stopWork(workInfo8, false);
@@ -231,12 +221,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest009", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest009---------------------------');
-        let workInfo9 = {
-            workId: 9,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo9 = formatWorkInfo(9);
         try{
             workScheduler.startWork(workInfo9);
         } catch (error) {
@@ -311,12 +296,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest011", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest011---------------------------');
-        let workInfo11 = {
-            workId: 11,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo11 = formatWorkInfo(11);
         try{
             workScheduler.startWork(workInfo11);
         } catch (error) {
@@ -385,12 +365,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest013", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest013---------------------------');
-        let workInfo13 = {
-            workId: 13,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo13 = formatWorkInfo(13);
         try{
             workScheduler.startWork(workInfo13);
             workScheduler.stopAndClearWorks();
@@ -409,12 +384,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest014", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest014---------------------------');
-        let workInfo14 = {
-            workId: 14,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo14 = formatWorkInfo(14);
         try{
             workScheduler.stopAndClearWorks();
             workScheduler.startWork(workInfo14);
@@ -447,12 +417,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest015", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest015---------------------------');
-        let workInfo15 = {
-            workId: 15,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo15 = formatWorkInfo(15);
         try{
             workScheduler.stopAndClearWorks();
             workScheduler.startWork(workInfo15);
@@ -477,22 +442,15 @@ describe("WorkSchedulerJsTest", function () {
         }, 500);
     })
 
-    /*
-     * @tc.name: WorkSchedulerJsTest016
-     * @tc.desc: test spent time by startWork.
-     * @tc.type: FUNC
-     * @tc.require:
-     */
-    it("WorkSchedulerJsTest016", 0, async function (done) {
-        console.info('----------------------WorkSchedulerJsTest016---------------------------');
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
-        let begin = getTime();
-        let workInfo16 = {
-            workId: 16,
+    function getTime(){
+        var time = new Date();
+        var Milliseconds = time.getTime();
+        return Milliseconds;
+    }
+
+    function formatWorkInfoByParms(workIdParms, myKey4Parms) {
+        var workInfo = {
+            workId: workIdParms,
             bundleName: "com.example.myapplication",
             abilityName: "com.mytest.abilityName",
             storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
@@ -501,9 +459,22 @@ describe("WorkSchedulerJsTest", function () {
                 mykey1: 10,
                 mykey2: "string",
                 mykey3: true,
-                mykey4: 2.55
+                mykey4: myKey4Parms
             }
         }
+        return workInfo;
+    }
+
+    /*
+     * @tc.name: WorkSchedulerJsTest016
+     * @tc.desc: test spent time by startWork.
+     * @tc.type: FUNC
+     * @tc.require:
+     */
+    it("WorkSchedulerJsTest016", 0, async function (done) {
+        console.info('----------------------WorkSchedulerJsTest016---------------------------');
+        let begin = getTime();
+        let workInfo16 = formatWorkInfoByParms(16, 2.55);
         try{
             workScheduler.startWork(workInfo16);
         } catch (error) {
@@ -528,18 +499,8 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest017", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest017---------------------------');
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
         let begin = getTime();
-        let workInfo17 = {
-            workId: 17,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo17 = formatWorkInfo(17);
         for (var i = 0 ; i < 20 ; i++) {
             try{
                 workScheduler.startWork(workInfo17);
@@ -565,17 +526,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest018", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest018---------------------------');
-        let workInfo18 = {
-            workId: 18,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo18 = formatWorkInfo(18);
         try{
             workScheduler.startWork(workInfo18);
             let begin = getTime();
@@ -599,17 +550,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest019", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest019---------------------------');
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
-        let workInfo19 = {
-            workId: 19,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo19 = formatWorkInfo(19);
         try{
             workScheduler.startWork(workInfo19);
         } catch (error) {
@@ -643,18 +584,8 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest020", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest020---------------------------');
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
         let begin = getTime();
-        let workInfo20 = {
-            workId: 20,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo20 = formatWorkInfo(20);
         let end = 0;
         let times = 0;
         for (var i = 0 ; i < 20 ; i++) {
@@ -682,17 +613,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest021", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest021---------------------------');
-        let workInfo21 = {
-            workId: 21,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo21 = formatWorkInfo(21);
         function workSchedulerCallback(err, res){
             let end = getTime();
             let times = end - begin;
@@ -730,17 +651,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest022", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest022---------------------------');
-        let workInfo22 = {
-            workId: 22,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo22 = formatWorkInfo(22);
         try{
             workScheduler.startWork(workInfo22);
         } catch (error) {
@@ -781,17 +692,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest023", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest023---------------------------');
-        let workInfo23 = {
-            workId: 23,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo23 = formatWorkInfo(23);
         let begin = getTime();
         try{
             workScheduler.startWork(workInfo23);
@@ -830,17 +731,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest024", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest024---------------------------');
-        let workInfo24 = {
-            workId: 24,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo24 = formatWorkInfo(24);
         try{
             workScheduler.startWork(workInfo24);
         } catch (error) {
@@ -874,17 +765,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest025", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest025---------------------------');
-        let workInfo25 = {
-            workId: 25,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo25 = formatWorkInfo(25);
         try{
             workScheduler.startWork(workInfo25);
         } catch (error) {
@@ -921,17 +802,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest026", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest026---------------------------');
-        let workInfo26 = {
-            workId: 26,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo26 = formatWorkInfo(26);
         try{
             workScheduler.stopAndClearWorks();
             workScheduler.startWork(workInfo26);
@@ -968,17 +839,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest027", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest027---------------------------');
-        let workInfo27 = {
-            workId: 27,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo27 = formatWorkInfo(27);
         try{
             workScheduler.startWork(workInfo27);
         } catch (error) {}
@@ -1007,17 +868,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest028", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest028---------------------------');
-        let workInfo28 = {
-            workId: 28,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
+        let workInfo28 = formatWorkInfo(28);
         try{
             workScheduler.startWork(workInfo28);
         } catch (error) {
@@ -1050,17 +901,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest029", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest029---------------------------');
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
-        let workInfo29 = {
-            workId: 29,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo29 = formatWorkInfo(29);
         try{
             workScheduler.stopAndClearWorks();
             workScheduler.startWork(workInfo29);
@@ -1094,18 +935,8 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest030", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest030---------------------------');
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
         let begin = getTime();
-        let workInfo30 = {
-            workId: 30,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY
-        }
+        let workInfo30 = formatWorkInfo(30);
         try{
             workScheduler.stopAndClearWorks();
             workScheduler.startWork(workInfo30);
@@ -1143,11 +974,6 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest031", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest031---------------------------');
-        function getTime(){
-            var time = new Date();
-            var Milliseconds = time.getTime();
-            return Milliseconds;
-        }
         let begin = getTime();
         for (var i = 0 ; i < 20 ; i++) {
             try{
@@ -1177,19 +1003,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest032", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest032---------------------------');
-        let workInfo32 = {
-            workId: 32,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
-            parameters: {
-                mykey0: 2147483647111,
-                mykey1: 10,
-                mykey2: "string",
-                mykey3: true,
-                mykey4: 2.56
-            }
-        }
+        let workInfo32 = formatWorkInfoByParms(32, 2.56);
         try{
             workScheduler.startWork(workInfo32);
             expect(true).assertEqual(true)
@@ -1289,19 +1103,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest036", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest036---------------------------');
-        let workInfo36 = {
-            workId: 36,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
-            parameters: {
-                mykey0: 2147483647111,
-                mykey1: 10,
-                mykey2: "string",
-                mykey3: true,
-                mykey4: 2.58
-            }
-        }
+        let workInfo36 = formatWorkInfoByParms(36, 2.58);
         try{
             workScheduler.startWork(workInfo36);
             workScheduler.stopWork(workInfo, false);
@@ -1320,19 +1122,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest037", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest037---------------------------');
-        let workInfo37 = {
-            workId: 37,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
-            parameters: {
-                mykey0: 2147483647111,
-                mykey1: 10,
-                mykey2: "string",
-                mykey3: true,
-                mykey4: 2.59
-            }
-        }
+        let workInfo37 = formatWorkInfoByParms(37, 2.59);
         try{
             workScheduler.startWork(workInfo37);
         } catch (error) {
@@ -1404,19 +1194,7 @@ describe("WorkSchedulerJsTest", function () {
      */
     it("WorkSchedulerJsTest039", 0, async function (done) {
         console.info('----------------------WorkSchedulerJsTest039---------------------------');
-        let workInfo39 = {
-            workId: 39,
-            bundleName: "com.example.myapplication",
-            abilityName: "com.mytest.abilityName",
-            storageRequest: workScheduler.StorageRequest.STORAGE_LEVEL_OKAY,
-            parameters: {
-                mykey0: 2147483647111,
-                mykey1: 10,
-                mykey2: "string",
-                mykey3: true,
-                mykey4: 2.61
-            }
-        }
+        let workInfo39 = formatWorkInfoByParms(39, 2.61);
         try{
             workScheduler.startWork(workInfo39);
         } catch (error) {
