@@ -392,6 +392,9 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
     if (!CheckCondition(workInfo)) {
         return E_REPEAT_CYCLE_TIME_ERR;
     }
+    time_t baseTime;
+    time(&baseTime);
+    workInfo.RequestBaseTime(baseTime);
     WS_HILOGD("workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
         workInfo.GetBundleName().c_str(), workInfo.GetAbilityName().c_str(), workInfo.GetWorkId(), uid);
     shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);

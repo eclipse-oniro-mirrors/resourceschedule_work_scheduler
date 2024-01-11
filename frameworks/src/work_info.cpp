@@ -234,10 +234,7 @@ int32_t WorkInfo::GetCycleCount()
 time_t WorkInfo::GetBaseTime()
 {
     if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
-        time_t timeVal = conditionMap_.at(WorkCondition::Type::TIMER)->timeVal;
-        if (timeVal > 0) {
-            return timeVal;
-        }
+        return conditionMap_.at(WorkCondition::Type::TIMER)->timeVal;
     }
     time_t result;
     time(&result);
