@@ -857,7 +857,9 @@ bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
 void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
 {
     if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
         GroupObserverInit();
+#endif
     }
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
         RegisterStandbyStateObserver();
@@ -877,8 +879,10 @@ void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const 
         standbyStateObserver_ = nullptr;
 #endif
     } else if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
         std::lock_guard<std::mutex> observerLock(observerMutex_);
         groupObserver_ = nullptr;
+#endif
     }
 }
 
