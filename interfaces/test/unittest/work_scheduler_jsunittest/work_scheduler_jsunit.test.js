@@ -1106,7 +1106,7 @@ describe("WorkSchedulerJsTest", function () {
         let workInfo36 = formatWorkInfoByParms(36, 2.58);
         try{
             workScheduler.startWork(workInfo36);
-            workScheduler.stopWork(workInfo, false);
+            workScheduler.stopWork(workInfo36, false);
             expect(true).assertEqual(true)
         } catch (error) {
             expect(false).assertEqual(true)
