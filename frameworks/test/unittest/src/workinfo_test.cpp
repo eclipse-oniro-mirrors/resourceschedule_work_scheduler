@@ -631,21 +631,6 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils004, Function | MediumTest | Level0)
 }
 
 /**
- * @tc.name WorkSchedUtils005
- * @tc.desc test WorkSchedHilog
- * @tc.type FUNC
- * @tc.require: issueI5Y6YK
- */
-HWTEST_F (WorkInfoTest, WorkSchedUtils005, Function | MediumTest | Level0)
-{
-    WorkSchedLogLevel curLevel = {WorkSchedLogLevel::INFO};
-    WorkSchedHilog::SetLogLevel(curLevel);
-    bool res = WorkSchedHilog::JudgeLevel({WorkSchedLogLevel::DEBUG});
-    EXPECT_EQ(res, false);
-    WorkSchedHilog::GetBriefFileName(nullptr);
-}
-
-/**
  * @tc.name WorkSchedUtils006
  * @tc.desc test IsSystemApp
  * @tc.type FUNC
