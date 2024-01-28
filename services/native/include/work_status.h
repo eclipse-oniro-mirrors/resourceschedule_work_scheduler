@@ -169,7 +169,8 @@ private:
     bool IsSameUser();
     bool SetMinInterval();
     bool IsBatteryAndNetworkReady(WorkCondition::Type type);
-    bool IsStorageAndChargerAndTimerReady(WorkCondition::Type type);
+    bool IsStorageAndTimerReady(WorkCondition::Type type);
+    bool IsChargerReady();
     int GetPriority();
 };
 } // namespace WorkScheduler

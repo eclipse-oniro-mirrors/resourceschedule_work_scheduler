@@ -39,19 +39,19 @@ void ChargerEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
                 WS_HILOGI("Condition changed: CHARGER_PLUGGED_AC");
                 listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
                     std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_AC,
-                    0, 0, std::string()));
+                    0, true, std::string()));
                 break;
             case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB):
                 WS_HILOGI("Condition changed: CHARGER_PLUGGED_USB");
                 listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
                     std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_USB,
-                    0, 0, std::string()));
+                    0, true, std::string()));
                 break;
             case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS):
                 WS_HILOGI("Condition changed: CHARGER_WIRELESS");
                 listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
                     std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_WIRELESS,
-                    0, 0, std::string()));
+                    0, true, std::string()));
                 break;
             default:
                 break;
@@ -63,7 +63,7 @@ void ChargerEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
             case static_cast<int32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_BUTT):
                 WS_HILOGI("Condition changed: CHARGER_PLUGGED_UNPLUGGED");
                 listener_.OnConditionChanged(WorkCondition::Type::CHARGER,
-                    std::make_shared<DetectorValue>(WorkCondition::CHARGING_UNPLUGGED, 0, 0, std::string()));
+                    std::make_shared<DetectorValue>(WorkCondition::CHARGING_UNPLUGGED, 0, false, std::string()));
                 break;
             default:
                 break;
