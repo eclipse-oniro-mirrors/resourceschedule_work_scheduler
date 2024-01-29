@@ -193,7 +193,7 @@ bool WorkStatus::IsReady()
         if (conditionMap_.count(it.first) <= 0) {
             return false;
         }
-        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndChargerAndTimerReady(it.first)) {
+        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) || !IsChargerReady()) {
             return false;
         }
     }
@@ -255,7 +255,28 @@ bool WorkStatus::IsBatteryAndNetworkReady(WorkCondition::Type type)
     return true;
 }
 
-bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
+bool WorkStatus::IsChargerReady()
+{
+    auto conditionSet = workInfo_->GetConditionMap()->at(WorkCondition::Type::CHARGER);
+    auto conditionCurrent = conditionMap_.at(WorkCondition::Type::CHARGER);
+    if (conditionSet->boolVal != conditionCurrent->boolVal) {
+        return false;
+    }
+    if (conditionSet->boolVal) {
+        if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal !=
+            static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
+            return false;
+        }
+    } else {
+        if (conditionCurrent->enumVal != static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+
+bool WorkStatus::IsStorageAndTimerReady(WorkCondition::Type type)
 {
     auto workConditionMap = workInfo_->GetConditionMap();
     switch (type) {
@@ -263,22 +284,6 @@ bool WorkStatus::IsStorageAndChargerAndTimerReady(WorkCondition::Type type)
             if (workConditionMap->at(type)->enumVal != WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY &&
                 workConditionMap->at(type)->enumVal != conditionMap_.at(type)->enumVal) {
                 return false;
-            }
-            break;
-        }
-        case WorkCondition::Type::CHARGER: {
-            auto conditionSet = workConditionMap->at(type);
-            auto conditionCurrent = conditionMap_.at(type);
-            if (conditionSet->boolVal) {
-                if (conditionCurrent->enumVal != conditionSet->enumVal && conditionSet->enumVal !=
-                    static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_ANY)) {
-                    return false;
-                }
-            } else {
-                if (conditionCurrent->enumVal !=
-                    static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)) {
-                    return false;
-                }
             }
             break;
         }

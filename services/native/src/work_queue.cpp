@@ -70,8 +70,7 @@ shared_ptr<Condition> WorkQueue::ParseCondition(WorkCondition::Type type,
         }
         case WorkCondition::Type::CHARGER: {
             value->enumVal = conditionVal->intVal;
-            value->boolVal = (conditionVal->intVal > WorkCondition::Charger::CHARGING_PLUGGED_ANY
-                && conditionVal->intVal < WorkCondition::Charger::CHARGING_UNKNOWN);
+            value->boolVal = conditionVal->boolVal;
             break;
         }
         case WorkCondition::Type::BATTERY_LEVEL: {
