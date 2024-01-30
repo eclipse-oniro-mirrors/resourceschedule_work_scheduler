@@ -193,7 +193,7 @@ bool WorkStatus::IsReady()
         if (conditionMap_.count(it.first) <= 0) {
             return false;
         }
-        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) || !IsChargerReady()) {
+        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) || !IsChargerReady(it.first)) {
             return false;
         }
     }
@@ -255,8 +255,11 @@ bool WorkStatus::IsBatteryAndNetworkReady(WorkCondition::Type type)
     return true;
 }
 
-bool WorkStatus::IsChargerReady()
+bool WorkStatus::IsChargerReady(WorkCondition::Type type)
 {
+    if (type != WorkCondition::Type::CHARGER) {
+        return true;
+    }
     auto conditionSet = workInfo_->GetConditionMap()->at(WorkCondition::Type::CHARGER);
     auto conditionCurrent = conditionMap_.at(WorkCondition::Type::CHARGER);
     if (conditionSet->boolVal != conditionCurrent->boolVal) {
