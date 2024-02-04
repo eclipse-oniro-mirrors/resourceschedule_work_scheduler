@@ -42,7 +42,9 @@
           "access_token",
           "netmanager_base",
           "time_service",
-          "init"
+          "init",
+          "data_share",
+          "config_policy"
         ],
         "third_party": [ "jsoncpp" ]
       },

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -129,6 +129,21 @@ void WorkInfo::RefreshUid(int32_t uid)
 void WorkInfo::SetCallBySystemApp(bool callBySystemApp)
 {
     callBySystemApp_ = callBySystemApp;
+}
+
+void WorkInfo::SetPreinstalled(bool preinstalled)
+{
+    preinstalled_ = preinstalled;
+}
+
+bool WorkInfo::IsPreinstalled()
+{
+    return preinstalled_;
+}
+
+std::string WorkInfo::GetUriKey()
+{
+    return uriKey_;
 }
 
 int32_t WorkInfo::GetUid()
@@ -385,6 +400,8 @@ std::string WorkInfo::ParseToJsonStr()
     root["bundleName"] = bundleName_;
     root["abilityName"] = abilityName_;
     root["persisted"] = persisted_;
+    root["preinstalled"] = preinstalled_;
+    root["uriKey"] = uriKey_;
     root["callBySystemApp"] = callBySystemApp_;
     ParseConditionToJsonStr(root);
     if (extras_) {
@@ -466,6 +483,8 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     this->bundleName_ = value["bundleName"].asString();
     this->abilityName_ = value["abilityName"].asString();
     this->persisted_ = value["persisted"].asBool();
+    this->preinstalled_ = value["preinstalled"].asBool();
+    this->uriKey_ = value["uriKey"].asString();
     this->callBySystemApp_ = value["callBySystemApp"].asBool();
     ParseConditionFromJsonStr(value);
     if (!value.isMember("parameters")) {

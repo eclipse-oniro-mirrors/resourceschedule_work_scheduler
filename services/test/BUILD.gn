@@ -24,6 +24,11 @@ config("worksched_private_config") {
 }
 
 ohos_unittest("WorkScheduleServiceTest") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   cflags_cc = [
     "-Dprivate=public",
     "-Dprotected=public",
@@ -66,6 +71,18 @@ ohos_unittest("WorkScheduleServiceTest") {
     "samgr:samgr_proxy",
   ]
   defines = []
+  if (bundle_active_enable) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
+  if (device_standby_enable) {
+    external_deps += [ "device_standby:standby_innerkits" ]
+    defines += [ "DEVICE_STANDBY_ENABLE" ]
+  }
+  if (resourceschedule_bgtaskmgr_enable) {
+    external_deps += [ "background_task_mgr:bgtaskmgr_innerkits" ]
+    defines += [ "RESOURCESCHEDULE_BGTASKMGR_ENABLE" ]
+  }
   if (powermgr_battery_manager_enable) {
     external_deps += [ "battery_manager:batterysrv_client" ]
     defines += [ "POWERMGR_BATTERY_MANAGER_ENABLE" ]
@@ -74,8 +91,10 @@ ohos_unittest("WorkScheduleServiceTest") {
     external_deps += [ "thermal_manager:thermalsrv_client" ]
     defines += [ "POWERMGR_THERMAL_MANAGER_ENABLE" ]
   }
-  subsystem_name = "resourceschedule"
-  part_name = "${worksched_native_part_name}"
+  if (workscheduler_with_communication_netmanager_base_enable) {
+    defines += [ "COMMUNICATION_NETMANAGER_BASE_ENABLE" ]
+    external_deps += [ "netmanager_base:net_conn_manager_if" ]
+  }
 }
 
 group("unittest") {

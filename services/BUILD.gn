@@ -49,6 +49,7 @@ ohos_shared_library("workschedservice") {
     "native/src/watchdog.cpp",
     "native/src/work_bundle_group_change_callback.cpp",
     "native/src/work_conn_manager.cpp",
+    "native/src/work_datashare_helper.cpp",
     "native/src/work_event_handler.cpp",
     "native/src/work_policy_manager.cpp",
     "native/src/work_queue.cpp",
@@ -73,6 +74,7 @@ ohos_shared_library("workschedservice") {
 
   external_deps = [
     "ability_base:want",
+    "ability_base:zuri",
     "ability_runtime:ability_manager",
     "ability_runtime:wantagent_innerkits",
     "access_token:libaccesstoken_sdk",
@@ -81,6 +83,8 @@ ohos_shared_library("workschedservice") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "config_policy:configpolicy_util",
+    "data_share:datashare_consumer",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
@@ -121,6 +125,11 @@ ohos_shared_library("workschedservice") {
 }
 
 ohos_static_library("workschedservice_static") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
   sources = [
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
@@ -137,6 +146,7 @@ ohos_static_library("workschedservice_static") {
     "native/src/watchdog.cpp",
     "native/src/work_bundle_group_change_callback.cpp",
     "native/src/work_conn_manager.cpp",
+    "native/src/work_datashare_helper.cpp",
     "native/src/work_event_handler.cpp",
     "native/src/work_policy_manager.cpp",
     "native/src/work_queue.cpp",
@@ -161,6 +171,7 @@ ohos_static_library("workschedservice_static") {
 
   external_deps = [
     "ability_base:want",
+    "ability_base:zuri",
     "ability_runtime:ability_manager",
     "ability_runtime:wantagent_innerkits",
     "access_token:libaccesstoken_sdk",
@@ -169,6 +180,8 @@ ohos_static_library("workschedservice_static") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "config_policy:configpolicy_util",
+    "data_share:datashare_consumer",
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
@@ -179,7 +192,7 @@ ohos_static_library("workschedservice_static") {
     "time_service:time_client",
   ]
 
-  defines = []
+  defines = [ "WORK_SCHEDULER_TEST" ]
   if (bundle_active_enable) {
     external_deps += [ "device_usage_statistics:usagestatsinner" ]
     defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]

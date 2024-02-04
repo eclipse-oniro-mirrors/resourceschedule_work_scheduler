@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <climits>          // for PATH_MAX
 
 #include <dirent.h>
 #include <fcntl.h>
@@ -47,6 +48,7 @@
 #include "conditions/storage_listener.h"
 #include "conditions/timer_listener.h"
 #include "conditions/group_listener.h"
+#include "config_policy_utils.h"           // for GetOneCfgFile
 #include "event_publisher.h"
 #include "json/json.h"
 #include "policy/app_data_clear_listener.h"
@@ -57,6 +59,7 @@
 #include "background_task_mgr_helper.h"
 #include "resource_type.h"
 #endif
+#include "work_datashare_helper.h"
 #include "work_scheduler_connection.h"
 #include "work_bundle_group_change_callback.h"
 #include "work_sched_errors.h"
@@ -80,14 +83,20 @@ const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const char* g_persistedFilePath = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* g_persistedPath = "/data/service/el1/public/WorkScheduler";
+const char* g_preinstalledFilePath = "etc/backgroundtask/config.json";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
 const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
 }
 
-WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
+#ifdef WORK_SCHEDULER_TEST
+#define WEAK_FUNC __attribute__((weak))
+#else
+#define WEAK_FUNC
+#endif
 
+WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
 WorkSchedulerService::~WorkSchedulerService() {}
 
 void WorkSchedulerService::OnStart()
@@ -106,6 +115,10 @@ void WorkSchedulerService::OnStart()
         return;
     }
     handler_ = std::make_shared<WorkEventHandler>(eventRunner_, instance);
+    if (!handler_) {
+        WS_HILOGE("Init failed due to create handler_");
+        return;
+    }
 
     // Try to init.
     Init(eventRunner_);
@@ -118,7 +131,7 @@ void WorkSchedulerService::OnStart()
     WS_HILOGD("On start success.");
 }
 
-bool WorkSchedulerService::IsBaseAbilityReady()
+WEAK_FUNC bool WorkSchedulerService::IsBaseAbilityReady()
 {
     sptr<ISystemAbilityManager> systemAbilityManager
         = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -132,30 +145,111 @@ bool WorkSchedulerService::IsBaseAbilityReady()
     return true;
 }
 
-void WorkSchedulerService::InitPersisted()
+void WorkSchedulerService::InitWorkInner()
 {
     WS_HILOGD("init persisted work");
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
     for (auto it : persistedWorks) {
         WS_HILOGI("get persisted work, id: %{public}d", it->GetWorkId());
-        InitPersistedWork(*it);
+        AddWorkInner(*it);
+    }
+    WS_HILOGD("init preinstalled work");
+    bool needRefresh = false;
+    list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
+    for (auto work : preinstalledWorks) {
+        WS_HILOGI("get preinstalled work, id: %{public}d", work->GetWorkId());
+        if (!work->IsPersisted()) {
+            AddWorkInner(*work);
+            continue;
+        }
+        auto iter = std::find_if(persistedWorks.begin(), persistedWorks.end(), [&](const auto &workinfo) {
+            return (workinfo->GetUid() == work->GetUid()) && (workinfo->GetWorkId() == work->GetWorkId());
+        });
+        if (iter != persistedWorks.end()) {
+            WS_HILOGI("find workid %{public}d in persisted, ignore", work->GetWorkId());
+            continue;
+        }
+        needRefresh = true;
+        AddWorkInner(*work);
+        string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
+        persistedMap_.emplace(workId, work);
+    }
+    if (needRefresh) {
+        RefreshPersistedWorks();
     }
 }
 
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
+    Json::Value root;
+    if (!GetJsonFromFile(g_persistedFilePath, root)) {
+        return workInfos;
+    }
+    for (auto it : root.getMemberNames()) {
+        Json::Value workJson = root[it];
+        shared_ptr<WorkInfo> workInfo = make_shared<WorkInfo>();
+        if (workInfo->ParseFromJson(workJson)) {
+            workInfos.emplace_back(workInfo);
+            WS_HILOGI("find one persisted work %{public}d", workInfo->GetWorkId());
+            string workId = "u" + to_string(workInfo->GetUid()) + "_" + to_string(workInfo->GetWorkId());
+            persistedMap_.emplace(workId, workInfo);
+        }
+    }
+    return workInfos;
+}
+
+list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
+{
+    list<shared_ptr<WorkInfo>> workInfos;
+    char buf[PATH_MAX + 1] = {0};
+    char* configFilePath = GetOneCfgFile(g_preinstalledFilePath, buf, PATH_MAX + 1);
+    if (!configFilePath || strlen(configFilePath) == 0 || strlen(configFilePath) > PATH_MAX) {
+        WS_HILOGE("get preinstalled works path failed");
+        return workInfos;
+    }
+    Json::Value root;
+    if (!GetJsonFromFile(configFilePath, root) || root.empty()) {
+        WS_HILOGE("file is empty");
+        return workInfos;
+    }
+    Json::Value preinstalledWorksRoot = root["work_scheduler_preinstalled_works"];
+    if (preinstalledWorksRoot.empty()) {
+        WS_HILOGE("work_scheduler_preinstalled_works no config");
+        return workInfos;
+    }
+    for (auto it : preinstalledWorksRoot.getMemberNames()) {
+        Json::Value workJson = preinstalledWorksRoot[it];
+        shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
+        if (workinfo->ParseFromJson(workJson)) {
+            int32_t uid;
+            if (!GetUidByBundleName(workinfo->GetBundleName(), uid)) {
+                continue;
+            }
+            workinfo->RefreshUid(uid);
+            workinfo->SetPreinstalled(true);
+            workInfos.emplace_back(workinfo);
+            WS_HILOGI("find one preinstalled work %{public}d", workinfo->GetWorkId());
+        } else {
+            WS_HILOGE("ParseFromJson error");
+        }
+    }
+    return workInfos;
+}
+
+bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &root)
+{
     ifstream fin;
     std::string realPath;
-    if (!WorkSchedUtils::ConvertFullPath(g_persistedFilePath, realPath)) {
+    if (!WorkSchedUtils::ConvertFullPath(filePath, realPath)) {
         WS_HILOGE("Get real path failed");
-        return workInfos;
+        return false;
     }
     WS_HILOGD("Read from %{public}s", realPath.c_str());
     fin.open(realPath, ios::in);
     if (!fin.is_open()) {
         WS_HILOGE("cannot open file %{public}s", realPath.c_str());
-        return workInfos;
+        return false;
     }
     char buffer[MAX_BUFFER];
     ostringstream os;
@@ -164,24 +258,15 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     }
     string data = os.str();
     JSONCPP_STRING errs;
-    Json::Value root;
     Json::CharReaderBuilder readerBuilder;
     const unique_ptr<Json::CharReader> jsonReader(readerBuilder.newCharReader());
     bool res = jsonReader->parse(data.c_str(), data.c_str() + data.length(), &root, &errs);
     fin.close();
     if (!res || !errs.empty()) {
-        return workInfos;
+        WS_HILOGE("parse %{public}s json error", realPath.c_str());
+        return false;
     }
-    for (auto it : root.getMemberNames()) {
-        Json::Value workJson = root[it];
-        shared_ptr<WorkInfo> workInfo = make_shared<WorkInfo>();
-        if (workInfo->ParseFromJson(workJson)) {
-            workInfos.emplace_back(workInfo);
-            string workId = "u" + to_string(workInfo->GetUid()) + "_" + to_string(workInfo->GetWorkId());
-            persistedMap_[workId] = workInfo;
-        }
-    }
-    return workInfos;
+    return true;
 }
 
 void WorkSchedulerService::OnStop()
@@ -220,7 +305,7 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
         WS_HILOGE("init failed due to work policy manager init.");
         return false;
     }
-    InitPersisted();
+    InitWorkInner();
     if (!Publish(wss)) {
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
@@ -335,7 +420,7 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
     return true;
 }
 
-bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
+bool WorkSchedulerService::GetUidByBundleName(const string &bundleName, int32_t &uid)
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -351,15 +436,23 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
     BundleInfo bundleInfo;
     int32_t currentAccountId = WorkSchedUtils::GetCurrentAccountId();
-    std::string bundleName = workInfo.GetBundleName();
-    WS_HILOGD("check work info currentAccountId : %{public}d, bundleName : %{public}s.",
-        currentAccountId, bundleName.c_str());
     if (bundleMgr->GetBundleInfo(bundleName, BundleFlag::GET_BUNDLE_WITH_ABILITIES,
         bundleInfo, currentAccountId)) {
-        WS_HILOGD("bundleUid : %{public}d , uid : %{public}d.", bundleInfo.uid, uid);
-        return bundleInfo.uid == uid;
+        WS_HILOGD("currentAccountId : %{public}d, bundleName : %{public}s, uid = %{public}d",
+            currentAccountId, bundleName.c_str(), bundleInfo.uid);
+        uid = bundleInfo.uid;
+        return true;
     }
-    WS_HILOGE("Get bundle info failed.");
+    WS_HILOGE("Get bundle info %{public}s failed.", bundleName.c_str());
+    return false;
+}
+
+bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
+{
+    int32_t realUid;
+    if (GetUidByBundleName(workInfo.GetBundleName(), realUid)) {
+        return uid == realUid;
+    }
     return false;
 }
 
@@ -411,9 +504,12 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
     return ret;
 }
 
-void WorkSchedulerService::InitPersistedWork(WorkInfo& workInfo)
+void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
 {
     WS_HILOGD("come in");
+    time_t baseTime;
+    (void)time(&baseTime);
+    workInfo.RequestBaseTime(baseTime);
     if (workInfo.GetUid() > 0) {
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
         if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid()) == ERR_OK) {
@@ -583,7 +679,7 @@ bool WorkSchedulerService::AllowDump()
     if (ENG_MODE == 1 || SECURE_MODE) {
         return true;
     }
-    
+
     WS_HILOGE("Not eng mode and developer mode");
     return false;
 }
@@ -606,6 +702,13 @@ void WorkSchedulerService::DumpProcess(std::vector<std::string> &argsInStr, std:
             }
             break;
         case DUMP_PARAM_INDEX + 1:
+            if (argsInStr[DUMP_OPTION] == "-k") {
+                string key = argsInStr[DUMP_PARAM_INDEX];
+                string value;
+                WorkDatashareHelper::GetInstance().GetStringValue(key, value);
+                result.append("key: " + key + ", value: " + value);
+                break;
+            }
             DumpParamSet(argsInStr[DUMP_OPTION], argsInStr[DUMP_PARAM_INDEX], result);
             break;
         case DUMP_VALUE_INDEX + 1:
@@ -890,7 +993,7 @@ void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const 
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-void WorkSchedulerService::GroupObserverInit()
+__attribute__((no_sanitize("cfi"))) void WorkSchedulerService::GroupObserverInit()
 {
     if (!workQueueManager_) {
         return;
