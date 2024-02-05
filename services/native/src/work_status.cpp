@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,6 +16,7 @@
 #include "work_status.h"
 
 #include "time_service_client.h"
+#include "work_datashare_helper.h"
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "work_scheduler_service.h"
@@ -38,6 +39,7 @@ std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 100;
 const int32_t HIGH_PRIORITY = 1000;
 const int32_t ACTIVE_GROUP = 10;
+const string SWITCH_ON = "1";
 std::mutex WorkStatus::s_uid_last_time_mutex;
 
 time_t getCurrentTime()
@@ -176,6 +178,25 @@ bool WorkStatus::IsSameUser()
     return true;
 }
 
+bool WorkStatus::IsUriKeySwitchOn()
+{
+    if (!workInfo_->IsPreinstalled()) {
+        return true;
+    }
+    if (workInfo_->GetUriKey().empty()) {
+        WS_HILOGE("key is empty %{public}s", workId_.c_str());
+        return false;
+    }
+    string key = workInfo_->GetUriKey();
+    string value;
+    (void)WorkDatashareHelper::GetInstance().GetStringValue(key, value);
+    if (value == SWITCH_ON) {
+        return true;
+    }
+    WS_HILOGE("workid %{public}s key %{public}s, value is 0", workId_.c_str(), key.c_str());
+    return false;
+}
+
 bool WorkStatus::IsReady()
 {
     WS_HILOGD("IsReady");
@@ -196,6 +217,9 @@ bool WorkStatus::IsReady()
         if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) || !IsChargerReady(it.first)) {
             return false;
         }
+    }
+    if (!IsUriKeySwitchOn()) {
+        return false;
     }
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
         return true;

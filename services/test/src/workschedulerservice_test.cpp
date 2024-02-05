@@ -15,39 +15,96 @@
 
 #include <functional>
 #include <gtest/gtest.h>
-
+#define private public
 #include "work_scheduler_service.h"
 #include "work_status.h"
 
-using namespace testing::ext;
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+#include "bundle_active_client.h"
+#endif
+#ifdef DEVICE_STANDBY_ENABLE
+#include "standby_service_client.h"
+#include "allow_type.h"
+#endif
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
+#include "scheduler_bg_task_subscriber.h"
+#include "background_task_mgr_helper.h"
+#include "resource_type.h"
+#endif
+#include "work_sched_hilog.h"
 
+#ifdef DEVICE_STANDBY_ENABLE
+namespace OHOS {
+namespace DevStandbyMgr {
+ErrCode StandbyServiceClient::SubscribeStandbyCallback(const sptr<IStandbyServiceSubscriber>& subscriber)
+{
+    return ERR_OK;
+}
+}
+}
+#endif
+
+#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
+namespace OHOS {
+namespace BackgroundTaskMgr {
+ErrCode BackgroundTaskMgrHelper::SubscribeBackgroundTask(const BackgroundTaskSubscriber &subscriber)
+{
+    return ERR_OK;
+}
+}
+}
+#endif
+
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+namespace OHOS {
+namespace DeviceUsageStats {
+ErrCode BundleActiveClient::RegisterAppGroupCallBack(const sptr<IAppGroupCallback> &observer)
+{
+    return ERR_OK;
+}
+}
+}
+#endif
+
+namespace OHOS {
+namespace WorkScheduler {
+bool WorkSchedulerService::IsBaseAbilityReady()
+{
+    return true;
+}
+}
+}
+
+using namespace testing::ext;
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerServiceTest : public testing::Test {
 public:
-    static void SetUpTestCase();
+    static void SetUpTestCase() {}
     static void TearDownTestCase() {}
-    void SetUp() {}
-    void TearDown() {}
+    void SetUp()
+    {
+        WS_HILOGI("======================= test begin ======================== ");
+    }
+    void TearDown()
+    {
+        WS_HILOGI("======================= test end ===========================");
+    }
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 
-std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ = nullptr;
-
-void WorkSchedulerServiceTest::SetUpTestCase()
-{
-    workSchedulerService_ = std::make_shared<WorkSchedulerService>();
-}
+std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ =
+    DelayedSingleton<WorkSchedulerService>::GetInstance();
 
 /**
  * @tc.name: onStart_001
  * @tc.desc: Test WorkSchedulerService OnStart.
  * @tc.type: FUNC
- * @tc.require: I8F08T
+ * @tc.require: I8ZDJI
  */
 HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level1)
 {
-    workSchedulerService_->ready_ = true;
+    workSchedulerService_->OnStart();
     EXPECT_NE(workSchedulerService_, nullptr);
 }
 
@@ -158,6 +215,25 @@ HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_001, TestSize.Level1)
  
     auto ret = workSchedulerService_->GetAllRunningWorks(workInfos);
     EXPECT_NE(ret, 0);
+}
+
+/**
+ * @tc.name: Datashare_001
+ * @tc.desc: Test Datashare
+ * @tc.type: FUNC
+ * @tc.require: I8ZDJI
+ */
+HWTEST_F(WorkSchedulerServiceTest, Datashare_001, TestSize.Level1)
+{
+    WS_HILOGI("====== test begin ====== ");
+    std::vector<std::string> argsInStr;
+    argsInStr.push_back("-k");
+    argsInStr.push_back("settings.power.suspend_sources");
+    std::string result;
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), 0);
+    WS_HILOGI("====== test end ====== ");
 }
 }
 }

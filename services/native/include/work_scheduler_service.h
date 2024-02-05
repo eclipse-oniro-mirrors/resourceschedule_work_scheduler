@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -126,11 +126,6 @@ public:
      * @return Status code, ERR_OK if success.
      */
     int32_t Dump(int32_t fd, const std::vector<std::u16string>& args) override;
-
-    /**
-     * @brief Init persisted.
-     */
-    void InitPersisted();
     /**
      * @brief Refresh persisted works.
      */
@@ -288,7 +283,6 @@ private:
     void GroupObserverInit();
 #endif
     std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
-    void InitPersistedWork(WorkInfo& workInfo);
     void DumpAllInfo(std::string &result);
     bool CheckWorkInfo(WorkInfo &workInfo, int32_t &uid);
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
@@ -300,6 +294,11 @@ private:
     bool IsDebugApp(const std::string &bundleName);
     bool AllowDump();
     void DumpProcess(std::vector<std::string> &argsInStr, std::string &result);
+    bool GetJsonFromFile(const char *filePath, Json::Value &root);
+    bool GetUidByBundleName(const std::string &bundleName, int32_t &uid);
+    void InitWorkInner();
+    void AddWorkInner(WorkInfo& workInfo);
+    std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

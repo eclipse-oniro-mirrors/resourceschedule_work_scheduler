@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -260,7 +260,18 @@ public:
      * @return True if success,else false.
      */
     bool ParseFromJson(const Json::Value value);
-
+    /**
+     * @brief Set preinstalled flag.
+    */
+    void SetPreinstalled(bool preinstalled);
+    /**
+     * @brief Get preinstalled flag.
+     */
+    bool IsPreinstalled();
+    /**
+     * @brief Get uri key.
+     */
+    std::string GetUriKey();
 private:
     int32_t workId_;
     std::string bundleName_;
@@ -270,6 +281,8 @@ private:
     std::shared_ptr<AAFwk::WantParams> extras_;
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
     bool callBySystemApp_ {false};
+    bool preinstalled_ {false};
+    std::string uriKey_;
 private:
     static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
