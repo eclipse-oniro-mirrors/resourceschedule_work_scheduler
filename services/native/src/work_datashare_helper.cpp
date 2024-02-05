@@ -49,7 +49,6 @@ __attribute__((no_sanitize("cfi"))) bool WorkDatashareHelper::GetStringValue(con
     ReleaseDataShareHelper(helper);
     if (resultSet == nullptr) {
         WS_HILOGE("helper->Query return nullptr");
-        resultSet->Close();
         return false;
     }
     int32_t count;

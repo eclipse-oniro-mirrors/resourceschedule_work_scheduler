@@ -73,6 +73,7 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
+const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
@@ -186,7 +187,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     if (!GetJsonFromFile(g_persistedFilePath, root)) {
         return workInfos;
     }
-    for (auto it : root.getMemberNames()) {
+    for (const auto &it : root.getMemberNames()) {
         Json::Value workJson = root[it];
         shared_ptr<WorkInfo> workInfo = make_shared<WorkInfo>();
         if (workInfo->ParseFromJson(workJson)) {
@@ -213,12 +214,16 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
         WS_HILOGE("file is empty");
         return workInfos;
     }
-    Json::Value preinstalledWorksRoot = root["work_scheduler_preinstalled_works"];
-    if (preinstalledWorksRoot.empty()) {
-        WS_HILOGE("work_scheduler_preinstalled_works no config");
+    if (!root.isMember(PRINSTALLED_WORKS_KEY)) {
+        WS_HILOGE("no work_scheduler_preinstalled_works");
         return workInfos;
     }
-    for (auto it : preinstalledWorksRoot.getMemberNames()) {
+    Json::Value preinstalledWorksRoot = root[PRINSTALLED_WORKS_KEY];
+    if (preinstalledWorksRoot.empty() || !preinstalledWorksRoot.isObject()) {
+        WS_HILOGE("work_scheduler_preinstalled_works is empty");
+        return workInfos;
+    }
+    for (const auto &it : preinstalledWorksRoot.getMemberNames()) {
         Json::Value workJson = preinstalledWorksRoot[it];
         shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
         if (workinfo->ParseFromJson(workJson)) {
@@ -242,7 +247,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     ifstream fin;
     std::string realPath;
     if (!WorkSchedUtils::ConvertFullPath(filePath, realPath)) {
-        WS_HILOGE("Get real path failed");
+        WS_HILOGE("Get real path failed %{public}s", filePath);
         return false;
     }
     WS_HILOGD("Read from %{public}s", realPath.c_str());

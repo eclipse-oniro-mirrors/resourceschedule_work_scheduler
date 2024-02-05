@@ -474,17 +474,23 @@ void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
 bool WorkInfo::ParseFromJson(const Json::Value value)
 {
     if (value.empty()) {
+        WS_HILOGE("workinfo json is empty");
         return false;
     }
     if (!value.isMember("workId") || !value.isMember("bundleName") || !value.isMember("abilityName")) {
+        WS_HILOGE("workinfo json is invalid");
         return false;
     }
     this->workId_ = value["workId"].asInt();
     this->bundleName_ = value["bundleName"].asString();
     this->abilityName_ = value["abilityName"].asString();
     this->persisted_ = value["persisted"].asBool();
-    this->preinstalled_ = value["preinstalled"].asBool();
-    this->uriKey_ = value["uriKey"].asString();
+    if (value.isMember("preinstalled") && value["preinstalled"].isBool()) {
+        this->preinstalled_ = value["preinstalled"].asBool();
+    }
+    if (value.isMember("uriKey") && value["uriKey"].isString()) {
+        this->uriKey_ = value["uriKey"].asString();
+    }
     this->callBySystemApp_ = value["callBySystemApp"].asBool();
     ParseConditionFromJsonStr(value);
     if (!value.isMember("parameters")) {

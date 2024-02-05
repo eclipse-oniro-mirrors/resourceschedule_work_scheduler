@@ -261,11 +261,11 @@ public:
      */
     bool ParseFromJson(const Json::Value value);
     /**
-     * @brief Set isPreinstalled flag.
+     * @brief Set preinstalled flag.
     */
     void SetPreinstalled(bool preinstalled);
     /**
-     * @brief Get isPreinstalled flag.
+     * @brief Get preinstalled flag.
      */
     bool IsPreinstalled();
     /**
