@@ -146,7 +146,7 @@ WEAK_FUNC bool WorkSchedulerService::IsBaseAbilityReady()
     return true;
 }
 
-void WorkSchedulerService::InitWorkInner()
+void WorkSchedulerService::InitPersistedWork()
 {
     WS_HILOGD("init persisted work");
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
@@ -154,6 +154,10 @@ void WorkSchedulerService::InitWorkInner()
         WS_HILOGI("get persisted work, id: %{public}d", it->GetWorkId());
         AddWorkInner(*it);
     }
+}
+
+void WorkSchedulerService::InitPreinstalledWork()
+{
     WS_HILOGD("init preinstalled work");
     bool needRefresh = false;
     list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
@@ -163,11 +167,11 @@ void WorkSchedulerService::InitWorkInner()
             AddWorkInner(*work);
             continue;
         }
-        auto iter = std::find_if(persistedWorks.begin(), persistedWorks.end(), [&](const auto &workinfo) {
-            return (workinfo->GetUid() == work->GetUid()) && (workinfo->GetWorkId() == work->GetWorkId());
+        auto iter = std::find_if(persistedMap_.begin(), persistedMap_.end(), [&](const auto &pair) {
+            return (pair.second->GetUid() == work->GetUid()) && (pair.second->GetWorkId() == work->GetWorkId());
         });
-        if (iter != persistedWorks.end()) {
-            WS_HILOGI("find workid %{public}d in persisted, ignore", work->GetWorkId());
+        if (iter != persistedMap_.end()) {
+            WS_HILOGI("find workid %{public}d in persisted map, ignore", work->GetWorkId());
             continue;
         }
         needRefresh = true;
@@ -178,6 +182,12 @@ void WorkSchedulerService::InitWorkInner()
     if (needRefresh) {
         RefreshPersistedWorks();
     }
+}
+
+void WorkSchedulerService::InitWorkInner()
+{
+    InitPersistedWork();
+    InitPreinstalledWork();
 }
 
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()

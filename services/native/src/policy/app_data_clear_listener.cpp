@@ -33,20 +33,19 @@ AppDataClearSubscriber::AppDataClearSubscriber(const CommonEventSubscribeInfo &s
 void AppDataClearSubscriber::OnReceiveEvent(const CommonEventData &data)
 {
     const string action = data.GetWant().GetAction();
-    WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
+    string bundle = data.GetWant().GetBundle();
+    int32_t uid = data.GetWant().GetIntParam(UID_PARAM, -1);
+    WS_HILOGI("OnReceiveEvent get action: %{public}s, bundleName: %{public}s , uid: %{public}d",
+        action.c_str(), bundle.c_str(), uid);
+    auto detectorVal = make_shared<DetectorValue>(uid, 0, 0, bundle);
     if (action == CommonEventSupport::COMMON_EVENT_PACKAGE_DATA_CLEARED) {
-        string bundle = data.GetWant().GetBundle();
-        int32_t uid = data.GetWant().GetIntParam(UID_PARAM, -1);
-        WS_HILOGI("bundleName: %{public}s , uid: %{public}d", bundle.c_str(), uid);
-        auto detectorVal = make_shared<DetectorValue>(uid, 0, 0, bundle);
         listener_.OnPolicyChanged(PolicyType::APP_DATA_CLEAR, detectorVal);
-    } else if ((action == CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED)
-        || (action == CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED)) {
-        string bundle = data.GetWant().GetBundle();
-        int32_t uid = data.GetWant().GetIntParam(UID_PARAM, -1);
-        WS_HILOGI("bundleName: %{public}s , uid: %{public}d", bundle.c_str(), uid);
-        auto detectorVal = make_shared<DetectorValue>(uid, 0, 0, bundle);
+    } else if (action == CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED) {
         listener_.OnPolicyChanged(PolicyType::APP_REMOVED, detectorVal);
+    } else if (action == CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED) {
+        listener_.OnPolicyChanged(PolicyType::APP_CHANGED, detectorVal);
+    } else if (action == CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED) {
+        listener_.OnPolicyChanged(PolicyType::APP_ADDED, detectorVal);
     }
 }
 
@@ -56,6 +55,7 @@ shared_ptr<CommonEventSubscriber> CreateAppDataClearSubscriber(AppDataClearListe
     skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_DATA_CLEARED);
     skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
     skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED);
+    skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED);
     CommonEventSubscribeInfo info(skill);
     return make_shared<AppDataClearSubscriber>(info, listener);
 }
