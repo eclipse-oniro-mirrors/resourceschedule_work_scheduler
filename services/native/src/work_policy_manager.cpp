@@ -293,14 +293,31 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
         WS_HILOGE("wss_ expired");
         return;
     }
+    auto service = wss_.lock();
+    if (!service) {
+        WS_HILOGE("service is null");
+        return;
+    }
     switch (policyType) {
+        case PolicyType::APP_ADDED: {
+            service->InitPreinstalledWork();
+            break;
+        }
         case PolicyType::APP_REMOVED: {
             int32_t uid = detectorVal->intVal;
             WorkStatus::ClearUidLastTimeMap(uid);
-            [[fallthrough]];
+            service->StopAndClearWorksByUid(detectorVal->intVal);
+            break;
         }
         case PolicyType::APP_DATA_CLEAR: {
-            wss_.lock()->StopAndClearWorksByUid(detectorVal->intVal);
+            service->StopAndClearWorksByUid(detectorVal->intVal);
+            break;
+        }
+        case PolicyType::APP_CHANGED: {
+            int32_t uid = detectorVal->intVal;
+            WorkStatus::ClearUidLastTimeMap(uid);
+            service->StopAndClearWorksByUid(detectorVal->intVal);
+            service->InitPreinstalledWork();
             break;
         }
         default: {}

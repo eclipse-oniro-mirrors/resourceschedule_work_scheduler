@@ -251,6 +251,10 @@ public:
      * @return true mean the application has device_stadnby allow permission, false or not.
      */
     bool CheckStandbyApplyInfo(std::string& bundleName);
+    /**
+     * @brief init the preinstalled work.
+     */
+    void InitPreinstalledWork();
 private:
     std::set<int32_t> whitelist_;
     std::mutex whitelistMutex_;
@@ -299,6 +303,7 @@ private:
     void InitWorkInner();
     void AddWorkInner(WorkInfo& workInfo);
     std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
+    void InitPersistedWork();
 };
 } // namespace WorkScheduler
 } // namespace OHOS
