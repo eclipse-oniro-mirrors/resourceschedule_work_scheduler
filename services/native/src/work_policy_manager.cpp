@@ -403,6 +403,8 @@ void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerSe
 void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus)
 {
     uint32_t watchId = NewWatchdogId();
+    WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, watchdogTime:%{public}d",
+        watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_);
     watchdog_->AddWatchdog(watchId, watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
@@ -424,8 +426,9 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
         WS_HILOGE("wss_ expired");
         return;
     }
-    WS_HILOGD("WatchdogTimeOut.");
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
+    WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
+        watchdogId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
     wss_.lock()->WatchdogTimeOut(workStatus);
 }
 
