@@ -403,7 +403,7 @@ void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerSe
 void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus)
 {
     uint32_t watchId = NewWatchdogId();
-    WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, wathcdogTime:%{public}d",
+    WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, watchdogTime:%{public}d",
         watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_);
     watchdog_->AddWatchdog(watchId, watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
