@@ -257,13 +257,13 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     ifstream fin;
     std::string realPath;
     if (!WorkSchedUtils::ConvertFullPath(filePath, realPath)) {
-        WS_HILOGE("Get real path failed %{public}s", filePath);
+        WS_HILOGE("Get real path failed %{private}s", filePath);
         return false;
     }
-    WS_HILOGD("Read from %{public}s", realPath.c_str());
+    WS_HILOGD("Read from %{private}s", realPath.c_str());
     fin.open(realPath, ios::in);
     if (!fin.is_open()) {
-        WS_HILOGE("cannot open file %{public}s", realPath.c_str());
+        WS_HILOGE("cannot open file %{private}s", realPath.c_str());
         return false;
     }
     char buffer[MAX_BUFFER];
@@ -278,7 +278,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     bool res = jsonReader->parse(data.c_str(), data.c_str() + data.length(), &root, &errs);
     fin.close();
     if (!res || !errs.empty()) {
-        WS_HILOGE("parse %{public}s json error", realPath.c_str());
+        WS_HILOGE("parse %{private}s json error", realPath.c_str());
         return false;
     }
     return true;
@@ -897,7 +897,7 @@ void WorkSchedulerService::RefreshPersistedWorks()
         WS_HILOGE("Get real path failed");
         return;
     }
-    WS_HILOGD("Refresh path %{public}s", realPath.c_str());
+    WS_HILOGD("Refresh path %{private}s", realPath.c_str());
     fout.open(realPath, ios::out);
     fout<<result.c_str()<<endl;
     fout.close();
