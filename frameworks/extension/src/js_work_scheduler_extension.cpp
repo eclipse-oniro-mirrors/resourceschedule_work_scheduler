@@ -98,7 +98,7 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
 
     std::string moduleName(Extension::abilityInfo_->moduleName);
     moduleName.append("::").append(abilityInfo_->name);
-    WS_HILOGD("moduleName:%{public}s, srcPath:%{public}s.", moduleName.c_str(), srcPath.c_str());
+    WS_HILOGD("moduleName:%{public}s, srcPath:%{private}s.", moduleName.c_str(), srcPath.c_str());
     AbilityRuntime::HandleScope handleScope(jsRuntime_);
     napi_env env = jsRuntime_.GetNapiEnv();
 
