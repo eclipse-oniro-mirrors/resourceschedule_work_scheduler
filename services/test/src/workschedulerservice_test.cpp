@@ -31,6 +31,7 @@
 #include "background_task_mgr_helper.h"
 #include "resource_type.h"
 #endif
+#include "work_sched_errors.h"
 #include "work_sched_hilog.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
@@ -75,6 +76,8 @@ bool WorkSchedulerService::IsBaseAbilityReady()
 }
 }
 
+void OHOS::RefBase::DecStrongRef(void const* obj) {}
+
 using namespace testing::ext;
 namespace OHOS {
 namespace WorkScheduler {
@@ -82,14 +85,8 @@ class WorkSchedulerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
     static void TearDownTestCase() {}
-    void SetUp()
-    {
-        WS_HILOGI("======================= test begin ======================== ");
-    }
-    void TearDown()
-    {
-        WS_HILOGI("======================= test end ===========================");
-    }
+    void SetUp() {}
+    void TearDown() {}
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 
@@ -116,9 +113,26 @@ HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, startWork_001, TestSize.Level1)
 {
+    int32_t ret;
+
+    workSchedulerService_->ready_ = false;
     WorkInfo workinfo = WorkInfo();
-    auto ret = workSchedulerService_->StartWork(workinfo);
-    EXPECT_NE(ret, 0);
+    ret = workSchedulerService_->StartWork(workinfo);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+
+    workSchedulerService_->ready_ = true;
+    ret = workSchedulerService_->StartWork(workinfo);
+    EXPECT_EQ(ret, E_CHECK_WORKINFO_FAILED);
+
+    workSchedulerService_->checkBundle_ = false;
+    ret = workSchedulerService_->StartWork(workinfo);
+    EXPECT_EQ(ret, E_REPEAT_CYCLE_TIME_ERR);
+
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    ret = workSchedulerService_->StartWork(workinfo);
+    EXPECT_EQ(ret, 0);
+    ret = workSchedulerService_->StartWork(workinfo);
+    EXPECT_EQ(ret, E_ADD_REPEAT_WORK_ERR);
 }
 
 /**
@@ -129,9 +143,23 @@ HWTEST_F(WorkSchedulerServiceTest, startWork_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, stopWork_001, TestSize.Level1)
 {
+    int32_t ret;
+
+    WS_HILOGI("WorkSchedulerServiceTest.stopWork_001 begin");
+    workSchedulerService_->ready_ = false;
+    workSchedulerService_->checkBundle_ = true;
     WorkInfo workinfo = WorkInfo();
-    auto ret = workSchedulerService_->StopWork(workinfo);
-    EXPECT_NE(ret, 0);
+    ret = workSchedulerService_->StopWork(workinfo);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+
+    workSchedulerService_->ready_ = true;
+    ret = workSchedulerService_->StopWork(workinfo);
+    EXPECT_EQ(ret, E_CHECK_WORKINFO_FAILED);
+
+    workSchedulerService_->checkBundle_ = false;
+    ret = workSchedulerService_->StopWork(workinfo);
+    EXPECT_EQ(ret, 0);
+    WS_HILOGI("WorkSchedulerServiceTest.stopWork_001 end");
 }
 
 /**
@@ -142,9 +170,23 @@ HWTEST_F(WorkSchedulerServiceTest, stopWork_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_001, TestSize.Level1)
 {
+    int32_t ret;
+
+    WS_HILOGI("WorkSchedulerServiceTest.StopAndCancelWork_001 begin");
+    workSchedulerService_->ready_ = false;
+    workSchedulerService_->checkBundle_ = true;
     WorkInfo workinfo = WorkInfo();
-    auto ret = workSchedulerService_->StopAndCancelWork(workinfo);
-    EXPECT_NE(ret, 0);
+    ret = workSchedulerService_->StopAndCancelWork(workinfo);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+
+    workSchedulerService_->ready_ = true;
+    ret = workSchedulerService_->StopAndCancelWork(workinfo);
+    EXPECT_EQ(ret, E_CHECK_WORKINFO_FAILED);
+
+    workSchedulerService_->checkBundle_ = false;
+    ret = workSchedulerService_->StopAndCancelWork(workinfo);
+    EXPECT_EQ(ret, 0);
+    WS_HILOGI("WorkSchedulerServiceTest.StopAndCancelWork_001 end");
 }
 
 /**
@@ -155,9 +197,18 @@ HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorks_001, TestSize.Level1)
 {
-    WorkInfo workinfo = WorkInfo();
-    auto ret = workSchedulerService_->StopAndClearWorks();
-    EXPECT_NE(ret, 0);
+    int32_t ret;
+
+    WS_HILOGI("WorkSchedulerServiceTest.StopAndClearWorks_001 begin");
+    workSchedulerService_->ready_ = false;
+    workSchedulerService_->checkBundle_ = true;
+    ret = workSchedulerService_->StopAndClearWorks();
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+
+    workSchedulerService_->ready_ = true;
+    ret = workSchedulerService_->StopAndClearWorks();
+    EXPECT_EQ(ret, 0);
+    WS_HILOGI("WorkSchedulerServiceTest.StopAndClearWorks_001 end");
 }
 
 /**
@@ -170,7 +221,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_001, TestSize.Level1)
 {
     bool result;
     auto ret = workSchedulerService_->IsLastWorkTimeout(1, result);
-    EXPECT_NE(ret, 0);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
 
 /**
@@ -185,7 +236,7 @@ HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
     int32_t uid, pid;
 
     auto ret = workSchedulerService_->ObtainAllWorks(uid, pid, workInfos);
-    EXPECT_NE(ret, 0);
+    EXPECT_EQ(ret, 0);
 }
 
 /**
@@ -200,7 +251,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
     int32_t uid, pid;
 
     auto ret = workSchedulerService_->GetWorkStatus(uid, pid, workInfo);
-    EXPECT_NE(ret, 0);
+    EXPECT_EQ(ret, 0);
 }
 
 /**
@@ -212,9 +263,9 @@ HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_001, TestSize.Level1)
 {
     std::list<std::shared_ptr<WorkInfo>> workInfos;
- 
+
     auto ret = workSchedulerService_->GetAllRunningWorks(workInfos);
-    EXPECT_NE(ret, 0);
+    EXPECT_EQ(ret, 0);
 }
 
 /**
