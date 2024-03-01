@@ -164,6 +164,9 @@ void WorkSchedulerService::InitPreinstalledWork()
     for (auto work : preinstalledWorks) {
         WS_HILOGI("get preinstalled work, id: %{public}d", work->GetWorkId());
         if (!work->IsPersisted()) {
+            time_t baseTime;
+            (void)time(&baseTime);
+            work->RequestBaseTime(baseTime);
             AddWorkInner(*work);
             continue;
         }
@@ -175,6 +178,9 @@ void WorkSchedulerService::InitPreinstalledWork()
             continue;
         }
         needRefresh = true;
+        time_t baseTime;
+        (void)time(&baseTime);
+        work->RequestBaseTime(baseTime);
         AddWorkInner(*work);
         string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
         persistedMap_.emplace(workId, work);
@@ -522,9 +528,6 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
 void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
 {
     WS_HILOGD("come in");
-    time_t baseTime;
-    (void)time(&baseTime);
-    workInfo.RequestBaseTime(baseTime);
     if (workInfo.GetUid() > 0) {
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
         if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid()) == ERR_OK) {
