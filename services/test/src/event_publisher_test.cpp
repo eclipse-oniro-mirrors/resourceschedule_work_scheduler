@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "event_publisher.h"
+#include "work_sched_hilog.h"
 
 using namespace testing::ext;
 
@@ -54,5 +55,29 @@ HWTEST_F(EventPublisherTest, publishEvent_001, TestSize.Level1)
     EXPECT_EQ(result, std::string("dump -d need right params."));
 }
 
+HWTEST_F(EventPublisherTest, Dump_001, TestSize.Level1)
+{
+    std::vector<std::pair<string, string>> infos = {
+        {"event", "info"},
+        {"network", "wifi"},
+        {"network", "disconnect"},
+        {"charging", "usb"},
+        {"charging", "ac"},
+        {"charging", "wireless"},
+        {"charging", "none"},
+        {"storage", "low"},
+        {"storage", "ok"},
+        {"batteryStatus", "low"},
+        {"batteryStatus", "ok"},
+    };
+    for (auto it : infos) {
+        std::string result;
+        std::string eventType = it.first;
+        std::string eventValue = it.second;
+        eventPublisher_->Dump(result, eventType, eventValue);
+        WS_HILOGI("%{public}s", result.c_str());
+        EXPECT_EQ(!result.empty(), true);
+}
+}
 }
 }
