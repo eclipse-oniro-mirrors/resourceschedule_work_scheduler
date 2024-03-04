@@ -61,14 +61,18 @@ HWTEST_F(EventPublisherTest, Dump_001, TestSize.Level1)
         {"event", "info"},
         {"network", "wifi"},
         {"network", "disconnect"},
+        {"network", "invalid"},
         {"charging", "usb"},
         {"charging", "ac"},
         {"charging", "wireless"},
         {"charging", "none"},
+        {"charging", "invalid"},
         {"storage", "low"},
         {"storage", "ok"},
+        {"storage", "invalid"},
         {"batteryStatus", "low"},
         {"batteryStatus", "ok"},
+        {"batteryStatus", "invalid"},
     };
     for (auto it : infos) {
         std::string result;
