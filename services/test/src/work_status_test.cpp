@@ -203,7 +203,7 @@ HWTEST_F(WorkStatusTest, isReady_004, TestSize.Level1)
     workInfo_->RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
     std::shared_ptr<Condition> batteryCondition = std::make_shared<Condition>();
     batteryCondition->enumVal = WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY;
-    workStatus_->conditionMap_.emplace(WorkCondition::Type::NETWORK, batteryCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_STATUS, batteryCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -219,11 +219,11 @@ HWTEST_F(WorkStatusTest, isReady_005, TestSize.Level1)
 {
     std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
     workInfo_->workId_ = -1;
-    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     workInfo_->RequestBatteryLevel(80);
     std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
     batteryLevelCondition->intVal = 70;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -283,8 +283,13 @@ HWTEST_F(WorkStatusTest, isReady_008, TestSize.Level1)
     uint32_t timeInterval = 1200;
     workInfo_->RequestRepeatCycle(timeInterval);
     workStatus_->workInfo_ = workInfo_;
+
+    std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();
+    timerCondition->boolVal = true;
+    timerCondition->uintVal = 7200001;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
     bool result = workStatus_->IsReady();
-    EXPECT_FALSE(result);
+    EXPECT_TRUE(result);
 }
 
 /**
@@ -406,6 +411,85 @@ HWTEST_F(WorkStatusTest, isReady_0014, TestSize.Level1)
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: dump_001
+ * @tc.desc: Test WorkStatus Dump.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, dump_001, TestSize.Level1)
+{
+    std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
+    chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_AC;
+    chargingCondition->boolVal = true;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+
+    std::shared_ptr<Condition> networkCondition = std::make_shared<Condition>();
+    networkCondition->enumVal = WorkCondition::Network::NETWORK_TYPE_ANY;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::NETWORK, networkCondition);
+
+    std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
+    batteryLevelCondition->intVal = 66;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
+
+    std::shared_ptr<Condition> batteryStatusCondition = std::make_shared<Condition>();
+    batteryStatusCondition->enumVal = WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_STATUS, batteryStatusCondition);
+
+    std::shared_ptr<Condition> storageCondition = std::make_shared<Condition>();
+    storageCondition->enumVal = WorkCondition::Storage::STORAGE_LEVEL_OKAY;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
+
+    std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();
+    timerCondition->boolVal = false;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
+
+    std::string result;
+    workStatus_->Dump(result);
+    bool ret = result.empty();
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: getMinInterval_001
+ * @tc.desc: Test WorkStatus GetMinInterval.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, getMinInterval_001, TestSize.Level1)
+{
+    int64_t interval = 7200000;
+    workStatus_->SetMinIntervalByDump(interval);
+    int64_t ret = workStatus_->GetMinInterval();
+    EXPECT_FALSE(ret == interval);
+}
+
+/**
+ * @tc.name: isRepeating_001
+ * @tc.desc: Test WorkStatus IsRepeating.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, isRepeating_001, TestSize.Level1)
+{
+    WorkStatus_->conditionMap_.erase(WorkCondition::Type::TIMER);
+    bool ret = workStatus_->IsRepeating();
+    EXPECT_FALSE(ret);
+
+    std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();
+    timerCondition->boolVal = true;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
+    bool ret1 = workStatus_->IsRepeating();
+    EXPECT_TRUE(ret1);
+
+    std::shared_ptr<Condition> timerCondition1 = std::make_shared<Condition>();
+    timerCondition1->boolVal = false;
+    timerCondition1->intVal = 1200;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition1);
+    bool ret2 = workStatus_->IsRepeating();
+    EXPECT_TRUE(ret2);
 }
 }
 }
