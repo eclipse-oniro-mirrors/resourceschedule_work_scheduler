@@ -183,7 +183,7 @@ HWTEST_F(WorkStatusTest, isReady_003, TestSize.Level1)
     workInfo_->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_BLUETOOTH);
     std::shared_ptr<Condition> networkCondition = std::make_shared<Condition>();
     networkCondition->enumVal = WorkCondition::Network::NETWORK_TYPE_ETHERNET;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::NETWORK, networkCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::NETWORK, networkCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -203,7 +203,7 @@ HWTEST_F(WorkStatusTest, isReady_004, TestSize.Level1)
     workInfo_->RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
     std::shared_ptr<Condition> batteryCondition = std::make_shared<Condition>();
     batteryCondition->enumVal = WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::NETWORK, batteryCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::NETWORK, batteryCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -223,7 +223,7 @@ HWTEST_F(WorkStatusTest, isReady_005, TestSize.Level1)
     workInfo_->RequestBatteryLevel(60);
     std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
     batteryLevelCondition->intVal = 70;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -243,7 +243,7 @@ HWTEST_F(WorkStatusTest, isReady_006, TestSize.Level1)
     workInfo_->RequestBatteryLevel(60);
     std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
     batteryLevelCondition->intVal = 60;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -263,7 +263,7 @@ HWTEST_F(WorkStatusTest, isReady_007, TestSize.Level1)
     workInfo_->RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_OKAY);
     std::shared_ptr<Condition> storageCondition = std::make_shared<Condition>();
     storageCondition->enumVal = WorkCondition::Storage::STORAGE_LEVEL_LOW;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -287,7 +287,7 @@ HWTEST_F(WorkStatusTest, isReady_008, TestSize.Level1)
     time_t baseTimeTemp;
     (void)time(&baseTimeTemp);
     timerCondition->timeVal = baseTimeTemp;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -307,7 +307,7 @@ HWTEST_F(WorkStatusTest, isReady_009, TestSize.Level1)
     workInfo_->RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_OKAY);
     std::shared_ptr<Condition> storageCondition = std::make_shared<Condition>();
     storageCondition->enumVal = WorkCondition::Storage::STORAGE_LEVEL_OKAY;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -345,7 +345,7 @@ HWTEST_F(WorkStatusTest, isReady_0011, TestSize.Level1)
     std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
     chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_USB;
     chargingCondition->boolVal = false;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -366,7 +366,7 @@ HWTEST_F(WorkStatusTest, isReady_0012, TestSize.Level1)
     std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
     chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_USB;
     chargingCondition->boolVal = true;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -387,7 +387,7 @@ HWTEST_F(WorkStatusTest, isReady_0013, TestSize.Level1)
     std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
     chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_USB;
     chargingCondition->boolVal = false;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
@@ -408,7 +408,7 @@ HWTEST_F(WorkStatusTest, isReady_0014, TestSize.Level1)
     std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
     chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_AC;
     chargingCondition->boolVal = true;
-    WorkStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
