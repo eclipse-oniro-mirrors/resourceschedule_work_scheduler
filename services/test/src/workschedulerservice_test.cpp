@@ -18,6 +18,16 @@
 #define private public
 #include "work_scheduler_service.h"
 #include "work_status.h"
+#include "work_bundle_group_change_callback.h"
+#include "work_scheduler_connection.h"
+#include "work_queue_event_handler.h"
+#include "conditions/battery_level_listener.h"
+#include "common_event_manager.h"
+#include "common_event_support.h"
+#include "battery_info.h"
+#include "conditions/battery_status_listener.h"
+#include "conditions/charger_listener.h"
+#include "event_publisher.h"
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
@@ -285,6 +295,324 @@ HWTEST_F(WorkSchedulerServiceTest, Datashare_001, TestSize.Level1)
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), 0);
     WS_HILOGI("====== test end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, ListenerStart_001, TestSize.Level1)
+{
+    WS_HILOGI("====== ListenerStart_001 begin====== ");
+    for (auto pair : workSchedulerService_->workQueueManager_->listenerMap_)
+    {
+        pair.second->Start();
+    }
+    std::vector<std::pair<string, string>> infos = {
+        {"event", "info"},
+        {"network", "wifi"},
+        {"network", "disconnect"},
+        {"network", "invalid"},
+        {"charging", "usb"},
+        {"charging", "ac"},
+        {"charging", "wireless"},
+        {"charging", "none"},
+        {"charging", "invalid"},
+        {"storage", "low"},
+        {"storage", "ok"},
+        {"storage", "invalid"},
+        {"batteryStatus", "low"},
+        {"batteryStatus", "ok"},
+        {"batteryStatus", "invalid"},
+    };
+    EventPublisher eventPublisher;
+    for (auto it : infos) {
+        std::string result;
+        std::string eventType = it.first;
+        std::string eventValue = it.second;
+        eventPublisher.Dump(result, eventType, eventValue);
+        WS_HILOGI("%{public}s", result.c_str());
+        EXPECT_EQ(!result.empty(), true);
+    }
+    WS_HILOGI("====== ListenerStart_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, Dump_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_001 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-h");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    result.clear();
+    argsInStr.clear();
+    argsInStr.push_back("-a");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    result.clear();
+    argsInStr.clear();
+    argsInStr.push_back("-x");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    result.clear();
+    argsInStr.clear();
+    argsInStr.push_back("-memory");
+    argsInStr.push_back("100");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    result.clear();
+    argsInStr.clear();
+    argsInStr.push_back("-watchdog_time");
+    argsInStr.push_back("100");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, Dump_002, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_002 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-repeat_time_min");
+    argsInStr.push_back("100");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    result.clear();
+    argsInStr.clear();
+    argsInStr.push_back("-min_interval");
+    argsInStr.push_back("100");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    result.clear();
+    argsInStr.clear();
+    argsInStr.push_back("-test");
+    argsInStr.push_back("100");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_002 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, Dump_003, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_003 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-d");
+    argsInStr.push_back("storage");
+    argsInStr.push_back("ok");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-t");
+    argsInStr.push_back("bundlename");
+    argsInStr.push_back("abilityname");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    WorkInfo workinfo = WorkInfo();
+    result.clear();
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    workinfo.RefreshUid(2);
+    workinfo.SetElement("bundlename", "abilityname");
+    workSchedulerService_->AddWorkInner(workinfo);
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_003 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, Dump_004, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_004 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-d");
+    argsInStr.push_back("storage");
+    argsInStr.push_back("ok");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    argsInStr.clear();
+    argsInStr.push_back("arg0");
+    argsInStr.push_back("arg1");
+    argsInStr.push_back("arg2");
+    argsInStr.push_back("arg3");
+    argsInStr.push_back("arg4");
+    result.clear();
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_004 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 begin ====== ");
+    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, false);
+    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, true);
+    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(false, true);
+    workSchedulerService_->standbyStateObserver_->OnAllowListChanged(0, "bundlename", 0, true);
+    EXPECT_NE(workSchedulerService_, nullptr);
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, WorkBundleGroupChangeCallback_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkBundleGroupChangeCallback_001 begin ====== ");
+    OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo1(0, 1, 2, 0, "bundlename");
+    workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo1);
+    OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo2(0, 2, 1, 0, "bundlename");
+    workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo2);
+    EXPECT_NE(workSchedulerService_, nullptr);
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkBundleGroupChangeCallback_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, WorkSchedulerConnection_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkSchedulerConnection_001 begin ====== ");
+    auto workinfo = std::make_shared<WorkInfo>();
+    WorkSchedulerConnection conection(workinfo);
+    AppExecFwk::ElementName element;
+    conection.StopWork();
+    conection.OnAbilityDisconnectDone(element, 0);
+    EXPECT_EQ(conection.proxy_, nullptr);
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkSchedulerConnection_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 begin ====== ");
+    SchedulerBgTaskSubscriber subscriber;
+    subscriber.OnProcEfficiencyResourcesApply(nullptr);
+    subscriber.OnProcEfficiencyResourcesReset(nullptr);
+    subscriber.OnAppEfficiencyResourcesApply(nullptr);
+    subscriber.OnAppEfficiencyResourcesReset(nullptr);
+
+    auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(0, 0, 0xFFFF, "name");
+    subscriber.OnProcEfficiencyResourcesApply(resourceInfo);
+    subscriber.OnProcEfficiencyResourcesReset(resourceInfo);
+    subscriber.OnAppEfficiencyResourcesApply(resourceInfo);
+    subscriber.OnAppEfficiencyResourcesReset(resourceInfo);
+    WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, WorkQueueEventHandler_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 begin ====== ");
+    WorkQueueEventHandler handler(nullptr, nullptr);
+    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
+    handler.ProcessEvent(event);
+    event = AppExecFwk::InnerEvent::Get(1);
+    handler.ProcessEvent(event);
+    event = AppExecFwk::InnerEvent::Get(2);
+    handler.ProcessEvent(event);
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, BatteryLevelListener_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryLevelListener_001 begin ====== ");
+
+    BatteryLevelListener batteryLevelListener(workSchedulerService_->workQueueManager_);
+
+    batteryLevelListener.Start();
+    EXPECT_NE(batteryLevelListener.commonEventSubscriber, nullptr);
+
+    EventFwk::CommonEventData data;
+    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
+
+    EventFwk::Want want;
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
+    data.SetWant(want);
+    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
+
+    want.SetParam(PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY, 20);
+    data.SetWant(want);
+    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
+    batteryLevelListener.Stop();
+
+    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryLevelListener_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, BatteryStatusListener_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryStatusListener_001 begin ====== ");
+    BatteryStatusListener batteryStatusListener(workSchedulerService_->workQueueManager_);
+
+    batteryStatusListener.Start();
+    EXPECT_NE(batteryStatusListener.commonEventSubscriber, nullptr);
+
+    EventFwk::CommonEventData data;
+    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
+
+    EventFwk::Want want;
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_LOW);
+    data.SetWant(want);
+    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
+
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_OKAY);
+    data.SetWant(want);
+    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
+    batteryStatusListener.Stop();
+
+    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryStatusListener_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, ChargerListener_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.ChargerListener_001 begin ====== ");
+    ChargerListener chargerListener(workSchedulerService_->workQueueManager_);
+
+    chargerListener.Start();
+    EXPECT_NE(chargerListener.commonEventSubscriber, nullptr);
+
+    EventFwk::CommonEventData data;
+    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
+
+    EventFwk::Want want;
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
+    data.SetWant(want);
+    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC));
+    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
+
+    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB));
+    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
+
+
+    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS));
+    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
+
+    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
+    data.SetWant(want);
+    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE));
+    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
+    chargerListener.Stop();
+
+    WS_HILOGI("====== WorkSchedulerServiceTest.ChargerListener_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, ListenerStop_001, TestSize.Level1)
+{
+    WS_HILOGI("====== ListenerStop_001 begin====== ");
+    for (auto pair : workSchedulerService_->workQueueManager_->listenerMap_)
+    {
+        pair.second->Stop();
+    }
+    WS_HILOGI("====== ListenerStop_001 end ====== ");
 }
 }
 }
