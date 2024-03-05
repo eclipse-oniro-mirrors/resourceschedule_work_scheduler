@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+ * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -42,7 +42,7 @@ void WorkStatusTest::SetUpTestCase()
 {
     workInfo_ = std::make_shared<WorkInfo>();
     workInfo_->SetWorkId(-1);
-    workInfo_->SetElement("com.huawei.ohos.bundlename", "testAbility");
+    workInfo_->SetElement("com.huawei.ohos.workStatus", "workStatusAbility");
     workInfo_->RequestPersisted(false);
     time_t baseTime;
     (void)time(&baseTime);
