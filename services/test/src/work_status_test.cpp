@@ -42,7 +42,9 @@ void WorkStatusTest::SetUpTestCase()
 {
     workInfo_ = std::make_shared<WorkInfo>();
     workInfo_->SetWorkId(-1);
-    workInfo_->SetElement("com.huawei.ohos.workStatus", "workStatusAbility");
+    std::string bundleName = "com.huawei.ohos.workStatus";
+    std::string abilityName = "workStatusAbility";
+    workInfo_->SetElement(bundleName, abilityName);
     workInfo_->RequestPersisted(false);
     time_t baseTime;
     (void)time(&baseTime);
