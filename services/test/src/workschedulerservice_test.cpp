@@ -103,6 +103,17 @@ public:
 std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ =
     DelayedSingleton<WorkSchedulerService>::GetInstance();
 
+class MyWorkSchedulerService : public WorkSchedServiceStub {
+    int32_t StartWork(WorkInfo& workInfo) { return 0; }
+    int32_t StopWork(WorkInfo& workInfo) { return 0; };
+    int32_t StopAndCancelWork(WorkInfo& workInfo)  { return 0; }
+    int32_t StopAndClearWorks() { return 0; }
+    int32_t IsLastWorkTimeout(int32_t workId, bool &result) { return 0; }
+    int32_t ObtainAllWorks(int32_t &uid, int32_t &pid,
+        std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
+    int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) { return 0; }
+    int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
+};
 /**
  * @tc.name: onStart_001
  * @tc.desc: Test WorkSchedulerService OnStart.
@@ -613,6 +624,21 @@ HWTEST_F(WorkSchedulerServiceTest, ListenerStop_001, TestSize.Level1)
         pair.second->Stop();
     }
     WS_HILOGI("====== ListenerStop_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, WorkSchedServiceStub_001, TestSize.Level1)
+{
+    MyWorkSchedulerService s;
+    MessageParcel data, reply;
+    MessageOption option;
+    const int size = 8;
+    for (int i = 0; i < size; i++) {
+        s.HandleRequest(i, data, reply, option);
+        WorkInfo info;
+        info.Marshalling(data);
+        s.HandleRequest(i, data, reply, option);
+    }
+    s.OnRemoteRequest(0, data, reply, option);
 }
 }
 }
