@@ -463,7 +463,7 @@ HWTEST_F(WorkStatusTest, getMinInterval_001, TestSize.Level1)
     int64_t interval = 7200000;
     workStatus_->SetMinIntervalByDump(interval);
     int64_t ret = workStatus_->GetMinInterval();
-    EXPECT_FALSE(ret == interval);
+    EXPECT_TRUE(ret == interval);
 }
 
 /**
@@ -474,7 +474,7 @@ HWTEST_F(WorkStatusTest, getMinInterval_001, TestSize.Level1)
  */
 HWTEST_F(WorkStatusTest, isRepeating_001, TestSize.Level1)
 {
-    WorkStatus_->conditionMap_.erase(WorkCondition::Type::TIMER);
+    workStatus_->conditionMap_.erase(WorkCondition::Type::TIMER);
     bool ret = workStatus_->IsRepeating();
     EXPECT_FALSE(ret);
 
