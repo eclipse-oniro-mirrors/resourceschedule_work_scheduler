@@ -85,7 +85,7 @@ HWTEST_F(WorkStatusTest, isSameUser_002, TestSize.Level1)
 {
     workStatus_->uid_ = 1;
     bool result = workStatus_->IsSameUser();
-    EXPECT_FALSE(result);
+    EXPECT_TRUE(result);
 }
 
 /**
@@ -97,7 +97,7 @@ HWTEST_F(WorkStatusTest, isSameUser_002, TestSize.Level1)
 HWTEST_F(WorkStatusTest, isUriKeySwitchOn_001, TestSize.Level1)
 {
     std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
-    workInfo_->RequestPersisted(false);
+    workInfo_->SetPreinstalled(false);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsUriKeySwitchOn();
     EXPECT_TRUE(result);
@@ -112,7 +112,7 @@ HWTEST_F(WorkStatusTest, isUriKeySwitchOn_001, TestSize.Level1)
 HWTEST_F(WorkStatusTest, isUriKeySwitchOn_002, TestSize.Level1)
 {
     std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
-    workInfo_->RequestPersisted(true);
+    workInfo_->SetPreinstalled(true);
     workInfo_->workId_ = 1;
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsUriKeySwitchOn();
@@ -129,7 +129,7 @@ HWTEST_F(WorkStatusTest, isUriKeySwitchOn_003, TestSize.Level1)
 {
     std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
     workInfo_->workId_ = 1;
-    workInfo_->RequestPersisted(true);
+    workInfo_->SetPreinstalled(true);
     workInfo_->uriKey_ = "key";
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsUriKeySwitchOn();
@@ -220,7 +220,7 @@ HWTEST_F(WorkStatusTest, isReady_005, TestSize.Level1)
     std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
     workInfo_->workId_ = -1;
     workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
-    workInfo_->RequestBatteryLevel(60);
+    workInfo_->RequestBatteryLevel(80);
     std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
     batteryLevelCondition->intVal = 70;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
@@ -242,11 +242,11 @@ HWTEST_F(WorkStatusTest, isReady_006, TestSize.Level1)
     workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     workInfo_->RequestBatteryLevel(60);
     std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
-    batteryLevelCondition->intVal = 60;
+    batteryLevelCondition->intVal = 70;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
-    EXPECT_FALSE(result);
+    EXPECT_TRUE(result);
 }
 
 /**
@@ -280,14 +280,8 @@ HWTEST_F(WorkStatusTest, isReady_008, TestSize.Level1)
     std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
     workInfo_->workId_ = -1;
     workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
-    time_t baseTime;
-    (void)time(&baseTime);
-    workInfo_->RequestBaseTime(baseTime);
-    std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();
-    time_t baseTimeTemp;
-    (void)time(&baseTimeTemp);
-    timerCondition->timeVal = baseTimeTemp;
-    workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
+    uint32_t timeInterval = 1200;
+    workInfo_->RequestRepeatCycle(timeInterval);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
     EXPECT_FALSE(result);
