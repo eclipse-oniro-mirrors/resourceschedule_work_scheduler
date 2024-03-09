@@ -49,7 +49,7 @@ void CpuPolicyTest::SetUpTestCase()
  * @tc.name: getCpuUsage_001
  * @tc.desc: Test CpuPolicy GetCpuUsage.
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require: I974IQ
  */
 HWTEST_F(CpuPolicyTest, getCpuUsage_001, TestSize.Level1)
 {
@@ -62,7 +62,7 @@ HWTEST_F(CpuPolicyTest, getCpuUsage_001, TestSize.Level1)
  * @tc.name: getCpuUsage_002
  * @tc.desc: Test CpuPolicy GetCpuUsage.
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require: I974IQ
  */
 HWTEST_F(CpuPolicyTest, getCpuUsage_002, TestSize.Level1)
 {
@@ -75,7 +75,7 @@ HWTEST_F(CpuPolicyTest, getCpuUsage_002, TestSize.Level1)
  * @tc.name: getPolicyMaxRunning_001
  * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require: I974IQ
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_001, TestSize.Level1)
 {
@@ -88,7 +88,7 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_001, TestSize.Level1)
  * @tc.name: getPolicyMaxRunning_002
  * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require: I974IQ
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_002, TestSize.Level1)
 {
@@ -101,7 +101,7 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_002, TestSize.Level1)
  * @tc.name: getPolicyMaxRunning_003
  * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require: I974IQ
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_003, TestSize.Level1)
 {
@@ -114,7 +114,7 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_003, TestSize.Level1)
  * @tc.name: getPolicyMaxRunning_004
  * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
  * @tc.type: FUNC
- * @tc.require: 
+ * @tc.require: I974IQ
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_004, TestSize.Level1)
 {
