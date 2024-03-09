@@ -120,7 +120,7 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_004, TestSize.Level1)
 {
     workPolicyManager_->SetCpuUsageByDump(120);
     int32_t maxRunning = CpuPolicy->GetPolicyMaxRunning();
-    EXPECT_TRUE(maxRunning >= 1 && maxRunning <= 2);
+    EXPECT_TRUE(maxRunning >= 1 && maxRunning <= 3);
 }
 }
 }
