@@ -25,7 +25,7 @@ using namespace testing::ext;
  
 namespace OHOS {
 namespace WorkScheduler {
-class CpuPolicyTest: public testing::Test {
+class CpuPolicyTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase() {};

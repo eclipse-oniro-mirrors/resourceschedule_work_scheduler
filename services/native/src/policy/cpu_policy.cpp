@@ -29,6 +29,8 @@ const int32_t COUNT_CPU_CRUCIAL = 1;
 const int32_t COUNT_CPU_LOW = 2;
 const int32_t COUNT_CPU_NORMAL = 3;
 const int32_t SUCCESS_CODE = 0;
+const int32_t CPU_UPPER_LIMIT = 100;
+const int32_t UNIT = 100;
 
 CpuPolicy::CpuPolicy(shared_ptr<WorkPolicyManager> workPolicyManager)
 {
@@ -43,18 +45,18 @@ int32_t CpuPolicy::GetCpuUsage()
 {
     if (workPolicyManager_ != nullptr) {
         int32_t dumpSetCpu = workPolicyManager_->GetDumpSetCpuUsage();
-        if (0 < dumpSetCpu && dumpSetCpu <= 100) {
+        if (0 < dumpSetCpu && dumpSetCpu <= CPU_UPPER_LIMIT) {
             WS_HILOGD("dump set cpu: %{public}d", dumpSetCpu);
             return dumpSetCpu;
         }
     }
     int32_t cpuUsage = INIT_CPU;
-    std::shared_ptr<HiviewDFX::UCollectClient::CpuCollector> collector = HiviewDFX::UCollectClient::CpuCollector::Create();
+    auto collector = OHOS::HiviewDFX::UCollectClient::CpuCollector::Create();
     auto collectResult = collector->GetSysCpuUsage();
     int32_t retCode = collectResult.retCode;
     WS_HILOGD("retCode of collectResult: %{public}d", retCode);
     if (retCode == SUCCESS_CODE) {
-        cpuUsage = static_cast<int>(collectResult.data * 100);
+        cpuUsage = static_cast<int>(collectResult.data * UNIT);
     }
     return cpuUsage;
 }
