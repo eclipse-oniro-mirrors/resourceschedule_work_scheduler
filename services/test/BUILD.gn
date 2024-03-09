@@ -46,6 +46,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/watchdog_test.cpp",
     "src/work_status_test.cpp",
     "src/workschedulerservice_test.cpp",
+    "src/policy/cpu_policy_test.cpp",
   ]
 
   deps = [

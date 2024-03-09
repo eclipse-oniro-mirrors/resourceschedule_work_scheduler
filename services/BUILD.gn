@@ -45,6 +45,7 @@ ohos_shared_library("workschedservice") {
     "native/src/policy/app_data_clear_listener.cpp",
     "native/src/policy/memory_policy.cpp",
     "native/src/policy/thermal_policy.cpp",
+    "native/src/policy/cpu_policy.cpp",
     "native/src/scheduler_bg_task_subscriber.cpp",
     "native/src/watchdog.cpp",
     "native/src/work_bundle_group_change_callback.cpp",
@@ -93,6 +94,7 @@ ohos_shared_library("workschedservice") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "time_service:time_client",
+    "hiview:libucollection_client",
   ]
 
   defines = []
@@ -142,6 +144,7 @@ ohos_static_library("workschedservice_static") {
     "native/src/policy/app_data_clear_listener.cpp",
     "native/src/policy/memory_policy.cpp",
     "native/src/policy/thermal_policy.cpp",
+    "native/src/policy/cpu_policy.cpp",
     "native/src/scheduler_bg_task_subscriber.cpp",
     "native/src/watchdog.cpp",
     "native/src/work_bundle_group_change_callback.cpp",
@@ -190,6 +193,7 @@ ohos_static_library("workschedservice_static") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "time_service:time_client",
+    "hiview:libucollection_client",
   ]
 
   defines = [ "WORK_SCHEDULER_TEST" ]

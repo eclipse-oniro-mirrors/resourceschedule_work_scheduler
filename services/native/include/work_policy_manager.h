@@ -216,6 +216,18 @@ public:
      * @param abilityName The abilityName.
      */
     void DumpCheckIdeWorkToRun(const std::string &bundleName, const std::string &abilityName);
+     /**
+     * @brief Set cpu by dump.
+     *
+     * @param cpu The cpu.
+     */
+    void SetCpuUsageByDump(int32_t cpu);
+    /**
+     * @brief Get dump set cpu.
+     *
+     * @return Dump set cpu.
+     */
+    int32_t GetDumpSetCpuUsage();
 
 private:
     int32_t GetMaxRunningCount();
@@ -260,6 +272,7 @@ private:
     uint32_t watchdogId_;
     int32_t dumpSetMemory_;
     int32_t watchdogTime_;
+    int32_t dumpSetCpu_;
 
     std::recursive_mutex ideDebugListMutex_;
     std::list<std::shared_ptr<WorkStatus>> ideDebugList;
