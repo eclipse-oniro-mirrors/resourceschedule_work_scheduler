@@ -15,8 +15,6 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CPU_POLICY_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CPU_POLICY_H
 
-#include <memory>
-
 #include "ipolicy_filter.h"
 #include "work_policy_manager.h"
 
@@ -29,7 +27,7 @@ public:
     /**
      * @brief Get policy max running.
      *
-     * @return Res.
+     * @return policyResult.
      */
     int32_t GetPolicyMaxRunning() override;
 

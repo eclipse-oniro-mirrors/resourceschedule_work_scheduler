@@ -13,9 +13,6 @@
  * limitations under the License.
  */
 #include "policy/cpu_policy.h"
-
-#include <fstream>
-#include <securec.h>
 #include "work_sched_hilog.h"
 #include "cpu_collector.h"
 
