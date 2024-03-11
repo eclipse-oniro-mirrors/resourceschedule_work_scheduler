@@ -23,13 +23,14 @@ using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t CPU_CRUCIAL = 66;
-const int32_t CPU_LOW = 33;
+const int32_t CPU_HIGH = 60;
+const int32_t CPU_NORMAL = 50;
+const int32_t CPU_LOW = 30;
 const int32_t INIT_CPU = 0;
-const int32_t COUNT_CPU_CRUCIAL = 1;
-const int32_t COUNT_CPU_LOW = 2;
-const int32_t COUNT_CPU_NORMAL = 3;
-const int32_t SUCCESS_CODE = 0;
+const int32_t COUNT_CPU_MAX = 0;
+const int32_t COUNT_CPU_HIGH = 1;
+const int32_t COUNT_CPU_NORMAL = 2;
+const int32_t COUNT_CPU_LOW = 3;
 const int32_t CPU_UPPER_LIMIT = 100;
 const int32_t UNIT = 100;
 
@@ -56,7 +57,7 @@ int32_t CpuPolicy::GetCpuUsage()
     auto collectResult = collector->GetSysCpuUsage();
     int32_t retCode = collectResult.retCode;
     WS_HILOGD("retCode of collectResult: %{public}d", retCode);
-    if (retCode == SUCCESS_CODE) {
+    if (retCode == UcError::SUCCESS) {
         cpuUsage = static_cast<int>(collectResult.data * UNIT);
     }
     return cpuUsage;
@@ -66,14 +67,15 @@ int32_t CpuPolicy::GetPolicyMaxRunning()
 {
     int32_t cpuUsage = GetCpuUsage();
     WS_HILOGI("cpu_usage: %{public}d", cpuUsage);
-    if (cpuUsage >= CPU_CRUCIAL) {
-        return COUNT_CPU_CRUCIAL;
-    }
-    if (cpuUsage >= CPU_LOW) {
+    if (cpuUsage < CPU_LOW) {
         return COUNT_CPU_LOW;
+    } else if (cpuUsage >= CPU_LOW && cpuUsage < CPU_NORMAL) {
+        return COUNT_CPU_NORMAL;
+    } else if (cpuUsage >= CPU_NORMAL && cpuUsage < CPU_HIGH) {
+        return COUNT_CPU_HIGH;
+    } else {
+        return COUNT_CPU_MAX;
     }
-    WS_HILOGI("cpu left normal");
-    return COUNT_CPU_NORMAL;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

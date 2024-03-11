@@ -72,6 +72,18 @@ HWTEST_F(CpuPolicyTest, getCpuUsage_002, TestSize.Level1)
 }
 
 /**
+ * @tc.name: getCpuUsage_003
+ * @tc.desc: Test CpuPolicy GetCpuUsage.
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(CpuPolicyTest, getCpuUsage_003, TestSize.Level1)
+{
+    int32_t cpuUsage = cpuPolicy_->GetCpuUsage();
+    EXPECT_TRUE(cpuUsage >= 0 && cpuUsage <= 100);
+}
+
+/**
  * @tc.name: getPolicyMaxRunning_001
  * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
  * @tc.type: FUNC
@@ -105,7 +117,7 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_002, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_003, TestSize.Level1)
 {
-    workPolicyManager_->SetCpuUsageByDump(75);
+    workPolicyManager_->SetCpuUsageByDump(55);
     int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
     EXPECT_EQ(maxRunning, 1);
 }
@@ -118,9 +130,34 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_003, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_004, TestSize.Level1)
 {
+    workPolicyManager_->SetCpuUsageByDump(65);
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    EXPECT_EQ(maxRunning, 0);
+}
+
+/**
+ * @tc.name: getPolicyMaxRunning_005
+ * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_005, TestSize.Level1)
+{
     workPolicyManager_->SetCpuUsageByDump(120);
     int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
-    EXPECT_TRUE(maxRunning >= 1 && maxRunning <= 3);
+    EXPECT_TRUE(maxRunning >= 0 && maxRunning <= 3);
+}
+
+/**
+ * @tc.name: getPolicyMaxRunning_006
+ * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_006, TestSize.Level1)
+{
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    EXPECT_TRUE(maxRunning >= 0 && maxRunning <= 3);
 }
 }
 }
