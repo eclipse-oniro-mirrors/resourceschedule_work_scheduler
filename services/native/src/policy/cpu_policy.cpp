@@ -48,7 +48,7 @@ int32_t CpuPolicy::GetCpuUsage()
     if (workPolicyManager_ != nullptr) {
         int32_t dumpSetCpu = workPolicyManager_->GetDumpSetCpuUsage();
         if (0 < dumpSetCpu && dumpSetCpu <= CPU_UPPER_LIMIT) {
-            WS_HILOGD("dump set cpu: %{public}d", dumpSetCpu);
+            WS_HILOGI("dump set cpu: %{public}d", dumpSetCpu);
             return dumpSetCpu;
         }
     }
@@ -56,8 +56,8 @@ int32_t CpuPolicy::GetCpuUsage()
     auto collector = OHOS::HiviewDFX::UCollectClient::CpuCollector::Create();
     auto collectResult = collector->GetSysCpuUsage();
     int32_t retCode = collectResult.retCode;
-    WS_HILOGD("retCode of collectResult: %{public}d", retCode);
-    if (retCode == UcError::SUCCESS) {
+    WS_HILOGI("retCode of collectResult: %{public}d", retCode);
+    if (retCode == OHOS::HiviewDFX::UCollect::UcError::SUCCESS) {
         cpuUsage = static_cast<int>(collectResult.data * UNIT);
     }
     return cpuUsage;
@@ -66,16 +66,18 @@ int32_t CpuPolicy::GetCpuUsage()
 int32_t CpuPolicy::GetPolicyMaxRunning()
 {
     int32_t cpuUsage = GetCpuUsage();
-    WS_HILOGI("cpu_usage: %{public}d", cpuUsage);
+    int32_t policyRes;
     if (cpuUsage < CPU_LOW) {
-        return COUNT_CPU_LOW;
+        policyRes = COUNT_CPU_LOW;
     } else if (cpuUsage >= CPU_LOW && cpuUsage < CPU_NORMAL) {
-        return COUNT_CPU_NORMAL;
+        policyRes = COUNT_CPU_NORMAL;
     } else if (cpuUsage >= CPU_NORMAL && cpuUsage < CPU_HIGH) {
-        return COUNT_CPU_HIGH;
+        policyRes = COUNT_CPU_HIGH;
     } else {
-        return COUNT_CPU_MAX;
+        policyRes = COUNT_CPU_MAX;
     }
+    WS_HILOGI("cpu_usage: %{public}d, policyRes: %{public}d", cpuUsage, policyRes);
+    return policyRes;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
