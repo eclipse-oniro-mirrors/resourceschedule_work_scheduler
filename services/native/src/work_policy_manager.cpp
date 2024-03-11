@@ -46,7 +46,7 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
-const double INIT_DUMP_SET_CPU = 0;
+const int32_t INIT_DUMP_SET_CPU = 0;
 static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 }
 

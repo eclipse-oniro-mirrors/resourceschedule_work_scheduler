@@ -216,7 +216,7 @@ public:
      * @param abilityName The abilityName.
      */
     void DumpCheckIdeWorkToRun(const std::string &bundleName, const std::string &abilityName);
-     /**
+    /**
      * @brief Set cpu by dump.
      *
      * @param cpu The cpu.
