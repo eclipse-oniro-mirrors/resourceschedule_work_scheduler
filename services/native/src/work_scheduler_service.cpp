@@ -54,6 +54,7 @@
 #include "policy/app_data_clear_listener.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
+#include "policy/cpu_policy.h"
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 #include "scheduler_bg_task_subscriber.h"
 #include "background_task_mgr_helper.h"
@@ -434,6 +435,9 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
     auto memoryFilter = make_shared<MemoryPolicy>(workPolicyManager_);
     workPolicyManager_->AddPolicyFilter(memoryFilter);
 
+    auto cpuFilter = make_shared<CpuPolicy>(workPolicyManager_);
+    workPolicyManager_->AddPolicyFilter(cpuFilter);
+
     auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
     workPolicyManager_->AddAppDataClearListener(appDataClearListener);
 
@@ -782,7 +786,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -memory (number): set the available memory.\n")
         .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
         .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
-        .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n");
+        .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
+        .append("    -cpu (number): set the usage cpu.\n");
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -866,6 +871,9 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
     } else if (key == "-min_interval") {
         workQueueManager_->SetMinIntervalByDump(std::stoi(value));
         result.append("Set min interval value success.");
+    } else if (key == "-cpu") {
+        workPolicyManager_->SetCpuUsageByDump(std::stoi(value));
+        result.append("Set cpu success.");
     } else {
         result.append("Error params.");
     }

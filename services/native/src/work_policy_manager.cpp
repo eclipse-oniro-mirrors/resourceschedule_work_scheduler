@@ -46,6 +46,7 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
+const int32_t INIT_DUMP_SET_CPU = 0;
 static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 }
 
@@ -55,6 +56,7 @@ WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>
     watchdogId_ = INIT_WATCHDOG_ID;
     dumpSetMemory_ = INIT_DUMP_SET_MEMORY;
     watchdogTime_ = WATCHDOG_TIME;
+    dumpSetCpu_ = INIT_DUMP_SET_CPU;
 }
 
 bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
@@ -552,6 +554,16 @@ int32_t WorkPolicyManager::GetDumpSetMemory()
 void WorkPolicyManager::SetMemoryByDump(int32_t memory)
 {
     dumpSetMemory_ = memory;
+}
+
+int32_t WorkPolicyManager::GetDumpSetCpuUsage()
+{
+    return dumpSetCpu_;
+}
+
+void WorkPolicyManager::SetCpuUsageByDump(int32_t cpu)
+{
+    dumpSetCpu_ = cpu;
 }
 
 void WorkPolicyManager::SetWatchdogTimeByDump(int32_t time)
