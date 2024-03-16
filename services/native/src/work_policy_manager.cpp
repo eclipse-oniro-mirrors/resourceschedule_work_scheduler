@@ -686,7 +686,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
                     " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
                     it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
                     oldWatchdogTime, newWatchdogTime);
-                workStatus->MarkStatus(WorkStatus::Status::PAUSED);
+                workStatus->paused_ = true;
                 workStatus->workWatchDogTime_ = newWatchdogTime;
                 watchdog_->RemoveWatchdog(it->first);
             }
@@ -722,7 +722,7 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
                 WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                     " watchdogTime:%{public}d",
                     it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
-                workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+                workStatus->paused_ = false;
                 watchdog_->AddWatchdog(it->first, watchdogTime);
                 workStatus->workStartTime_ = GetCurrentTimeMs();
             }

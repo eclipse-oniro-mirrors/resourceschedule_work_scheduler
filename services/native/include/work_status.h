@@ -32,7 +32,6 @@ public:
         WAIT_CONDITION = 0,
         CONDITION_READY,
         RUNNING,
-        PAUSED,
         REMOVED
     };
     WorkStatus(WorkInfo &workInfo, int32_t uid);
@@ -54,6 +53,7 @@ public:
     int32_t userId_;
     long long workStartTime_;
     long long workWatchDogTime_;
+    bool paused_ {false};
     bool persisted_;
     int32_t priority_;
     bool needRetrigger_ {false};

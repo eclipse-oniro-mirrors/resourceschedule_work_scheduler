@@ -407,7 +407,7 @@ bool WorkStatus::IsRunning()
 
 bool WorkStatus::IsPaused()
 {
-    return currentStatus_ == PAUSED;
+    return paused_;
 }
 
 bool WorkStatus::IsReadyStatus()
@@ -458,6 +458,7 @@ void WorkStatus::Dump(string& result)
     result.append(string("\"workId\":") + workId_ + ",\n");
     result.append(string("\"bundleName\":") + bundleName_ + ",\n");
     result.append(string("\"status\":") + to_string(currentStatus_) + ",\n");
+    result.append(string("\"paused\":") + paused_ ? "true" : "false" + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
     std::lock_guard<std::mutex> lock(conditionMapMutex_);
