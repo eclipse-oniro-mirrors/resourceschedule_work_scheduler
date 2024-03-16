@@ -405,6 +405,11 @@ bool WorkStatus::IsRunning()
     return currentStatus_ == RUNNING;
 }
 
+bool WorkStatus::IsPaused()
+{
+    return currentStatus_ == PAUSED;
+}
+
 bool WorkStatus::IsReadyStatus()
 {
     return currentStatus_ == CONDITION_READY;

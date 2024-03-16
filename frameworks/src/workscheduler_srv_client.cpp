@@ -175,5 +175,31 @@ ErrCode WorkSchedulerSrvClient::GetAllRunningWorks(std::list<std::shared_ptr<Wor
     }
     return iWorkSchedService_->GetAllRunningWorks(workInfos);
 }
+
+ErrCode WorkSchedulerSrvClient::PauseRunningWorks(int32_t uid)
+{
+    WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    if (uid < 0) {
+        return E_PARAM_ERROR;
+    }
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->PauseRunningWorks(uid);
+}
+
+ErrCode WorkSchedulerSrvClient::ResumePausedWorks(int32_t uid)
+{
+    WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    if (uid < 0) {
+        return E_PARAM_ERROR;
+    }
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->ResumePausedWorks(uid);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

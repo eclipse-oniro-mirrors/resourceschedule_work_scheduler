@@ -1058,5 +1058,19 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
     }
 #endif
 }
+
+int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
+{
+    WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    workPolicyManager_->PauseRunningWorks(uid);
+    return ERR_OK;
+}
+
+int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
+{
+    WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    workPolicyManager_->ResumePausedWorks(uid);
+    return ERR_OK;
+}
 } // namespace WorkScheduler
 } // namespace OHOS

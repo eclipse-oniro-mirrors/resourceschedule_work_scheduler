@@ -99,6 +99,16 @@ int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, 
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_ALL_RUNNING_WORKS): {
             return HandleGetAllRunningWorksRequest(reply);
         }
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::PAUSE_RUNNING_WORKS): {
+            int32_t ret = PauseRunningWorksStub(data);
+            reply.WriteInt32(ret);
+            return ret;
+        }
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::RESUME_PAUSED_WORKS): {
+            int32_t ret = ResumePausedWorksStub(data);
+            reply.WriteInt32(ret);
+            return ret;
+        }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
             return IPCObjectStub::OnRemoteRequest(code, data, reply, option);
@@ -182,6 +192,18 @@ int32_t WorkSchedServiceStub::GetWorkStatusStub(MessageParcel& data, std::shared
 int32_t WorkSchedServiceStub::GetAllRunningWorksStub(std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
     return GetAllRunningWorks(workInfos);
+}
+
+int32_t WorkSchedServiceStub::PauseRunningWorksStub(MessageParcel& data)
+{
+    int32_t uid = data.ReadInt32();
+    return PauseRunningWorks(uid);
+}
+
+int32_t WorkSchedServiceStub::ResumePausedWorksStub(MessageParcel& data)
+{
+    int32_t uid = data.ReadInt32();
+    return ResumePausedWorks(uid);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

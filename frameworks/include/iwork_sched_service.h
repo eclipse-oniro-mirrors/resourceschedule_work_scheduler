@@ -93,6 +93,22 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     virtual int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) = 0;
+    
+    /**
+     * @brief Pause Running Works.
+     *
+     * @param uid The uid.
+     * @return The errcode. ERR_OK on success, others on failure.
+     */
+    virtual int32_t PauseRunningWorks(int32_t uid) = 0;
+
+    /**
+     * @brief Resume Paused works.
+     *
+     * @param uid The uid.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    virtual int32_t ResumePausedWorks(int32_t uid) = 0;
 
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.workscheduler.iworkschedservice");
 };

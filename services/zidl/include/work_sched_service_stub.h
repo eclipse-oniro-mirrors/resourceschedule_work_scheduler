@@ -101,6 +101,22 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t GetAllRunningWorksStub(std::list<std::shared_ptr<WorkInfo>>& workInfos);
+
+    /**
+     * @brief Pause Running Works.
+     *
+     * @param data The data.
+     * @return The errcode. ERR_OK on success, others on failure.
+     */
+    int32_t PauseRunningWorksStub(MessageParcel &data);
+
+    /**
+     * @brief Resume Paused works.
+     *
+     * @param data The data.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t ResumePausedWorksStub(MessageParcel &data);
 private:
     int32_t HandleObtainAllWorksRequest(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetWorkStatusRequest(MessageParcel &data, MessageParcel &reply);

@@ -269,5 +269,63 @@ int32_t WorkSchedServiceProxy::GetAllRunningWorks(std::list<std::shared_ptr<Work
     WS_HILOGD("return list size: %{public}zu", workInfos.size());
     return errCode;
 }
+
+int32_t WorkSchedServiceProxy::PauseRunningWorks(int32_t uid)
+{
+    WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    sptr<IRemoteObject> remote = Remote();
+    RETURN_IF_WITH_RET(remote == nullptr, E_MEMORY_OPERATION_FAILED);
+
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
+        WS_HILOGE("write descriptor failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
+    int32_t ret = remote->SendRequest(
+        static_cast<int32_t>(IWorkSchedServiceInterfaceCode::PAUSE_RUNNING_WORKS), data, reply, option);
+    if (ret != ERR_OK) {
+        WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    ErrCode errCode;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, errCode);
+    WS_HILOGD("return list size: %{public}zu", workInfos.size());
+    return errCode;
+}
+
+int32_t WorkSchedServiceProxy::ResumePausedWorks(int32_t uid)
+{
+    WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    sptr<IRemoteObject> remote = Remote();
+    RETURN_IF_WITH_RET(remote == nullptr, E_MEMORY_OPERATION_FAILED);
+
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+
+    if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
+        WS_HILOGE("write descriptor failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
+    int32_t ret = remote->SendRequest(
+        static_cast<int32_t>(IWorkSchedServiceInterfaceCode::RESUME_PAUSED_WORKS), data, reply, option);
+    if (ret != ERR_OK) {
+        WS_HILOGE("SendRequest is failed, err code: %{public}d", ret);
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    ErrCode errCode;
+    READ_PARCEL_WITHOUT_RET(reply, Int32, errCode);
+    WS_HILOGD("return list size: %{public}zu", workInfos.size());
+    return errCode;
+}
 } // namespace WorkScheduler
 } // namespace OHOS

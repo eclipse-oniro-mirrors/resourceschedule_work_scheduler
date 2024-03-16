@@ -229,6 +229,21 @@ public:
      */
     int32_t GetDumpSetCpuUsage();
 
+    /**
+     * @brief Pause Running Works.
+     *
+     * @param uid The uid.
+     * @return The errcode. ERR_OK on success, others on failure.
+     */
+    void PauseRunningWorks(int32_t uid);
+
+    /**
+     * @brief Resume Paused works.
+     *
+     * @param uid The uid.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    void ResumePausedWorks(int32_t uid);
 private:
     int32_t GetMaxRunningCount();
     int32_t GetRunningCount();
@@ -251,6 +266,7 @@ private:
         const std::string &abilityName);
     void SendIdeWorkRetriggerEvent(int32_t delaytime);
     bool IsSpecialScene(std::shared_ptr<WorkStatus> topWork);
+    long long GetCurrentTimeMs();
 
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
