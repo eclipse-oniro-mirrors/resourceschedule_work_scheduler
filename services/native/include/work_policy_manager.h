@@ -235,7 +235,7 @@ public:
      * @param uid The uid.
      * @return The errcode. ERR_OK on success, others on failure.
      */
-    void PauseRunningWorks(int32_t uid);
+    int32_t PauseRunningWorks(int32_t uid);
 
     /**
      * @brief Resume Paused works.
@@ -243,7 +243,7 @@ public:
      * @param uid The uid.
      * @return ErrCode ERR_OK on success, others on failure
      */
-    void ResumePausedWorks(int32_t uid);
+    int32_t ResumePausedWorks(int32_t uid);
 private:
     int32_t GetMaxRunningCount();
     int32_t GetRunningCount();

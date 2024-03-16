@@ -739,6 +739,8 @@ void WorkSchedulerService::DumpProcess(std::vector<std::string> &argsInStr, std:
                 eventPublisher.Dump(result, argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX]);
             } else if (argsInStr[DUMP_OPTION] == "-t") {
                 DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+            } else if (argsInStr[DUMP_OPTION] == "-x") {
+                DumpRunningWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else {
                 result.append("Error params.");
             }
@@ -783,6 +785,7 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -d event info: show the event info.\n")
         .append("    -d (eventType) (TypeValue): publish the event.\n")
         .append("    -t (bundleName) (abilityName): trigger the work.\n")
+        .append("    -x (uid) (option): pause or resume the work.\n")
         .append("    -memory (number): set the available memory.\n")
         .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
         .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
@@ -841,6 +844,31 @@ void WorkSchedulerService::DumpProcessWorks(const std::string &bundleName, const
         return;
     }
     workPolicyManager_->DumpCheckIdeWorkToRun(bundleName, abilityName);
+}
+
+void WorkSchedulerService::DumpRunningWorks(const std::string &uidStr, const std::string &option, std::string &result)
+{
+    if (uidStr.empty() || option.empty()) {
+        result.append("param error");
+        return;
+    }
+
+    int32_t uid = std::stoi(uidStr);
+    int32_t ret = ERR_OK;
+    if (option == "p") {
+        ret = workPolicyManager_->PauseRunningWorks(uid);
+    } else if (option == "r") {
+        ret = workPolicyManager_->ResumePausedWorks(uid);
+    } else {
+        result.append("param error");
+    }
+
+    if (ret != ERR_OK) {
+        auto iter = paramErrCodeMsgMap.find(errCode);
+        if (iter != paramErrCodeMsgMap.end()) {
+            result.append(iter->second);
+        }
+    }
 }
 
 std::string WorkSchedulerService::GetEffiResApplyUid()
@@ -1062,15 +1090,15 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
 int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
-    workPolicyManager_->PauseRunningWorks(uid);
-    return ERR_OK;
+    int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
+    return ret;
 }
 
 int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 {
     WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
-    workPolicyManager_->ResumePausedWorks(uid);
-    return ERR_OK;
+    int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
+    return ret;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

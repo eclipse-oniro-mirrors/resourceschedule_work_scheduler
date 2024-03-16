@@ -661,16 +661,18 @@ long long WorkPolicyManager::GetCurrentTimeMs()
 {
     using namespace std;
     auto now = chrono::system_clock::now();
-    chrono::microseconds currentTimeMs = chrono::duration_cast<chrono::microseconds>(now.time_since_epoch());
+    chrono::milliseconds currentTimeMs = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch());
     return currentTimeMs.count();
 }
 
-void WorkPolicyManager::PauseRunningWorks(int32_t uid)
+int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
 {
     bool effiRes = wss_.lock()->CheckEffiResApplyInfo(uid);
+    bool hasWorkWithUid = false;
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         if (it->second->uid_ == uid) {
+            hasWorkWithUid = true;
             auto workStatus = it->second;
             if (!workStatus->IsRunning()) {
                 WS_HILOGI("PauseRunningWorks fail, work status is not running, watchId:%{public}u,"
@@ -694,14 +696,22 @@ void WorkPolicyManager::PauseRunningWorks(int32_t uid)
             }
         }
     }
+
+    if (!hasWorkWithUid) {
+        WS_HILOGE("PauseRunningWorks fail, the uid:%{public}d has no matching work", uid);
+        return E_UID_NO_MATCHING_WORK_ERR;
+    }
+    return ERR_OK;
 }
 
-void WorkPolicyManager::ResumePausedWorks(int32_t uid)
+int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
 {
     bool effiRes = wss_.lock()->CheckEffiResApplyInfo(uid);
+    bool hasWorkWithUid = false;
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         if (it->second->uid_ == uid) {
+            hasWorkWithUid = true;
             auto workStatus = it->second;
             if (!workStatus->IsPaused()) {
                 WS_HILOGI("ResumePausedWorks fail, work status is not paused, watchId:%{public}u,"
@@ -722,6 +732,12 @@ void WorkPolicyManager::ResumePausedWorks(int32_t uid)
             }
         }
     }
+
+    if (!hasWorkWithUid) {
+        WS_HILOGE("ResumePausedWorks fail, the uid:%{public}d has no matching work", uid);
+        return E_UID_NO_MATCHING_WORK_ERR;
+    }
+    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
