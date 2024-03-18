@@ -19,6 +19,7 @@
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
 #include "work_status.h"
+#include "work_sched_errors.h"
 
 
 using namespace testing::ext;
@@ -66,7 +67,8 @@ HWTEST_F(WorkPolicyManagerTest, RealStartWork_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_001, TestSize.Level1)
 {
     int32_t uid = 123456;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+    WorkInfo workinfo;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->AddWatchdogForWork(workStatus);
     workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
@@ -87,15 +89,16 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_002, TestSize.Level1)
 }
 
 /**
- * @tc.name: PauseRunningWorks_002
+ * @tc.name: PauseRunningWorks_003
  * @tc.desc: Test WorkPolicyManagerTest RealStartWork.
  * @tc.type: FUNC
  * @tc.require: I992IA
  */
-HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_002, TestSize.Level1)
+HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_003, TestSize.Level1)
 {
     int32_t uid = 123456;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+    WorkInfo workinfo;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->AddWatchdogForWork(workStatus);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
@@ -111,7 +114,8 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_002, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_001, TestSize.Level1)
 {
     int32_t uid = 123456;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+    WorkInfo workinfo;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     uint32_t watchId = workPolicyManager_->AddWatchdogForWork(workStatus);
     workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
@@ -133,15 +137,16 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_002, TestSize.Level1)
 }
 
 /**
- * @tc.name: ResumePausedWorks_002
+ * @tc.name: ResumePausedWorks_003
  * @tc.desc: Test WorkPolicyManagerTest RealStartWork.
  * @tc.type: FUNC
  * @tc.require: I992IA
  */
-HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_002, TestSize.Level1)
+HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_003, TestSize.Level1)
 {
     int32_t uid = 123456;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+    WorkInfo workinfo;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     uint32_t watchId = workPolicyManager_->AddWatchdogForWork(workStatus);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     workStatus->paused_ = true;

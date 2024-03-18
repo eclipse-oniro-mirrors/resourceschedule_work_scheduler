@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "workscheduler_srv_client.h"
+#include "work_sched_errors.h"
 #include <if_system_ability_manager.h>
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
