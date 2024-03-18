@@ -244,6 +244,13 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t ResumePausedWorks(int32_t uid);
+
+    /**
+     * @brief Remove watchdogMap work.
+     *
+     * @param watchId The watchId.
+     */
+    void RemoveWatchdogMapWork(uint32_t watchId);
 private:
     int32_t GetMaxRunningCount();
     int32_t GetRunningCount();
@@ -258,7 +265,7 @@ private:
     std::shared_ptr<WorkStatus> GetWorkToRun();
     void RemoveAllUnReady();
     uint32_t NewWatchdogId();
-    void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
+    uint32_t AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
     std::shared_ptr<WorkStatus> GetWorkFromWatchdog(uint32_t id);
     void UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
         std::shared_ptr<WorkStatus> &topWork);

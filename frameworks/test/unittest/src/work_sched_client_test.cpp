@@ -163,5 +163,57 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
     WorkSchedulerSrvClient::GetInstance().~WorkSchedulerSrvClient();
     EXPECT_EQ(WorkSchedulerSrvClient::GetInstance().iWorkSchedService_, nullptr);
 }
+
+/**
+ * @tc.name: WorkSchedClientTest_010
+ * @tc.desc: Test PauseRunningWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level1)
+{
+    int32_t uid = 1000000;
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
+    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_011
+ * @tc.desc: Test PauseRunningWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level1)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
+    EXPECT_EQ(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_012
+ * @tc.desc: Test ResumePausedWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
+{
+    int32_t uid = 1000000;
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
+    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_011
+ * @tc.desc: Test ResumePausedWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level1)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
+    EXPECT_EQ(ret, ERR_OK);
+}
 }  // namespace WorkScheduler
 }  // namespace OHOS
