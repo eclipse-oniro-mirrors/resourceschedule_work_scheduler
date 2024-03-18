@@ -26,7 +26,6 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
-
 class WorkPolicyManagerTest : public testing::Test {
 public:
     static void SetUpTestCase();

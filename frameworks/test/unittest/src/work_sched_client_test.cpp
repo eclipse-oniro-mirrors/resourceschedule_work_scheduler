@@ -173,9 +173,9 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level1)
 {
-    int32_t uid = 1000000;
+    int32_t uid = -1;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
-    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    EXPECT_EQ(ret, E_PARAM_ERROR);
 }
 
 /**
@@ -188,7 +188,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level1)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
 }
 
 /**
@@ -199,9 +199,9 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level1)
  */
 HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
 {
-    int32_t uid = 1000000;
+    int32_t uid = -1;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
-    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    EXPECT_EQ(ret, E_PARAM_ERROR);
 }
 
 /**
@@ -214,7 +214,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level1)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS

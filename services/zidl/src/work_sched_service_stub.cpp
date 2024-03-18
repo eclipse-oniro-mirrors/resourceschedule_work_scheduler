@@ -59,6 +59,15 @@ int32_t WorkSchedServiceStub::HandleGetAllRunningWorksRequest(MessageParcel &rep
     return ERR_OK;
 }
 
+int32_t WorkSchedServiceStub::HandleIsLastWorkTimeOutRequest(MessageParcel &data, MessageParcel &reply)
+{
+    bool isLastWorkTimeout;
+    int32_t ret = IsLastWorkTimeoutStub(data, isLastWorkTimeout);
+    reply.WriteInt32(ret);
+    reply.WriteBool(isLastWorkTimeout);
+    return ret;
+}
+
 int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
@@ -84,11 +93,7 @@ int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, 
             return ret;
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::IS_LAST_WORK_TIMEOUT): {
-            bool isLastWorkTimeout;
-            int32_t ret = IsLastWorkTimeoutStub(data, isLastWorkTimeout);
-            reply.WriteInt32(ret);
-            reply.WriteBool(isLastWorkTimeout);
-            return ret;
+            return HandleIsLastWorkTimeOutRequest(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::OBTAIN_ALL_WORKS): {
             return HandleObtainAllWorksRequest(data, reply);
@@ -100,14 +105,10 @@ int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, 
             return HandleGetAllRunningWorksRequest(reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::PAUSE_RUNNING_WORKS): {
-            int32_t ret = PauseRunningWorksStub(data);
-            reply.WriteInt32(ret);
-            return ret;
+            return PauseRunningWorksStub(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::RESUME_PAUSED_WORKS): {
-            int32_t ret = ResumePausedWorksStub(data);
-            reply.WriteInt32(ret);
-            return ret;
+            return ResumePausedWorksStub(data, reply);
         }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
@@ -194,16 +195,20 @@ int32_t WorkSchedServiceStub::GetAllRunningWorksStub(std::list<std::shared_ptr<W
     return GetAllRunningWorks(workInfos);
 }
 
-int32_t WorkSchedServiceStub::PauseRunningWorksStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::PauseRunningWorksStub(MessageParcel& data, MessageParcel& reply)
 {
     int32_t uid = data.ReadInt32();
-    return PauseRunningWorks(uid);
+    int32_t ret = PauseRunningWorks(uid);
+    reply.WriteInt32(ret);
+    return ret;
 }
 
-int32_t WorkSchedServiceStub::ResumePausedWorksStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::ResumePausedWorksStub(MessageParcel& data, MessageParcel& reply)
 {
     int32_t uid = data.ReadInt32();
-    return ResumePausedWorks(uid);
+    int32_t ret = ResumePausedWorks(uid);
+    reply.WriteInt32(ret);
+    return ret;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

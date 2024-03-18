@@ -106,21 +106,24 @@ public:
      * @brief Pause Running Works.
      *
      * @param data The data.
+     * @param reply The reply.
      * @return The errcode. ERR_OK on success, others on failure.
      */
-    int32_t PauseRunningWorksStub(MessageParcel &data);
+    int32_t PauseRunningWorksStub(MessageParcel &data, MessageParcel& reply);
 
     /**
      * @brief Resume Paused works.
      *
      * @param data The data.
+     * @param reply The reply.
      * @return ErrCode ERR_OK on success, others on failure
      */
-    int32_t ResumePausedWorksStub(MessageParcel &data);
+    int32_t ResumePausedWorksStub(MessageParcel &data, MessageParcel& reply);
 private:
     int32_t HandleObtainAllWorksRequest(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetWorkStatusRequest(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetAllRunningWorksRequest(MessageParcel &reply);
+    int32_t HandleIsLastWorkTimeOutRequest(MessageParcel &data, MessageParcel &reply);
     int32_t HandleRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
 };
 } // namespace WorkScheduler
