@@ -16,8 +16,10 @@
 #include <functional>
 #include <gtest/gtest.h>
 
+#include "work_scheduler_service.h"
 #include "work_policy_manager.h"
-#include "work_sched_hilog.h"
+#include "work_status.h"
+
 
 using namespace testing::ext;
 
@@ -37,20 +39,21 @@ std::shared_ptr<WorkPolicyManager> WorkPolicyManagerTest::workPolicyManager_ = n
 
 void WorkPolicyManagerTest::SetUpTestCase()
 {
-    workPolicyManager_ = std::make_shared<WorkPolicyManager>();
+    std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
 }
 
 /**
  * @tc.name: RealStartWork_001
- * @tc.desc: Test WorkPolicyManagerTest ResumePausedWorks.
+ * @tc.desc: Test WorkPolicyManagerTest RealStartWork.
  * @tc.type: FUNC
- * @tc.require: I80LHT
+ * @tc.require: I8OLHT
  */
 HWTEST_F(WorkPolicyManagerTest, RealStartWork_001, TestSize.Level1)
 {
-    WorkInfo workInfo;
+    WorkInfo workinfo;
     int32_t uid;
-    std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workInfo, uid);
+    std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->RealStartWork(topWork);
 }
 
@@ -145,7 +148,6 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_002, TestSize.Level1)
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
     workPolicyManager_->RemoveWatchdogMapWork(watchId);
     EXPECT_EQ(ret, ERR_OK);
-}
 }
 }
 }
