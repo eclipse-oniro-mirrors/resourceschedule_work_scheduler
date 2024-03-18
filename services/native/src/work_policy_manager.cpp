@@ -433,8 +433,8 @@ uint32_t WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workS
 
 void WorkPolicyManager::RemoveWatchdogMapWork(uint32_t watchId)
 {
-    auto iter = watchdogIdMap_->find(watchId);
-    if (iter != watchdogIdMap_->end()) {
+    auto iter = watchdogIdMap_.find(watchId);
+    if (iter != watchdogIdMap_.end()) {
         watchdogIdMap_.erase(watchId);
     }
 }

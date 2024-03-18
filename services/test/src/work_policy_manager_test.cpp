@@ -39,7 +39,7 @@ std::shared_ptr<WorkPolicyManager> WorkPolicyManagerTest::workPolicyManager_ = n
 
 void WorkPolicyManagerTest::SetUpTestCase()
 {
-    std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedService>();
+    std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedulerService>();
     workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
 }
 
