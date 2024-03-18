@@ -432,14 +432,6 @@ uint32_t WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workS
     return watchId;
 }
 
-void WorkPolicyManager::RemoveWatchdogMapWork(uint32_t watchId)
-{
-    auto iter = watchdogIdMap_.find(watchId);
-    if (iter != watchdogIdMap_.end()) {
-        watchdogIdMap_.erase(watchId);
-    }
-}
-
 void WorkPolicyManager::SendRetrigger(int32_t delaytime)
 {
     WS_HILOGD("enter");
