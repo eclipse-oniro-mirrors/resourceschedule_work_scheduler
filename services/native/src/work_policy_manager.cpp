@@ -429,6 +429,7 @@ uint32_t WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workS
     workStatus->workWatchDogTime_ = static_cast<long long>(watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
+    return watchId;
 }
 
 void WorkPolicyManager::RemoveWatchdogMapWork(uint32_t watchId)
