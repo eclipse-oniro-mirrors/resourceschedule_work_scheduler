@@ -667,33 +667,23 @@ long long WorkPolicyManager::GetCurrentTimeMs()
 
 int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
 {
-    bool effiRes = wss_.lock()->CheckEffiResApplyInfo(uid);
+    WS_HILOGI("Pause Running Work Scheduler Work, uid:%{public}d", uid);
     bool hasWorkWithUid = false;
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
-        if (it->second->uid_ == uid) {
+        auto workStatus = it->second;
+        if (workStatus->uid_ == uid && workStatus->IsRunning()) {
             hasWorkWithUid = true;
-            auto workStatus = it->second;
-            if (!workStatus->IsRunning()) {
-                WS_HILOGE("PauseRunningWorks fail, work status is not running, watchId:%{public}u,"
-                    " bundleName:%{public}s, workId:%{public}s", it->first, workStatus->bundleName_.c_str(),
-                    workStatus->workId_.c_str());
-            } else {
-                long long oldWatchdogTime = workStatus->workWatchDogTime_;
-                long long currTime = GetCurrentTimeMs();
-                long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
-                WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
-                    " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
-                    it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
-                    oldWatchdogTime, newWatchdogTime);
-                workStatus->paused_ = true;
-                workStatus->workWatchDogTime_ = newWatchdogTime;
-                watchdog_->RemoveWatchdog(it->first);
-            }
-
-            if (!effiRes) {
-                break;
-            }
+            long long oldWatchdogTime = workStatus->workWatchDogTime_;
+            long long currTime = GetCurrentTimeMs();
+            long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
+            WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
+                " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
+                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
+                oldWatchdogTime, newWatchdogTime);
+            workStatus->paused_ = true;
+            workStatus->workWatchDogTime_ = newWatchdogTime;
+            watchdog_->RemoveWatchdog(it->first);
         }
     }
 
@@ -706,30 +696,20 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
 
 int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
 {
-    bool effiRes = wss_.lock()->CheckEffiResApplyInfo(uid);
+    WS_HILOGI("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
     bool hasWorkWithUid = false;
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
-        if (it->second->uid_ == uid) {
+        auto workStatus = it->second;
+        if (workStatus->uid_ == uid && workStatus->IsRunning() && workStatus->IsPaused()) {
             hasWorkWithUid = true;
-            auto workStatus = it->second;
-            if (workStatus->IsRunning() && workStatus->IsPaused()) {
-                int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
-                WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
-                    " watchdogTime:%{public}d",
-                    it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
-                workStatus->paused_ = false;
-                watchdog_->AddWatchdog(it->first, watchdogTime);
-                workStatus->workStartTime_ = GetCurrentTimeMs();
-            } else {
-                WS_HILOGE("ResumePausedWorks fail, work status is not paused, watchId:%{public}u,"
-                    " bundleName:%{public}s, workId:%{public}s", it->first, workStatus->bundleName_.c_str(),
-                    workStatus->workId_.c_str());
-            }
-
-            if (!effiRes) {
-                break;
-            }
+            int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
+            WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
+                " watchdogTime:%{public}d",
+                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
+            workStatus->paused_ = false;
+            watchdog_->AddWatchdog(it->first, watchdogTime);
+            workStatus->workStartTime_ = GetCurrentTimeMs();
         }
     }
 

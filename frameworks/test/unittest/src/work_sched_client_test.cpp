@@ -197,7 +197,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: issue:#I992IA
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_012, TestSize.Level1)
 {
     int32_t uid = -1;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
@@ -205,12 +205,12 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
 }
 
 /**
- * @tc.name: WorkSchedClientTest_011
+ * @tc.name: WorkSchedClientTest_013
  * @tc.desc: Test ResumePausedWorks
  * @tc.type: FUNC
  * @tc.require: issue:#I992IA
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level1)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
