@@ -321,6 +321,7 @@ private:
     void AddWorkInner(WorkInfo& workInfo);
     std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
     void InitPersistedWork();
+    bool CheckProcessName();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

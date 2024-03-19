@@ -90,6 +90,10 @@ const char* g_preinstalledFilePath = "etc/backgroundtask/config.json";
 static int g_hasGroupObserver = -1;
 #endif
 const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
+const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
+    "resource_schedule_service",
+    "hidumper_service",
+}
 }
 
 #ifdef WORK_SCHEDULER_TEST
@@ -1087,9 +1091,27 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
 #endif
 }
 
+bool WorkSchedulerService::CheckProcessName()
+{
+    Security::AccessToken::AccessTokenID tokenId = OHOS::IPCSkeleton::GetCallingTokenID();
+    Security::AccessToken::NativeTokenInfo callingTokenInfo;
+    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenId, callingTokenInfo);
+    WS_HILOGD("process name: %{public}s called CheckProcessName.", callingTokenInfo.processName.c_str());
+    if (WORK_SCHED_NATIVE_OPERATE_CALLER.find(callingTokenInfo.processName) == WORK_SCHED_NATIVE_OPERATE_CALLER.end()) {
+        WS_HILOGE("CheckProcessName illegal access to this interface; process name: %{public}s.",
+            callingTokenInfo.processName.c_str());
+        return false;
+    }
+    return true;
+}
+
 int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    if (!CheckProcessName()) {
+        return E_INVALID_PROCESS_NAME;
+    }
+
     int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
     return ret;
 }
@@ -1097,6 +1119,10 @@ int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 {
     WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    if (!CheckProcessName()) {
+        return E_INVALID_PROCESS_NAME;
+    }
+    
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
     return ret;
 }
