@@ -866,7 +866,7 @@ void WorkSchedulerService::DumpRunningWorks(const std::string &uidStr, const std
     if (ret != ERR_OK) {
         auto iter = paramErrCodeMsgMap.find(ret);
         if (iter != paramErrCodeMsgMap.end()) {
-            result.append(iter->second);
+            result.append("BussinessError:" + iter->second);
         }
     }
 }

@@ -265,7 +265,7 @@ private:
     std::shared_ptr<WorkStatus> GetWorkToRun();
     void RemoveAllUnReady();
     uint32_t NewWatchdogId();
-    uint32_t AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
+    void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
     std::shared_ptr<WorkStatus> GetWorkFromWatchdog(uint32_t id);
     void UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
         std::shared_ptr<WorkStatus> &topWork);

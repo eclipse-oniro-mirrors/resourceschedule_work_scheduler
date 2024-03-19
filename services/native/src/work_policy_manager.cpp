@@ -419,7 +419,7 @@ void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerSe
     }
 }
 
-uint32_t WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus)
+void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus)
 {
     uint32_t watchId = NewWatchdogId();
     WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, watchdogTime:%{public}d",
@@ -429,7 +429,6 @@ uint32_t WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workS
     workStatus->workWatchDogTime_ = static_cast<long long>(watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
-    return watchId;
 }
 
 void WorkPolicyManager::SendRetrigger(int32_t delaytime)
