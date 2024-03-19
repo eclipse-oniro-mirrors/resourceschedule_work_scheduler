@@ -93,7 +93,7 @@ const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
 const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
     "resource_schedule_service",
     "hidumper_service",
-}
+};
 }
 
 #ifdef WORK_SCHEDULER_TEST
@@ -1122,7 +1122,7 @@ int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
     if (!CheckProcessName()) {
         return E_INVALID_PROCESS_NAME;
     }
-    
+
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
     return ret;
 }
