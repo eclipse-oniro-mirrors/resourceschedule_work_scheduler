@@ -113,8 +113,8 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
         std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
     int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) { return 0; }
     int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
-    int32_t PauseRunningWorksStub(MessageParcel &data, MessageParcel& reply) {return 0; }
-    int32_t ResumePausedWorksStub(MessageParcel &data, MessageParcel& reply) {return 0; }
+    int32_t PauseRunningWorks(MessageParcel &data, MessageParcel& reply) {return 0; }
+    int32_t ResumePausedWorks(MessageParcel &data, MessageParcel& reply) {return 0; }
 };
 /**
  * @tc.name: onStart_001
