@@ -71,7 +71,7 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_ADD_REPEAT_WORK_ERR, "StartWork failed. The work has been already added."},
     {E_REPEAT_CYCLE_TIME_ERR, "StartWork failed. The repeatTime must be greater than or equal to 20 minutes."},
     {E_WORK_EXCEED_UPPER_LIMIT, "StartWork failed. Each uid can add up to 10 works."},
-    {E_INVALID_PROCESS_NAME, "Pause or resume verif failed. caller process name invaild."},
+    {E_INVALID_PROCESS_NAME, "Pause or resume verify failed. caller process name invaild."},
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
 };
 
