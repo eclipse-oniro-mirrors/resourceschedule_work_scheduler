@@ -295,7 +295,6 @@ int32_t WorkSchedServiceProxy::PauseRunningWorks(int32_t uid)
 
     ErrCode errCode;
     READ_PARCEL_WITHOUT_RET(reply, Int32, errCode);
-    WS_HILOGD("return list size: %{public}zu", workInfos.size());
     return errCode;
 }
 
@@ -324,7 +323,6 @@ int32_t WorkSchedServiceProxy::ResumePausedWorks(int32_t uid)
 
     ErrCode errCode;
     READ_PARCEL_WITHOUT_RET(reply, Int32, errCode);
-    WS_HILOGD("return list size: %{public}zu", workInfos.size());
     return errCode;
 }
 } // namespace WorkScheduler
