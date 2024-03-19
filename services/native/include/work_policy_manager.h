@@ -244,13 +244,6 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t ResumePausedWorks(int32_t uid);
-
-    /**
-     * @brief Remove watchdogMap work.
-     *
-     * @param watchId The watchId.
-     */
-    void RemoveWatchdogMapWork(uint32_t watchId);
 private:
     int32_t GetMaxRunningCount();
     int32_t GetRunningCount();
