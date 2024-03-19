@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -54,6 +54,7 @@ HWTEST_F(WorkPolicyManagerTest, RealStartWork_001, TestSize.Level1)
     int32_t uid;
     std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->RealStartWork(topWork);
+    EXPECT_TRUE(topWork->IsRunning())
 }
 }
 }
