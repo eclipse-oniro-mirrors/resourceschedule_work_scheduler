@@ -188,7 +188,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level1)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
-    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
 }
 
 /**
@@ -214,7 +214,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
-    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS
