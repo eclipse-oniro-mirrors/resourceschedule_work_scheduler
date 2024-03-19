@@ -54,7 +54,7 @@ HWTEST_F(WorkPolicyManagerTest, RealStartWork_001, TestSize.Level1)
     int32_t uid;
     std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->RealStartWork(topWork);
-    EXPECT_TRUE(topWork->IsRunning())
+    EXPECT_TRUE(topWork->IsRunning());
 }
 }
 }
