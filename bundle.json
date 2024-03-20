@@ -45,7 +45,8 @@
           "init",
           "data_share",
           "config_policy",
-          "hiview"
+          "hiview",
+          "hitrace"
         ],
         "third_party": [ "jsoncpp" ]
       },

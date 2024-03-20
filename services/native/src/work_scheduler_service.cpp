@@ -66,6 +66,7 @@
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
+#include "hitrace_meter.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -499,15 +500,19 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
 
 int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
 {
+    StartTrace(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_CHECK_WORKINFO_FAILED;
     }
     if (!CheckCondition(workInfo)) {
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_REPEAT_CYCLE_TIME_ERR;
     }
     time_t baseTime;
@@ -526,6 +531,7 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
             RefreshPersistedWorks();
         }
     }
+    FinishTrace(HITRACE_TAG_OHOS);
     return ret;
 }
 
@@ -544,20 +550,25 @@ void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
 
 int32_t WorkSchedulerService::StopWork(WorkInfo& workInfo)
 {
+    StartTrace(HITRACE_TAG_OHOS, "WorkSchedulerService::StopWork");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_CHECK_WORKINFO_FAILED;
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
     if (workStatus == nullptr) {
         WS_HILOGE("workStatus is nullptr");
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_WORK_NOT_EXIST_FAILED;
     }
     StopWorkInner(workStatus, uid, false, false);
+    FinishTrace(HITRACE_TAG_OHOS);
     return ERR_OK;
 }
 
@@ -601,11 +612,14 @@ void WorkSchedulerService::WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatu
 
 int32_t WorkSchedulerService::StopAndClearWorks()
 {
+    StartTrace(HITRACE_TAG_OHOS, "WorkSchedulerService::StopAndClearWorks");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_SERVICE_NOT_READY;
     }
     StopAndClearWorksByUid(IPCSkeleton::GetCallingUid());
+    FinishTrace(HITRACE_TAG_OHOS);
     return ERR_OK;
 }
 
@@ -632,12 +646,16 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
 
 int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId, bool &result)
 {
+    StartTrace(HITRACE_TAG_OHOS, "WorkSchedulerService::IsLastWorkTimeout");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    return workPolicyManager_->IsLastWorkTimeout(workId, uid, result);
+    int32_t ret = workPolicyManager_->IsLastWorkTimeout(workId, uid, result);
+    FinishTrace(HITRACE_TAG_OHOS);
+    return ret;
 }
 
 void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkStatus>>> workStatusVector)
@@ -648,22 +666,28 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
 int32_t WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid,
     std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
+    StartTrace(HITRACE_TAG_OHOS, "WorkSchedulerService::ObtainAllWorks");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_SERVICE_NOT_READY;
     }
     workInfos = workPolicyManager_->ObtainAllWorks(uid);
+    FinishTrace(HITRACE_TAG_OHOS);
     return ERR_OK;
 }
 
 int32_t WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
 {
+    StartTrace(HITRACE_TAG_OHOS, "WorkSchedulerService::GetWorkStatus");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         workInfo = nullptr;
+        FinishTrace(HITRACE_TAG_OHOS);
         return E_SERVICE_NOT_READY;
     }
     workInfo = workPolicyManager_->GetWorkStatus(uid, workId);
+    FinishTrace(HITRACE_TAG_OHOS);
     return ERR_OK;
 }
 
