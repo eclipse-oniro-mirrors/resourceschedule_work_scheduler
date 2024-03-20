@@ -169,6 +169,7 @@ ErrCode WorkSchedulerSrvClient::GetAllRunningWorks(std::list<std::shared_ptr<Wor
     if (!workInfos.empty()) {
         return E_PARAM_ERROR;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode code = Connect();
     if (code != ERR_OK) {
         return code;
@@ -182,6 +183,7 @@ ErrCode WorkSchedulerSrvClient::PauseRunningWorks(int32_t uid)
     if (uid < 0) {
         return E_PARAM_ERROR;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode code = Connect();
     if (code != ERR_OK) {
         return code;
@@ -195,6 +197,7 @@ ErrCode WorkSchedulerSrvClient::ResumePausedWorks(int32_t uid)
     if (uid < 0) {
         return E_PARAM_ERROR;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode code = Connect();
     if (code != ERR_OK) {
         return code;
