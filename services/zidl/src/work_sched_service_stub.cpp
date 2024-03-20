@@ -63,8 +63,15 @@ int32_t WorkSchedServiceStub::HandleIsLastWorkTimeOutRequest(MessageParcel &data
 {
     bool isLastWorkTimeout;
     int32_t ret = IsLastWorkTimeoutStub(data, isLastWorkTimeout);
-    reply.WriteInt32(ret);
-    reply.WriteBool(isLastWorkTimeout);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("Handle IsLastWorkTimeOut request failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    if (!reply.WriteBool(isLastWorkTimeout)) {
+        WS_HILOGE("Handle IsLastWorkTimeOut request failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
     return ret;
 }
 
@@ -197,17 +204,31 @@ int32_t WorkSchedServiceStub::GetAllRunningWorksStub(std::list<std::shared_ptr<W
 
 int32_t WorkSchedServiceStub::PauseRunningWorksStub(MessageParcel& data, MessageParcel& reply)
 {
-    int32_t uid = data.ReadInt32();
+    int32_t uid = -1;
+    if (!data.ReadInt32(uid)) {
+        WS_HILOGE("PauseRunningWorksStub failed, read uid error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
     int32_t ret = PauseRunningWorks(uid);
-    reply.WriteInt32(ret);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("PauseRunningWorksStub failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
     return ret;
 }
 
 int32_t WorkSchedServiceStub::ResumePausedWorksStub(MessageParcel& data, MessageParcel& reply)
 {
-    int32_t uid = data.ReadInt32();
+    int32_t uid = -1;
+    if (!data.ReadInt32(uid)) {
+        WS_HILOGE("ResumePausedWorksStub failed, read uid error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
     int32_t ret = ResumePausedWorks(uid);
-    reply.WriteInt32(ret);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("ResumePausedWorksStub failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
     return ret;
 }
 } // namespace WorkScheduler

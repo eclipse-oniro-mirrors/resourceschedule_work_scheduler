@@ -677,6 +677,9 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             long long oldWatchdogTime = workStatus->workWatchDogTime_;
             long long currTime = GetCurrentTimeMs();
             long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
+            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+                newWatchdogTime = WATCHDOG_TIME;
+            }
             WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
