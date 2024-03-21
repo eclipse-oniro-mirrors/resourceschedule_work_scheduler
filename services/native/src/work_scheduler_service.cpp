@@ -90,6 +90,10 @@ const char* g_preinstalledFilePath = "etc/backgroundtask/config.json";
 static int g_hasGroupObserver = -1;
 #endif
 const static std::string STRATEGY_NAME = "WORK_SCHEDULER";
+const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
+    "resource_schedule_service",
+    "hidumper_service",
+};
 }
 
 #ifdef WORK_SCHEDULER_TEST
@@ -739,6 +743,8 @@ void WorkSchedulerService::DumpProcess(std::vector<std::string> &argsInStr, std:
                 eventPublisher.Dump(result, argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX]);
             } else if (argsInStr[DUMP_OPTION] == "-t") {
                 DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+            } else if (argsInStr[DUMP_OPTION] == "-x") {
+                DumpRunningWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else {
                 result.append("Error params.");
             }
@@ -783,6 +789,7 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -d event info: show the event info.\n")
         .append("    -d (eventType) (TypeValue): publish the event.\n")
         .append("    -t (bundleName) (abilityName): trigger the work.\n")
+        .append("    -x (uid) (option): pause or resume the work.\n")
         .append("    -memory (number): set the available memory.\n")
         .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
         .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
@@ -841,6 +848,31 @@ void WorkSchedulerService::DumpProcessWorks(const std::string &bundleName, const
         return;
     }
     workPolicyManager_->DumpCheckIdeWorkToRun(bundleName, abilityName);
+}
+
+void WorkSchedulerService::DumpRunningWorks(const std::string &uidStr, const std::string &option, std::string &result)
+{
+    if (uidStr.empty() || option.empty()) {
+        result.append("param error");
+        return;
+    }
+
+    int32_t uid = std::stoi(uidStr);
+    int32_t ret = ERR_OK;
+    if (option == "p") {
+        ret = workPolicyManager_->PauseRunningWorks(uid);
+    } else if (option == "r") {
+        ret = workPolicyManager_->ResumePausedWorks(uid);
+    } else {
+        result.append("param error");
+    }
+
+    if (ret != ERR_OK) {
+        auto iter = paramErrCodeMsgMap.find(ret);
+        if (iter != paramErrCodeMsgMap.end()) {
+            result.append("BussinessError:" + iter->second);
+        }
+    }
 }
 
 std::string WorkSchedulerService::GetEffiResApplyUid()
@@ -1057,6 +1089,42 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
         standbyStateObserver_ = nullptr;
     }
 #endif
+}
+
+bool WorkSchedulerService::CheckProcessName()
+{
+    Security::AccessToken::AccessTokenID tokenId = OHOS::IPCSkeleton::GetCallingTokenID();
+    Security::AccessToken::NativeTokenInfo callingTokenInfo;
+    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenId, callingTokenInfo);
+    WS_HILOGD("process name: %{public}s called CheckProcessName.", callingTokenInfo.processName.c_str());
+    if (WORK_SCHED_NATIVE_OPERATE_CALLER.find(callingTokenInfo.processName) == WORK_SCHED_NATIVE_OPERATE_CALLER.end()) {
+        WS_HILOGE("CheckProcessName illegal access to this interface; process name: %{public}s.",
+            callingTokenInfo.processName.c_str());
+        return false;
+    }
+    return true;
+}
+
+int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
+{
+    WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    if (!CheckProcessName()) {
+        return E_INVALID_PROCESS_NAME;
+    }
+
+    int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
+    return ret;
+}
+
+int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
+{
+    WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    if (!CheckProcessName()) {
+        return E_INVALID_PROCESS_NAME;
+    }
+
+    int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
+    return ret;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

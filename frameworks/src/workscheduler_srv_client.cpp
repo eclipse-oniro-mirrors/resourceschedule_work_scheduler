@@ -169,11 +169,40 @@ ErrCode WorkSchedulerSrvClient::GetAllRunningWorks(std::list<std::shared_ptr<Wor
     if (!workInfos.empty()) {
         return E_PARAM_ERROR;
     }
+    std::lock_guard<std::mutex> lock(mutex_);
     ErrCode code = Connect();
     if (code != ERR_OK) {
         return code;
     }
     return iWorkSchedService_->GetAllRunningWorks(workInfos);
+}
+
+ErrCode WorkSchedulerSrvClient::PauseRunningWorks(int32_t uid)
+{
+    WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    if (uid < 0) {
+        return E_PARAM_ERROR;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->PauseRunningWorks(uid);
+}
+
+ErrCode WorkSchedulerSrvClient::ResumePausedWorks(int32_t uid)
+{
+    WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    if (uid < 0) {
+        return E_PARAM_ERROR;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->ResumePausedWorks(uid);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

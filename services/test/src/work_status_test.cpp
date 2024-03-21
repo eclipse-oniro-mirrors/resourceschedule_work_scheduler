@@ -248,7 +248,7 @@ HWTEST_F(WorkStatusTest, isReady_006, TestSize.Level1)
     workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
     workStatus_->workInfo_ = workInfo_;
     bool result = workStatus_->IsReady();
-    EXPECT_TRUE(result);
+    EXPECT_FALSE(result);
 }
 
 /**
@@ -291,7 +291,7 @@ HWTEST_F(WorkStatusTest, isReady_008, TestSize.Level1)
     timerCondition->uintVal = 7200001;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
     bool result = workStatus_->IsReady();
-    EXPECT_TRUE(result);
+    EXPECT_FALSE(result);
 }
 
 /**

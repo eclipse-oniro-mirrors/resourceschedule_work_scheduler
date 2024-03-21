@@ -28,6 +28,8 @@ namespace WorkScheduler {
         OBTAIN_ALL_WORKS,
         GET_WORK_STATUS,
         GET_ALL_RUNNING_WORKS,
+        PAUSE_RUNNING_WORKS,
+        RESUME_PAUSED_WORKS,
     };
 } // namespace WorkScheduler
 } // namespace OHOS

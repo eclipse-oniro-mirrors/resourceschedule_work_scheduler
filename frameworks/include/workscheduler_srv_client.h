@@ -87,6 +87,22 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     ErrCode GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos);
+        
+    /**
+     * @brief Pause Running Works.
+     *
+     * @param uid The uid.
+     * @return The errcode. ERR_OK on success, others on failure.
+     */
+    ErrCode PauseRunningWorks(int32_t uid);
+
+    /**
+     * @brief Resume Paused works.
+     *
+     * @param uid The uid.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode ResumePausedWorks(int32_t uid);
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

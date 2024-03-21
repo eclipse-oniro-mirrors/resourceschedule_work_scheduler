@@ -34,6 +34,7 @@ enum {
     E_ADD_REPEAT_WORK_ERR = 970000501,
     E_WORK_EXCEED_UPPER_LIMIT,
     E_REPEAT_CYCLE_TIME_ERR,
+    E_INVALID_PROCESS_NAME,
     // inner error code
     E_INNER_ERR,
     E_GROUP_CHANGE_NOT_MATCH_HAP,
@@ -58,6 +59,7 @@ enum ParamError {
     E_IS_PERSISTED_ERR,
     E_PARAMETERS_TYPE_ERR,
     E_NEED_CANCLE_TYPE_ERR,
+    E_UID_NO_MATCHING_WORK_ERR,
 };
 
 const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
@@ -69,6 +71,7 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_ADD_REPEAT_WORK_ERR, "StartWork failed. The work has been already added."},
     {E_REPEAT_CYCLE_TIME_ERR, "StartWork failed. The repeatTime must be greater than or equal to 20 minutes."},
     {E_WORK_EXCEED_UPPER_LIMIT, "StartWork failed. Each uid can add up to 10 works."},
+    {E_INVALID_PROCESS_NAME, "Pause or resume verify failed. caller process name invaild."},
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
 };
 
@@ -93,6 +96,7 @@ const inline std::map<int32_t, std::string> paramErrCodeMsgMap = {
     {E_IS_PERSISTED_ERR, "The type of isPersisted must be boolean."},
     {E_PARAMETERS_TYPE_ERR, "The type of parameters must be string, boolean or number."},
     {E_NEED_CANCLE_TYPE_ERR, "The type of needCancle must be boolean."},
+    {E_UID_NO_MATCHING_WORK_ERR, "The UID has no matching work."},
     {E_PARAM_ERROR, "The input param is error."},
 };
 } // namespace WorkScheduler
