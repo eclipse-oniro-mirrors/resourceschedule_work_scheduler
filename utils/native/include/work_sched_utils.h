@@ -58,6 +58,12 @@ public:
      * @return True if success,else false.
      */
     static bool IsSystemApp();
+    /**
+     * @brief Get current millisecond time.
+     *
+     * @return Millisecond time.
+     */
+    static long long GetCurrentTimeMs();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

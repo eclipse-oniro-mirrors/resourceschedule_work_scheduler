@@ -39,9 +39,10 @@ public:
      * @brief Stop work.
      *
      * @param workStatus The status of work.
+     * @param isTimeOut If the work is timeout.
      * @return True if success,else false.
      */
-    bool StopWork(std::shared_ptr<WorkStatus> workStatus);
+    bool StopWork(std::shared_ptr<WorkStatus> workStatus, bool isTimeOut);
 private:
     void RemoveConnInfo(std::string &workId);
     void AddConnInfo(std::string &workId, sptr<WorkSchedulerConnection> &connection);
