@@ -24,6 +24,7 @@
 #include "ability_manager_client.h"
 #include "ability_manager_proxy.h"
 #include "work_sched_hilog.h"
+#include "work_sched_utils.h"
 #include "errors.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
@@ -133,7 +134,7 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
     return true;
 }
 
-bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
+bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut)
 {
     bool ret = false;
     sptr<WorkSchedulerConnection> conn = GetConnInfo(workStatus->workId_);
@@ -150,7 +151,8 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus)
         int32_t pid = IPCSkeleton::GetCallingPid();
         HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
             HiSysEvent::EventType::STATISTIC, "UID",
-            workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_);
+            workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_,
+            "REASON", isTimeOut, "DURATION", (WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_));
 #ifdef DEVICE_STANDBY_ENABLE
         WS_HILOGI("OnWorkStop uid: %{public}d", workStatus->uid_);
         DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,
