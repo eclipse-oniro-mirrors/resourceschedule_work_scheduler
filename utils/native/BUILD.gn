@@ -34,8 +34,8 @@ ohos_source_set("workschedutils") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
-    "os_account:os_account_innerkits",
     "jsoncpp:jsoncpp",
+    "os_account:os_account_innerkits",
   ]
 
   subsystem_name = "resourceschedule"
