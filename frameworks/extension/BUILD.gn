@@ -14,9 +14,7 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("worksched_private_config") {
-  include_dirs = [
-    "${worksched_service_path}/zidl/include",
-  ]
+  include_dirs = [ "${worksched_service_path}/zidl/include" ]
 }
 
 config("worksched_public_config") {
