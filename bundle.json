@@ -45,9 +45,9 @@
           "init",
           "data_share",
           "config_policy",
-          "hiview"
-        ],
-        "third_party": [ "jsoncpp" ]
+          "hiview",
+          "jsoncpp"
+        ]
       },
       "build": {
         "group_type": {
