@@ -16,8 +16,6 @@ import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 config("worksched_private_config") {
   include_dirs = [
     "${worksched_service_path}/zidl/include",
-    "${ability_runtime_path}/frameworks/native/ability/native/",
-    "//foundation/arkui/napi/native_engine",
   ]
 }
 
@@ -63,6 +61,11 @@ ohos_shared_library("workschedextension") {
     "hilog:libhilog",
     "ipc:ipc_single",
     "napi:ace_napi",
+  ]
+
+  public_external_deps = [
+      "ability_runtime:runtime",
+      "napi:ace_napi",
   ]
 
   relative_install_dir = "extensionability"
