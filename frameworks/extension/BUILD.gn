@@ -61,11 +61,6 @@ ohos_shared_library("workschedextension") {
     "napi:ace_napi",
   ]
 
-  public_external_deps = [
-    "ability_runtime:runtime",
-    "napi:ace_napi",
-  ]
-
   relative_install_dir = "extensionability"
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
