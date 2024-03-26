@@ -83,9 +83,9 @@ const int32_t MAX_BUFFER = 2048;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
-const char* g_persistedFilePath = "/data/service/el1/public/WorkScheduler/persisted_work";
-const char* g_persistedPath = "/data/service/el1/public/WorkScheduler";
-const char* g_preinstalledFilePath = "etc/backgroundtask/config.json";
+const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
+const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
+const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
@@ -205,7 +205,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
     Json::Value root;
-    if (!GetJsonFromFile(g_persistedFilePath, root)) {
+    if (!GetJsonFromFile(PERSISTED_FILE_PATH, root)) {
         return workInfos;
     }
     for (const auto &it : root.getMemberNames()) {
@@ -225,7 +225,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
     char buf[PATH_MAX + 1] = {0};
-    char* configFilePath = GetOneCfgFile(g_preinstalledFilePath, buf, PATH_MAX + 1);
+    char* configFilePath = GetOneCfgFile(PREINSTALLED_FILE_PATH, buf, PATH_MAX + 1);
     if (!configFilePath || strlen(configFilePath) == 0 || strlen(configFilePath) > PATH_MAX) {
         WS_HILOGE("get preinstalled works path failed");
         return workInfos;
@@ -932,11 +932,11 @@ void WorkSchedulerService::RefreshPersistedWorks()
     jsonWriter->write(root, &os);
     string result = os.str();
     WS_HILOGD("Work JSON os result %{public}s", result.c_str());
-    CreateNodeDir(g_persistedPath);
-    CreateNodeFile(g_persistedFilePath);
+    CreateNodeDir(PERSISTED_PATH);
+    CreateNodeFile(PERSISTED_FILE_PATH);
     ofstream fout;
     std::string realPath;
-    if (!WorkSchedUtils::ConvertFullPath(g_persistedFilePath, realPath)) {
+    if (!WorkSchedUtils::ConvertFullPath(PERSISTED_FILE_PATH, realPath)) {
         WS_HILOGE("Get real path failed");
         return;
     }
