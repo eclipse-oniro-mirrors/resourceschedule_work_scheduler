@@ -14,11 +14,7 @@
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("worksched_private_config") {
-  include_dirs = [
-    "${worksched_service_path}/zidl/include",
-    "${ability_runtime_path}/frameworks/native/ability/native/",
-    "//foundation/arkui/napi/native_engine",
-  ]
+  include_dirs = [ "${worksched_service_path}/zidl/include" ]
 }
 
 config("worksched_public_config") {
