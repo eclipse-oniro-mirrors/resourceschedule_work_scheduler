@@ -46,3 +46,5 @@ WORK_STOP:
   PID: {type: INT32, desc: thread pid}
   NAME: {type: STRING, desc: call package name}
   WORKID: {type: STRING, desc: work id}
+  REASON: {type: INT32, desc: work stop reason}
+  DURATION: {type: INT32, desc: work running duration}

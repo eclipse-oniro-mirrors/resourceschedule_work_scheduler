@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "workscheduler_srv_client.h"
+#include "work_sched_errors.h"
 #include <if_system_ability_manager.h>
 #include <ipc_skeleton.h>
 #include <iservice_registry.h>
@@ -162,6 +163,58 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
     deathRecipient_->OnRemoteDied(nullptr);
     WorkSchedulerSrvClient::GetInstance().~WorkSchedulerSrvClient();
     EXPECT_EQ(WorkSchedulerSrvClient::GetInstance().iWorkSchedService_, nullptr);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_010
+ * @tc.desc: Test PauseRunningWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level1)
+{
+    int32_t uid = -1;
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
+    EXPECT_EQ(ret, E_PARAM_ERROR);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_011
+ * @tc.desc: Test PauseRunningWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level1)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_012
+ * @tc.desc: Test ResumePausedWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_012, TestSize.Level1)
+{
+    int32_t uid = -1;
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
+    EXPECT_EQ(ret, E_PARAM_ERROR);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_013
+ * @tc.desc: Test ResumePausedWorks
+ * @tc.type: FUNC
+ * @tc.require: issue:#I992IA
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
+{
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS

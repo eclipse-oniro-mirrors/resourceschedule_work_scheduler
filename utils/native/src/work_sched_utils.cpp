@@ -98,5 +98,13 @@ bool WorkSchedUtils::IsSystemApp()
     uint64_t fullTokenId = IPCSkeleton::GetCallingFullTokenID();
     return Security::AccessToken::TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
 }
+
+long long WorkSchedUtils::GetCurrentTimeMs()
+{
+    using namespace std;
+    auto now = chrono::system_clock::now();
+    chrono::milliseconds currentTimeMs = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch());
+    return currentTimeMs.count();
+}
 } // namespace WorkScheduler
 } // namespace OHOS

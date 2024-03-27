@@ -27,6 +27,7 @@
 #include "work_event_handler.h"
 #include "work_sched_hilog.h"
 #include "work_sched_errors.h"
+#include "work_sched_utils.h"
 #include "watchdog.h"
 
 using namespace std;
@@ -196,7 +197,7 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
     bool hasCanceled = false;
     if (workStatus->IsRunning()) {
         workStatus->lastTimeout_ = isTimeOut;
-        workConnManager_->StopWork(workStatus);
+        workConnManager_->StopWork(workStatus, isTimeOut);
         if (!workStatus->IsRepeating()) {
             workStatus->MarkStatus(WorkStatus::Status::REMOVED);
             RemoveFromUidQueue(workStatus, uid);
@@ -224,7 +225,7 @@ bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         for (auto it : queue->GetWorkList()) {
-            workConnManager_->StopWork(it);
+            workConnManager_->StopWork(it, false);
             it->MarkStatus(WorkStatus::Status::REMOVED);
             RemoveFromReadyQueue(it);
         }
@@ -425,6 +426,8 @@ void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatu
     WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, watchdogTime:%{public}d",
         watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_);
     watchdog_->AddWatchdog(watchId, watchdogTime_);
+    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->workWatchDogTime_ = static_cast<long long>(watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
 }
@@ -653,6 +656,65 @@ std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllIdeWorkStatus(co
         return allWorks;
     }
     return allWorks;
+}
+
+int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
+{
+    WS_HILOGI("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    bool hasWorkWithUid = false;
+    std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
+    for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
+        auto workStatus = it->second;
+        if (workStatus->uid_ == uid && workStatus->IsRunning()) {
+            hasWorkWithUid = true;
+            long long oldWatchdogTime = workStatus->workWatchDogTime_;
+            long long currTime = WorkSchedUtils::GetCurrentTimeMs();
+            long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
+            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+                WS_HILOGE("invalid watchdogtime: %{public}lld", newWatchdogTime);
+                newWatchdogTime = WATCHDOG_TIME;
+            }
+            WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
+                " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
+                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
+                oldWatchdogTime, newWatchdogTime);
+            workStatus->paused_ = true;
+            workStatus->workWatchDogTime_ = newWatchdogTime;
+            watchdog_->RemoveWatchdog(it->first);
+        }
+    }
+
+    if (!hasWorkWithUid) {
+        WS_HILOGE("PauseRunningWorks fail, the uid:%{public}d has no matching work", uid);
+        return E_UID_NO_MATCHING_WORK_ERR;
+    }
+    return ERR_OK;
+}
+
+int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
+{
+    WS_HILOGI("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    bool hasWorkWithUid = false;
+    std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
+    for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
+        auto workStatus = it->second;
+        if (workStatus->uid_ == uid && workStatus->IsRunning() && workStatus->IsPaused()) {
+            hasWorkWithUid = true;
+            int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
+            WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
+                " watchdogTime:%{public}d",
+                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
+            workStatus->paused_ = false;
+            watchdog_->AddWatchdog(it->first, watchdogTime);
+            workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+        }
+    }
+
+    if (!hasWorkWithUid) {
+        WS_HILOGE("ResumePausedWorks fail, the uid:%{public}d has no matching work", uid);
+        return E_UID_NO_MATCHING_WORK_ERR;
+    }
+    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

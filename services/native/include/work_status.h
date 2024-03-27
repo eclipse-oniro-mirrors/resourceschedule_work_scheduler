@@ -51,6 +51,9 @@ public:
     std::string abilityName_;
     int32_t uid_;
     int32_t userId_;
+    long long workStartTime_;
+    long long workWatchDogTime_;
+    bool paused_ {false};
     bool persisted_;
     int32_t priority_;
     bool needRetrigger_ {false};
@@ -88,6 +91,12 @@ public:
      * @return True if success,else false.
      */
     bool IsRepeating();
+    /**
+     * @brief Judge state whether is paused.
+     *
+     * @return True if success,else false.
+     */
+    bool IsPaused();
     /**
      * @brief Judge state whether is last work timeout.
      *

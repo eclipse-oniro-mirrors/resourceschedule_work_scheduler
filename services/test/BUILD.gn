@@ -45,6 +45,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/event_publisher_test.cpp",
     "src/policy/cpu_policy_test.cpp",
     "src/watchdog_test.cpp",
+    "src/work_policy_manager_test.cpp",
     "src/work_status_test.cpp",
     "src/workschedulerservice_test.cpp",
   ]
