@@ -46,7 +46,8 @@
           "data_share",
           "config_policy",
           "hiview",
-          "jsoncpp"
+          "jsoncpp",
+          "hitrace"
         ]
       },
       "build": {

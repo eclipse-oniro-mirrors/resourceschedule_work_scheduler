@@ -66,6 +66,7 @@
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
+#include "hitrace_meter.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -503,6 +504,7 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
 
 int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
 {
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -548,6 +550,7 @@ void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
 
 int32_t WorkSchedulerService::StopWork(WorkInfo& workInfo)
 {
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StopWork");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -605,6 +608,7 @@ void WorkSchedulerService::WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatu
 
 int32_t WorkSchedulerService::StopAndClearWorks()
 {
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StopAndClearWorks");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -636,6 +640,7 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
 
 int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId, bool &result)
 {
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::IsLastWorkTimeout");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -652,6 +657,7 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
 int32_t WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid,
     std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::ObtainAllWorks");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -662,6 +668,7 @@ int32_t WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid,
 
 int32_t WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
 {
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::GetWorkStatus");
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         workInfo = nullptr;
