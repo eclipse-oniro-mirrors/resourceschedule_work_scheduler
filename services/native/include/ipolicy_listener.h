@@ -37,13 +37,13 @@ public:
      *
      * @return True if success,else false.
      */
-    virtual bool Start();
+    virtual bool Start() = 0;
     /**
      * @brief Stop.
      *
      * @return True if success,else false.
      */
-    virtual bool Stop();
+    virtual bool Stop() = 0;
 };
 } // namesapce WorkScheduler
 } // namespace OHOS

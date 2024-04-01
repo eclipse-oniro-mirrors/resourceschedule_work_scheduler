@@ -43,7 +43,7 @@ namespace {
     static const std::string EV_STORAGE_OKAY = "ok";
 }
 
-void EventPublisher::Dump(std::string &result, std::string &eventType, std::string &eventValue)
+void EventPublisher::Dump(std::string &result, const std::string &eventType, const std::string &eventValue)
 {
     if (eventType == "event" && eventValue == "info") {
         result.append("event info:\n")
@@ -62,7 +62,7 @@ void EventPublisher::Dump(std::string &result, std::string &eventType, std::stri
     }
 }
 
-void EventPublisher::PublishEvent(std::string &result, std::string &eventType, std::string &eventValue)
+void EventPublisher::PublishEvent(std::string &result, const std::string &eventType, const std::string &eventValue)
 {
     if (eventType == NETWORK) {
         PublishNetworkEvent(result, eventValue);
@@ -77,7 +77,7 @@ void EventPublisher::PublishEvent(std::string &result, std::string &eventType, s
     }
 }
 
-void EventPublisher::PublishNetworkEvent(std::string &result, std::string &eventValue)
+void EventPublisher::PublishNetworkEvent(std::string &result, const std::string &eventValue)
 {
 #ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
     EventFwk::Want want;
@@ -105,7 +105,7 @@ void EventPublisher::PublishNetworkEvent(std::string &result, std::string &event
 #endif
 }
 
-void EventPublisher::PublishChargingEvent(std::string &result, std::string &eventValue)
+void EventPublisher::PublishChargingEvent(std::string &result, const std::string &eventValue)
 {
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     EventFwk::Want want;
@@ -140,7 +140,7 @@ void EventPublisher::PublishChargingEvent(std::string &result, std::string &even
 #endif // POWERMGR_BATTERY_MANAGER_ENABLE
 }
 
-void EventPublisher::PublishStorageEvent(std::string &result, std::string &eventValue)
+void EventPublisher::PublishStorageEvent(std::string &result, const std::string &eventValue)
 {
     EventFwk::Want want;
     if (eventValue == EV_STORAGE_LOW) {
@@ -159,7 +159,7 @@ void EventPublisher::PublishStorageEvent(std::string &result, std::string &event
     result.append("publish result: " + std::to_string(isSuccess));
 }
 
-void EventPublisher::PublishBatteryStatusEvent(std::string &result, std::string &eventValue)
+void EventPublisher::PublishBatteryStatusEvent(std::string &result, const std::string &eventValue)
 {
     EventFwk::Want want;
     if (eventValue == EV_STORAGE_LOW) {
