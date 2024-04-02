@@ -271,14 +271,43 @@ public:
      * @brief init the preinstalled work.
      */
     void InitPreinstalledWork();
+
+private:
+    void RegisterStandbyStateObserver();
+    void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+    void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    void GroupObserverInit();
+#endif
+    std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
+    void DumpAllInfo(std::string& result);
+    bool CheckWorkInfo(WorkInfo& workInfo, int32_t& uid);
+    bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
+    bool CheckCondition(WorkInfo& workInfo);
+    bool IsBaseAbilityReady();
+    void DumpUsage(std::string& result);
+    void DumpParamSet(std::string& key, std::string& value, std::string& result);
+    void DumpProcessWorks(const std::string& bundleName, const std::string& abilityName, std::string& result);
+    void DumpRunningWorks(const std::string& uidStr, const std::string& option, std::string& result);
+    bool IsDebugApp(const std::string& bundleName);
+    bool AllowDump();
+    void DumpProcess(std::vector<std::string>& argsInStr, std::string& result);
+    bool GetJsonFromFile(const char* filePath, Json::Value& root);
+    bool GetUidByBundleName(const std::string& bundleName, int32_t& uid);
+    void InitWorkInner();
+    void AddWorkInner(WorkInfo& workInfo);
+    std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
+    void InitPersistedWork();
+    bool CheckProcessName();
+
 private:
     std::set<int32_t> whitelist_;
     std::mutex whitelistMutex_;
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif
-
-private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     std::mutex mutex_;
@@ -294,34 +323,6 @@ private:
 #ifdef  DEVICE_STANDBY_ENABLE
     sptr<WorkStandbyStateChangeCallback> standbyStateObserver_;
 #endif
-    void RegisterStandbyStateObserver();
-    void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
-    bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
-    void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-    void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    void GroupObserverInit();
-#endif
-    std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
-    void DumpAllInfo(std::string &result);
-    bool CheckWorkInfo(WorkInfo &workInfo, int32_t &uid);
-    bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
-    bool CheckCondition(WorkInfo& workInfo);
-    bool IsBaseAbilityReady();
-    void DumpUsage(std::string &result);
-    void DumpParamSet(std::string &key, std::string &value, std::string &result);
-    void DumpProcessWorks(const std::string &bundleName, const std::string &abilityName, std::string &result);
-    void DumpRunningWorks(const std::string &uidStr, const std::string &option, std::string &result);
-    bool IsDebugApp(const std::string &bundleName);
-    bool AllowDump();
-    void DumpProcess(std::vector<std::string> &argsInStr, std::string &result);
-    bool GetJsonFromFile(const char *filePath, Json::Value &root);
-    bool GetUidByBundleName(const std::string &bundleName, int32_t &uid);
-    void InitWorkInner();
-    void AddWorkInner(WorkInfo& workInfo);
-    std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
-    void InitPersistedWork();
-    bool CheckProcessName();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

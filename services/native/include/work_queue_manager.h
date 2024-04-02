@@ -119,6 +119,8 @@ public:
 private:
     std::vector<std::shared_ptr<WorkStatus>> GetReayQueue(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
+
+private:
     std::mutex mutex_;
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::map<WorkCondition::Type, std::shared_ptr<WorkQueue>> queueMap_;
