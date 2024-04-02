@@ -76,5 +76,10 @@ int32_t CpuPolicy::GetPolicyMaxRunning()
     WS_HILOGI("cpu_usage: %{public}d, policyRes: %{public}d", cpuUsage, policyRes);
     return policyRes;
 }
+
+std::string CpuPolicy::GetPolicyName()
+{
+    return "CPU_POLICY";
+}
 } // namespace WorkScheduler
 } // namespace OHOS

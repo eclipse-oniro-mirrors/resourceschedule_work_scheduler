@@ -39,6 +39,7 @@ WORK_START:
   TRIGGER: {type: STRING, desc: trigger condition}
   TYPE: {type: STRING, desc: work type}
   INTERVAL: {type: INT32, desc: interval of work}
+  DELAY_REASON: {type: STRING, desc: work delay reason}
 
 WORK_STOP:
   __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: alarm trigger}

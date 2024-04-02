@@ -264,13 +264,14 @@ void WorkPolicyManager::AddToReadyQueue(shared_ptr<vector<shared_ptr<WorkStatus>
     conditionReadyQueue_->Push(workStatusVector);
 }
 
-int32_t WorkPolicyManager::GetMaxRunningCount()
+int32_t WorkPolicyManager::GetMaxRunningCount(std::string& policyName)
 {
     int32_t currentMaxRunning = MAX_RUNNING_COUNT;
     for (auto policyFilter : policyFilters_) {
         int32_t policyMaxRunning = policyFilter->GetPolicyMaxRunning();
         if (policyMaxRunning < currentMaxRunning) {
             currentMaxRunning = policyMaxRunning;
+            policyName = policyFilter->GetPolicyName();
         }
     }
     return currentMaxRunning;
@@ -348,12 +349,21 @@ void WorkPolicyManager::CheckWorkToRun()
         WS_HILOGD("no condition ready work not running, return.");
         return;
     }
-    if (GetRunningCount() < GetMaxRunningCount() || IsSpecialScene(topWork)) {
+    std::string policyName;
+    int32_t canRunningMaxCount GetMaxRunningCount(policyName);
+    if (GetRunningCount() < canRunningMaxCount || IsSpecialScene(topWork)) {
         WS_HILOGD("running count < max running count");
         RealStartWork(topWork);
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
         WS_HILOGD("trigger delay: %{public}d", DELAY_TIME_LONG);
+        if (canRunningMaxCount == MAX_RUNNING_COUNT) {
+            topWork->delayReason_ = "OVER_MAX_RUNNING_COUNT";
+        }
+
+        if (!policyName.empty()) {
+            topWork->delayReason_= policyName;
+        }
         SendRetrigger(DELAY_TIME_LONG);
     }
     WS_HILOGD("out");
@@ -537,8 +547,9 @@ void WorkPolicyManager::Dump(string& result)
     result.append("2. workPolicyManager uidQueueMap:\n");
     DumpUidQueueMap(result);
 
+    std::string policyName;
     result.append("3. GetMaxRunningCount:");
-    result.append(to_string(GetMaxRunningCount()) + "\n");
+    result.append(to_string(GetMaxRunningCount(policyName)) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()

@@ -31,6 +31,12 @@ public:
      */
     int32_t GetPolicyMaxRunning() override;
 
+    /**
+     * @brief Get policyName.
+     *
+     * @return PolicyName.
+     */
+    std::string GetPolicyName() override;
 private:
     int32_t GetCpuUsage();
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;

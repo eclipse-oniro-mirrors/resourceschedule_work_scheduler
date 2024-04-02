@@ -245,7 +245,7 @@ public:
      */
     int32_t ResumePausedWorks(int32_t uid);
 private:
-    int32_t GetMaxRunningCount();
+    int32_t GetMaxRunningCount(std::string& policyName);
     int32_t GetRunningCount();
     void DumpConditionReadyQueue(std::string& result);
     void DumpUidQueueMap(std::string& result);
