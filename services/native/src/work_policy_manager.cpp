@@ -350,15 +350,15 @@ void WorkPolicyManager::CheckWorkToRun()
         return;
     }
     std::string policyName;
-    int32_t canRunningMaxCount GetMaxRunningCount(policyName);
-    if (GetRunningCount() < canRunningMaxCount || IsSpecialScene(topWork)) {
+    int32_t runningCount = GetRunningCount();
+    if (runningCount < GetMaxRunningCount(policyName) || IsSpecialScene(topWork)) {
         WS_HILOGD("running count < max running count");
         RealStartWork(topWork);
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
         WS_HILOGD("trigger delay: %{public}d", DELAY_TIME_LONG);
-        if (canRunningMaxCount == MAX_RUNNING_COUNT) {
-            topWork->delayReason_ = "OVER_MAX_RUNNING_COUNT";
+        if (runningCount == MAX_RUNNING_COUNT) {
+            topWork->delayReason_ = "OVER_LIMIT";
         }
 
         if (!policyName.empty()) {
@@ -549,7 +549,8 @@ void WorkPolicyManager::Dump(string& result)
 
     std::string policyName;
     result.append("3. GetMaxRunningCount:");
-    result.append(to_string(GetMaxRunningCount(policyName)) + "\n");
+    std::string reason = policyName.empty() ? "" : " reason:" + policyName;
+    result.append(to_string(GetMaxRunningCount(policyName)) + reason + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()
