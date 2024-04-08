@@ -199,7 +199,8 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
     HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_START",
         HiSysEvent::EventType::STATISTIC, "UID",
         workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER",
-        conditions, "TYPE", type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
+        conditions, "TYPE", type, "INTERVAL", workStatus->workInfo_->GetTimeInterval(),
+        "DELAY_REASON", workStatus->delayReason_);
 #ifdef DEVICE_STANDBY_ENABLE
     WS_HILOGI("OnWorkStart uid: %{public}d", workStatus->uid_);
     DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(true,

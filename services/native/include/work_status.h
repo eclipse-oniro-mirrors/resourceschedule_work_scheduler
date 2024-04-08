@@ -60,6 +60,7 @@ public:
     int32_t timeRetrigger_ {INT32_MAX};
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
     std::shared_ptr<WorkInfo> workInfo_;
+    std::string delayReason_;
 
     /**
      * @brief Judge state whether is ready.

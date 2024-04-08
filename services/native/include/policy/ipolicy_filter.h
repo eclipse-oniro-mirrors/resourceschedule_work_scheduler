@@ -28,6 +28,12 @@ public:
      * @return Res.
      */
     virtual int32_t GetPolicyMaxRunning();
+    /**
+     * @brief Get policyName.
+     *
+     * @return PolicyName.
+     */
+    virtual std::string GetPolicyName();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

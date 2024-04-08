@@ -51,6 +51,11 @@ int32_t ThermalPolicy::GetPolicyMaxRunning()
     WS_HILOGI("ThermalLevel:%{public}d, PolicyRes:%{public}d", thermalLevel, res);
     return res;
 }
+
+std::string ThermalPolicy::GetPolicyName()
+{
+    return "THERMAL_POLICY";
+}
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // POWERMGR_THERMAL_MANAGER_ENABLE

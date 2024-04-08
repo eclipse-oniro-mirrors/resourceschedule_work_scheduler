@@ -90,5 +90,10 @@ int32_t MemoryPolicy::GetPolicyMaxRunning()
     WS_HILOGI("memory left normal");
     return COUNT_MEMORY_NORMAL;
 }
+
+std::string MemoryPolicy::GetPolicyName()
+{
+    return "MEMORY_POLICY";
+}
 } // namespace WorkScheduler
 } // namespace OHOS
