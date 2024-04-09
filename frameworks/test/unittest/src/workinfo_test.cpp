@@ -567,6 +567,21 @@ HWTEST_F (WorkInfoTest, WorkInfoTest021, Function | MediumTest | Level0)
 }
 
 /**
+ * @tc.name WorkInfoTest022
+ * @tc.desc test SetCallBySystemApp.
+ * @tc.type FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F (WorkInfoTest, WorkInfoTest022, Function | MediumTest | Level0)
+{
+    WorkInfo workInfo = WorkInfo();
+    time_t result;
+    time(&result);
+    workInfo.RequestBaseTimeAndCycle(result, 20);
+    EXPECT_TRUE(workInfo.IsRepeat());
+}
+
+/**
  * @tc.name WorkSchedUtils001
  * @tc.desc test GetCurrentAccountId
  * @tc.type FUNC
