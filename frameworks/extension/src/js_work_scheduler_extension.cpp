@@ -69,6 +69,10 @@ napi_value AttachWorkSchedulerExtensionContext(napi_env env, void *value, void *
     napi_coerce_to_native_binding_object(env, contextObj, DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, value, nullptr);
     auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(ptr);
+    if (workContext == nullptr) {
+        WS_HILOGE("init WorkSchedulerExtensionContext failed.");
+        return nullptr;
+    }
     napi_status status = napi_wrap(env, contextObj, workContext,
         [](napi_env env, void *data, void *) {
             WS_HILOGI("Finalizer for weak_ptr WorkSchedulerExtensionContext is called");
@@ -131,6 +135,10 @@ void JsWorkSchedulerExtension::BindContext(napi_env env, napi_value obj)
     contextObj = shellContextRef_->GetNapiValue();
 
     auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(context);
+    if (workContext == nullptr) {
+        WS_HILOGE("init WorkSchedulerExtensionContext failed.");
+        return;
+    }
     napi_coerce_to_native_binding_object(env, contextObj, DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, workContext, nullptr);
     WS_HILOGI("JsWorkSchedulerExtension init bind and set property.");

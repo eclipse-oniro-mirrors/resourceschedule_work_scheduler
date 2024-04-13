@@ -243,6 +243,7 @@ HWTEST_F(WorkStatusTest, isReady_006, TestSize.Level1)
     workInfo_->workId_ = -1;
     workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     workInfo_->RequestBatteryLevel(60);
+    workInfo_->SetPreinstalled(true);
     std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
     batteryLevelCondition->intVal = 70;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
@@ -284,6 +285,7 @@ HWTEST_F(WorkStatusTest, isReady_008, TestSize.Level1)
     workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     uint32_t timeInterval = 1200;
     workInfo_->RequestRepeatCycle(timeInterval);
+    workInfo_->SetPreinstalled(true);
     workStatus_->workInfo_ = workInfo_;
 
     std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();

@@ -502,8 +502,10 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     Json::Value::Members keyList = extrasJson.getMemberNames();
     int typeId = INVALID_VALUE;
     for (auto key : keyList) {
-        typeId = extrasType[key].asInt();
-        if (typeId != INVALID_VALUE) {
+        if (extrasType[key].isInt()) {
+            typeId = extrasType[key].asInt();
+        }
+        if (typeId != INVALID_VALUE && extrasJson[key].isString()) {
             sptr<AAFwk::IInterface> exInterface = AAFwk::WantParams::GetInterfaceByType(typeId,
                 extrasJson[key].asString());
             extras.SetParam(key, exInterface);
@@ -522,7 +524,7 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
     if (conditions.isMember("network")) {
         this->RequestNetworkType(WorkCondition::Network(conditions["network"].asInt()));
     }
-    if (conditions.isMember("isCharging") && conditions.isMember("chargerType")) {
+    if (conditions.isMember("isCharging") && conditions.isMember("chargerType") && conditions["chargerType"].isInt()) {
         this->RequestChargerType(conditions["isCharging"].asBool(),
             WorkCondition::Charger(conditions["chargerType"].asInt()));
     }

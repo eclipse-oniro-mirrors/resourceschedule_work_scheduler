@@ -633,7 +633,7 @@ HWTEST_F(WorkSchedulerServiceTest, WorkSchedServiceStub_001, TestSize.Level1)
     MyWorkSchedulerService s;
     MessageParcel data, reply;
     MessageOption option;
-    const int size = 8;
+    const int size = 11;
     for (int i = 0; i < size; i++) {
         s.HandleRequest(i, data, reply, option);
         WorkInfo info;
