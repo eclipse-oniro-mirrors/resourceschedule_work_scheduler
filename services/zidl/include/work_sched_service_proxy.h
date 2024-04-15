@@ -28,8 +28,7 @@ namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedServiceProxy : public IRemoteProxy<IWorkSchedService> {
 public:
-    explicit WorkSchedServiceProxy(const sptr<IRemoteObject>& impl) :
-    IRemoteProxy<IWorkSchedService>(impl) {}
+    explicit WorkSchedServiceProxy(const sptr<IRemoteObject>& impl) : IRemoteProxy<IWorkSchedService>(impl) {}
     ~WorkSchedServiceProxy() = default;
     DISALLOW_COPY_AND_MOVE(WorkSchedServiceProxy);
 

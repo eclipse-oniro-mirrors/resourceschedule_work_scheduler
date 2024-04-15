@@ -12,7 +12,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#define private public
 #include "workinfo_test.h"
 #include <message_parcel.h>
 

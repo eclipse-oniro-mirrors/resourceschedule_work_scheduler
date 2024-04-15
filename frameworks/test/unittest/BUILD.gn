@@ -18,6 +18,11 @@ module_output_path = "work_scheduler/work_info_unittest"
 ohos_systemtest("WorkSchedulerWorkInfoTest") {
   module_out_path = module_output_path
 
+  cflags_cc = [
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
+
   sources = [ "src/workinfo_test.cpp" ]
 
   include_dirs = [ "include" ]
@@ -45,6 +50,11 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
 
 ohos_unittest("WorkSchedulerClientTest") {
   module_out_path = "work_scheduler/client_unittest"
+
+  cflags_cc = [
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
 
   sources = [ "src/work_sched_client_test.cpp" ]
 
