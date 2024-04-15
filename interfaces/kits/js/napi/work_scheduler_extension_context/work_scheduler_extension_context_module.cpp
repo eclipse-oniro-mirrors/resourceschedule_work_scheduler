@@ -20,7 +20,7 @@ extern const char _binary_work_scheduler_extension_context_js_end[];
 extern const char _binary_work_scheduler_extension_context_abc_start[];
 extern const char _binary_work_scheduler_extension_context_abc_end[];
 
-extern "C" __attribute__((constructor)) void NAPI_application_WorkSchedulerExtensionContext_AutoRegister()
+extern "C" __attribute__((constructor)) void NapiApplicationWorkSchedulerExtensionContextAutoRegister()
 {
     auto moduleManager = NativeModuleManager::GetInstance();
     NativeModule newModuleInfo = {
