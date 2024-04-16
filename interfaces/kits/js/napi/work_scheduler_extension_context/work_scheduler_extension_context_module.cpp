@@ -20,8 +20,7 @@ extern const char _binary_work_scheduler_extension_context_js_end[];
 extern const char _binary_work_scheduler_extension_context_abc_start[];
 extern const char _binary_work_scheduler_extension_context_abc_end[];
 
-extern "C" __attribute__((constructor))
-void NAPI_application_WorkSchedulerExtensionContext_AutoRegister()
+extern "C" __attribute__((constructor)) void NapiApplicationWorkSchedulerExtensionContextAutoRegister()
 {
     auto moduleManager = NativeModuleManager::GetInstance();
     NativeModule newModuleInfo = {
@@ -32,8 +31,8 @@ void NAPI_application_WorkSchedulerExtensionContext_AutoRegister()
     moduleManager->Register(&newModuleInfo);
 }
 
-extern "C" __attribute__((visibility("default")))
-void NAPI_application_WorkSchedulerExtensionContext_GetJSCode(const char **buf, int32_t *bufLen)
+extern "C" __attribute__((visibility("default"))) void NAPI_application_WorkSchedulerExtensionContext_GetJSCode(
+    const char **buf, int32_t *bufLen)
 {
     if (buf != nullptr) {
         *buf = _binary_work_scheduler_extension_context_js_start;
@@ -46,8 +45,8 @@ void NAPI_application_WorkSchedulerExtensionContext_GetJSCode(const char **buf, 
 }
 
 // WorkSchedulerExtensionContext JS register
-extern "C" __attribute__((visibility("default")))
-void NAPI_application_WorkSchedulerExtensionContext_GetABCCode(const char **buf, int32_t *buflen)
+extern "C" __attribute__((visibility("default"))) void NAPI_application_WorkSchedulerExtensionContext_GetABCCode(
+    const char **buf, int32_t *buflen)
 {
     if (buf != nullptr) {
         *buf = _binary_work_scheduler_extension_context_abc_start;

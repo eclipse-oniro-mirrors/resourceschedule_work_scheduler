@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-var ExtensionAbility = requireNapi("app.ability.ExtensionAbility")
+let ExtensionAbility = requireNapi('app.ability.ExtensionAbility');
 
 class WorkSchedulerExtensionAbility extends ExtensionAbility {
     onWorkStart(workInfo) {
@@ -23,4 +23,4 @@ class WorkSchedulerExtensionAbility extends ExtensionAbility {
     }
 }
 
-export default WorkSchedulerExtensionAbility
+export default WorkSchedulerExtensionAbility;

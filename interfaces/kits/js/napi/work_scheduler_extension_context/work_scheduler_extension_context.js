@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-var ExtensionContext = requireNapi("application.ExtensionContext")
+let ExtensionContext = requireNapi('application.ExtensionContext');
 
 class WorkSchedulerExtensionContext extends ExtensionContext {
     constructor(obj) {
@@ -21,4 +21,4 @@ class WorkSchedulerExtensionContext extends ExtensionContext {
     }
 }
 
-export default WorkSchedulerExtensionContext
+export default WorkSchedulerExtensionContext;
