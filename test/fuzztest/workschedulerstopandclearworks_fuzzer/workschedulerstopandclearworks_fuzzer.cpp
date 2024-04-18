@@ -32,9 +32,9 @@ namespace WorkScheduler {
             dataMessageParcel.WriteBuffer(data, size);
             dataMessageParcel.RewindRead(0);
             MessageParcel reply;
-            MessageParcel option;
+            MessageOption option;
             workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-            uint32_t code static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CLEAR_WORKS);
+            uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CLEAR_WORKS);
             workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
         }
         return true;
