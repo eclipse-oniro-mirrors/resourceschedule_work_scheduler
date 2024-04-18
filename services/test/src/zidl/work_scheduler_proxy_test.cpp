@@ -39,7 +39,7 @@ std::shared_ptr<WorkSchedulerProxy> WorkSchedulerProxyTest::workSchedulerProxy_ 
 std::mutex mutexLock;
 
 void WorkSchedulerProxyTest::SetUpTestCase()
-{   
+{
     std::lock_guard<std::mutex> lock(mutexLock);
     sptr<ISystemAbilityManager> SystemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
