@@ -576,6 +576,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest022, Function | MediumTest | Level0)
     WorkInfo workInfo = WorkInfo();
     time_t result;
     time(&result);
+    workInfo.RequestRepeatCycle(20000);
     workInfo.RequestBaseTimeAndCycle(result, 20);
     EXPECT_TRUE(workInfo.IsRepeat());
 }
