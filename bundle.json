@@ -83,7 +83,15 @@
             "//foundation/resourceschedule/work_scheduler/frameworks/test/unittest:workinfotest",
             "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest/work_scheduler_jsunittest:js_unittest",
             "//foundation/resourceschedule/work_scheduler/test/fuzztest/workscheduleservice_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/services/test:unittest"
+            "//foundation/resourceschedule/work_scheduler/services/test:unittest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulergetallrunningworks_fuzzer:fuzztest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulergetworkstatus_fuzzer:fuzztest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerislastworktimeout_fuzzer:fuzztest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerobtainallworks_fuzzer:fuzztest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstartwork_fuzzer:fuzztest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstopandcancelwork_fuzzer:fuzztest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstopandclearworks_fuzzer:fuzztest",
+            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstopwork_fuzzer:fuzztest"
         ]
       },
       "hisysevent_config": [
