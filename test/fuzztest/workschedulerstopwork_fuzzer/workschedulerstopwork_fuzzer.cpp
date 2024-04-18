@@ -34,7 +34,7 @@ namespace WorkScheduler {
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK);
-        workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);   
+        workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
         return true;
     }
 } // WorkScheduler

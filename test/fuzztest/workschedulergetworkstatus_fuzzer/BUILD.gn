@@ -66,7 +66,7 @@ ohos_fuzztest("WorkSchedulerGetWorkStatusFuzzTest") {
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
-  
+
   resource_config_file = "${worksched_test_path}/resource/ohos_test.xml"
 
   defines = [ "WORK_SCHEDULER_TEST" ]
