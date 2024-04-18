@@ -521,7 +521,7 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
         this->uid_ = value["uid"].asInt();
     }
     Json::Value conditions = value["conditions"];
-    if (conditions.isMember("network")) {
+    if (conditions.isMember("network") && conditions["network"].isInt()) {
         this->RequestNetworkType(WorkCondition::Network(conditions["network"].asInt()));
     }
     if (conditions.isMember("isCharging") && conditions.isMember("chargerType") && conditions["chargerType"].isInt()) {
