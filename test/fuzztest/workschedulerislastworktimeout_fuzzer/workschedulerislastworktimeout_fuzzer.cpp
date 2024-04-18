@@ -26,17 +26,15 @@ namespace WorkScheduler {
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
-        if (size > 0) {
-            MessageParcel dataMessageParcel;
-            dataMessageParcel.WriteInterfaceToken(WORK_SCHEDULER_STUB_TOKEN);
-            dataMessageParcel.WriteBuffer(data, size);
-            dataMessageParcel.RewindRead(0);
-            MessageParcel reply;
-            MessageOption option;
-            workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-            uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::IS_LAST_WORK_TIMEOUT);
-            workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
-        }
+        MessageParcel dataMessageParcel;
+        dataMessageParcel.WriteInterfaceToken(WORK_SCHEDULER_STUB_TOKEN);
+        dataMessageParcel.WriteBuffer(data, size);
+        dataMessageParcel.RewindRead(0);
+        MessageParcel reply;
+        MessageOption option;
+        workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::IS_LAST_WORK_TIMEOUT);
+        workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
         return true;
     }
 } // WorkScheduler
