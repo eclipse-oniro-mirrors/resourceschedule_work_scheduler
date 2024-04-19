@@ -80,7 +80,7 @@ HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level1)
 {
     string workId = "u1000_123";
     sptr<WorkSchedulerConnection> connection;
-    workConnManager_->AddConnInfo(workId, connection); 
+    workConnManager_->AddConnInfo(workId, connection);
     workConnManager_->GetConnInfo(workId);
     EXPECT_TRUE(workConnManager_->connMap_.size() == 1);
 }

@@ -502,6 +502,12 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     if (!value.isMember("parameters")) {
         return true;
     }
+    ParseParametersFromJsonStr(value);
+    return true;
+}
+
+void WorkInfo::ParseParametersFromJsonStr(const Json::Value value)
+{
     Json::Value extrasJson = value["parameters"];
     Json::Value extrasType = value["parametersType"];
     AAFwk::WantParams extras;
@@ -518,7 +524,6 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
         }
     }
     this->RequestExtras(extras);
-    return true;
 }
 
 void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
@@ -544,6 +549,11 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
     if (conditions.isMember("storage") && conditions["storage"].isInt()) {
         this->RequestStorageLevel(WorkCondition::Storage(conditions["storage"].asInt()));
     }
+    ParseTimerFormJsonStr(conditions);
+}
+
+void WorkInfo::ParseTimerFormJsonStr(const Json::Value conditions)
+{
     if (conditions.isMember("timer") && conditions["timer"].isInt() &&
         conditions.isMember("repeat") && conditions["repeat"].isBool()) {
         if (conditions["repeat"].asBool()) {
