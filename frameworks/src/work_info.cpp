@@ -477,21 +477,27 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
         WS_HILOGE("workinfo json is empty");
         return false;
     }
-    if (!value.isMember("workId") || !value.isMember("bundleName") || !value.isMember("abilityName")) {
+    if (!value.isMember("workId") || !value["workId"].isInt() ||
+        !value.isMember("bundleName") || value["bundleName"].isString() ||
+        !value.isMember("abilityName") || value["abilityName"].isString()) {
         WS_HILOGE("workinfo json is invalid");
         return false;
     }
     this->workId_ = value["workId"].asInt();
     this->bundleName_ = value["bundleName"].asString();
     this->abilityName_ = value["abilityName"].asString();
-    this->persisted_ = value["persisted"].asBool();
+    if (value.isMember("persisted") && value["persisted"].isBool()) {
+        this->persisted_ = value["persisted"].asBool();
+    }
     if (value.isMember("preinstalled") && value["preinstalled"].isBool()) {
         this->preinstalled_ = value["preinstalled"].asBool();
     }
     if (value.isMember("uriKey") && value["uriKey"].isString()) {
         this->uriKey_ = value["uriKey"].asString();
     }
-    this->callBySystemApp_ = value["callBySystemApp"].asBool();
+    if (value.isMember("callBySystemApp") && value["callBySystemApp"].isBool()) {
+        this->callBySystemApp_ = value["callBySystemApp"].asBool();
+    }
     ParseConditionFromJsonStr(value);
     if (!value.isMember("parameters")) {
         return true;
@@ -517,35 +523,37 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
 
 void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
 {
-    if (value.isMember("uid")) {
+    if (value.isMember("uid") && value["uid"].isInt()) {
         this->uid_ = value["uid"].asInt();
     }
     Json::Value conditions = value["conditions"];
     if (conditions.isMember("network") && conditions["network"].isInt()) {
         this->RequestNetworkType(WorkCondition::Network(conditions["network"].asInt()));
     }
-    if (conditions.isMember("isCharging") && conditions.isMember("chargerType") && conditions["chargerType"].isInt()) {
+    if (conditions.isMember("isCharging") && conditions["isCharging"].isBool() &&
+        conditions.isMember("chargerType") && conditions["chargerType"].isInt()) {
         this->RequestChargerType(conditions["isCharging"].asBool(),
             WorkCondition::Charger(conditions["chargerType"].asInt()));
     }
-    if (conditions.isMember("batteryLevel")) {
+    if (conditions.isMember("batteryLevel") && conditions["batteryLevel"].isInt()) {
         this->RequestBatteryLevel(conditions["batteryLevel"].asInt());
     }
-    if (conditions.isMember("batteryStatus")) {
+    if (conditions.isMember("batteryStatus") && conditions["batteryStatus"].isInt()) {
         this->RequestBatteryStatus(WorkCondition::BatteryStatus(conditions["batteryStatus"].asInt()));
     }
-    if (conditions.isMember("storage")) {
+    if (conditions.isMember("storage") && conditions["storage"].isInt()) {
         this->RequestStorageLevel(WorkCondition::Storage(conditions["storage"].asInt()));
     }
-    if (conditions.isMember("timer") && conditions.isMember("repeat")) {
+    if (conditions.isMember("timer") && conditions["timer"].isInt() &&
+        conditions.isMember("repeat") && conditions["repeat"].isBool()) {
         if (conditions["repeat"].asBool()) {
             this->RequestRepeatCycle(conditions["timer"].asInt());
         } else {
-            if (conditions.isMember("cycle")) {
+            if (conditions.isMember("cycle") && conditions["cycle"].isInt()) {
                 this->RequestRepeatCycle(conditions["timer"].asInt(), conditions["cycle"].asInt());
             }
         }
-        if (conditions.isMember("baseTime")) {
+        if (conditions.isMember("baseTime") && conditions["baseTime"].isInt64()) {
             time_t baseTime = (time_t)(conditions["baseTime"].asInt64());
             this->RequestBaseTime(baseTime);
         }
