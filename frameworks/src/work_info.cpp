@@ -506,7 +506,7 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
     return true;
 }
 
-void WorkInfo::ParseParametersFromJsonStr(const Json::Value value)
+void WorkInfo::ParseParametersFromJsonStr(const Json::Value &value)
 {
     Json::Value extrasJson = value["parameters"];
     Json::Value extrasType = value["parametersType"];
@@ -526,7 +526,7 @@ void WorkInfo::ParseParametersFromJsonStr(const Json::Value value)
     this->RequestExtras(extras);
 }
 
-void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
+void WorkInfo::ParseConditionFromJsonStr(const Json::Value &value)
 {
     if (value.isMember("uid") && value["uid"].isInt()) {
         this->uid_ = value["uid"].asInt();
@@ -552,7 +552,7 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value value)
     ParseTimerFormJsonStr(conditions);
 }
 
-void WorkInfo::ParseTimerFormJsonStr(const Json::Value conditions)
+void WorkInfo::ParseTimerFormJsonStr(const Json::Value &conditions)
 {
     if (conditions.isMember("timer") && conditions["timer"].isInt() &&
         conditions.isMember("repeat") && conditions["repeat"].isBool()) {
