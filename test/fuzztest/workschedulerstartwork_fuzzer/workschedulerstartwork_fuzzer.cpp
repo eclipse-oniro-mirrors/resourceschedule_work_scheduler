@@ -45,7 +45,7 @@ namespace WorkScheduler {
             workSchedulerService_->ready_ = true;
         }
         if (workSchedulerService_->checkBundle_) {
-            workSchedulerService_->ready_ = false;
+            workSchedulerService_->checkBundle_ = false;
         }
         int32_t workId = 888;
         workInfo.SetWorkId(workId);
