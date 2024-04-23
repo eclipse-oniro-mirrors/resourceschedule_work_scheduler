@@ -35,14 +35,6 @@ namespace WorkScheduler {
             return;                                                                 \
         }                                                                           \
     } while (0)
-
-#define READ_PARCEL_NO_RET(parcel, type, out)                                       \
-    do {                                                                            \
-        if (!(parcel).Read##type(out)) {                                            \
-            WS_HILOGE("%{public}s read"#out" failed", __func__);     \
-            return;                                                                 \
-        }                                                                           \
-    } while (0)
 } // namespace WorkScheduler
 
 #define READ_PARCEL_WITHOUT_RET(parcel, type, out)                                       \
@@ -58,14 +50,6 @@ namespace WorkScheduler {
         if (!(parcel).Write##type(data)) {                                          \
             WS_HILOGE("%{public}s write "#data" failed", __func__);  \
             return;                                                                 \
-        }                                                                           \
-    } while (0)
-
-#define READ_PARCEL_WITH_RET(parcel, type, out, retval)                             \
-    do {                                                                            \
-        if (!(parcel).Read##type(out)) {                                            \
-            WS_HILOGE("%{public}s read "#out" failed", __func__);    \
-            return (retval);                                                        \
         }                                                                           \
     } while (0)
 

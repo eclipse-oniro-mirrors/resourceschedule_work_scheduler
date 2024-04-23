@@ -56,5 +56,18 @@ HWTEST_F(WorkPolicyManagerTest, RealStartWork_001, TestSize.Level1)
     workPolicyManager_->RealStartWork(topWork);
     EXPECT_FALSE(topWork->IsRunning());
 }
+
+/**
+ * @tc.name: CheckWorkToRun_001
+ * @tc.desc: Test WorkPolicyManagerTest CheckWorkToRun.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, CheckWorkToRun_001, TestSize.Level1)
+{
+    workPolicyManager_->conditionReadyQueue_->ClearAll();
+    workPolicyManager_->CheckWorkToRun();
+    EXPECT_TRUE(workPolicyManager_->conditionReadyQueue_->GetSize() == 0);
+}
 }
 }
