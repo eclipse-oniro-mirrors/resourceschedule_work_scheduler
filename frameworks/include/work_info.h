@@ -286,7 +286,9 @@ private:
 private:
     static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
-    void ParseConditionFromJsonStr(const Json::Value value);
+    void ParseConditionFromJsonStr(const Json::Value &value);
+    void ParseParametersFromJsonStr(const Json::Value &value);
+    void ParseTimerFormJsonStr(const Json::Value &conditions);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
