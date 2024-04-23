@@ -642,5 +642,19 @@ HWTEST_F(WorkSchedulerServiceTest, WorkSchedServiceStub_001, TestSize.Level1)
     }
     s.OnRemoteRequest(0, data, reply, option);
 }
+
+/**
+ * @tc.name: SendEvent_001
+ * @tc.desc: Test WorkSchedulerService SendEvent.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkSchedulerServiceTest, SendEvent_001, TestSize.Level1)
+{
+    int32_t initDelay = 2 * 1000;
+    workSchedulerService_->GetHandler()->
+        SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), initDelay);
+    EXPECT_TRUE(workSchedulerService_->ready_);
+}
 }
 }
