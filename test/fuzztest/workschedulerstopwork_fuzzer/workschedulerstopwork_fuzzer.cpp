@@ -38,7 +38,6 @@ namespace WorkScheduler {
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK);
-        uint32_t startWorkCode = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::START_WORK);
         WorkInfo workInfo = WorkInfo();
         int32_t workId = 1;
         workInfo.SetWorkId(workId);
