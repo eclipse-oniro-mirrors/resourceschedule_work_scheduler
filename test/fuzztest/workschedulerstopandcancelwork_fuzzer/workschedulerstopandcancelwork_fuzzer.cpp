@@ -17,7 +17,11 @@
 
 #include "iwork_sched_service_ipc_interface_code.h"
 #include "work_scheduler_service.h"
+#include "work_sched_common.h"
+#include "work_condition.h"
 
+
+void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -34,7 +38,23 @@ namespace WorkScheduler {
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CANCEL_WORK);
+        WorkInfo workInfo = WorkInfo();
+        int32_t workId = 1;
+        workInfo.SetWorkId(workId);
+        workInfo.SetElement("bundle_name", "ability_name");
+        workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+        WRITE_PARCEL_WITH_RET(dataMessageParcel, Parcelable, &workInfo, false);
+        workSchedulerService_->OnStart();
+        workSchedulerService_->InitBgTaskSubscriber();
+        if (!workSchedulerService_->ready_) {
+            workSchedulerService_->ready_ = true;
+        }
+        workSchedulerService_->StartWork(workInfo);
+        if (workSchedulerService_->checkBundle_) {
+            workSchedulerService_->checkBundle_ = false;
+        }
         workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
+        workSchedulerService_->OnStop();
         return true;
     }
 } // WorkScheduler

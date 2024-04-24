@@ -19,6 +19,8 @@
 #include "work_scheduler_service.h"
 
 
+void OHOS::RefBase::DecStrongRef(void const* obj) {}
+
 namespace OHOS {
 namespace WorkScheduler {
     const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
@@ -34,7 +36,15 @@ namespace WorkScheduler {
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::OBTAIN_ALL_WORKS);
+        workSchedulerService_->OnStart();
+        workSchedulerService_->InitBgTaskSubscriber();
+        if (!workSchedulerService_->ready_) {
+            workSchedulerService_->ready_ = true;
+        }
+        WorkInfo workInfo = WorkInfo();
+        workSchedulerService_->AddWorkInner(workInfo);
         workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
+        workSchedulerService_->OnStop();
         return true;
     }
 } // WorkScheduler
