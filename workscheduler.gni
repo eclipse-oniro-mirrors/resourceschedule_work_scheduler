@@ -36,6 +36,7 @@ worksched_test_path = "${worksched_root_path}/test"
 system_type = "default"
 
 declare_args() {
+  work_scheduler_device_enable = true
   bundle_active_enable = true
   if (defined(global_parts_info) &&
       !defined(global_parts_info.resourceschedule_device_usage_statistics)) {
