@@ -478,8 +478,8 @@ bool WorkInfo::ParseFromJson(const Json::Value value)
         return false;
     }
     if (!value.isMember("workId") || !value["workId"].isInt() ||
-        !value.isMember("bundleName") || value["bundleName"].isString() ||
-        !value.isMember("abilityName") || value["abilityName"].isString()) {
+        !value.isMember("bundleName") || !value["bundleName"].isString() ||
+        !value.isMember("abilityName") || !value["abilityName"].isString()) {
         WS_HILOGE("workinfo json is invalid");
         return false;
     }
