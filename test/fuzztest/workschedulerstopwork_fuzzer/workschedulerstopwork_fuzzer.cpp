@@ -42,6 +42,7 @@ namespace WorkScheduler {
         int32_t workId = 1;
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name", "ability_name");
+        workInfo.RequestPersisted(true);
         workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
         WRITE_PARCEL_WITH_RET(dataMessageParcel, Parcelable, &workInfo, false);
         workSchedulerService_->OnStart();
@@ -50,6 +51,18 @@ namespace WorkScheduler {
             workSchedulerService_->ready_ = true;
         }
         workSchedulerService_->StartWork(workInfo);
+        std::vector<std::string> argsInStr;
+        std::string result;
+        result.clear();
+        argsInStr.clear();
+        argsInStr.push_back("-a");
+        workSchedulerService_->DumpProcess(argsInStr, result);
+        argsInStr.clear();
+        result.clear();
+        argsInStr.push_back("-d");
+        argsInStr.push_back("storage");
+        argsInStr.push_back("ok");
+        workSchedulerService_->DumpProcess(argsInStr, result);
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }
