@@ -37,17 +37,17 @@ PowerModePolicy::~PowerModePolicy()
 }
 
 int32_t PowerModePolicy::GetPolicyMaxRunning()
-{
+{ 
     int32_t res = COUNT_POWER_MODE_NORMAL;
-    auto powerMode = PowerMgrClient::GetInstance().GetDeviceMode();
+    auto mode = PowerMgrClient::GetInstance().GetDeviceMode();
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
-    auto chargeState = BatterySrvClient::GetInstance().GetChargingStatus();
-    if ((powerMode == PowerMode::POWER_SAVE_MODE || powerMode == PowerMode::EXTREME_POWER_SAVE_MODE) &&
-        (chargeState == BatteryChargeState::CHARGE_STATE_NONE || chargeState == BatteryChargeState::CHARGE_STATE_DISABLE)) {
+    auto charge = BatterySrvClient::GetInstance().GetChargingStatus();
+    if ((mode == PowerMode::POWER_SAVE_MODE || mode == PowerMode::EXTREME_POWER_SAVE_MODE) &&
+        (charge == BatteryChargeState::CHARGE_STATE_NONE || charge == BatteryChargeState::CHARGE_STATE_DISABLE)) {
         res = COUNT_POWER_MODE_CRUCIAL; // save mode and not charge
     }
 #endif
-    WS_HILOGI("power mode: %{public}d, PolicyRes: %{public}d", powerMode, res);
+    WS_HILOGI("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
     return res;
 }
 
