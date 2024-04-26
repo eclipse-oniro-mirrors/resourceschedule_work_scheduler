@@ -55,6 +55,9 @@
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
 #include "policy/cpu_policy.h"
+#ifdef POWERMGR_POWER_MANAGER_ENABLE
+#include "policy/power_mode_policy.h"
+#endif
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 #include "scheduler_bg_task_subscriber.h"
 #include "background_task_mgr_helper.h"
@@ -442,6 +445,11 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
 
     auto cpuFilter = make_shared<CpuPolicy>(workPolicyManager_);
     workPolicyManager_->AddPolicyFilter(cpuFilter);
+
+#ifdef POWERMGR_POWER_MANAGER_ENABLE
+    auto powerModeFilter = make_shared<PowerModePolicy>(workPolicyManager_);
+    workPolicyManager_->AddAppDataClearListener(powerModeFilter);
+#endif // POWERMGR_POWER_MODE_MANAGER_ENABLE
 
     auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
     workPolicyManager_->AddAppDataClearListener(appDataClearListener);
