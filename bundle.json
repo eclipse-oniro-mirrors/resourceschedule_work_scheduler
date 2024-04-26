@@ -13,7 +13,7 @@
       "name": "work_scheduler",
       "subsystem": "resourceschedule",
       "syscap": [ "SystemCapability.ResourceSchedule.WorkScheduler" ],
-      "features": [],
+      "features": [ "work_scheduler_device_enable" ],
       "adapted_system_type": [
         "standard"
       ],
@@ -54,15 +54,10 @@
         "group_type": {
           "base_group": [],
           "fwk_group": [
-            "//foundation/resourceschedule/work_scheduler/interfaces/kits/js:workscheduler",
-            "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient",
-            "//foundation/resourceschedule/work_scheduler/frameworks/extension:workschedextension",
-            "//foundation/resourceschedule/work_scheduler/interfaces/kits/js/napi/work_scheduler_extension:workschedulerextensionability_napi",
-            "//foundation/resourceschedule/work_scheduler/interfaces/kits/js/napi/work_scheduler_extension_context:workschedulerextensioncontext_napi"
+            "//foundation/resourceschedule/work_scheduler:fwk_group_work_scheduler_all"
           ],
           "service_group": [
-            "//foundation/resourceschedule/work_scheduler/services:workschedservice",
-            "//foundation/resourceschedule/work_scheduler/sa_profile:worksched_sa_profile"
+            "//foundation/resourceschedule/work_scheduler:service_group_work_scheduler_all"
           ]
         },
         "inner_kits": [
@@ -80,18 +75,7 @@
           }
         ],
         "test": [
-            "//foundation/resourceschedule/work_scheduler/frameworks/test/unittest:workinfotest",
-            "//foundation/resourceschedule/work_scheduler/interfaces/test/unittest/work_scheduler_jsunittest:js_unittest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workscheduleservice_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/services/test:unittest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulergetallrunningworks_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulergetworkstatus_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerislastworktimeout_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerobtainallworks_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstartwork_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstopandcancelwork_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstopandclearworks_fuzzer:fuzztest",
-            "//foundation/resourceschedule/work_scheduler/test/fuzztest/workschedulerstopwork_fuzzer:fuzztest"
+          "//foundation/resourceschedule/work_scheduler:test_work_scheduler_all"
         ]
       },
       "hisysevent_config": [
