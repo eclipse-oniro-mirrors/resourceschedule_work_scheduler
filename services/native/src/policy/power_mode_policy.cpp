@@ -37,7 +37,7 @@ PowerModePolicy::~PowerModePolicy()
 }
 
 int32_t PowerModePolicy::GetPolicyMaxRunning()
-{ 
+{
     int32_t res = COUNT_POWER_MODE_NORMAL;
     auto mode = PowerMgrClient::GetInstance().GetDeviceMode();
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
