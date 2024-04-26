@@ -14,6 +14,7 @@
  */
 #include "policy/power_mode_policy.h"
 
+#include "battert_srv_client.h"
 #include "power_mgr_client.h"
 #include "power_mode_info.h"
 #include "work_sched_hilog.h"
@@ -37,13 +38,15 @@ PowerModePolicy::~PowerModePolicy()
 
 int32_t PowerModePolicy::GetPolicyMaxRunning()
 {
-    PowerMode powerMode = PowerMgrClient::GetInstance().GetDeviceMode();
-    int32_t res;
-    if (powerMode == PowerMode::POWER_SAVE_MODE || powerMode == PowerMode::EXTREME_POWER_SAVE_MODE) {
-        res = COUNT_POWER_MODE_CRUCIAL;
-    } else {
-        res = COUNT_POWER_MODE_NORMAL;
+    int32_t res = COUNT_POWER_MODE_NORMAL;
+    auto powerMode = PowerMgrClient::GetInstance().GetDeviceMode();
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+    auto chargeState = BatterySrvClient::GetInstance().GetChargingStatus();
+    if ((powerMode == PowerMode::POWER_SAVE_MODE || powerMode == PowerMode::EXTREME_POWER_SAVE_MODE) &&
+        pluggedType == BatteryPluggedType::PLUGGED_TYPE_NONE) {
+        res = COUNT_POWER_MODE_CRUCIAL; // save mode and not plugged
     }
+#endif
     WS_HILOGI("power mode: %{public}d, PolicyRes: %{public}d", powerMode, res);
     return res;
 }
