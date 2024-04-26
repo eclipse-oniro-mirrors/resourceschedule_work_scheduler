@@ -259,7 +259,7 @@ public:
      * @param value The value.
      * @return True if success,else false.
      */
-    bool ParseFromJson(const Json::Value value);
+    bool ParseFromJson(const Json::Value &value);
     /**
      * @brief Set preinstalled flag.
     */
