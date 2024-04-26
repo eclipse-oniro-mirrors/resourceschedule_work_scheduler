@@ -448,8 +448,8 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
 
 #ifdef POWERMGR_POWER_MANAGER_ENABLE
     auto powerModeFilter = make_shared<PowerModePolicy>(workPolicyManager_);
-    workPolicyManager_->AddAppDataClearListener(powerModeFilter);
-#endif // POWERMGR_POWER_MODE_MANAGER_ENABLE
+    workPolicyManager_->AddPolicyFilter(powerModeFilter);
+#endif
 
     auto appDataClearListener = make_shared<AppDataClearListener>(workPolicyManager_);
     workPolicyManager_->AddAppDataClearListener(appDataClearListener);
