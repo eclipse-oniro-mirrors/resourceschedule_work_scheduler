@@ -24,7 +24,7 @@ using namespace OHOS::PowerMgr;
 
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t COUNT_POWER_MODE_CRUCIAL = 0;
+const int32_t COUNT_POWER_MODE_CRUCIAL = 1;
 const int32_t COUNT_POWER_MODE_NORMAL = 3;
 
 PowerModePolicy::PowerModePolicy(shared_ptr<WorkPolicyManager> workPolicyManager)
@@ -40,11 +40,15 @@ int32_t PowerModePolicy::GetPolicyMaxRunning()
 {
     int32_t res = COUNT_POWER_MODE_NORMAL;
     auto mode = PowerMgrClient::GetInstance().GetDeviceMode();
+    if (mode == PowerMode::NORMAL_MODE || mode == PowerMode::PERFPRMANCE_MODE) {
+        WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
+        return res;
+    }
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     auto charge = BatterySrvClient::GetInstance().GetChargingStatus();
-    if ((mode == PowerMode::POWER_SAVE_MODE || mode == PowerMode::EXTREME_POWER_SAVE_MODE) &&
-        (charge == BatteryChargeState::CHARGE_STATE_NONE || charge == BatteryChargeState::CHARGE_STATE_DISABLE)) {
-        res = COUNT_POWER_MODE_CRUCIAL; // save mode and not charge
+    if (charge == BatteryChargeState::CHARGE_STATE_NONE || charge == BatteryChargeState::CHARGE_STATE_DISABLE) {
+        WS_HILOGI("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
+        res = COUNT_POWER_MODE_CRUCIAL;
     }
 #endif
     WS_HILOGI("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
