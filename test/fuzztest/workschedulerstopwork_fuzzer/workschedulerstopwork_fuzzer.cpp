@@ -42,6 +42,7 @@ namespace WorkScheduler {
         int32_t workId = 1;
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name", "ability_name");
+        workInfo.RequestPersisted(true);
         workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
         WRITE_PARCEL_WITH_RET(dataMessageParcel, Parcelable, &workInfo, false);
         workSchedulerService_->OnStart();
