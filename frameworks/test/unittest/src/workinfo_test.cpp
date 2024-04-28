@@ -396,8 +396,12 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level0)
     res = workInfo.ParseFromJson(root);
     EXPECT_FALSE(res);
 
+    root.clear();
     root["workId"] = 1;
+    root["bundleName"] = "bundleName";
+    root["abilityName"] = "abilityName";
     root["persisted"] = false;
+    root["uriKey"] = "uriKey";
     root["callBySystemApp"] = false;
     res = workInfo.ParseFromJson(root);
     EXPECT_TRUE(res);

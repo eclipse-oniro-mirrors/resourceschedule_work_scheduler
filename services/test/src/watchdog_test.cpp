@@ -38,7 +38,7 @@ std::shared_ptr<Watchdog> WatchdogTest::watchdog_ = nullptr;
 
 void WatchdogTest::SetUpTestCase()
 {
-    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>::GetInstance();
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::shared_ptr<AppExecFwk::EventRunner> runner;
     watchdog_ = std::make_shared<Watchdog>(workSchedulerService->GetWorkPolicyManager(), runner);
 }

@@ -51,7 +51,9 @@ namespace WorkScheduler {
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name", "ability_name");
         workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
-        WRITE_PARCEL_WITH_RET(dataMessageParcel, Parcelable, &workInfo, false);
+        if (!dataMessageParcel.WriteParcelable(&workInfo)) {
+            return true;
+        }
         workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
         workSchedulerService_->OnStop();
         return true;
