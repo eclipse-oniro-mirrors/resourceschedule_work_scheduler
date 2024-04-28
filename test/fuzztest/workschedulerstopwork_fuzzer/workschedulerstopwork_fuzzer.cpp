@@ -51,18 +51,6 @@ namespace WorkScheduler {
             workSchedulerService_->ready_ = true;
         }
         workSchedulerService_->StartWork(workInfo);
-        std::vector<std::string> argsInStr;
-        std::string result;
-        result.clear();
-        argsInStr.clear();
-        argsInStr.push_back("-a");
-        workSchedulerService_->DumpProcess(argsInStr, result);
-        argsInStr.clear();
-        result.clear();
-        argsInStr.push_back("-d");
-        argsInStr.push_back("storage");
-        argsInStr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInStr, result);
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }
