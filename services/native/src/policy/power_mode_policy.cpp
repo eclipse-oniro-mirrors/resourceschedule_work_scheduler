@@ -40,7 +40,7 @@ int32_t PowerModePolicy::GetPolicyMaxRunning()
 {
     int32_t res = COUNT_POWER_MODE_NORMAL;
     auto mode = PowerMgrClient::GetInstance().GetDeviceMode();
-    if (mode == PowerMode::NORMAL_MODE || mode == PowerMode::PERFPRMANCE_MODE) {
+    if (mode == PowerMode::NORMAL_MODE || mode == PowerMode::PERFORMANCE_MODE) {
         WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
         return res;
     }
