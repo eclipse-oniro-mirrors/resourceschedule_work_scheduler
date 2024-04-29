@@ -382,21 +382,6 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level0)
     EXPECT_FALSE(res);
 
     root.clear();
-    root["workId"] = "1";
-    res = workInfo.ParseFromJson(root);
-    EXPECT_FALSE(res);
-
-    root.clear();
-    root["bundleName"] = 1;
-    res = workInfo.ParseFromJson(root);
-    EXPECT_FALSE(res);
-
-    root.clear();
-    root["abilityName"] = 1;
-    res = workInfo.ParseFromJson(root);
-    EXPECT_FALSE(res);
-
-    root.clear();
     root["workId"] = 1;
     root["bundleName"] = "bundleName";
     root["abilityName"] = "abilityName";
@@ -488,6 +473,33 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson004, Function | MediumTest | Level0)
     root["parametersType"] = extrasType;
     bool res = workInfo.ParseFromJson(root);
     EXPECT_TRUE(res);
+}
+
+/**
+ * @tc.name WorkInfoTestJson005
+ * @tc.desc Set workInfo json func
+ * @tc.type FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F (WorkInfoTest, WorkInfoTestJson005, Function | MediumTest | Level0)
+{
+    using namespace OHOS::WorkScheduler;
+    WorkInfo workInfo = WorkInfo();
+    Json::Value root;
+    root.clear();
+    root["workId"] = "1";
+    bool res = workInfo.ParseFromJson(root);
+    EXPECT_FALSE(res);
+
+    root.clear();
+    root["bundleName"] = 1;
+    res = workInfo.ParseFromJson(root);
+    EXPECT_FALSE(res);
+
+    root.clear();
+    root["abilityName"] = 1;
+    res = workInfo.ParseFromJson(root);
+    EXPECT_FALSE(res);
 }
 
 /**
