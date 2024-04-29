@@ -71,6 +71,10 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     external_deps += [ "thermal_manager:thermalsrv_client" ]
     defines += [ "POWERMGR_THERMAL_MANAGER_ENABLE" ]
   }
+  if (powermgr_power_manager_enable) {
+    external_deps += [ "power_manager:powermgr_client" ]
+    defines += [ "POWERMGR_POWER_MANAGER_ENABLE" ]
+  }
   resource_config_file = "${worksched_test_path}/resource/ohos_test.xml"
 }
 

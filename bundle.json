@@ -47,7 +47,8 @@
           "config_policy",
           "hiview",
           "jsoncpp",
-          "hitrace"
+          "hitrace",
+          "power_manager"
         ]
       },
       "build": {
