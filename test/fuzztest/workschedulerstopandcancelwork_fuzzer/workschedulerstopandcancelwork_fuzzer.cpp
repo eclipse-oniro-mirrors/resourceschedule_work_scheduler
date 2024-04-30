@@ -44,7 +44,7 @@ namespace WorkScheduler {
         workInfo.SetElement("bundle_name", "ability_name");
         workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
         if (!dataMessageParcel.WriteParcelable(&workInfo)) {
-            return true;
+            return false;
         }
         workSchedulerService_->OnStart();
         workSchedulerService_->InitBgTaskSubscriber();
