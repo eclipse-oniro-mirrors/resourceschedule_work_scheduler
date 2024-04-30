@@ -34,6 +34,13 @@ public:
     static std::shared_ptr<WorkConnManager> workConnManager_;
 };
 
+class MyWorkConnManager : public WorkConnManager {
+    bool DisConnect(sptr<WorkSchedulerConnection> connect)
+    {
+        return true;
+    }
+};
+
 std::shared_ptr<WorkConnManager> WorkConnManagerTest::workConnManager_ = nullptr;
 
 void WorkConnManagerTest::SetUpTestCase()
@@ -191,6 +198,56 @@ HWTEST_F(WorkConnManagerTest, StopWork_002, TestSize.Level1)
     shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
     bool ret = workConnManager_->StopWork(workStatus, false);
     EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: StopWork_003
+ * @tc.desc: Test WorkConnManager StopWork.
+ * @tc.type: FUNC
+ * @tc.require: #I9HYBW
+ */
+HWTEST_F(WorkConnManagerTest, StopWork_003, TestSize.Level1)
+{
+    MyWorkConnManager myWorkConnManager;
+
+    WorkInfo workInfo;
+    workInfo.workId_ = 123;
+    workInfo.bundleName_ = "com.unittest.bundleName";
+    workInfo.abilityName_ = "unittestAbility";
+    int32_t uid = 1000;
+    string workId = "u1000_123";
+    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
+    workStatus->workId_ = workId;
+
+    sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
+    myWorkConnManager.AddConnInfo(workId, connection);
+    bool ret = myWorkConnManager.StopWork(workStatus, false);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: StopWork_004
+ * @tc.desc: Test WorkConnManager StopWork.
+ * @tc.type: FUNC
+ * @tc.require: #I9HYBW
+ */
+HWTEST_F(WorkConnManagerTest, StopWork_004, TestSize.Level1)
+{
+    MyWorkConnManager myWorkConnManager;
+    
+    WorkInfo workInfo;
+    workInfo.workId_ = 123;
+    workInfo.bundleName_ = "com.unittest.bundleName";
+    workInfo.abilityName_ = "unittestAbility";
+    int32_t uid = 1000;
+    string workId = "u1000_123";
+    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
+    workStatus->workId_ = workId;
+
+    sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
+    myWorkConnManager.AddConnInfo(workId, connection);
+    bool ret = myWorkConnManager.StopWork(workStatus, true);
+    EXPECT_TRUE(ret);
 }
 
 /**

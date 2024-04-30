@@ -471,7 +471,7 @@ void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
     root["conditions"] = conditions;
 }
 
-bool WorkInfo::ParseFromJson(const Json::Value value)
+bool WorkInfo::ParseFromJson(const Json::Value &value)
 {
     if (value.empty()) {
         WS_HILOGE("workinfo json is empty");

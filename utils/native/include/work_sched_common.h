@@ -45,27 +45,10 @@ namespace WorkScheduler {
     } while (0)
 } // namespace OHOS
 
-#define WRITE_PARCEL_NO_RET(parcel, type, data)                                     \
-    do {                                                                            \
-        if (!(parcel).Write##type(data)) {                                          \
-            WS_HILOGE("%{public}s write "#data" failed", __func__);  \
-            return;                                                                 \
-        }                                                                           \
-    } while (0)
-
 #define WRITE_PARCEL_WITHOUT_RET(parcel, type, data)                           \
     do {                                                                            \
         if (!(parcel).Write##type(data)) {                                          \
             WS_HILOGE("%{public}s write "#data" failed", __func__);  \
         }                                                                           \
     } while (0)
-
-#define WRITE_PARCEL_WITH_RET(parcel, type, data, retval)                           \
-    do {                                                                            \
-        if (!(parcel).Write##type(data)) {                                          \
-            WS_HILOGE("%{public}s write "#data" failed", __func__);  \
-            return (retval);                                                        \
-        }                                                                           \
-    } while (0)
-
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_COMMON_H

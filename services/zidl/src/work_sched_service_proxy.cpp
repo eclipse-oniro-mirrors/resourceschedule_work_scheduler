@@ -38,7 +38,10 @@ int32_t WorkSchedServiceProxy::StartWork(WorkInfo& workInfo)
         return E_PARCEL_OPERATION_FAILED;
     }
 
-    WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
+    if (!data.WriteParcelable(&workInfo)) {
+        WS_HILOGE("StartWork failed, write workinfo failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
 
     int32_t ret = remote->SendRequest(
         static_cast<int32_t>(IWorkSchedServiceInterfaceCode::START_WORK), data, reply, option);
@@ -66,7 +69,10 @@ int32_t WorkSchedServiceProxy::StopWork(WorkInfo& workInfo)
         return E_PARCEL_OPERATION_FAILED;
     }
 
-    WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
+    if (!data.WriteParcelable(&workInfo)) {
+        WS_HILOGE("StopWork failed, write workinfo failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
 
     int32_t ret = remote->SendRequest(
         static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK), data, reply, option);
@@ -93,7 +99,11 @@ int32_t WorkSchedServiceProxy::StopAndCancelWork(WorkInfo& workInfo)
         return false;
     }
 
-    WRITE_PARCEL_WITH_RET(data, Parcelable, &workInfo, false);
+    if (!data.WriteParcelable(&workInfo)) {
+        WS_HILOGE("StopAndCancelWork failed, write workinfo failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
     int32_t ret = remote->SendRequest(
         static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CANCEL_WORK),
         data, reply, option);
