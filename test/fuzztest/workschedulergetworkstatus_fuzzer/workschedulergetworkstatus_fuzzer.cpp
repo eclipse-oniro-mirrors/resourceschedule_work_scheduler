@@ -27,6 +27,11 @@ namespace OHOS {
 namespace WorkScheduler {
     const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
+    
+    bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
+    {
+        return true;
+    }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {

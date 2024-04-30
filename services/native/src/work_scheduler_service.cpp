@@ -458,7 +458,7 @@ bool WorkSchedulerService::WorkPolicyManagerInit(const std::shared_ptr<AppExecFw
     return true;
 }
 
-bool WorkSchedulerService::GetUidByBundleName(const string &bundleName, int32_t &uid)
+WEAK_FUNC bool WorkSchedulerService::GetUidByBundleName(const string &bundleName, int32_t &uid)
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
