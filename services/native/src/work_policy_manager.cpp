@@ -88,27 +88,9 @@ void WorkPolicyManager::AddAppDataClearListener(std::shared_ptr<AppDataClearList
     appDataClearListener_->Start();
 }
 
-int32_t WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
-{
-    WS_HILOGD("Add work");
-    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
-    if (uidQueueMap_.count(uid) > 0) {
-        if (uidQueueMap_.at(uid)->Contains(make_shared<string>(workStatus->workId_))) {
-            WS_HILOGE("Workid has been added, should remove first.");
-            return E_ADD_REPEAT_WORK_ERR;
-        } else if (uidQueueMap_.at(uid)->GetSize() >= MAX_WORK_COUNT_PER_UID) {
-            WS_HILOGE("each uid only can be added %{public}u works", MAX_WORK_COUNT_PER_UID);
-            return E_WORK_EXCEED_UPPER_LIMIT;
-        }
-        uidQueueMap_.at(uid)->Push(workStatus);
-    } else {
-        WS_HILOGD("uidQueue(%{public}d) not exists, create", uid);
-        uidQueueMap_.emplace(uid, make_shared<WorkQueue>());
-        uidQueueMap_.at(uid)->Push(workStatus);
-    }
 
-    // Notify work add event to battery statistics
-    int32_t pid = IPCSkeleton::GetCallingPid();
+std::string WorkPolicyManager::GetConditionString(const shared_ptr<WorkStatus> workStatus)
+{
     string conditions = "";
     if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::NETWORK) > 0) {
         conditions.append("NETWORK-");
@@ -133,17 +115,44 @@ int32_t WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t ui
     if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         conditions.append("TIMER-");
     }
-    conditions.pop_back();
 
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::NAP) > 0) {
+        conditions.append("NAP-");
+    }
+    conditions.pop_back();
+    return conditions;
+}
+
+int32_t WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t uid)
+{
+    WS_HILOGD("Add work");
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
+    if (uidQueueMap_.count(uid) > 0) {
+        if (uidQueueMap_.at(uid)->Contains(make_shared<string>(workStatus->workId_))) {
+            WS_HILOGE("Workid has been added, should remove first.");
+            return E_ADD_REPEAT_WORK_ERR;
+        } else if (uidQueueMap_.at(uid)->GetSize() >= MAX_WORK_COUNT_PER_UID) {
+            WS_HILOGE("each uid only can be added %{public}u works", MAX_WORK_COUNT_PER_UID);
+            return E_WORK_EXCEED_UPPER_LIMIT;
+        }
+        uidQueueMap_.at(uid)->Push(workStatus);
+    } else {
+        WS_HILOGD("uidQueue(%{public}d) not exists, create", uid);
+        uidQueueMap_.emplace(uid, make_shared<WorkQueue>());
+        uidQueueMap_.at(uid)->Push(workStatus);
+    }
+
+    // Notify work add event to battery statistics
+    int32_t pid = IPCSkeleton::GetCallingPid();
     string type = "Repeat";
     if (!workStatus->workInfo_->IsRepeat()) {
         type = "Not Repeat";
     }
 
     HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
-        "WORK_ADD", HiSysEvent::EventType::STATISTIC, "UID", uid,
-        "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER", conditions, "TYPE",
-        type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
+        "WORK_ADD", HiSysEvent::EventType::STATISTIC, "UID", uid, "PID", pid,
+        "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_, "TRIGGER", GetConditionString(workStatus),
+        "TYPE", type, "INTERVAL", workStatus->workInfo_->GetTimeInterval());
 
     WS_HILOGI("push workStatus ID: %{public}s to uidQueue(%{public}d)", workStatus->workId_.c_str(), uid);
     return ERR_OK;

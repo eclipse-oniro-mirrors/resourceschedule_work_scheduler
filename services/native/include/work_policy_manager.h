@@ -267,6 +267,7 @@ private:
     void SendIdeWorkRetriggerEvent(int32_t delaytime);
     bool IsSpecialScene(std::shared_ptr<WorkStatus> topWork);
     long long GetCurrentTimeMs();
+    std::string GetConditionString(const std::shared_ptr<WorkStatus> workStatus);
 
 private:
     const std::weak_ptr<WorkSchedulerService> wss_;

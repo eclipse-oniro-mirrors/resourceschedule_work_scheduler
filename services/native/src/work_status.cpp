@@ -214,7 +214,8 @@ bool WorkStatus::IsReady()
         if (conditionMap_.count(it.first) <= 0) {
             return false;
         }
-        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) || !IsChargerReady(it.first)) {
+        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) ||
+            !IsChargerReady(it.first) || !IsNapReady(it.first)) {
             return false;
         }
     }
@@ -334,6 +335,19 @@ bool WorkStatus::IsStorageAndTimerReady(WorkCondition::Type type)
         }
         default:
             break;
+    }
+    return true;
+}
+
+bool WorkStatus::IsNapReady(WorkCondition::Type type)
+{
+    if (type != WorkCondition::Type::NAP) {
+        return true;
+    }
+    auto conditionSet = workInfo_->GetConditionMap()->at(WorkCondition::Type::NAP);
+    auto conditionCurrent = conditionMap_.at(WorkCondition::Type::NAP);
+    if (conditionSet->boolVal != conditionCurrent->boolVal) {
+        return false;
     }
     return true;
 }
@@ -492,6 +506,10 @@ void WorkStatus::Dump(string& result)
             result.append(string("\"cycleLeft\":") +
                 to_string(conditionMap_.at(WorkCondition::Type::TIMER)->intVal) + ",\n");
         }
+    }
+    if (conditionMap_.count(WorkCondition::Type::NAP) > 0) {
+        result.append(string("\"isNap\":") +
+            to_string(conditionMap_.at(WorkCondition::Type::NAP)->boolVal) + ",\n");
     }
     result.append("},\n\"workInfo\":\n");
     workInfo_->Dump(result);

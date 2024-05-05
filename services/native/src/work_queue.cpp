@@ -87,6 +87,7 @@ shared_ptr<Condition> WorkQueue::ParseCondition(WorkCondition::Type type,
             value->strVal = conditionVal->strVal;
             break;
         }
+        case WorkCondition::Type::NAP:
         case WorkCondition::Type::STANDBY: {
             value->boolVal = conditionVal->boolVal;
             break;
