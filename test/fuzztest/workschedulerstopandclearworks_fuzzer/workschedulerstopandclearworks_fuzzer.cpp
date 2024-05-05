@@ -34,7 +34,7 @@ namespace WorkScheduler {
 
     void TirggerBatteryStatusListener()
     {
-        std::vector<std::string> argsInstr;
+        std::vector<std::string> argsInStr;
         std::string result;
         WorkInfo workInfo = WorkInfo();
         int32_t workId = 1;
@@ -42,35 +42,35 @@ namespace WorkScheduler {
         workInfo.SetElement("bundle_name1", "ability_name1");
         workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
         workSchedulerService_->StartWork(workInfo);
-        argsInstr.clear();
+        argsInStr.clear();
         result.clear();
-        argsInstr.push_back("-d");
-        argsInstr.push_back("batteryStatus");
-        argsInstr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInstr, result);
+        argsInStr.push_back("-d");
+        argsInStr.push_back("batteryStatus");
+        argsInStr.push_back("ok");
+        workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void TirggerStorageLevelListener()
     {
-        std::vector<std::string> argsInstr;
+        std::vector<std::string> argsInStr;
         std::string result;
         WorkInfo workInfo = WorkInfo();
         int32_t workId = 2;
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name2", "ability_name2");
-        workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_OKAY);
+        workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
         workSchedulerService_->StartWork(workInfo);
-        argsInstr.clear();
+        argsInStr.clear();
         result.clear();
-        argsInstr.push_back("-d");
-        argsInstr.push_back("storage");
-        argsInstr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInstr, result);
+        argsInStr.push_back("-d");
+        argsInStr.push_back("storage");
+        argsInStr.push_back("ok");
+        workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void TirggerChargerListener()
     {
-        std::vector<std::string> argsInstr;
+        std::vector<std::string> argsInStr;
         std::string result;
         WorkInfo workInfo = WorkInfo();
         int32_t workId = 3;
@@ -78,17 +78,17 @@ namespace WorkScheduler {
         workInfo.SetElement("bundle_name3", "ability_name3");
         workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_USB);
         workSchedulerService_->StartWork(workInfo);
-        argsInstr.clear();
+        argsInStr.clear();
         result.clear();
-        argsInstr.push_back("-d");
-        argsInstr.push_back("charging");
-        argsInstr.push_back("usb");
-        workSchedulerService_->DumpProcess(argsInstr, result);
+        argsInStr.push_back("-d");
+        argsInStr.push_back("charging");
+        argsInStr.push_back("usb");
+        workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void TirggerNetworkListener()
     {
-        std::vector<std::string> argsInstr;
+        std::vector<std::string> argsInStr;
         std::string result;
         WorkInfo workInfo = WorkInfo();
         int32_t workId = 4;
@@ -96,22 +96,22 @@ namespace WorkScheduler {
         workInfo.SetElement("bundle_name4", "ability_name4");
         workInfo.RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_WIFI);
         workSchedulerService_->StartWork(workInfo);
-        argsInstr.clear();
+        argsInStr.clear();
         result.clear();
-        argsInstr.push_back("-d");
-        argsInstr.push_back("network");
-        argsInstr.push_back("wifi");
-        workSchedulerService_->DumpProcess(argsInstr, result);
+        argsInStr.push_back("-d");
+        argsInStr.push_back("network");
+        argsInStr.push_back("wifi");
+        workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void ShowTaskStatusInfo()
     {
-        std::vector<std::string> argsInstr;
+        std::vector<std::string> argsInStr;
         std::string result;
-        argsInstr.clear();
+        argsInStr.clear();
         result.clear();
-        argsInstr.push_back("-a");
-        workSchedulerService_->DumpProcess(argsInstr, result);
+        argsInStr.push_back("-a");
+        workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
