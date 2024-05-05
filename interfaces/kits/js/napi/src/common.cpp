@@ -224,6 +224,15 @@ bool Common::GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo
     return true;
 }
 
+bool Common::GetNapInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
+{
+    int32_t isNap = GetBoolToIntProperty(env, objValue, "isDeepIdle", E_IS_NAP_ERR);
+    if (isNap == UNSET_INT_PARAM) {
+        return false;
+    }
+    workInfo.RequestNap(isNap == TRUE_PARAM);
+    return true;
+}
 
 bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
 {
@@ -252,6 +261,9 @@ bool Common::GetWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo)
         hasConditions = true;
     }
     if (GetRepeatInfo(env, objValue, workInfo)) {
+        hasConditions = true;
+    }
+    if (GetNapInfo(env, objValue, workInfo)) {
         hasConditions = true;
     }
     // if param error occurs when get workInfo

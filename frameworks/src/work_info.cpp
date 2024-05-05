@@ -126,6 +126,13 @@ void WorkInfo::RefreshUid(int32_t uid)
     uid_ = uid;
 }
 
+void WorkInfo::RequestNap(bool nap)
+{
+    std::shared_ptr<Condition> napCondition = std::make_shared<Condition>();
+    napCondition->boolVal = nap;
+    conditionMap_.emplace(WorkCondition::Type::NAP, napCondition);
+}
+
 void WorkInfo::SetCallBySystemApp(bool callBySystemApp)
 {
     callBySystemApp_ = callBySystemApp;
@@ -256,6 +263,15 @@ time_t WorkInfo::GetBaseTime()
     return result;
 }
 
+WorkCondition::Nap WorkInfo::GetNap()
+{
+    if (conditionMap_.count(WorkCondition::Type::NAP) <= 0) {
+        return WorkCondition::Nap::NAP_UNKNOWN;
+    }
+    return conditionMap_.at(WorkCondition::Type::NAP)->boolVal ?
+        WorkCondition::Nap::NAP_IN : WorkCondition::Nap::NAP_OUT;
+}
+
 std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> WorkInfo::GetConditionMap()
 {
     return std::make_shared<std::map<WorkCondition::Type, std::shared_ptr<Condition>>>(conditionMap_);
@@ -289,7 +305,8 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
                 ret = ret && parcel.WriteInt32(it.second->enumVal);
                 break;
             }
-            case WorkCondition::Type::CHARGER: {
+            case WorkCondition::Type::CHARGER:
+            case WorkCondition::Type::NAP: {
                 ret = ret && parcel.WriteInt32(it.first);
                 ret = ret && parcel.WriteBool(it.second->boolVal);
                 ret = ret && parcel.WriteInt32(it.second->enumVal);
@@ -366,6 +383,7 @@ void WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
                 condition->enumVal = parcel.ReadInt32();
                 break;
             }
+            case WorkCondition::Type::NAP:
             case WorkCondition::Type::CHARGER: {
                 condition->boolVal = parcel.ReadBool();
                 condition->enumVal = parcel.ReadInt32();
@@ -465,6 +483,10 @@ void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
                 }
                 break;
             }
+            case WorkCondition::Type::NAP: {
+                conditions["isNap"] = it.second->boolVal;
+                break;
+            }
             default: {}
         }
     }
@@ -548,6 +570,9 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value &value)
     }
     if (conditions.isMember("storage") && conditions["storage"].isInt()) {
         this->RequestStorageLevel(WorkCondition::Storage(conditions["storage"].asInt()));
+    }
+    if (conditions.isMember("isNap") && conditions["isNap"].isBool()) {
+        this->RequestNap(conditions["isNap"].asBool());
     }
     ParseTimerFormJsonStr(conditions);
 }

@@ -182,6 +182,7 @@ private:
     bool IsBatteryAndNetworkReady(WorkCondition::Type type);
     bool IsStorageAndTimerReady(WorkCondition::Type type);
     bool IsChargerReady(WorkCondition::Type type);
+    bool IsNapReady(WorkCondition::Type type);
     int GetPriority();
 };
 } // namespace WorkScheduler

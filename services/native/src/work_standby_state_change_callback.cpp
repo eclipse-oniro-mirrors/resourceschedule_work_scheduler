@@ -27,12 +27,12 @@ WorkStandbyStateChangeCallback::WorkStandbyStateChangeCallback(std::shared_ptr<W
 
 void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping)
 {
-    WS_HILOGD("work_scheduler get OnDeviceIdleMode callback");
-    if (napped && !isSleep_) {
-        WS_HILOGD("device_standby state is nap, do not need process");
+    WS_HILOGI("napped is %{public}d, sleeping is %{public}d", napped, sleeping);
+    if (!isSleep_) {
+        workQueueManager_->OnConditionChanged(WorkCondition::Type::NAP,
+            std::make_shared<DetectorValue>(0, 0, napped, std::string()));
         return;
     }
-    WS_HILOGI("work_scheduler get OnDeviceIdleMode callback, sleeping is %{public}d", sleeping);
     workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
         std::make_shared<DetectorValue>(0, 0, sleeping, std::string()));
     isSleep_ = sleeping;

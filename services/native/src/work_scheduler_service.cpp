@@ -921,6 +921,10 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
     } else if (key == "-cpu") {
         workPolicyManager_->SetCpuUsageByDump(std::stoi(value));
         result.append("Set cpu success.");
+    } else if (key == "-nap") {
+#ifdef  DEVICE_STANDBY_ENABLE
+        standbyStateObserver_->OnDeviceIdleMode(std::stoi(value), 0);
+#endif
     } else {
         result.append("Error params.");
     }

@@ -31,6 +31,7 @@ public:
         STORAGE,
         TIMER, // uint32_t intervalTime, int32_t cycle, bool repeat
         GROUP, // int32_t newGroup, int32_t userId, bool groupChange, string bundleName
+        NAP,
         STANDBY,
         UNKNOWN,
     };
@@ -66,6 +67,12 @@ public:
         STORAGE_LEVEL_OKAY,
         STORAGE_LEVEL_LOW_OR_OKAY,
         STORAGE_UNKNOWN
+    };
+
+    enum Nap {
+        NAP_OUT = 0,
+        NAP_IN,
+        NAP_UNKNOWN
     };
 };
 

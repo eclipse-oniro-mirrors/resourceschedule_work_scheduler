@@ -117,6 +117,12 @@ public:
      */
     void RequestExtras(AAFwk::WantParams extras);
     /**
+     * @brief Request nap.
+     *
+     * @param nap The nap status.
+     */
+    void RequestNap(bool nap);
+    /**
      * @brief Refresh uid.
      *
      * @param uid The uid.
@@ -272,6 +278,11 @@ public:
      * @brief Get uri key.
      */
     std::string GetUriKey();
+    /**
+     * @brief Get nap status.
+     */
+    WorkCondition::Nap GetNap();
+
 private:
     int32_t workId_;
     std::string bundleName_;
