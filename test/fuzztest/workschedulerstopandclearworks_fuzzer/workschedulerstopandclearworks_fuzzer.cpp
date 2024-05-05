@@ -17,7 +17,6 @@
 
 #include "iwork_sched_service_ipc_interface_code.h"
 #include "work_scheduler_service.h"
-#include "work_sched_common.h"
 #include "work_condition.h"
 
 
@@ -33,6 +32,88 @@ namespace WorkScheduler {
         return true;
     }
 
+    void TirggerBatteryStatusListener()
+    {
+        std::vector<std::string> argsInStr;
+        std::string result;
+        WorkInfo workInfo = WorkInfo();
+        int32_t workId = 1;
+        workInfo.SetWorkId(workId);
+        workInfo.SetElement("bundle_name1", "ability_name1");
+        workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
+        workSchedulerService_->StartWork(workInfo);
+        argsInStr.clear();
+        result.clear();
+        argsInStr.push_back("-d");
+        argsInStr.push_back("batteryStatus");
+        argsInStr.push_back("ok");
+        workSchedulerService_->DumpProcess(argsInStr, result);
+    }
+
+    void TirggerStorageLevelListener()
+    {
+        std::vector<std::string> argsInStr;
+        std::string result;
+        WorkInfo workInfo = WorkInfo();
+        int32_t workId = 2;
+        workInfo.SetWorkId(workId);
+        workInfo.SetElement("bundle_name2", "ability_name2");
+        workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+        workSchedulerService_->StartWork(workInfo);
+        argsInStr.clear();
+        result.clear();
+        argsInStr.push_back("-d");
+        argsInStr.push_back("storage");
+        argsInStr.push_back("ok");
+        workSchedulerService_->DumpProcess(argsInStr, result);
+    }
+
+    void TirggerChargerListener()
+    {
+        std::vector<std::string> argsInStr;
+        std::string result;
+        WorkInfo workInfo = WorkInfo();
+        int32_t workId = 3;
+        workInfo.SetWorkId(workId);
+        workInfo.SetElement("bundle_name3", "ability_name3");
+        workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_USB);
+        workSchedulerService_->StartWork(workInfo);
+        argsInStr.clear();
+        result.clear();
+        argsInStr.push_back("-d");
+        argsInStr.push_back("charging");
+        argsInStr.push_back("usb");
+        workSchedulerService_->DumpProcess(argsInStr, result);
+    }
+
+    void TirggerNetworkListener()
+    {
+        std::vector<std::string> argsInStr;
+        std::string result;
+        WorkInfo workInfo = WorkInfo();
+        int32_t workId = 4;
+        workInfo.SetWorkId(workId);
+        workInfo.SetElement("bundle_name4", "ability_name4");
+        workInfo.RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_WIFI);
+        workSchedulerService_->StartWork(workInfo);
+        argsInStr.clear();
+        result.clear();
+        argsInStr.push_back("-d");
+        argsInStr.push_back("network");
+        argsInStr.push_back("wifi");
+        workSchedulerService_->DumpProcess(argsInStr, result);
+    }
+
+    void ShowTaskStatusInfo()
+    {
+        std::vector<std::string> argsInStr;
+        std::string result;
+        argsInStr.clear();
+        result.clear();
+        argsInStr.push_back("-a");
+        workSchedulerService_->DumpProcess(argsInStr, result);
+    }
+
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     {
         MessageParcel dataMessageParcel;
@@ -43,32 +124,16 @@ namespace WorkScheduler {
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CLEAR_WORKS);
-        WorkInfo workInfo = WorkInfo();
-        int32_t workId = 1;
-        workInfo.SetWorkId(workId);
-        workInfo.SetElement("bundle_name", "ability_name");
-        workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
-        if (!dataMessageParcel.WriteParcelable(&workInfo)) {
-            return false;
-        }
         workSchedulerService_->OnStart();
         workSchedulerService_->InitBgTaskSubscriber();
         if (!workSchedulerService_->ready_) {
             workSchedulerService_->ready_ = true;
         }
-        workSchedulerService_->StartWork(workInfo);
-        std::vector<std::string> argsInStr;
-        std::string result;
-        result.clear();
-        argsInStr.clear();
-        argsInStr.push_back("-a");
-        workSchedulerService_->DumpProcess(argsInStr, result);
-        argsInStr.clear();
-        result.clear();
-        argsInStr.push_back("-d");
-        argsInStr.push_back("storage");
-        argsInStr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        TirggerBatteryStatusListener();
+        TirggerStorageLevelListener();
+        TirggerChargerListener();
+        TirggerNetworkListener();
+        ShowTaskStatusInfo();
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }
