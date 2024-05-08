@@ -171,7 +171,7 @@ void WorkSchedulerService::InitPreinstalledWork()
     bool needRefresh = false;
     list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
     for (auto work : preinstalledWorks) {
-        WS_HILOGI("get preinstalled work, id: %{public}d", work->GetWorkId());
+        WS_HILOGI("preinstalled workinfo id %{public}d, uid %{public}d", work->GetWorkId(), work->GetUid());
         if (!work->IsPersisted()) {
             time_t baseTime;
             (void)time(&baseTime);
@@ -225,28 +225,24 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     return workInfos;
 }
 
-list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
+void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<WorkInfo>> &workInfos)
 {
-    list<shared_ptr<WorkInfo>> workInfos;
-    char buf[PATH_MAX + 1] = {0};
-    char* configFilePath = GetOneCfgFile(PREINSTALLED_FILE_PATH, buf, PATH_MAX + 1);
-    if (!configFilePath || strlen(configFilePath) == 0 || strlen(configFilePath) > PATH_MAX) {
-        WS_HILOGE("get preinstalled works path failed");
-        return workInfos;
+    if (!path) {
+        return;
     }
     Json::Value root;
-    if (!GetJsonFromFile(configFilePath, root) || root.empty()) {
-        WS_HILOGE("file is empty");
-        return workInfos;
+    if (!GetJsonFromFile(path, root) || root.empty()) {
+        WS_HILOGE("file is empty %{private}s", path);
+        return;
     }
     if (!root.isMember(PRINSTALLED_WORKS_KEY)) {
-        WS_HILOGE("no work_scheduler_preinstalled_works");
-        return workInfos;
+        WS_HILOGE("no work_scheduler_preinstalled_works key");
+        return;
     }
     Json::Value preinstalledWorksRoot = root[PRINSTALLED_WORKS_KEY];
     if (preinstalledWorksRoot.empty() || !preinstalledWorksRoot.isObject()) {
-        WS_HILOGE("work_scheduler_preinstalled_works is empty");
-        return workInfos;
+        WS_HILOGE("work_scheduler_preinstalled_works content is empty");
+        return;
     }
     for (const auto &it : preinstalledWorksRoot.getMemberNames()) {
         Json::Value workJson = preinstalledWorksRoot[it];
@@ -259,11 +255,25 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
             workinfo->RefreshUid(uid);
             workinfo->SetPreinstalled(true);
             workInfos.emplace_back(workinfo);
-            WS_HILOGI("find one preinstalled work %{public}d", workinfo->GetWorkId());
         } else {
             WS_HILOGE("ParseFromJson error");
         }
     }
+}
+
+list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
+{
+    list<shared_ptr<WorkInfo>> workInfos;
+    CfgFiles *files = GetCfgFiles(PREINSTALLED_FILE_PATH);
+    if (!files) {
+        WS_HILOGE("GetCfgFiles failed");
+        return workInfos;
+    }
+    // china->base
+    for (int i = MAX_CFG_POLICY_DIRS_CNT - 1; i >= 0; i--) {
+        LoadWorksFromFile(files->paths[i], workInfos);
+    }
+    FreeCfgFiles(files);
     return workInfos;
 }
 
