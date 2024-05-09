@@ -37,18 +37,27 @@ void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& 
         WS_HILOGE("service_ expired");
         return;
     }
+    auto service = service_.lock();
+    if (!service) {
+        WS_HILOGE("service_ null");
+        return;
+    }
     WS_HILOGD("eventid = %{public}u", event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
         case RETRIGGER_MSG: {
-            service_.lock()->GetWorkPolicyManager()->CheckWorkToRun();
+            service->GetWorkPolicyManager()->CheckWorkToRun();
             break;
         }
         case SERVICE_INIT_MSG: {
-            service_.lock()->Init(GetEventRunner());
+            service->Init(GetEventRunner());
             break;
         }
         case IDE_RETRIGGER_MSG: {
-            service_.lock()->GetWorkPolicyManager()->TriggerIdeWork();
+            service->GetWorkPolicyManager()->TriggerIdeWork();
+            break;
+        }
+        case CHECK_CONDITION_MSG: {
+            service->TriggerWorkIfConditionReady();
             break;
         }
         default:

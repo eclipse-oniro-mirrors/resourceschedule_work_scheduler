@@ -44,6 +44,7 @@
 #include "conditions/battery_level_listener.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
+#include "conditions/condition_checker.h"
 #include "conditions/network_listener.h"
 #include "conditions/storage_listener.h"
 #include "conditions/timer_listener.h"
@@ -83,6 +84,7 @@ auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
 const int32_t INIT_DELAY = 2 * 1000;
+const int32_t CHECK_CONDITION_DELAY = 5 * 1000;
 const int32_t MAX_BUFFER = 2048;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
@@ -549,6 +551,9 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
             persistedMap_.emplace(workStatus->workId_, workStatus->workInfo_);
             RefreshPersistedWorks();
         }
+        GetHandler()->RemoveEvent(WorkEventHandler::CHECK_CONDITION_MSG);
+        GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::CHECK_CONDITION_MSG, 0),
+            CHECK_CONDITION_DELAY);
     }
     return ret;
 }
@@ -1154,6 +1159,12 @@ int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
     return ret;
+}
+
+void WorkSchedulerService::TriggerWorkIfConditionReady()
+{
+    ConditionChecker checker(workQueueManager_);
+    checker.CheckAllStatus();
 }
 } // namespace WorkScheduler
 } // namespace OHOS
