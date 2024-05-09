@@ -205,7 +205,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     if (IsRunning()) {
-        WS_HILOGI("Work is running");
+        WS_HILOGD("Work is running");
         return false;
     }
     auto workConditionMap = workInfo_->GetConditionMap();
@@ -357,7 +357,7 @@ bool WorkStatus::SetMinInterval()
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
     if (workInfo_->IsCallBySystemApp()) {
-        WS_HILOGI("Is system app, default group is active.");
+        WS_HILOGD("Is system app, default group is active.");
         return SetMinIntervalByGroup(ACTIVE_GROUP);
     }
     int32_t errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
