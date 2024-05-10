@@ -271,6 +271,7 @@ public:
      * @brief init the preinstalled work.
      */
     void InitPreinstalledWork();
+    void TriggerWorkIfConditionReady();
 
 private:
     void RegisterStandbyStateObserver();
