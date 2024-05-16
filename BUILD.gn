@@ -44,6 +44,7 @@ group("test_work_scheduler_all") {
       "${worksched_interfaces_path}/test/unittest/work_scheduler_jsunittest:js_unittest",
       "${worksched_service_path}/test:unittest",
       "${worksched_test_path}/fuzztest/workscheduleservice_fuzzer:fuzztest",
+      "${worksched_test_path}/fuzztest:fuzztest",
     ]
   }
 }
