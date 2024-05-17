@@ -111,7 +111,8 @@ void ConditionChecker::CheckChargerStatus()
     }
 #endif
 }
-void CheckBatteryStatus() {
+void CheckBatteryStatus()
+{
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     WS_HILOGD("enter");
     int32_t defaultCapacity = -1;
