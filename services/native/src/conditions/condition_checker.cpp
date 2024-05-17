@@ -111,7 +111,8 @@ void ConditionChecker::CheckChargerStatus()
     }
 #endif
 }
-void CheckBatteryStatus()
+
+void ConditionChecker::CheckBatteryStatus()
 {
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     WS_HILOGD("enter");
