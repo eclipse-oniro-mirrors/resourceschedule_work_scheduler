@@ -27,6 +27,7 @@ public:
 private:
     void CheckNetworkStatus();
     void CheckChargerStatus();
+    void CheckBatteryStatus();
 
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;

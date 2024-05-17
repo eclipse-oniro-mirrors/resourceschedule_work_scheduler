@@ -31,6 +31,7 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
     vector<shared_ptr<WorkStatus>> result;
     std::set<int32_t> uidList;
     std::lock_guard<std::recursive_mutex> lock(workListMutex_);
+    workList_.sort(WorkComp());
     for (auto it : workList_) {
         if (it->OnConditionChanged(type, value) == E_GROUP_CHANGE_NOT_MATCH_HAP) {
             continue;
@@ -166,6 +167,7 @@ shared_ptr<WorkStatus> WorkQueue::GetWorkToRunByPriority()
     while (work != workList_.end()) {
         if ((*work)->GetStatus() == WorkStatus::CONDITION_READY) {
             workStatus = *work;
+            workStatus->priority_++;
             break;
         }
         work++;
@@ -245,7 +247,7 @@ void WorkQueue::ClearAll()
 
 bool WorkComp::operator () (const shared_ptr<WorkStatus> w1, const shared_ptr<WorkStatus> w2)
 {
-    return w1->priority_ >= w2->priority_;
+    return w1->priority_ < w2->priority_;
 }
 
 void WorkQueue::SetMinIntervalByDump(int64_t interval)
