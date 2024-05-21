@@ -35,6 +35,7 @@ void ConditionChecker::CheckAllStatus()
 {
     CheckNetworkStatus();
     CheckChargerStatus();
+    CheckBatteryStatus();
 }
 
 
@@ -107,6 +108,28 @@ void ConditionChecker::CheckChargerStatus()
             break;
         default:
             break;
+    }
+#endif
+}
+
+void ConditionChecker::CheckBatteryStatus()
+{
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+    WS_HILOGD("enter");
+    int32_t defaultCapacity = -1;
+    int32_t batteryCapacityLow = 20;
+    auto capacity = PowerMgr::BatterySrvClient::GetInstance().GetCapacity();
+    WS_HILOGD("capacity = %{public}d", capacity);
+    if (capacity == defaultCapacity) {
+        return;
+    } else if (capacity < batteryCapacityLow) {
+        WS_HILOGI("BATTERY_STATUS_LOW");
+        workQueueManager_->OnConditionChanged(WorkCondition::Type::BATTERY_STATUS,
+            std::make_shared<DetectorValue>(WorkCondition::BATTERY_STATUS_LOW, 0, 0, std::string()));
+    } else {
+        WS_HILOGI("BATTERY_STATUS_OKAY");
+        workQueueManager_->OnConditionChanged(WorkCondition::Type::BATTERY_STATUS,
+            std::make_shared<DetectorValue>(WorkCondition::BATTERY_STATUS_OKAY, 0, 0, std::string()));
     }
 #endif
 }
