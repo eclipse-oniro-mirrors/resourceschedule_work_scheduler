@@ -18,8 +18,8 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-__attribute__((no_sanitize("cfi"))) int32_t WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data, MessageParcel& reply,
-    MessageOption& option)
+__attribute__((no_sanitize("cfi"))) int32_t WorkSchedulerStub::OnRemoteRequest(uint32_t code, MessageParcel& data,
+    MessageParcel& reply, MessageOption& option)
 {
     auto remoteDescriptor = data.ReadInterfaceToken();
     if (GetDescriptor() != remoteDescriptor) {
