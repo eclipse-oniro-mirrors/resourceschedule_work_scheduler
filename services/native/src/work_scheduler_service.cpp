@@ -942,7 +942,7 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
         standbyStateObserver_->OnDeviceIdleMode(std::stoi(value), 0);
 #endif
     } else if (key == "-count") {
-        workPolicyManager_.SetMaxRunningCountByDump(std::stoi(value));
+        workPolicyManager_->SetMaxRunningCountByDump(std::stoi(value));
         result.append("Set max running task count success.");
     } else {
         result.append("Error params.");
