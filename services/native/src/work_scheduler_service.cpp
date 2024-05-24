@@ -824,7 +824,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
         .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
         .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
-        .append("    -cpu (number): set the usage cpu.\n");
+        .append("    -cpu (number): set the usage cpu.\n")
+        .append("    -count (number): set the max running task count.\n");
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -940,6 +941,9 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
 #ifdef  DEVICE_STANDBY_ENABLE
         standbyStateObserver_->OnDeviceIdleMode(std::stoi(value), 0);
 #endif
+    } else if (key == "-count") {
+        workPolicyManager_.SetMaxRunningCountByDump(std::stoi(value));
+        result.append("Set max running task count success.");
     } else {
         result.append("Error params.");
     }

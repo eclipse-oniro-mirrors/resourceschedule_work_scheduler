@@ -48,6 +48,7 @@ const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
 const int32_t INIT_DUMP_SET_CPU = 0;
+const int32_t INVALID_VALUE = -1;
 static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 }
 
@@ -58,6 +59,7 @@ WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>
     dumpSetMemory_ = INIT_DUMP_SET_MEMORY;
     watchdogTime_ = WATCHDOG_TIME;
     dumpSetCpu_ = INIT_DUMP_SET_CPU;
+    dumpSetMaxRunningCount_ = INVALID_VALUE;
 }
 
 bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
@@ -275,7 +277,11 @@ void WorkPolicyManager::AddToReadyQueue(shared_ptr<vector<shared_ptr<WorkStatus>
 
 int32_t WorkPolicyManager::GetMaxRunningCount(std::string& policyName)
 {
-    int32_t currentMaxRunning = MAX_RUNNING_COUNT;
+    int32_t currentMaxRunning = GetDumpSetMaxRunningCount();
+    if (currentMaxRunning > 0 && currentMaxRunning <= MAX_RUNNING_COUNT) {
+        return currentMaxRunning;
+    }
+    currentMaxRunning = MAX_RUNNING_COUNT;
     for (auto policyFilter : policyFilters_) {
         int32_t policyMaxRunning = policyFilter->GetPolicyMaxRunning();
         if (policyMaxRunning < currentMaxRunning) {
@@ -588,6 +594,16 @@ int32_t WorkPolicyManager::GetDumpSetCpuUsage()
 void WorkPolicyManager::SetCpuUsageByDump(int32_t cpu)
 {
     dumpSetCpu_ = cpu;
+}
+
+int32_t WorkPolicyManager::GetDumpSetMaxRunningCount()
+{
+    return dumpSetMaxRunningCount_;
+}
+
+void WorkPolicyManager::SetMaxRunningCountByDump(int32_t count)
+{
+    dumpSetMaxRunningCount_ = count;
 }
 
 void WorkPolicyManager::SetWatchdogTimeByDump(int32_t time)
