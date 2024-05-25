@@ -939,8 +939,8 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
             workPolicyManager_->SetCpuUsageByDump(std::stoi(value));
             result.append("Set cpu success.");
         } else if (key == "-nap") {
-#ifdef  DEVICE_STANDBY_ENABLE
-        standbyStateObserver_->OnDeviceIdleMode(std::stoi(value), 0);
+#ifdef DEVICE_STANDBY_ENABLE
+            standbyStateObserver_->OnDeviceIdleMode(std::stoi(value), 0);
 #endif
         } else if (key == "-count") {
             workPolicyManager_->SetMaxRunningCountByDump(std::stoi(value));
