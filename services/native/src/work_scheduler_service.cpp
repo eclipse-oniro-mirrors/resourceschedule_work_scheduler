@@ -950,7 +950,7 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
         }
     } else {
         result.append("Error params.");
-    } 
+    }
 }
 
 void WorkSchedulerService::RefreshPersistedWorks()
