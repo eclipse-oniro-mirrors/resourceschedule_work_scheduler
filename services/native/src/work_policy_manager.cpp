@@ -49,6 +49,7 @@ const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
 const int32_t INIT_DUMP_SET_CPU = 0;
 const int32_t INVALID_VALUE = -1;
+const int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
 static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 }
 
@@ -278,7 +279,7 @@ void WorkPolicyManager::AddToReadyQueue(shared_ptr<vector<shared_ptr<WorkStatus>
 int32_t WorkPolicyManager::GetMaxRunningCount(std::string& policyName)
 {
     int32_t currentMaxRunning = GetDumpSetMaxRunningCount();
-    if (currentMaxRunning > 0 && currentMaxRunning <= MAX_RUNNING_COUNT) {
+    if (currentMaxRunning > 0 && currentMaxRunning <= DUMP_SET_MAX_COUNT_LIMIT) {
         return currentMaxRunning;
     }
     currentMaxRunning = MAX_RUNNING_COUNT;
