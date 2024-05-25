@@ -922,31 +922,35 @@ std::string WorkSchedulerService::GetEffiResApplyUid()
 
 void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, std::string &result)
 {
-    if (key == "-memory") {
-        workPolicyManager_->SetMemoryByDump(std::stoi(value));
-        result.append("Set memory success.");
-    } else if (key == "-watchdog_time") {
-        workPolicyManager_->SetWatchdogTimeByDump(std::stoi(value));
-        result.append("Set watchdog time success.");
-    } else if (key == "-repeat_time_min") {
-        workQueueManager_->SetTimeCycle(std::stoi(value));
-        result.append("Set repeat time min value success.");
-    } else if (key == "-min_interval") {
-        workQueueManager_->SetMinIntervalByDump(std::stoi(value));
-        result.append("Set min interval value success.");
-    } else if (key == "-cpu") {
-        workPolicyManager_->SetCpuUsageByDump(std::stoi(value));
-        result.append("Set cpu success.");
-    } else if (key == "-nap") {
+    if (std::all_of(value.begin(), value.end(), ::isdigit)) {
+        if (key == "-memory") {
+            workPolicyManager_->SetMemoryByDump(std::stoi(value));
+            result.append("Set memory success.");
+        } else if (key == "-watchdog_time") {
+            workPolicyManager_->SetWatchdogTimeByDump(std::stoi(value));
+            result.append("Set watchdog time success.");
+        } else if (key == "-repeat_time_min") {
+            workQueueManager_->SetTimeCycle(std::stoi(value));
+            result.append("Set repeat time min value success.");
+        } else if (key == "-min_interval") {
+            workQueueManager_->SetMinIntervalByDump(std::stoi(value));
+            result.append("Set min interval value success.");
+        } else if (key == "-cpu") {
+            workPolicyManager_->SetCpuUsageByDump(std::stoi(value));
+            result.append("Set cpu success.");
+        } else if (key == "-nap") {
 #ifdef  DEVICE_STANDBY_ENABLE
         standbyStateObserver_->OnDeviceIdleMode(std::stoi(value), 0);
 #endif
-    } else if (key == "-count") {
-        workPolicyManager_->SetMaxRunningCountByDump(std::stoi(value));
-        result.append("Set max running task count success.");
+        } else if (key == "-count") {
+            workPolicyManager_->SetMaxRunningCountByDump(std::stoi(value));
+            result.append("Set max running task count success.");
+        } else {
+            result.append("Error params.");
+        }
     } else {
         result.append("Error params.");
-    }
+    } 
 }
 
 void WorkSchedulerService::RefreshPersistedWorks()
