@@ -78,6 +78,8 @@
             <filefilter name="readmeOpenSourcefileNamePolicyFilter" desc="Filters for README.OpenSource file policies">
             </filefilter>
             <filefilter name="binaryFileTypePolicyFilter" desc="Filters for binary file policies">
+                <filteritem type="filepath" name="figures/en-us_image001.png" desc="self developed image"/>
+                <filteritem type="filepath" name="figures/zh-cn_image001.png" desc="self developed image"/>
             </filefilter>
         </filefilterlist>
     </oatconfig>
