@@ -228,6 +228,18 @@ public:
      * @return Dump set cpu.
      */
     int32_t GetDumpSetCpuUsage();
+    /**
+     * @brief Set max running count by dump.
+     *
+     * @param count The count.
+     */
+    void SetMaxRunningCountByDump(int32_t count);
+    /**
+     * @brief Get dump set max running count.
+     *
+     * @return Dump set max running count.
+     */
+    int32_t GetDumpSetMaxRunningCount();
 
     /**
      * @brief Pause Running Works.
@@ -291,6 +303,7 @@ private:
     int32_t dumpSetMemory_;
     int32_t watchdogTime_;
     int32_t dumpSetCpu_;
+    int32_t dumpSetMaxRunningCount_;
 
     std::recursive_mutex ideDebugListMutex_;
     std::list<std::shared_ptr<WorkStatus>> ideDebugList;

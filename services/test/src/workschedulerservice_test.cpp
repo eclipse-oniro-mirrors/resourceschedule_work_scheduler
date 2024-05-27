@@ -472,6 +472,25 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_004, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_004 end ====== ");
 }
 
+/**
+ * @tc.name: Dump_005
+ * @tc.desc: Test WorkSchedulerService Dump.
+ * @tc.type: FUNC
+ * @tc.require: I9RYLE
+ */
+HWTEST_F(WorkSchedulerServiceTest, Dump_005, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_005 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-count");
+    argsInStr.push_back("1");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_005 end ====== ");
+}
+
 HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 begin ====== ");
