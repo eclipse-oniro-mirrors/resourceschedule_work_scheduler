@@ -422,11 +422,6 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     if (!hasExtras) {
         return read;
     }
-    
-    bool hasExtras = parcel.ReadBool();
-    if (!hasExtras) {
-        return read;
-    }
     AAFwk::WantParams *wantParams = AAFwk::WantParams::Unmarshalling(parcel);
     if (wantParams != nullptr) {
         read->extras_ = std::make_shared<AAFwk::WantParams>(*wantParams);
