@@ -337,7 +337,7 @@ bool WorkInfo::MarshallCondition(Parcel &parcel) const
             case WorkCondition::Type::BATTERY_STATUS:
             case WorkCondition::Type::STORAGE: {
                 if (!parcel.WriteInt32(it.first) || !parcel.WriteInt32(it.second->enumVal)) {
-                    WS_HILOGE("Failed to write the storage of work condition types or enumVal.");
+                    WS_HILOGE("Failed to write the work condition types or enumVal.");
                     return false;
                 }
                 break;
@@ -346,14 +346,14 @@ bool WorkInfo::MarshallCondition(Parcel &parcel) const
             case WorkCondition::Type::NAP: {
                 if (!parcel.WriteInt32(it.first) || !parcel.WriteBool(it.second->boolVal) ||
                     !parcel.WriteInt32(it.second->enumVal)) {
-                    WS_HILOGE("Failed to write the nap of work condition types or enumVal or boolVal.");
+                    WS_HILOGE("Failed to write the work condition types or enumVal or boolVal.");
                     return false;
                 }
                 break;
             }
             case WorkCondition::Type::BATTERY_LEVEL: {
-                if (!parcel.WriteInt32(it.first) || !parcel.WriteInt32(it.second->enumVal)) {
-                    WS_HILOGE("Failed to write the battery level of work condition types or enumVal.");
+                if (!parcel.WriteInt32(it.first) || !parcel.WriteInt32(it.second->intVal)) {
+                    WS_HILOGE("Failed to write the work condition types or intVal.");
                     return false;
                 }
                 break;
@@ -361,11 +361,11 @@ bool WorkInfo::MarshallCondition(Parcel &parcel) const
             case WorkCondition::Type::TIMER: {
                 if (!parcel.WriteInt32(it.first) || !parcel.WriteUint32(it.second->uintVal) ||
                     !parcel.WriteBool(it.second->boolVal)) {
-                    WS_HILOGE("Failed to write the timer of work condition types or uintVal or boolVal.");
+                    WS_HILOGE("Failed to write the work condition types or uintVal or boolVal.");
                     return false;
                 }
                 if (!it.second->boolVal && !parcel.WriteInt32(it.second->intVal)) {
-                    WS_HILOGE("Failed to write the timer of work condition intVal.");
+                    WS_HILOGE("Failed to write the work condition intVal.");
                     return false;
                 }
                 break;
