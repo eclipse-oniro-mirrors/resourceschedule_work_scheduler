@@ -289,53 +289,93 @@ bool WorkInfo::IsCallBySystemApp()
 
 bool WorkInfo::Marshalling(Parcel &parcel) const
 {
-    bool ret = false;
-    ret = parcel.WriteInt32(workId_);
-    ret = ret && parcel.WriteString(bundleName_);
-    ret = ret && parcel.WriteString(abilityName_);
-    ret = ret && parcel.WriteBool(persisted_);
-    ret = ret && parcel.WriteInt32(uid_);
-    ret = ret && parcel.WriteUint32(conditionMap_.size());
+    if (!parcel.WriteInt32(workId_)) {
+        WS_HILOGE("Failed to write the workId.");
+        return false;
+    }
+    if (!parcel.WriteString(bundleName_)) {
+        WS_HILOGE("Failed to write the bundleName.");
+        return false;
+    }
+    if (!parcel.WriteString(abilityName_)) {
+        WS_HILOGE("Failed to write the abilityName.");
+        return false;
+    }
+    if (!parcel.WriteBool(persisted_)) {
+        WS_HILOGE("Failed to write the persisted.");
+        return false;
+    }
+    if (!parcel.WriteInt32(uid_)) {
+        WS_HILOGE("Failed to write the uid.");
+        return false;
+    }
+    if (!MarshallCondition(parcel)) {
+        WS_HILOGE("Failed to write the conditionMap.");
+        return false;
+    }
+    if (!parcel.WriteBool(extras_ ? true : false)) {
+        WS_HILOGE("Failed to write the extras existence.");
+        return false;
+    }
+    if (extras_ && !extras_->Marshalling(parcel)) {
+        WS_HILOGE("Failed to write the extras.");
+        return false;
+    }
+    return true;
+}
+
+bool WorkInfo::MarshallCondition(Parcel &parcel) const
+{
+    uint32_t mapsize = conditionMap_.size();
+    if (!parcel.WriteUint32(mapsize)) {
+        WS_HILOGE("Failed to write the size of conditionMap.");
+        return false;
+    }
     for (auto it : conditionMap_) {
         switch (it.first) {
             case WorkCondition::Type::NETWORK:
             case WorkCondition::Type::BATTERY_STATUS:
             case WorkCondition::Type::STORAGE: {
-                ret = ret && parcel.WriteInt32(it.first);
-                ret = ret && parcel.WriteInt32(it.second->enumVal);
+                if (!parcel.WriteInt32(it.first) || !parcel.WriteInt32(it.second->enumVal)) {
+                    WS_HILOGE("Failed to write the storage of work condition types or enumVal.");
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::CHARGER:
             case WorkCondition::Type::NAP: {
-                ret = ret && parcel.WriteInt32(it.first);
-                ret = ret && parcel.WriteBool(it.second->boolVal);
-                ret = ret && parcel.WriteInt32(it.second->enumVal);
+                if (!parcel.WriteInt32(it.first) || !parcel.WriteBool(it.second->boolVal) ||
+                    !parcel.WriteInt32(it.second->enumVal)) {
+                    WS_HILOGE("Failed to write the nap of work condition types or enumVal or boolVal.");
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::BATTERY_LEVEL: {
-                ret = ret && parcel.WriteInt32(it.first);
-                ret = ret && parcel.WriteInt32(it.second->intVal);
+                if (!parcel.WriteInt32(it.first) || !parcel.WriteInt32(it.second->enumVal)) {
+                    WS_HILOGE("Failed to write the battery level of work condition types or enumVal.");
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::TIMER: {
-                ret = ret && parcel.WriteInt32(it.first);
-                ret = ret && parcel.WriteUint32(it.second->uintVal);
-                ret = ret && parcel.WriteBool(it.second->boolVal);
-                if (!it.second->boolVal) {
-                    ret = ret && parcel.WriteInt32(it.second->intVal);
+                if (!parcel.WriteInt32(it.first) || !parcel.WriteUint32(it.second->uintVal) ||
+                    !parcel.WriteBool(it.second->boolVal)) {
+                    WS_HILOGE("Failed to write the timer of work condition types or uintVal or boolVal.");
+                    return false;
+                }
+                if (!it.second->boolVal && !parcel.WriteInt32(it.second->intVal)) {
+                    WS_HILOGE("Failed to write the timer of work condition intVal.");
+                    return false;
                 }
                 break;
             }
             default: {
-                ret = false;
+                return false;
             }
         }
     }
-    parcel.WriteBool(extras_ ? true : false);
-    if (extras_) {
-        ret = ret && extras_->Marshalling(parcel);
-    }
-    return ret;
+    return true;
 }
 
 sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
@@ -345,18 +385,44 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
         WS_HILOGE("read is nullptr.");
         return nullptr;
     }
-    read->workId_ = parcel.ReadInt32();
-    read->bundleName_ = parcel.ReadString();
-    read->abilityName_ = parcel.ReadString();
-    read->persisted_ = parcel.ReadBool();
-    read->uid_ = parcel.ReadInt32();
-    uint32_t mapsize = parcel.ReadUint32();
-    if (mapsize >= MAX_SIZE) {
-        WS_HILOGE("mapsize is too big.");
+    if (!parcel.ReadInt32(read->workId_)) {
+        WS_HILOGE("Failed to read the workId.");
         return nullptr;
     }
-
-    UnmarshallCondition(parcel, read, mapsize);
+    if (!parcel.ReadString(read->bundleName_)) {
+        WS_HILOGE("Failed to read the bundleName.");
+        return nullptr;
+    }
+    if (!parcel.ReadString(read->abilityName_)) {
+        WS_HILOGE("Failed to read the abilityName.");
+        return nullptr;
+    }
+    if (!parcel.ReadBool(read->persisted_)) {
+        WS_HILOGE("Failed to read the persisted.");
+        return nullptr;
+    }
+    if (!parcel.ReadInt32(read->uid_)) {
+        WS_HILOGE("Failed to read the uid.");
+        return nullptr;
+    }
+    uint32_t mapsize;
+    if (!parcel.ReadUint32(mapsize) || mapsize >= MAX_SIZE) {
+        WS_HILOGE("Failed to read the mapsize or mapsize is too big.");
+        return nullptr;
+    }
+    if (!UnmarshallCondition(parcel, read, mapsize)) {
+        WS_HILOGE("Failed to read the work condition map.");
+        return nullptr;
+    }
+    bool hasExtras;
+    if (!parcel.ReadBool(hasExtras)) {
+        WS_HILOGE("Failed to read the extras existence..");
+        return nullptr;
+    }
+    if (!hasExtras) {
+        return read;
+    }
+    
     bool hasExtras = parcel.ReadBool();
     if (!hasExtras) {
         return read;
@@ -368,11 +434,15 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     return read;
 }
 
-void WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize)
+bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize)
 {
     read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
     for (uint32_t i = 0; i < mapsize; i++) {
-        int32_t key = parcel.ReadInt32();
+        int32_t key;
+        if (!parcel.ReadInt32(key)) {
+            WS_HILOGE("Failed to read the work condition type.");
+            return false;
+        }
         auto condition = std::make_shared<Condition>();
         switch (key) {
             case WorkCondition::Type::NETWORK:
@@ -380,24 +450,35 @@ void WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
             case WorkCondition::Type::BATTERY_STATUS:
             // fall-through
             case WorkCondition::Type::STORAGE: {
-                condition->enumVal = parcel.ReadInt32();
+                if (!parcel.ReadInt32(condition->enumVal)) {
+                    WS_HILOGE("Failed to read the enumVal of work condition %{public}d.", key);
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::NAP:
             case WorkCondition::Type::CHARGER: {
-                condition->boolVal = parcel.ReadBool();
-                condition->enumVal = parcel.ReadInt32();
+                if (!parcel.ReadBool(condition->boolVal) || !parcel.ReadInt32(condition->enumVal)) {
+                    WS_HILOGE("Failed to read the boolVal or enumVal of work condition %{public}d.", key);
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::BATTERY_LEVEL: {
-                condition->intVal = parcel.ReadInt32();
+                if (!parcel.ReadInt32(condition->intVal)) {
+                    WS_HILOGE("Failed to read the intVal of work condition %{public}d.", key);
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::TIMER: {
-                condition->uintVal = parcel.ReadUint32();
-                condition->boolVal = parcel.ReadBool();
-                if (!condition->boolVal) {
-                    condition->intVal = parcel.ReadInt32();
+                if (!parcel.ReadUint32(condition->uintVal) || !parcel.ReadBool(condition->boolVal)) {
+                    WS_HILOGE("Failed to read the uintVal or boolVal of work condition %{public}d.", key);
+                    return false;
+                }
+                if (!condition->boolVal && !parcel.ReadInt32(condition->intVal)) {
+                    WS_HILOGE("Failed to read the intVal of work condition %{public}d.", key);
+                    return false;
                 }
                 break;
             }
@@ -406,6 +487,7 @@ void WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
         }
         read->conditionMap_.emplace(WorkCondition::Type(key), condition);
     }
+    return true;
 }
 
 std::string WorkInfo::ParseToJsonStr()

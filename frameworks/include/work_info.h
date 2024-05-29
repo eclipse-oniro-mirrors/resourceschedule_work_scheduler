@@ -295,11 +295,12 @@ private:
     bool preinstalled_ {false};
     std::string uriKey_;
 private:
-    static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
+    static bool UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
     void ParseConditionFromJsonStr(const Json::Value &value);
     void ParseParametersFromJsonStr(const Json::Value &value);
     void ParseTimerFormJsonStr(const Json::Value &conditions);
+    bool MarshallCondition(Parcel &parcel) const;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
