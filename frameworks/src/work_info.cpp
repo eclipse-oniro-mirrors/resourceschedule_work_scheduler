@@ -416,7 +416,7 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     }
     bool hasExtras;
     if (!parcel.ReadBool(hasExtras)) {
-        WS_HILOGE("Failed to read the extras existence..");
+        WS_HILOGE("Failed to read the extras existence.");
         return nullptr;
     }
     if (!hasExtras) {
@@ -441,9 +441,7 @@ bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
         auto condition = std::make_shared<Condition>();
         switch (key) {
             case WorkCondition::Type::NETWORK:
-            // fall-through
             case WorkCondition::Type::BATTERY_STATUS:
-            // fall-through
             case WorkCondition::Type::STORAGE: {
                 if (!parcel.ReadInt32(condition->enumVal)) {
                     WS_HILOGE("Failed to read the enumVal of work condition %{public}d.", key);
