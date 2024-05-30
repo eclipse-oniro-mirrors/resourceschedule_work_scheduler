@@ -185,7 +185,7 @@ bool WorkInfo::IsPersisted()
     return persisted_;
 }
 
-ints32_t WorkInfo::GetAppIndex() const
+int32_t WorkInfo::GetAppIndex() const
 {
     return appIndex_;
 }

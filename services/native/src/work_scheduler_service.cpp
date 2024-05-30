@@ -497,7 +497,7 @@ WEAK_FUNC bool WorkSchedulerService::GetUidByBundleName(const string &bundleName
     return false;
 }
 
-bool WorkSchedulerService::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std:string &bundleName)
+bool WorkSchedulerService::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName)
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
