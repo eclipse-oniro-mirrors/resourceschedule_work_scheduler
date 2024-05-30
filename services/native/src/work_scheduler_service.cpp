@@ -511,8 +511,7 @@ bool WorkSchedulerService::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &a
         return false;
     }
     sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
-    int appUid = static_cast<int>(uid);
-    ErrCode ret = bundleMgr->GetNameAndIndexForUid(appUid, bundleName, appIndex);
+    ErrCode ret = bundleMgr->GetNameAndIndexForUid(uid, bundleName, appIndex);
     if (ret == ERR_OK) {
         WS_HILOGD("appIndex = %{public}d", appIndex);
         return true;
