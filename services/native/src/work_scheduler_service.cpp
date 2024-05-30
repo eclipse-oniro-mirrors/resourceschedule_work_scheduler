@@ -950,7 +950,7 @@ std::string WorkSchedulerService::GetEffiResApplyUid()
 
 void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, std::string &result)
 {
-    if (std::all_of(value.begin(), value.end(), ::isdigit)) {
+    if (!std::all_of(value.begin(), value.end(), ::isdigit)) {
         result.append("Error params.");
         return;
     }

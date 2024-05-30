@@ -308,7 +308,7 @@ private:
     std::string uriKey_;
     int32_t appIndex_;
 private:
-    static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
+    static bool UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
     void ParseConditionFromJsonStr(const Json::Value &value);
     void ParseParametersFromJsonStr(const Json::Value &value);
