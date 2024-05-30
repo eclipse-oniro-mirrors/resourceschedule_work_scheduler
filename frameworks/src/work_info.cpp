@@ -303,7 +303,7 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
             case WorkCondition::Type::STORAGE: {
                 ret = ret && parcel.WriteInt32(it.first);
                 ret = ret && parcel.WriteInt32(it.second->enumVal);
-                    break;
+                break;
             }
             case WorkCondition::Type::CHARGER:
             case WorkCondition::Type::NAP: {
