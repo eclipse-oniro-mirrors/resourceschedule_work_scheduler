@@ -185,6 +185,11 @@ bool WorkInfo::IsPersisted()
     return persisted_;
 }
 
+ints32_t WorkInfo::GetAppIndex()
+{
+    return appIndex_;
+}
+
 WorkCondition::Network WorkInfo::GetNetworkType()
 {
     if (conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {

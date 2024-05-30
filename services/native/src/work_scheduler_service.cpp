@@ -497,7 +497,7 @@ WEAK_FUNC bool WorkSchedulerService::GetUidByBundleName(const string &bundleName
     return false;
 }
 
-bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std:string &bundleName)
+bool WorkSchedulerService::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std:string &bundleName)
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -517,6 +517,7 @@ bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std:string &b
         WS_HILOGD("appIndex = %{public}d", appIndex);
         return true;
     }
+    WS_HILOGE("fail to get app index.");
     return false;
 }
 
