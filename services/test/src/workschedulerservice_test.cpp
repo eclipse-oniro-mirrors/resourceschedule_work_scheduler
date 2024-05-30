@@ -675,5 +675,20 @@ HWTEST_F(WorkSchedulerServiceTest, SendEvent_001, TestSize.Level1)
         SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), initDelay);
     EXPECT_TRUE(workSchedulerService_->ready_);
 }
+
+/**
+ * @tc.name: GetAppIndexAndBundleNameByUid_001
+ * @tc.desc: Test WorkSchedulerService GetAppIndexAndBundleNameByUid.
+ * @tc.type: FUNC
+ * @tc.require: 
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetAppIndexAndBundleNameByUid_001, TestSize.Level1)
+{
+    int32_t appIndex;
+    std::string bundleName;
+    int32_t uid = 1;
+    bool ret = workSchedulerService_->GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName);
+    EXPECT_FALSE(ret);
+}
 }
 }

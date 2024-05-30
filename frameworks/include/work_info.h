@@ -129,6 +129,12 @@ public:
      */
     void RefreshUid(int32_t uid);
     /**
+     * @brief Refresh appIndex.
+     *
+     * @param appIndex The appIndex.
+     */
+    void RefreshAppIndex(int32_t appIndex);
+    /**
      * @brief Set callBySystemApp flag.
      */
     void SetCallBySystemApp(bool callBySystemApp);
@@ -282,6 +288,12 @@ public:
      * @brief Get nap status.
      */
     WorkCondition::Nap GetNap();
+    /**
+     * @brief Get appIndex.
+     *
+     * @return The appIndex.
+     */
+    int32_t GetAppIndex() const;
 
 private:
     int32_t workId_;
@@ -294,6 +306,7 @@ private:
     bool callBySystemApp_ {false};
     bool preinstalled_ {false};
     std::string uriKey_;
+    int32_t appIndex_;
 private:
     static void UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
