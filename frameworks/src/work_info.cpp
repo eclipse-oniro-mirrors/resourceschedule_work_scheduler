@@ -363,7 +363,6 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
         WS_HILOGE("Failed to read the mapsize or mapsize is too big.");
         return nullptr;
     }
-    read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
     if (!UnmarshallCondition(parcel, read, mapsize)) {
         WS_HILOGE("Failed to read the work condition map.");
         return nullptr;
@@ -385,6 +384,7 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
 
 bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize)
 {
+    read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
     for (uint32_t i = 0; i < mapsize; i++) {
         int32_t key;
         if (!parcel.ReadInt32(key)) {
@@ -396,7 +396,6 @@ bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
             case WorkCondition::Type::BATTERY_STATUS:
             case WorkCondition::Type::STORAGE: {
                 if (!parcel.ReadInt32(condition->enumVal)) {
-                    WS_HILOGE("Failed to read the enumVal of work condition %{public}d.", key);
                     return false;
                 }
                 break;
@@ -404,24 +403,21 @@ bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
             case WorkCondition::Type::NAP:
             case WorkCondition::Type::CHARGER: {
                 if (!parcel.ReadBool(condition->boolVal) || !parcel.ReadInt32(condition->enumVal)) {
-                    WS_HILOGE("Failed to read the boolVal or enumVal of work condition %{public}d.", key);
                     return false;
                 }
                 break;
             }
             case WorkCondition::Type::BATTERY_LEVEL: {
                 if (!parcel.ReadInt32(condition->intVal)) {
-                    WS_HILOGE("Failed to read the intVal of work condition %{public}d.", key);
                     return false;
                 }
                 break;
             }
             case WorkCondition::Type::TIMER: {
                 if (!parcel.ReadUint32(condition->uintVal) || !parcel.ReadBool(condition->boolVal)) {
-                    WS_HILOGE("Failed to read the uintVal or boolVal of work condition %{public}d.", key);
                     return false;
-                } else if (!condition->boolVal && !parcel.ReadInt32(condition->intVal)) {
-                    WS_HILOGE("Failed to read the intVal of work condition %{public}d.", key);
+                }
+                if (!condition->boolVal && !parcel.ReadInt32(condition->intVal)) {
                     return false;
                 }
                 break;
