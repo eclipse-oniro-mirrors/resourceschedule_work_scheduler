@@ -19,7 +19,6 @@ group("fwk_group_work_scheduler_all") {
     deps = [
       "${worksched_frameworks_path}:workschedclient",
       "${worksched_frameworks_path}/extension:workschedextension",
-      "${worksched_interfaces_path}/kits/cj:cj_work_scheduler_ffi",
       "${worksched_interfaces_path}/kits/js:workscheduler",
       "${worksched_interfaces_path}/kits/js/napi/work_scheduler_extension:workschedulerextensionability_napi",
       "${worksched_interfaces_path}/kits/js/napi/work_scheduler_extension_context:workschedulerextensioncontext_napi",
