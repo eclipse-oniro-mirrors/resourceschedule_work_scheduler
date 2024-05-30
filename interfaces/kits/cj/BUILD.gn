@@ -49,6 +49,7 @@ ohos_shared_library("cj_work_scheduler_ffi") {
   } else {
     defines += [ "PREVIEWER" ]
     sources = [ "work_scheduler/work_scheduler_mock.cpp" ]
+    external_deps = [ "napi:cj_bind_ffi" ]
   }
 
   if (current_os == "ohos") {
@@ -59,6 +60,7 @@ ohos_shared_library("cj_work_scheduler_ffi") {
     defines += [ "WINDOWS_PLATFORM" ]
   }
 
+  innerapi_tags = [ "platformsdk" ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
 }
