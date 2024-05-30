@@ -331,7 +331,7 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
             }
         }
     }
-    parcel.WriteBool(extras_ ? true : false);
+    ret = ret && parcel.WriteBool(extras_ ? true : false);
     if (extras_) {
         ret = ret && extras_->Marshalling(parcel);
     }
@@ -345,19 +345,33 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
         WS_HILOGE("read is nullptr.");
         return nullptr;
     }
-    read->workId_ = parcel.ReadInt32();
-    read->bundleName_ = parcel.ReadString();
-    read->abilityName_ = parcel.ReadString();
-    read->persisted_ = parcel.ReadBool();
-    read->uid_ = parcel.ReadInt32();
-    uint32_t mapsize = parcel.ReadUint32();
-    if (mapsize >= MAX_SIZE) {
-        WS_HILOGE("mapsize is too big.");
+    if (!parcel.ReadInt32(read->workId_) || !parcel.ReadString(read->bundleName_) ||
+        !parcel.ReadString(read->abilityName_)) {
+        WS_HILOGE("Failed to read the workId or bundleName or abilityName.");
         return nullptr;
     }
-
-    UnmarshallCondition(parcel, read, mapsize);
-    bool hasExtras = parcel.ReadBool();
+    if (!parcel.ReadBool(read->persisted_)) {
+        WS_HILOGE("Failed to read the persisted.");
+        return nullptr;
+    }
+    if (!parcel.ReadInt32(read->uid_)) {
+        WS_HILOGE("Failed to read the uid.");
+        return nullptr;
+    }
+    uint32_t mapsize;
+    if (!parcel.ReadUint32(mapsize) || mapsize >= MAX_SIZE) {
+        WS_HILOGE("Failed to read the mapsize or mapsize is too big.");
+        return nullptr;
+    }
+    if (!UnmarshallCondition(parcel, read, mapsize)) {
+        WS_HILOGE("Failed to read the work condition map.");
+        return nullptr;
+    }
+    bool hasExtras;
+    if (!parcel.ReadBool(hasExtras)) {
+        WS_HILOGE("Failed to read the extras existence.");
+        return nullptr;
+    }
     if (!hasExtras) {
         return read;
     }
@@ -368,36 +382,43 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     return read;
 }
 
-void WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize)
+bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize)
 {
     read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
     for (uint32_t i = 0; i < mapsize; i++) {
-        int32_t key = parcel.ReadInt32();
+        int32_t key;
+        if (!parcel.ReadInt32(key)) {
+            return false;
+        }
         auto condition = std::make_shared<Condition>();
         switch (key) {
             case WorkCondition::Type::NETWORK:
-            // fall-through
             case WorkCondition::Type::BATTERY_STATUS:
-            // fall-through
             case WorkCondition::Type::STORAGE: {
-                condition->enumVal = parcel.ReadInt32();
+                if (!parcel.ReadInt32(condition->enumVal)) {
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::NAP:
             case WorkCondition::Type::CHARGER: {
-                condition->boolVal = parcel.ReadBool();
-                condition->enumVal = parcel.ReadInt32();
+                if (!parcel.ReadBool(condition->boolVal) || !parcel.ReadInt32(condition->enumVal)) {
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::BATTERY_LEVEL: {
-                condition->intVal = parcel.ReadInt32();
+                if (!parcel.ReadInt32(condition->intVal)) {
+                    return false;
+                }
                 break;
             }
             case WorkCondition::Type::TIMER: {
-                condition->uintVal = parcel.ReadUint32();
-                condition->boolVal = parcel.ReadBool();
-                if (!condition->boolVal) {
-                    condition->intVal = parcel.ReadInt32();
+                if (!parcel.ReadUint32(condition->uintVal) || !parcel.ReadBool(condition->boolVal)) {
+                    return false;
+                }
+                if (!condition->boolVal && !parcel.ReadInt32(condition->intVal)) {
+                    return false;
                 }
                 break;
             }
@@ -406,6 +427,7 @@ void WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
         }
         read->conditionMap_.emplace(WorkCondition::Type(key), condition);
     }
+    return true;
 }
 
 std::string WorkInfo::ParseToJsonStr()
