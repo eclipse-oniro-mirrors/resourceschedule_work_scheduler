@@ -303,6 +303,7 @@ private:
     void LoadWorksFromFile(const char *path, std::list<std::shared_ptr<WorkInfo>> &workInfos);
     void InitPersistedWork();
     bool CheckProcessName();
+    bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
 
 private:
     std::set<int32_t> whitelist_;

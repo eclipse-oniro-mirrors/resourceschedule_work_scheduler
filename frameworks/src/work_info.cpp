@@ -21,6 +21,7 @@ namespace WorkScheduler {
 const int32_t INVALID_VALUE = -1;
 const int32_t INVALID_TIME_VALUE = 0;
 const uint32_t MAX_SIZE = 1024;
+const int32_t APPINDEX_INIT_VALUE = 0;
 
 WorkInfo::WorkInfo()
 {
@@ -28,6 +29,7 @@ WorkInfo::WorkInfo()
     uid_ = INVALID_VALUE;
     persisted_ = false;
     extras_ = nullptr;
+    appIndex_ = APPINDEX_INIT_VALUE;
 }
 
 WorkInfo::~WorkInfo() {}
@@ -126,6 +128,11 @@ void WorkInfo::RefreshUid(int32_t uid)
     uid_ = uid;
 }
 
+void WorkInfo::RefreshAppIndex(int32_t appIndex)
+{
+    appIndex_ = appIndex;
+}
+
 void WorkInfo::RequestNap(bool nap)
 {
     std::shared_ptr<Condition> napCondition = std::make_shared<Condition>();
@@ -176,6 +183,11 @@ std::string WorkInfo::GetAbilityName()
 bool WorkInfo::IsPersisted()
 {
     return persisted_;
+}
+
+int32_t WorkInfo::GetAppIndex() const
+{
+    return appIndex_;
 }
 
 WorkCondition::Network WorkInfo::GetNetworkType()
@@ -443,6 +455,7 @@ std::string WorkInfo::ParseToJsonStr()
     root["preinstalled"] = preinstalled_;
     root["uriKey"] = uriKey_;
     root["callBySystemApp"] = callBySystemApp_;
+    root["appIndex"] = appIndex_;
     ParseConditionToJsonStr(root);
     if (extras_) {
         Json::Value extras;
@@ -541,6 +554,9 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
     }
     if (value.isMember("callBySystemApp") && value["callBySystemApp"].isBool()) {
         this->callBySystemApp_ = value["callBySystemApp"].asBool();
+    }
+    if (value.isMember("appIndex") && value["appIndex"].isInt()) {
+        this->appIndex_ = value["appIndex"].asInt();
     }
     ParseConditionFromJsonStr(value);
     if (!value.isMember("parameters")) {

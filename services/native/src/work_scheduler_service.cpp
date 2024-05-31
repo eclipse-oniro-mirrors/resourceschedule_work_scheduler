@@ -497,11 +497,36 @@ WEAK_FUNC bool WorkSchedulerService::GetUidByBundleName(const string &bundleName
     return false;
 }
 
+bool WorkSchedulerService::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName)
+{
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        WS_HILOGE("fail to get system ability mgr.");
+        return false;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        WS_HILOGE("fail to get bundle manager proxy.");
+        return false;
+    }
+    sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
+    ErrCode ret = bundleMgr->GetNameAndIndexForUid(uid, bundleName, appIndex);
+    if (ret == ERR_OK) {
+        WS_HILOGD("appIndex = %{public}d", appIndex);
+        return true;
+    }
+    WS_HILOGE("fail to get app index.");
+    return false;
+}
+
 bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
 {
-    int32_t realUid;
-    if (GetUidByBundleName(workInfo.GetBundleName(), realUid)) {
-        return uid == realUid;
+    int32_t appIndex;
+    string bundleName;
+    if (GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
+        workInfo.RefreshAppIndex(appIndex);
+        return workInfo.GetBundleName() == bundleName;
     }
     return false;
 }
@@ -531,6 +556,7 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+        WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
     }
     if (!CheckCondition(workInfo)) {
@@ -580,6 +606,7 @@ int32_t WorkSchedulerService::StopWork(WorkInfo& workInfo)
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+        WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
@@ -599,6 +626,7 @@ int32_t WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+        WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
