@@ -201,7 +201,7 @@ bool WorkStatus::IsReady()
 {
     WS_HILOGD("IsReady");
     if (!IsSameUser()) {
-        WS_HILOGD("Not same user. WorkId:%{public}s", workId_.c_str());
+        WS_HILOGI("Not same user. WorkId:%{public}s", workId_.c_str());
         return false;
     }
     if (IsRunning()) {
