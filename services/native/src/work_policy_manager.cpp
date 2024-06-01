@@ -132,7 +132,7 @@ int32_t WorkPolicyManager::AddWork(shared_ptr<WorkStatus> workStatus, int32_t ui
     std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         if (uidQueueMap_.at(uid)->Contains(make_shared<string>(workStatus->workId_))) {
-            WS_HILOGE("Workid has been added, should remove first.");
+            WS_HILOGD("Workid has been added, should remove first.");
             return E_ADD_REPEAT_WORK_ERR;
         } else if (uidQueueMap_.at(uid)->GetSize() >= MAX_WORK_COUNT_PER_UID) {
             WS_HILOGE("each uid only can be added %{public}u works", MAX_WORK_COUNT_PER_UID);

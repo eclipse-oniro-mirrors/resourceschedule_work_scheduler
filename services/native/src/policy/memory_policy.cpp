@@ -87,7 +87,7 @@ int32_t MemoryPolicy::GetPolicyMaxRunning()
     if (memAvailable <= MEM_LOW) {
         return COUNT_MEMORY_LOW;
     }
-    WS_HILOGI("memory left normal");
+    WS_HILOGD("memory left normal");
     return COUNT_MEMORY_NORMAL;
 }
 
