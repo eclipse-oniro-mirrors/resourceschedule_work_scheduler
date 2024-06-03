@@ -173,7 +173,7 @@ void WorkSchedulerService::InitPreinstalledWork()
     bool needRefresh = false;
     list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
     for (auto work : preinstalledWorks) {
-        WS_HILOGI("preinstalled workinfo id %{public}d, uid %{public}d", work->GetWorkId(), work->GetUid());
+        WS_HILOGD("preinstalled workinfo id %{public}d, uid %{public}d", work->GetWorkId(), work->GetUid());
         if (!work->IsPersisted()) {
             time_t baseTime;
             (void)time(&baseTime);
@@ -185,7 +185,7 @@ void WorkSchedulerService::InitPreinstalledWork()
             return (pair.second->GetUid() == work->GetUid()) && (pair.second->GetWorkId() == work->GetWorkId());
         });
         if (iter != persistedMap_.end()) {
-            WS_HILOGI("find workid %{public}d in persisted map, ignore", work->GetWorkId());
+            WS_HILOGD("find workid %{public}d in persisted map, ignore", work->GetWorkId());
             continue;
         }
         needRefresh = true;

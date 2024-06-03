@@ -53,7 +53,7 @@ int32_t CpuPolicy::GetCpuUsage()
     auto collector = OHOS::HiviewDFX::UCollectClient::CpuCollector::Create();
     auto collectResult = collector->GetSysCpuUsage();
     int32_t retCode = collectResult.retCode;
-    WS_HILOGI("retCode of collectResult: %{public}d", retCode);
+    WS_HILOGD("retCode of collectResult: %{public}d", retCode);
     if (retCode == OHOS::HiviewDFX::UCollect::UcError::SUCCESS) {
         cpuUsage = static_cast<int>(collectResult.data * UNIT);
     }
