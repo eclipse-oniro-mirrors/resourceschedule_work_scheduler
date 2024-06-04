@@ -575,9 +575,9 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
     std::string valueRead = workInfoRead->GetExtras()->GetStringParam("key1");
     EXPECT_EQ(valueRead, "value1");
 
-    std::shared_ptr<Condition> condUnknown = std::make_shared<Condition>();
-    condUnknown->boolVal = true;
-    workInfo.conditionMap_.emplace(WorkCondition::Type::UNKNOWN, condUnknown);
+    std::shared_ptr<Condition> condNetWork = std::make_shared<Condition>();
+    condNetWork->enumVal = WorkCondition::Network::NETWORK_TYPE_ANY;
+    workInfo.conditionMap_.emplace(WorkCondition::Type::NETWORK, condNetWork);
     WRITE_PARCEL_WITHOUT_RET(data, Parcelable, &workInfo);
     workInfoRead = data.ReadStrongParcelable<WorkInfo>();
     auto condRead = workInfoRead->GetConditionMap();
