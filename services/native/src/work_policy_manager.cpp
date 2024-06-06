@@ -703,7 +703,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         auto workStatus = it->second;
-        if (workStatus->uid_ == uid && workStatus->IsRunning()) {
+        if (workStatus->uid_ == uid && workStatus->IsRunning() && !workStatus->IsPaused()) {
             hasWorkWithUid = true;
             long long oldWatchdogTime = workStatus->workWatchDogTime_;
             long long currTime = WorkSchedUtils::GetCurrentTimeMs();
