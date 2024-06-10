@@ -145,8 +145,8 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut
         WS_HILOGE("%{public}s %{public}d connection is null", workStatus->workId_.c_str(), isTimeOut);
         return false;
     }
-    if (conn->GetConnectionState() != OHOS::AbilityRuntime::CONNECTION_STATE_CONNECTED) {
-        WS_HILOGE("%{public}s %{public}d is not connected done, work will be stopped  by timeout",
+    if (!conn->IsConnected()) {
+        WS_HILOGE("%{public}s %{public}d is not connected, work will be stopped  by timeout",
             workStatus->workId_.c_str(), isTimeOut);
         return false;
     }
