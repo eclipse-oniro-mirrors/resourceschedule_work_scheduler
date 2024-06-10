@@ -46,9 +46,11 @@ public:
      * @param resultCode The result code.
      */
     void OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int32_t resultCode) override;
+    bool IsConnected();
 private:
     sptr<WorkSchedulerProxy> proxy_ = nullptr;
     std::shared_ptr<WorkInfo> workInfo_;
+    std::atomic<bool> isConnected_ {false};  
 };
 } // namespace WorkScheduler
 } // namespace OHOS
