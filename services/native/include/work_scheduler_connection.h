@@ -50,7 +50,7 @@ public:
 private:
     sptr<WorkSchedulerProxy> proxy_ = nullptr;
     std::shared_ptr<WorkInfo> workInfo_;
-    std::atomic<bool> isConnected_ {false};  
+    std::atomic<bool> isConnected_ {false};
 };
 } // namespace WorkScheduler
 } // namespace OHOS
