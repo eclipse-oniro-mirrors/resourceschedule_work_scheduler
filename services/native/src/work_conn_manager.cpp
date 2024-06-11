@@ -141,12 +141,18 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut
 {
     bool ret = false;
     sptr<WorkSchedulerConnection> conn = GetConnInfo(workStatus->workId_);
-    if (conn != nullptr) {
-        conn->StopWork();
-        ret = DisConnect(conn);
-    } else {
-        WS_HILOGE("connection is null");
+    if (!conn) {
+        WS_HILOGE("%{public}s %{public}d connection is null", workStatus->workId_.c_str(), isTimeOut);
+        return false;
     }
+    if (!conn->IsConnected()) {
+        WS_HILOGE("%{public}s %{public}d is not connected, work will be stopped  by timeout",
+            workStatus->workId_.c_str(), isTimeOut);
+        return false;
+    }
+    conn->StopWork();
+    ret = DisConnect(conn);
+
     RemoveConnInfo(workStatus->workId_);
 
     // Notify work remove event to battery statistics only work has started

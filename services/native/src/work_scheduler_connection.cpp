@@ -45,11 +45,17 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
     sleep(1);
     proxy_->OnWorkStart(*workInfo_);
     WS_HILOGI("On ability connectDone, workId = %{public}d.", workInfo_->GetWorkId());
+    isConnected_.store(true);
 }
 
 void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int32_t resultCode)
 {
     WS_HILOGI("On ability disconnect done.");
+}
+
+bool WorkSchedulerConnection::IsConnected()
+{
+    return isConnected_.load();
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS

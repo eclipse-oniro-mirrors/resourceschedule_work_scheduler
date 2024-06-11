@@ -225,7 +225,11 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
         RemoveFromReadyQueue(workStatus);
         hasCanceled = true;
     }
-
+    if (isTimeOut && (workStatus->GetStatus() == WorkStatus::Status::REMOVED)) {
+        WS_HILOGI("disconect %{public}s when timeout", workStatus->workId_.c_str());
+        workStatus->lastTimeout_ = isTimeOut;
+        workConnManager_->StopWork(workStatus, isTimeOut);
+    }
     CheckWorkToRun();
     return hasCanceled;
 }
