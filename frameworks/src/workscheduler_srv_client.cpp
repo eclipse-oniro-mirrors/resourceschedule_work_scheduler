@@ -143,9 +143,7 @@ ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInf
     if (errCode != ERR_OK) {
         return errCode;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    return iWorkSchedService_->ObtainAllWorks(uid, pid, workInfos);
+    return iWorkSchedService_->ObtainAllWorks(workInfos);
 }
 
 ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo)
@@ -159,8 +157,7 @@ ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<Wo
     if (code != ERR_OK) {
         return code;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    return iWorkSchedService_->GetWorkStatus(uid, workId, workInfo);
+    return iWorkSchedService_->GetWorkStatus(workId, workInfo);
 }
 
 ErrCode WorkSchedulerSrvClient::GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)

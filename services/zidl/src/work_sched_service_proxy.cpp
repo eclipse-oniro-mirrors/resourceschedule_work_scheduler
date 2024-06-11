@@ -168,10 +168,8 @@ int32_t WorkSchedServiceProxy::IsLastWorkTimeout(int32_t workId, bool &result)
     return ret;
 }
 
-int32_t WorkSchedServiceProxy::ObtainAllWorks(int32_t &uid, int32_t &pid,
-    std::list<std::shared_ptr<WorkInfo>>& workInfos)
+int32_t WorkSchedServiceProxy::ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
-    WS_HILOGD("uid: %{public}d, pid: %{public}d", uid, pid);
     sptr<IRemoteObject> remote = Remote();
     RETURN_IF_WITH_RET(remote == nullptr, E_MEMORY_OPERATION_FAILED);
 
@@ -183,9 +181,6 @@ int32_t WorkSchedServiceProxy::ObtainAllWorks(int32_t &uid, int32_t &pid,
         WS_HILOGE("write descriptor failed!");
         return E_PARCEL_OPERATION_FAILED;
     }
-
-    WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
-    WRITE_PARCEL_WITHOUT_RET(data, Int32, pid);
 
     int32_t ret = remote->SendRequest(
         static_cast<int32_t>(IWorkSchedServiceInterfaceCode::OBTAIN_ALL_WORKS), data, reply, option);
@@ -211,7 +206,7 @@ int32_t WorkSchedServiceProxy::ObtainAllWorks(int32_t &uid, int32_t &pid,
     return errCode;
 }
 
-int32_t WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
+int32_t WorkSchedServiceProxy::GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
 {
     WS_HILOGD("enter, workId: %{public}d", workId);
     sptr<IRemoteObject> remote = Remote();
@@ -223,7 +218,6 @@ int32_t WorkSchedServiceProxy::GetWorkStatus(int32_t &uid, int32_t &workId, std:
         WS_HILOGE("write descriptor failed!");
         return E_PARCEL_OPERATION_FAILED;
     }
-    WRITE_PARCEL_WITHOUT_RET(data, Int32, uid);
     WRITE_PARCEL_WITHOUT_RET(data, Int32, workId);
     int32_t ret = remote->SendRequest(
         static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_WORK_STATUS), data, reply, option);

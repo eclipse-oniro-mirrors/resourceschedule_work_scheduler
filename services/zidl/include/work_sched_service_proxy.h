@@ -70,21 +70,18 @@ public:
     /**
      * @brief Obtain all works.
      *
-     * @param uid The uid.
-     * @param pid The pid.
      * @param workInfos The infos of work.
      * @return error code, ERR_OK if success.
      */
-    int32_t ObtainAllWorks(int32_t &uid, int32_t &pid, std::list<std::shared_ptr<WorkInfo>>& workInfos) override;
+    int32_t ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) override;
     /**
      * @brief Get the status of work.
      *
-     * @param uid The uid.
      * @param workId The id of work.
      * @param workInfo The info of work.
      * @return error code, ERR_OK if success.
      */
-    int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) override;
+    int32_t GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) override;
 
     /**
      * @brief Get the Running Work Scheduler Work object

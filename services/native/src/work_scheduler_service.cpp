@@ -705,10 +705,10 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
     workPolicyManager_->OnConditionReady(workStatusVector);
 }
 
-int32_t WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid,
-    std::list<std::shared_ptr<WorkInfo>>& workInfos)
+int32_t WorkSchedulerService::ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::ObtainAllWorks");
+    int32_t uid = IPCSkeleton::GetCallingUid();
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -717,9 +717,10 @@ int32_t WorkSchedulerService::ObtainAllWorks(int32_t &uid, int32_t &pid,
     return ERR_OK;
 }
 
-int32_t WorkSchedulerService::GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
+int32_t WorkSchedulerService::GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::GetWorkStatus");
+    int32_t uid = IPCSkeleton::GetCallingUid();
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         workInfo = nullptr;
