@@ -69,22 +69,18 @@ public:
     /**
      * @brief Obtain all works.
      *
-     * @param uid The uid.
-     * @param pid The pid.
      * @param workInfos The infos of work.
      * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual int32_t ObtainAllWorks(int32_t &uid, int32_t &pid,
-        std::list<std::shared_ptr<WorkInfo>>& workInfos) = 0;
+    virtual int32_t ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) = 0;
     /**
      * @brief Check whether last work executed time out.
      *
-     * @param uid The uid.
      * @param workId The id of work.
      * @param workInfo The info of work.
      * @return The errcode. ERR_OK on success, others on failure.
      */
-    virtual int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) = 0;
+    virtual int32_t GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) = 0;
 
     /**
      * @brief Get the Running Work Scheduler Work object

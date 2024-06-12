@@ -109,9 +109,8 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t StopAndCancelWork(WorkInfo& workInfo)  { return 0; }
     int32_t StopAndClearWorks() { return 0; }
     int32_t IsLastWorkTimeout(int32_t workId, bool &result) { return 0; }
-    int32_t ObtainAllWorks(int32_t &uid, int32_t &pid,
-        std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
-    int32_t GetWorkStatus(int32_t &uid, int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) { return 0; }
+    int32_t ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
+    int32_t GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) { return 0; }
     int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
     int32_t PauseRunningWorks(int32_t uid) {return 0; }
     int32_t ResumePausedWorks(int32_t uid) {return 0; }
@@ -251,14 +250,12 @@ HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_001, TestSize.Level1)
  * @tc.name: ObtainAllWorks_001
  * @tc.desc: Test WorkSchedulerService ObtainAllWorks.
  * @tc.type: FUNC
- * @tc.require: I8F08T
+ * @tc.require: IA4HTC
  */
 HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
 {
     std::list<std::shared_ptr<WorkInfo>> workInfos;
-    int32_t uid, pid;
-
-    auto ret = workSchedulerService_->ObtainAllWorks(uid, pid, workInfos);
+    auto ret = workSchedulerService_->ObtainAllWorks(workInfos);
     EXPECT_EQ(ret, 0);
 }
 
@@ -266,14 +263,13 @@ HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
  * @tc.name: GetWorkStatus_001
  * @tc.desc: Test WorkSchedulerService GetWorkStatus.
  * @tc.type: FUNC
- * @tc.require: I8F08T
+ * @tc.require: IA4HTC
  */
 HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
 {
     std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
-    int32_t uid, pid;
-
-    auto ret = workSchedulerService_->GetWorkStatus(uid, pid, workInfo);
+    int32_t workId;
+    auto ret = workSchedulerService_->GetWorkStatus(workId, workInfo);
     EXPECT_EQ(ret, 0);
 }
 
