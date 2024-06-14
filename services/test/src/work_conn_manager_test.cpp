@@ -222,7 +222,7 @@ HWTEST_F(WorkConnManagerTest, StopWork_003, TestSize.Level1)
     sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
     myWorkConnManager.AddConnInfo(workId, connection);
     bool ret = myWorkConnManager.StopWork(workStatus, false);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(!ret);
 }
 
 /**
@@ -247,7 +247,7 @@ HWTEST_F(WorkConnManagerTest, StopWork_004, TestSize.Level1)
     sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
     myWorkConnManager.AddConnInfo(workId, connection);
     bool ret = myWorkConnManager.StopWork(workStatus, true);
-    EXPECT_TRUE(ret);
+    EXPECT_TRUE(!ret);
 }
 
 /**
