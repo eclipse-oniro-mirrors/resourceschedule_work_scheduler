@@ -16,7 +16,6 @@
 
 #include <message_parcel.h>
 #include <string_ex.h>
-#include <ipc_skeleton.h>
 
 #include "iwork_sched_service_ipc_interface_code.h"
 #include "work_sched_common.h"
@@ -205,10 +204,6 @@ int32_t WorkSchedServiceStub::PauseRunningWorksStub(MessageParcel& data, Message
         return E_PARCEL_OPERATION_FAILED;
     }
     int32_t realUid = IPCSkeleton::GetCallingUid();
-    if (realUid != uid) {
-        return E_PARCEL_OPERATION_FAILED;
-    }
-    int32_t ret = PauseRunningWorks(uid);
     if (!reply.WriteInt32(ret)) {
         WS_HILOGE("PauseRunningWorksStub failed, write result error");
         return E_PARCEL_OPERATION_FAILED;
@@ -228,10 +223,6 @@ int32_t WorkSchedServiceStub::ResumePausedWorksStub(MessageParcel& data, Message
         return E_PARCEL_OPERATION_FAILED;
     }
     int32_t ret = ResumePausedWorks(uid);
-    if (!reply.WriteInt32(ret)) {
-        WS_HILOGE("ResumePausedWorksStub failed, write result error");
-        return E_PARCEL_OPERATION_FAILED;
-    }
     return ret;
 }
 } // namespace WorkScheduler
