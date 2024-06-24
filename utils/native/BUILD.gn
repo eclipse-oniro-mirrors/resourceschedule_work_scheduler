@@ -29,9 +29,7 @@ ohos_source_set("workschedutils") {
 
   public_configs = [ ":utils_config" ]
 
-  public_external_deps = [
-    "jsoncpp:jsoncpp",
-  ]
+  public_external_deps = [ "jsoncpp:jsoncpp" ]
 
   external_deps = [
     "access_token:libtokenid_sdk",
