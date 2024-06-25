@@ -223,6 +223,22 @@ std::list<std::shared_ptr<WorkInfo>> WorkQueue::GetRunningWorks()
     return workInfo;
 }
 
+std::list<std::shared_ptr<WorkStatus>> WorkQueue::GetWorksByCondition(WorkCondition::Type conditionType,
+    WorkStatus::Status status)
+{
+    std::list<std::shared_ptr<WorkStatus>> works;
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
+    for (shared_ptr<WorkStatus> work : workList_) {
+        if (work->GetStatus() == status && conditionType == WorkCondition::Type::NAP) {
+            WorkCondition::Nap napCondition = work->workInfo_->GetNap();
+            if (napCondition == WorkCondition::Nap::NAP_IN) {
+                works.emplace_back(work);
+            }
+        }
+    }
+    return works;
+}
+
 void WorkQueue::GetWorkIdStr(string& result)
 {
     std::lock_guard<std::recursive_mutex> lock(workListMutex_);

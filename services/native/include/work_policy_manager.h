@@ -256,13 +256,29 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t ResumePausedWorks(int32_t uid);
+
+    /**
+     * @brief Get the All Running and Ready Works Object by Condition.
+     *
+     * @param conditionType The condition type.
+     * @param status The status type.
+     * @return All matched running works;
+     */
+    std::list<std::shared_ptr<WorkStatus>> GetWorksByCondition(WorkCondition::Type conditionType,
+        WorkStatus::Status status);
+
+    /**
+     * @brief Remove Ready Work From Queue.
+     *
+     * @param workStatus The workStatus.
+     */
+    void RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus);
 private:
     int32_t GetMaxRunningCount(std::string& policyName);
     int32_t GetRunningCount();
     void DumpConditionReadyQueue(std::string& result);
     void DumpUidQueueMap(std::string& result);
     void RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
-    void RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus);
     void AddToReadyQueue(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     void RealStartWork(std::shared_ptr<WorkStatus> workStatus);
     void AddToRunningQueue(std::shared_ptr<WorkStatus> workStatus);

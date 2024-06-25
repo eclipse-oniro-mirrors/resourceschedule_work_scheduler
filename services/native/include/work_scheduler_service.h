@@ -268,7 +268,13 @@ public:
      */
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
-
+    void SetScreenOff(bool screenOff);
+    bool IsScreenOff();
+    void SetDeviceDeepIdle(bool deviceDeepIdle);
+    bool IsDeviceDeepIdle();
+    void SetNeedContinueListener(bool needContinueListener);
+    bool IsNeedContinueListener();
+    int32_t StopOrRemoveWorkByCondition(WorkCondition::Type conditionType, WorkStatus::Status status);
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -313,6 +319,9 @@ private:
     std::mutex observerMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
+    bool screenOff_ {false};
+    bool deviceDeepIdle_ {false};
+    bool needContinueListener_ {false};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};

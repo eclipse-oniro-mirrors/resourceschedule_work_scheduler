@@ -118,6 +118,15 @@ public:
      */
     std::list<std::shared_ptr<WorkInfo>> GetRunningWorks();
     /**
+     * @brief Get the All Running and Ready Works object by Condition.
+     *
+     * @param conditionType The condition type.
+     * @param status The status type.
+     * @return All matched running works;
+     */
+    std::list<std::shared_ptr<WorkStatus>> GetWorksByCondition(WorkCondition::Type conditionType,
+        WorkStatus::Status status);
+    /**
      * @brief Get work id str.
      *
      * @param result The result.

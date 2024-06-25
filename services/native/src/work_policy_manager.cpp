@@ -47,6 +47,7 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
+const int32_t DEEP_IDLE_WATCHDOG_TIME = 30 * 60 * 1000;
 const int32_t INIT_DUMP_SET_CPU = 0;
 const int32_t INVALID_VALUE = -1;
 const int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
@@ -428,10 +429,6 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
     std::shared_ptr<WorkStatus> &topWork)
 {
-    if (!wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
-        SetWatchdogTime(g_lastWatchdogTime);
-        return;
-    }
     int32_t chargerStatus = 0;
     auto iter = topWork->conditionMap_.find(WorkCondition::Type::CHARGER);
     if (iter != topWork->conditionMap_.end() && iter->second) {
@@ -440,6 +437,18 @@ void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerSe
         WS_HILOGD("charger is in CHARGING_UNKNOWN status");
         chargerStatus = static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN);
     }
+
+    if (chargerStatus != static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
+        && chargerStatus != static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
+        WS_HILOGD("charger is in CHARGING status, update watchdog time:%{public}d", DEEP_IDLE_WATCHDOG_TIME);
+        SetWatchdogTime(DEEP_IDLE_WATCHDOG_TIME);
+        return;
+    }
+    if (!wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
+        SetWatchdogTime(g_lastWatchdogTime);
+        return;
+    }
+    
     if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
         || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
         WS_HILOGD("charger is in CHARGING_UNKNOWN or CHARGING_UNPLUGGED status");
@@ -482,6 +491,7 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
         watchdogId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
     wss_.lock()->WatchdogTimeOut(workStatus);
+    watchdogIdMap_.erase(watchdogId);
 }
 
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
@@ -757,6 +767,23 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
         return E_UID_NO_MATCHING_WORK_ERR;
     }
     return ERR_OK;
+}
+
+std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetWorksByCondition(WorkCondition::Type conditionType,
+    WorkStatus::Status status)
+{
+    WS_HILOGD("enter");
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
+    std::list<shared_ptr<WorkStatus>> allWorks;
+    auto it = uidQueueMap_.begin();
+    while (it != uidQueueMap_.end()) {
+        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetWorksByCondition(conditionType, status);
+        if (workList.size() != 0) {
+            allWorks.insert(allWorks.end(), workList.begin(), workList.end());
+        }
+        it++;
+    }
+    return allWorks;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

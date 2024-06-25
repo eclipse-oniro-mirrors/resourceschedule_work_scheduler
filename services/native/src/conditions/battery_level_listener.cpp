@@ -26,6 +26,9 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+    const int DEEP_IDLE_BATTERY_CAPACITY = 91;
+}
 BatteryLevelEventSubscriber::BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     BatteryLevelListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
@@ -57,9 +60,11 @@ std::shared_ptr<EventFwk::CommonEventSubscriber> CreateBatteryEventSubscriber(Ba
     return std::make_shared<BatteryLevelEventSubscriber>(info, listener);
 }
 
-BatteryLevelListener::BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager)
+BatteryLevelListener::BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager,
+    std::shared_ptr<WorkSchedulerService> service)
 {
     workQueueManager_ = workQueueManager;
+    service_ = service;
 }
 
 BatteryLevelListener::~BatteryLevelListener()
@@ -92,6 +97,15 @@ void BatteryLevelListener::OnConditionChanged(WorkCondition::Type conditionType,
 {
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
+
+        if (!service_->IsDeviceDeepIdle()
+            && service_->IsNeedContinueListener()
+            && service_->IsScreenOff()
+            && conditionVal->intVal >= DEEP_IDLE_BATTERY_CAPACITY) {
+            service_->SetDeviceDeepIdle(true);
+            workQueueManager_->OnConditionChanged(WorkCondition::Type::NAP,
+                std::make_shared<DetectorValue>(0, 0, true, std::string()));
+        }
     } else {
         WS_HILOGE("workQueueManager_ is nullptr.");
     }

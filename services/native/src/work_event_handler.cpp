@@ -18,12 +18,19 @@
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
 #include "work_sched_hilog.h"
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+#include "battery_srv_client.h"
+#include "battery_info.h"
+#endif
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+    const int DEEP_IDLE_BATTERY_CAPACITY = 91;
+}
 WorkEventHandler::WorkEventHandler(const shared_ptr<EventRunner>& runner,
     const std::shared_ptr<WorkSchedulerService>& service) : EventHandler(runner), service_(service)
 {
@@ -60,6 +67,28 @@ void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& 
             service->TriggerWorkIfConditionReady();
             break;
         }
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+        case DEEP_IDLE_MSG: {
+            int32_t defaultCapacity = -1;
+            auto capacity = PowerMgr::BatterySrvClient::GetInstance().GetCapacity();
+            WS_HILOGD("battery capacity = %{public}d", capacity);
+            if (capacity == defaultCapacity) {
+                return;
+            }
+            if (service->IsScreenOff() && capacity >= DEEP_IDLE_BATTERY_CAPACITY) {
+                service->SetNeedContinueListener(false);
+                service->SetDeviceDeepIdle(true);
+                service->GetWorkQueueManager()->OnConditionChanged(WorkCondition::Type::NAP,
+                    std::make_shared<DetectorValue>(0, 0, true, std::string()));
+                return;
+            }
+
+            if (service->IsScreenOff() && capacity < DEEP_IDLE_BATTERY_CAPACITY) {
+                service->SetNeedContinueListener(true);
+            }
+            return;
+        }
+#endif
         default:
             return;
     }
