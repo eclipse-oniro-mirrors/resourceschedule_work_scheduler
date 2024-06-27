@@ -268,13 +268,6 @@ public:
         WorkStatus::Status status);
 
     /**
-     * @brief Remove Ready Work From Queue.
-     *
-     * @param workStatus The workStatus.
-     */
-    void RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus);
-
-    /**
      * @brief Remove watchdog From Queue.
      *
      * @param workStatus The workStatus.
@@ -286,6 +279,7 @@ private:
     void DumpConditionReadyQueue(std::string& result);
     void DumpUidQueueMap(std::string& result);
     void RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatus, int32_t uid);
+    void RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus);
     void AddToReadyQueue(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     void RealStartWork(std::shared_ptr<WorkStatus> workStatus);
     void AddToRunningQueue(std::shared_ptr<WorkStatus> workStatus);
