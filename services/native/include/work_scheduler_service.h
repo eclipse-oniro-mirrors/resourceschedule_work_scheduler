@@ -22,6 +22,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <atomic>
 
 #include <iremote_object.h>
 #include <system_ability.h>
@@ -268,13 +269,11 @@ public:
      */
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
-    void SetScreenOff(bool screenOff);
-    bool IsScreenOff();
+    void StoreScreenOffTime(uint64_t screenOffTime);
+    uint64_t LoadScreenOffTime();
     void SetDeviceDeepIdle(bool deviceDeepIdle);
     bool IsDeviceDeepIdle();
-    void SetNeedContinueListener(bool needContinueListener);
-    bool IsNeedContinueListener();
-    int32_t StopOrRemoveWorkByCondition(WorkCondition::Type conditionType, WorkStatus::Status status);
+    int32_t StopWorksByCondition(WorkCondition::Type conditionType, WorkStatus::Status status);
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -319,9 +318,8 @@ private:
     std::mutex observerMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
-    bool screenOff_ {false};
     bool deviceDeepIdle_ {false};
-    bool needContinueListener_ {false};
+    std::atomic<uint64_t> screenOffTime_ {0};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};

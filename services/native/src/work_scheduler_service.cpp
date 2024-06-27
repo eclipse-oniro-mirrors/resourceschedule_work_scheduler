@@ -417,6 +417,7 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
     auto chargerListener = make_shared<ChargerListener>(workQueueManager_);
     auto batteryStatusListener = make_shared<BatteryStatusListener>(workQueueManager_);
     auto batteryLevelListener = make_shared<BatteryLevelListener>(workQueueManager_, shared_from_this());
+    batteryLevelListener->Start();
 #endif // POWERMGR_BATTERY_MANAGER_ENABLE
     auto storageListener = make_shared<StorageListener>(workQueueManager_);
     auto timerListener = make_shared<TimerListener>(workQueueManager_, runner);
@@ -1207,14 +1208,14 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
     checker.CheckAllStatus();
 }
 
-void WorkSchedulerService::SetScreenOff(bool screenOff)
+void WorkSchedulerService::StoreScreenOffTime(uint64_t screenOffTime)
 {
-    screenOff_ = screenOff;
+    screenOffTime_.store(screenOffTime);
 }
 
-bool WorkSchedulerService::IsScreenOff()
+uint64_t WorkSchedulerService::LoadScreenOffTime()
 {
-    return screenOff_;
+    return screenOffTime_.load();
 }
 
 void WorkSchedulerService::SetDeviceDeepIdle(bool deviceDeepIdle)
@@ -1227,41 +1228,25 @@ bool WorkSchedulerService::IsDeviceDeepIdle()
     return deviceDeepIdle_;
 }
 
-void WorkSchedulerService::SetNeedContinueListener(bool needContinueListener)
-{
-    needContinueListener_ = needContinueListener;
-}
-
-bool WorkSchedulerService::IsNeedContinueListener()
-{
-    return needContinueListener_;
-}
-
-int32_t WorkSchedulerService::StopOrRemoveWorkByCondition(WorkCondition::Type conditionType, WorkStatus::Status status)
+int32_t WorkSchedulerService::StopWorksByCondition(WorkCondition::Type conditionType, WorkStatus::Status status)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    WS_HILOGI("stop or remove work by condition type:%{public}d", conditionType);
+    WS_HILOGI("stop work by condition type:%{public}d", conditionType);
     std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetWorksByCondition(conditionType, status);
     if (works.size() == 0) {
-        WS_HILOGD("stop or remove work by conditoon, no running works");
+        WS_HILOGD("stop work by condition, no matched works");
         return ERR_OK;
     }
 
     for (shared_ptr<WorkStatus> workStatus : works) {
         if (workStatus->IsRunning()) {
-            WS_HILOGI("stop work by conditoon, bundleName:%{public}s, workId:%{public}s",
+            WS_HILOGI("stop work by condition, bundleName:%{public}s, workId:%{public}s",
                 workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
             StopWorkInner(workStatus, workStatus->uid_, false, false);
-            continue;
-        }
-
-        if (workStatus->IsReadyStatus()) {
-            WS_HILOGI("remove work from ready queue by conditoon, bundleName:%{public}s, workId:%{public}s",
-                workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
-            workPolicyManager_->RemoveFromReadyQueue(workStatus);
+            workPolicyManager_->RemoveWatchDog(workStatus);
         }
     }
     return ERR_OK;

@@ -58,7 +58,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
-            if (listenerMap_.count(it.first) != 0) {
+            if (it.first != WorkCondition::Type::BATTERY_LEVEL && listenerMap_.count(it.first) != 0) {
                 listenerMap_.at(it.first)->Start();
             }
         }
@@ -94,6 +94,9 @@ bool WorkQueueManager::CancelWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : queueMap_) {
         it.second->CancelWork(workStatus);
         if (queueMap_.count(it.first) == 0) {
+            if (it.first == WorkCondition::Type::BATTERY_LEVEL) {
+                continue;
+            }
             listenerMap_.at(it.first)->Stop();
         }
     }

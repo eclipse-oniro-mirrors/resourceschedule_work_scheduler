@@ -555,7 +555,7 @@ HWTEST_F(WorkSchedulerServiceTest, BatteryLevelListener_001, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.BatteryLevelListener_001 begin ====== ");
 
-    BatteryLevelListener batteryLevelListener(workSchedulerService_->workQueueManager_);
+    BatteryLevelListener batteryLevelListener(workSchedulerService_->workQueueManager_, workSchedulerService_);
 
     batteryLevelListener.Start();
     EXPECT_NE(batteryLevelListener.commonEventSubscriber, nullptr);

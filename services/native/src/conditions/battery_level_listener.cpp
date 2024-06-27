@@ -23,11 +23,13 @@
 #include "matching_skills.h"
 #include "want.h"
 #include "work_sched_hilog.h"
+#include "work_sched_utils.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
     const int DEEP_IDLE_BATTERY_CAPACITY = 91;
+    const int DEEP_IDLE_SCREEN_OFF_TIME = 10 * 60 * 1000;
 }
 BatteryLevelEventSubscriber::BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     BatteryLevelListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
@@ -98,9 +100,11 @@ void BatteryLevelListener::OnConditionChanged(WorkCondition::Type conditionType,
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
 
+        uint64_t screenOffTime = service_->LoadScreenOffTime();
+        uint64_t currentTime = static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs());
         if (!service_->IsDeviceDeepIdle()
-            && service_->IsNeedContinueListener()
-            && service_->IsScreenOff()
+            && screenOffTime != 0
+            && (currentTime - screenOffTime) >= DEEP_IDLE_SCREEN_OFF_TIME
             && conditionVal->intVal >= DEEP_IDLE_BATTERY_CAPACITY) {
             service_->SetDeviceDeepIdle(true);
             workQueueManager_->OnConditionChanged(WorkCondition::Type::NAP,

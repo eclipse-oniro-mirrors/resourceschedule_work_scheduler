@@ -21,13 +21,11 @@
 #include "matching_skills.h"
 #include "want.h"
 #include "work_sched_hilog.h"
+#include "work_sched_utils.h"
 #include "work_status.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-namespace {
-    const int REPORT_DEVICE_IDLE_DELAY = 10 * 60 * 1000;
-}
 ScreenEventSubscriber::ScreenEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     ScreenListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
@@ -36,16 +34,12 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
     const std::string action = data.GetWant().GetAction();
     WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
-        listener_.service_->SetScreenOff(false);
+        listener_.service_->StoreScreenOffTime(0);
         listener_.service_->SetDeviceDeepIdle(false);
-        listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::DEEP_IDLE_MSG);
         listener_.OnConditionChanged(WorkCondition::Type::NAP,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
-        listener_.service_->SetScreenOff(true);
-        listener_.service_->SetNeedContinueListener(false);
-        listener_.service_->GetHandler()->SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::DEEP_IDLE_MSG, 0),
-            REPORT_DEVICE_IDLE_DELAY);
+        listener_.service_->StoreScreenOffTime(static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs()));
     }
 }
 
@@ -93,22 +87,17 @@ bool ScreenListener::Stop()
 void ScreenListener::OnConditionChanged(WorkCondition::Type conditionType,
     std::shared_ptr<DetectorValue> conditionVal)
 {
-    int32_t ret = service_->StopOrRemoveWorkByCondition(conditionType, WorkStatus::Status::RUNNING);
+    if (workQueueManager_ != nullptr) {
+        workQueueManager_->OnConditionChanged(conditionType, conditionVal);
+    } else {
+        WS_HILOGE("workQueueManager_ is nullptr.");
+    }
+
+    int32_t ret = service_->StopWorksByCondition(conditionType, WorkStatus::Status::RUNNING);
     if (ret != ERR_OK) {
         WS_HILOGE("stop work by condition failed, error code:%{public}d.", ret);
     }
     WS_HILOGI("stop work by condition successed.");
-
-    if (workQueueManager_ != nullptr) {
-        workQueueManager_->OnConditionChanged(conditionType, conditionVal);
-        int32_t ret = service_->StopOrRemoveWorkByCondition(conditionType, WorkStatus::Status::CONDITION_READY);
-        if (ret != ERR_OK) {
-            WS_HILOGE("remove work from ready queue by condition failed, error code:%{public}d.", ret);
-        }
-        WS_HILOGI("remove work from ready queue by condition successed.");
-    } else {
-        WS_HILOGE("workQueueManager_ is nullptr.");
-    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

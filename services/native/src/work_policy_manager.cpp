@@ -769,6 +769,27 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
     return ERR_OK;
 }
 
+void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
+{
+    if (!workStatus || workStatus->workId_.empty()) {
+        WS_HILOGE("remove watchdog error, workStatus or workId is null");
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
+    uint32_t watchdogId = -1;
+    for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
+        if (workStatus->workId_ == it->second->workId_) {
+            watchdog_->RemoveWatchdog(it->first);
+            watchdogId = it->first;
+            break;
+        }
+    }
+    if (watchdogId != -1) {
+        watchdogIdMap_.erase(watchdogId);
+    }
+}
+
 std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetWorksByCondition(WorkCondition::Type conditionType,
     WorkStatus::Status status)
 {

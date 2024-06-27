@@ -29,8 +29,7 @@ public:
         RETRIGGER_MSG = 0,
         SERVICE_INIT_MSG,
         IDE_RETRIGGER_MSG,
-        CHECK_CONDITION_MSG,
-        DEEP_IDLE_MSG
+        CHECK_CONDITION_MSG
     };
     WorkEventHandler(const std::shared_ptr<AppExecFwk::EventRunner>& runner,
         const std::shared_ptr<WorkSchedulerService>& service);
