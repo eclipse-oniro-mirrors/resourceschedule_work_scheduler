@@ -1241,12 +1241,10 @@ int32_t WorkSchedulerService::StopDeepIdleWorks()
     }
 
     for (shared_ptr<WorkStatus> workStatus : works) {
-        if (workStatus->IsRunning()) {
-            WS_HILOGI("stop work by condition, bundleName:%{public}s, workId:%{public}s",
-                workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
-            StopWorkInner(workStatus, workStatus->uid_, false, false);
-            workPolicyManager_->RemoveWatchDog(workStatus);
-        }
+        WS_HILOGI("stop work by condition, bundleName:%{public}s, workId:%{public}s",
+            workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+        StopWorkInner(workStatus, workStatus->uid_, false, false);
+        workPolicyManager_->RemoveWatchDog(workStatus);
     }
     return ERR_OK;
 }

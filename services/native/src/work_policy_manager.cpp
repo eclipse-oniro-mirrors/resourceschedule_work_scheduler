@@ -793,6 +793,7 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
 std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetDeepIdleWorks()
 {
     std::list<shared_ptr<WorkStatus>> deepIdleWorkds;
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
         std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetDeepIdleWorks();

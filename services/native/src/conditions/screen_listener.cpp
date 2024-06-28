@@ -41,8 +41,9 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
         int32_t ret = listener_.service_->StopDeepIdleWorks();
         if (ret != ERR_OK) {
             WS_HILOGE("stop work by condition failed, error code:%{public}d.", ret);
+        } else {
+            WS_HILOGI("stop work by condition successed.");
         }
-        WS_HILOGI("stop work by condition successed.");
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
         listener_.service_->SetScreenOffTime(static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs()));
     }
