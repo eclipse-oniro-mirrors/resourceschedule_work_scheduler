@@ -258,21 +258,18 @@ public:
     int32_t ResumePausedWorks(int32_t uid);
 
     /**
-     * @brief Get the match status Works by Condition.
-     *
-     * @param conditionType The condition type.
-     * @param status The status type.
-     * @return All matched running works;
-     */
-    std::list<std::shared_ptr<WorkStatus>> GetWorksByCondition(WorkCondition::Type conditionType,
-        WorkStatus::Status status);
-
-    /**
      * @brief Remove watchdog From Queue.
      *
      * @param workStatus The workStatus.
      */
     void RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus);
+
+    /**
+     * @brief Get All DeepIdle Works.
+     *
+     * @return All DeepIdle Works.
+     */
+    std::list<std::shared_ptr<WorkStatus>> GetDeepIdleWorks();
 private:
     int32_t GetMaxRunningCount(std::string& policyName);
     int32_t GetRunningCount();

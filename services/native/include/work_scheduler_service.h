@@ -269,11 +269,32 @@ public:
      */
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
-    void StoreScreenOffTime(uint64_t screenOffTime);
-    uint64_t LoadScreenOffTime();
-    void SetDeviceDeepIdle(bool deviceDeepIdle);
-    bool IsDeviceDeepIdle();
-    int32_t StopWorksByCondition(WorkCondition::Type conditionType, WorkStatus::Status status);
+    /**
+     * @brief Set screen off time.
+     *
+     * @param screenOffTime screen off time.
+     */
+    void SetScreenOffTime(uint64_t screenOffTime);
+    /**
+     * @brief Get screen off time.
+     */
+    uint64_t GetScreenOffTime();
+    /**
+     * @brief Set deepIdle.
+     *
+     * @param deepIdle If deepIdle,true or false.
+     */
+    void SetDeepIdle(bool deepIdle);
+    /**
+     * @brief Is DeepIdle.
+     */
+    bool IsDeepIdle();
+    /**
+     * @brief stop deepIdle works.
+     *
+     * @return success or fail.
+     */
+    int32_t StopDeepIdleWorks();
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -318,7 +339,7 @@ private:
     std::mutex observerMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
-    bool deviceDeepIdle_ {false};
+    std::atomic<bool> deepIdle_ {false};
     std::atomic<uint64_t> screenOffTime_ {0};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;

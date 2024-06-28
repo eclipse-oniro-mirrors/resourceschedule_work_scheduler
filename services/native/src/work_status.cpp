@@ -341,11 +341,11 @@ bool WorkStatus::IsStorageAndTimerReady(WorkCondition::Type type)
 
 bool WorkStatus::IsNapReady(WorkCondition::Type type)
 {
-    if (type != WorkCondition::Type::NAP) {
+    if (type != WorkCondition::Type::DEEP_IDLE) {
         return true;
     }
-    auto conditionSet = workInfo_->GetConditionMap()->at(WorkCondition::Type::NAP);
-    auto conditionCurrent = conditionMap_.at(WorkCondition::Type::NAP);
+    auto conditionSet = workInfo_->GetConditionMap()->at(WorkCondition::Type::DEEP_IDLE);
+    auto conditionCurrent = conditionMap_.at(WorkCondition::Type::DEEP_IDLE);
     if (conditionSet->boolVal != conditionCurrent->boolVal) {
         return false;
     }
@@ -507,9 +507,9 @@ void WorkStatus::Dump(string& result)
                 to_string(conditionMap_.at(WorkCondition::Type::TIMER)->intVal) + ",\n");
         }
     }
-    if (conditionMap_.count(WorkCondition::Type::NAP) > 0) {
-        result.append(string("\"isNap\":") +
-            to_string(conditionMap_.at(WorkCondition::Type::NAP)->boolVal) + ",\n");
+    if (conditionMap_.count(WorkCondition::Type::DEEP_IDLE) > 0) {
+        result.append(string("\"isDeepIdle\":") +
+            to_string(conditionMap_.at(WorkCondition::Type::DEEP_IDLE)->boolVal) + ",\n");
     }
     result.append("},\n\"workInfo\":\n");
     workInfo_->Dump(result);

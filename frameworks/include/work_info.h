@@ -117,11 +117,11 @@ public:
      */
     void RequestExtras(AAFwk::WantParams extras);
     /**
-     * @brief Request nap.
+     * @brief Request DeepIdle.
      *
-     * @param nap The nap status.
+     * @param deepIdle The DeepIdle status.
      */
-    void RequestNap(bool nap);
+    void RequestDeepIdle(bool deepIdle);
     /**
      * @brief Refresh uid.
      *
@@ -285,9 +285,9 @@ public:
      */
     std::string GetUriKey();
     /**
-     * @brief Get nap status.
+     * @brief Get deepIdle status.
      */
-    WorkCondition::Nap GetNap();
+    WorkCondition::DeepIdle GetDeepIdle();
     /**
      * @brief Get appIndex.
      *

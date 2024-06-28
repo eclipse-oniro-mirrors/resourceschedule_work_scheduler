@@ -34,12 +34,19 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
     const std::string action = data.GetWant().GetAction();
     WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
-        listener_.service_->StoreScreenOffTime(0);
-        listener_.service_->SetDeviceDeepIdle(false);
-        listener_.OnConditionChanged(WorkCondition::Type::NAP,
+        listener_.service_->SetScreenOffTime(0);
+        listener_.service_->SetDeepIdle(false);
+        listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
+        int32_t ret = listener_.service_->StopDeepIdleWorks();
+        if (ret != ERR_OK) {
+            WS_HILOGE("stop work by condition failed, error code:%{public}d.", ret);
+        }
+        WS_HILOGI("stop work by condition successed.");
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
-        listener_.service_->StoreScreenOffTime(static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs()));
+        uint64_t currentTime = static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs());
+        WS_HILOGI("set screen off time: %{public}lu", currentTime);
+        listener_.service_->SetScreenOffTime(currentTime);
     }
 }
 
@@ -92,12 +99,6 @@ void ScreenListener::OnConditionChanged(WorkCondition::Type conditionType,
     } else {
         WS_HILOGE("workQueueManager_ is nullptr.");
     }
-
-    int32_t ret = service_->StopWorksByCondition(conditionType, WorkStatus::Status::RUNNING);
-    if (ret != ERR_OK) {
-        WS_HILOGE("stop work by condition failed, error code:%{public}d.", ret);
-    }
-    WS_HILOGI("stop work by condition successed.");
 }
 } // namespace WorkScheduler
 } // namespace OHOS

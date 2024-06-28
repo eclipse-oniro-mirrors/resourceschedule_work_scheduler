@@ -433,7 +433,7 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
     workQueueManager_->AddListener(WorkCondition::Type::STORAGE, storageListener);
     workQueueManager_->AddListener(WorkCondition::Type::TIMER, timerListener);
     workQueueManager_->AddListener(WorkCondition::Type::GROUP, groupListener);
-    workQueueManager_->AddListener(WorkCondition::Type::NAP, screenListener);
+    workQueueManager_->AddListener(WorkCondition::Type::DEEP_IDLE, screenListener);
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     GroupObserverInit();
@@ -1208,34 +1208,33 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
     checker.CheckAllStatus();
 }
 
-void WorkSchedulerService::StoreScreenOffTime(uint64_t screenOffTime)
+void WorkSchedulerService::SetScreenOffTime(uint64_t screenOffTime)
 {
     screenOffTime_.store(screenOffTime);
 }
 
-uint64_t WorkSchedulerService::LoadScreenOffTime()
+uint64_t WorkSchedulerService::GetScreenOffTime()
 {
     return screenOffTime_.load();
 }
 
-void WorkSchedulerService::SetDeviceDeepIdle(bool deviceDeepIdle)
+void WorkSchedulerService::SetDeepIdle(bool deepIdle)
 {
-    deviceDeepIdle_ = deviceDeepIdle;
+    deepIdle_.store(deepIdle);
 }
 
-bool WorkSchedulerService::IsDeviceDeepIdle()
+bool WorkSchedulerService::IsDeepIdle()
 {
-    return deviceDeepIdle_;
+    return deepIdle_.load();
 }
 
-int32_t WorkSchedulerService::StopWorksByCondition(WorkCondition::Type conditionType, WorkStatus::Status status)
+int32_t WorkSchedulerService::StopDeepIdleWorks()
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    WS_HILOGI("stop work by condition type:%{public}d", conditionType);
-    std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetWorksByCondition(conditionType, status);
+    std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetDeepIdleWorks();
     if (works.size() == 0) {
         WS_HILOGD("stop work by condition, no matched works");
         return ERR_OK;

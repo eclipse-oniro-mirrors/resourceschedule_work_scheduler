@@ -217,7 +217,7 @@ private:
     static bool GetStorageInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
     static bool GetRepeatInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
     static bool GetExtrasInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
-    static bool GetNapInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
+    static bool GetDeepIdleInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

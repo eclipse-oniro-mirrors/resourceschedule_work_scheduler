@@ -120,8 +120,8 @@ std::string WorkPolicyManager::GetConditionString(const shared_ptr<WorkStatus> w
         conditions.append("TIMER-");
     }
 
-    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::NAP) > 0) {
-        conditions.append("NAP-");
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::DEEP_IDLE) > 0) {
+        conditions.append("DEEP_IDLE-");
     }
     conditions.pop_back();
     return conditions;
@@ -429,6 +429,18 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
     std::shared_ptr<WorkStatus> &topWork)
 {
+    if (topWork->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN
+        && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNKNOWN
+        && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNPLUGGED) {
+        WS_HILOGD("charger is in CHARGING status, update watchdog time:%{public}d", DEEP_IDLE_WATCHDOG_TIME);
+        SetWatchdogTime(DEEP_IDLE_WATCHDOG_TIME);
+        return;
+    }
+
+    if (!wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
+        SetWatchdogTime(g_lastWatchdogTime);
+        return;
+    }
     int32_t chargerStatus = 0;
     auto iter = topWork->conditionMap_.find(WorkCondition::Type::CHARGER);
     if (iter != topWork->conditionMap_.end() && iter->second) {
@@ -437,18 +449,6 @@ void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerSe
         WS_HILOGD("charger is in CHARGING_UNKNOWN status");
         chargerStatus = static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN);
     }
-
-    if (chargerStatus != static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
-        && chargerStatus != static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
-        WS_HILOGD("charger is in CHARGING status, update watchdog time:%{public}d", DEEP_IDLE_WATCHDOG_TIME);
-        SetWatchdogTime(DEEP_IDLE_WATCHDOG_TIME);
-        return;
-    }
-    if (!wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
-        SetWatchdogTime(g_lastWatchdogTime);
-        return;
-    }
-    
     if (chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNPLUGGED)
         || chargerStatus == static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN)) {
         WS_HILOGD("charger is in CHARGING_UNKNOWN or CHARGING_UNPLUGGED status");
@@ -722,9 +722,9 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             long long oldWatchdogTime = workStatus->workWatchDogTime_;
             long long currTime = WorkSchedUtils::GetCurrentTimeMs();
             long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
-            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+            if (newWatchdogTime > DEEP_IDLE_WATCHDOG_TIME) {
                 WS_HILOGE("invalid watchdogtime: %{public}lld", newWatchdogTime);
-                newWatchdogTime = WATCHDOG_TIME;
+                newWatchdogTime = WATCHDOG_TIME;    
             }
             WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
@@ -790,21 +790,18 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
     }
 }
 
-std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetWorksByCondition(WorkCondition::Type conditionType,
-    WorkStatus::Status status)
+std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetDeepIdleWorks()
 {
-    WS_HILOGD("enter");
-    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
-    std::list<shared_ptr<WorkStatus>> allWorks;
+    std::list<shared_ptr<WorkStatus>> deepIdleWorkds;
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
-        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetWorksByCondition(conditionType, status);
+        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetDeepIdleWorks();
         if (workList.size() != 0) {
-            allWorks.insert(allWorks.end(), workList.begin(), workList.end());
+            deepIdleWorkds.insert(deepIdleWorkds.end(), workList.begin(), workList.end());
         }
         it++;
     }
-    return allWorks;
+    return deepIdleWorkds;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

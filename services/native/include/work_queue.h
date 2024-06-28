@@ -118,14 +118,11 @@ public:
      */
     std::list<std::shared_ptr<WorkInfo>> GetRunningWorks();
     /**
-     * @brief Get the match status Works by Condition.
+     * @brief Get All DeepIdle Works.
      *
-     * @param conditionType The condition type.
-     * @param status The status type.
-     * @return All matched running works;
+     * @return All DeepIdle Works;
      */
-    std::list<std::shared_ptr<WorkStatus>> GetWorksByCondition(WorkCondition::Type conditionType,
-        WorkStatus::Status status);
+    std::list<std::shared_ptr<WorkStatus>> GetDeepIdleWorks();
     /**
      * @brief Get work id str.
      *
