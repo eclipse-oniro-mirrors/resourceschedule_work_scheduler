@@ -32,7 +32,7 @@ ScreenEventSubscriber::ScreenEventSubscriber(const EventFwk::CommonEventSubscrib
 void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data)
 {
     const std::string action = data.GetWant().GetAction();
-    WS_HILOGD("OnReceiveEvent get action: %{public}s", action.c_str());
+    WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
         listener_.service_->SetScreenOffTime(0);
         listener_.service_->SetDeepIdle(false);
@@ -44,9 +44,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
         }
         WS_HILOGI("stop work by condition successed.");
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
-        uint64_t currentTime = static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs());
-        WS_HILOGI("set screen off time: %{public}lu", currentTime);
-        listener_.service_->SetScreenOffTime(currentTime);
+        listener_.service_->SetScreenOffTime(static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs()));
     }
 }
 
