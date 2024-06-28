@@ -41,6 +41,8 @@ ohos_shared_library("workschedclient") {
 
   deps = [ "${worksched_utils_path}:workschedutils" ]
 
+  public_external_deps = [ "jsoncpp:jsoncpp" ]
+  
   external_deps = [
     "ability_base:want",
     "hilog:libhilog",
