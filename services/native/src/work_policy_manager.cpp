@@ -724,7 +724,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
             if (newWatchdogTime > DEEP_IDLE_WATCHDOG_TIME) {
                 WS_HILOGE("invalid watchdogtime: %{public}lld", newWatchdogTime);
-                newWatchdogTime = WATCHDOG_TIME;    
+                newWatchdogTime = WATCHDOG_TIME;
             }
             WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
