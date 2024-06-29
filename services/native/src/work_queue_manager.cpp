@@ -58,7 +58,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
-            if (listenerMap_.count(it.first) != 0) {
+            if (it.first != WorkCondition::Type::BATTERY_LEVEL && listenerMap_.count(it.first) != 0) {
                 listenerMap_.at(it.first)->Start();
             }
         }
@@ -94,6 +94,9 @@ bool WorkQueueManager::CancelWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : queueMap_) {
         it.second->CancelWork(workStatus);
         if (queueMap_.count(it.first) == 0) {
+            if (it.first == WorkCondition::Type::BATTERY_LEVEL) {
+                continue;
+            }
             listenerMap_.at(it.first)->Stop();
         }
     }
@@ -169,7 +172,7 @@ void WorkQueueManager::Dump(string& result)
 {
     std::lock_guard<std::mutex> lock(mutex_);
     string conditionType[] = {"network", "charger", "battery_status", "battery_level",
-        "storage", "timer", "group", "nap", "standby", "unknown"};
+        "storage", "timer", "group", "deepIdle", "standby", "unknown"};
     uint32_t size = sizeof(conditionType);
     for (auto it : queueMap_) {
         if (it.first < size) {

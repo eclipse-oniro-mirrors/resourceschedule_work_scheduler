@@ -46,6 +46,7 @@
 #include "conditions/charger_listener.h"
 #include "conditions/condition_checker.h"
 #include "conditions/network_listener.h"
+#include "conditions/screen_listener.h"
 #include "conditions/storage_listener.h"
 #include "conditions/timer_listener.h"
 #include "conditions/group_listener.h"
@@ -415,11 +416,13 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     auto chargerListener = make_shared<ChargerListener>(workQueueManager_);
     auto batteryStatusListener = make_shared<BatteryStatusListener>(workQueueManager_);
-    auto batteryLevelListener = make_shared<BatteryLevelListener>(workQueueManager_);
+    auto batteryLevelListener = make_shared<BatteryLevelListener>(workQueueManager_, shared_from_this());
+    batteryLevelListener->Start();
 #endif // POWERMGR_BATTERY_MANAGER_ENABLE
     auto storageListener = make_shared<StorageListener>(workQueueManager_);
     auto timerListener = make_shared<TimerListener>(workQueueManager_, runner);
     auto groupListener = make_shared<GroupListener>(workQueueManager_, runner);
+    auto screenListener = make_shared<ScreenListener>(workQueueManager_, shared_from_this());
 
     workQueueManager_->AddListener(WorkCondition::Type::NETWORK, networkListener);
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
@@ -430,6 +433,7 @@ void WorkSchedulerService::WorkQueueManagerInit(const std::shared_ptr<AppExecFwk
     workQueueManager_->AddListener(WorkCondition::Type::STORAGE, storageListener);
     workQueueManager_->AddListener(WorkCondition::Type::TIMER, timerListener);
     workQueueManager_->AddListener(WorkCondition::Type::GROUP, groupListener);
+    workQueueManager_->AddListener(WorkCondition::Type::DEEP_IDLE, screenListener);
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     GroupObserverInit();
@@ -1202,6 +1206,47 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
 {
     ConditionChecker checker(workQueueManager_);
     checker.CheckAllStatus();
+}
+
+void WorkSchedulerService::SetScreenOffTime(uint64_t screenOffTime)
+{
+    screenOffTime_.store(screenOffTime);
+}
+
+uint64_t WorkSchedulerService::GetScreenOffTime()
+{
+    return screenOffTime_.load();
+}
+
+void WorkSchedulerService::SetDeepIdle(bool deepIdle)
+{
+    deepIdle_.store(deepIdle);
+}
+
+bool WorkSchedulerService::IsDeepIdle()
+{
+    return deepIdle_.load();
+}
+
+int32_t WorkSchedulerService::StopDeepIdleWorks()
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetDeepIdleWorks();
+    if (works.size() == 0) {
+        WS_HILOGD("stop work by condition, no matched works");
+        return ERR_OK;
+    }
+
+    for (shared_ptr<WorkStatus> workStatus : works) {
+        WS_HILOGI("stop work by condition, bundleName:%{public}s, workId:%{public}s",
+            workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+        StopWorkInner(workStatus, workStatus->uid_, false, false);
+        workPolicyManager_->RemoveWatchDog(workStatus);
+    }
+    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

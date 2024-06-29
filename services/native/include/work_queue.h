@@ -118,6 +118,12 @@ public:
      */
     std::list<std::shared_ptr<WorkInfo>> GetRunningWorks();
     /**
+     * @brief Get All DeepIdle Works.
+     *
+     * @return All DeepIdle Works;
+     */
+    std::list<std::shared_ptr<WorkStatus>> GetDeepIdleWorks();
+    /**
      * @brief Get work id str.
      *
      * @param result The result.

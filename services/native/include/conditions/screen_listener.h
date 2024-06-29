@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -13,10 +13,9 @@
  * limitations under the License.
  */
 
-#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CONDITIONS_BATTERY_LEVEL_LISTENER_H
-#define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CONDITIONS_BATTERY_LEVEL_LISTENER_H
+#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CONDITIONS_SCREEN_LISTENER_H
+#define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CONDITIONS_SCREEN_LISTENER_H
 
-#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include <memory>
 
 #include "common_event_subscriber.h"
@@ -27,11 +26,11 @@
 namespace OHOS {
 namespace WorkScheduler {
 class WorkQueueManager;
-class BatteryLevelListener : public IConditionListener {
+class ScreenListener : public IConditionListener {
 public:
-    explicit BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager,
+    explicit ScreenListener(std::shared_ptr<WorkQueueManager> workQueueManager,
         std::shared_ptr<WorkSchedulerService> service);
-    ~BatteryLevelListener() override;
+    ~ScreenListener() override;
 
     /**
      * @brief The OnConditionChanged callback.
@@ -53,17 +52,17 @@ public:
      * @return True if success,else false.
      */
     bool Stop() override;
+public:
+    std::shared_ptr<WorkSchedulerService> service_;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
-    std::shared_ptr<WorkSchedulerService> service_;
     std::shared_ptr<EventFwk::CommonEventSubscriber> commonEventSubscriber = nullptr;
 };
 
-class BatteryLevelEventSubscriber : public EventFwk::CommonEventSubscriber {
+class ScreenEventSubscriber : public EventFwk::CommonEventSubscriber {
 public:
-    BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
-        BatteryLevelListener &listener);
-    ~BatteryLevelEventSubscriber() override = default;
+    ScreenEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo, ScreenListener &listener);
+    ~ScreenEventSubscriber() override = default;
     /**
      * @brief The OnReceiveEvent callback.
      *
@@ -71,9 +70,8 @@ public:
      */
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
 private:
-    BatteryLevelListener &listener_;
+    ScreenListener &listener_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
-#endif // POWERMGR_BATTERY_MANAGER_ENABLE
-#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CONDITIONS_BATTERY_LEVEL_LISTENER_H
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_CONDITIONS_SCREEN_LISTENER_H

@@ -133,11 +133,11 @@ void WorkInfo::RefreshAppIndex(int32_t appIndex)
     appIndex_ = appIndex;
 }
 
-void WorkInfo::RequestNap(bool nap)
+void WorkInfo::RequestDeepIdle(bool deepIdle)
 {
-    std::shared_ptr<Condition> napCondition = std::make_shared<Condition>();
-    napCondition->boolVal = nap;
-    conditionMap_.emplace(WorkCondition::Type::NAP, napCondition);
+    std::shared_ptr<Condition> deepIdleCondition = std::make_shared<Condition>();
+    deepIdleCondition->boolVal = deepIdle;
+    conditionMap_.emplace(WorkCondition::Type::DEEP_IDLE, deepIdleCondition);
 }
 
 void WorkInfo::SetCallBySystemApp(bool callBySystemApp)
@@ -275,13 +275,13 @@ time_t WorkInfo::GetBaseTime()
     return result;
 }
 
-WorkCondition::Nap WorkInfo::GetNap()
+WorkCondition::DeepIdle WorkInfo::GetDeepIdle()
 {
-    if (conditionMap_.count(WorkCondition::Type::NAP) <= 0) {
-        return WorkCondition::Nap::NAP_UNKNOWN;
+    if (conditionMap_.count(WorkCondition::Type::DEEP_IDLE) <= 0) {
+        return WorkCondition::DeepIdle::DEEP_IDLE_UNKNOWN;
     }
-    return conditionMap_.at(WorkCondition::Type::NAP)->boolVal ?
-        WorkCondition::Nap::NAP_IN : WorkCondition::Nap::NAP_OUT;
+    return conditionMap_.at(WorkCondition::Type::DEEP_IDLE)->boolVal ?
+        WorkCondition::DeepIdle::DEEP_IDLE_IN : WorkCondition::DeepIdle::DEEP_IDLE_OUT;
 }
 
 std::shared_ptr<std::map<WorkCondition::Type, std::shared_ptr<Condition>>> WorkInfo::GetConditionMap()
@@ -318,7 +318,7 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
                 break;
             }
             case WorkCondition::Type::CHARGER:
-            case WorkCondition::Type::NAP: {
+            case WorkCondition::Type::DEEP_IDLE: {
                 ret = ret && parcel.WriteInt32(it.first);
                 ret = ret && parcel.WriteBool(it.second->boolVal);
                 ret = ret && parcel.WriteInt32(it.second->enumVal);
@@ -412,7 +412,7 @@ bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_
                 }
                 break;
             }
-            case WorkCondition::Type::NAP:
+            case WorkCondition::Type::DEEP_IDLE:
             case WorkCondition::Type::CHARGER: {
                 if (!parcel.ReadBool(condition->boolVal) || !parcel.ReadInt32(condition->enumVal)) {
                     return false;
@@ -518,8 +518,8 @@ void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
                 }
                 break;
             }
-            case WorkCondition::Type::NAP: {
-                conditions["isNap"] = it.second->boolVal;
+            case WorkCondition::Type::DEEP_IDLE: {
+                conditions["isDeepIdle"] = it.second->boolVal;
                 break;
             }
             default: {}
@@ -609,8 +609,8 @@ void WorkInfo::ParseConditionFromJsonStr(const Json::Value &value)
     if (conditions.isMember("storage") && conditions["storage"].isInt()) {
         this->RequestStorageLevel(WorkCondition::Storage(conditions["storage"].asInt()));
     }
-    if (conditions.isMember("isNap") && conditions["isNap"].isBool()) {
-        this->RequestNap(conditions["isNap"].asBool());
+    if (conditions.isMember("isDeepIdle") && conditions["isDeepIdle"].isBool()) {
+        this->RequestDeepIdle(conditions["isDeepIdle"].asBool());
     }
     ParseTimerFormJsonStr(conditions);
 }

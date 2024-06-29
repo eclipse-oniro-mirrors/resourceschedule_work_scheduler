@@ -88,7 +88,7 @@ shared_ptr<Condition> WorkQueue::ParseCondition(WorkCondition::Type type,
             value->strVal = conditionVal->strVal;
             break;
         }
-        case WorkCondition::Type::NAP:
+        case WorkCondition::Type::DEEP_IDLE:
         case WorkCondition::Type::STANDBY: {
             value->boolVal = conditionVal->boolVal;
             break;
@@ -221,6 +221,18 @@ std::list<std::shared_ptr<WorkInfo>> WorkQueue::GetRunningWorks()
         }
     }
     return workInfo;
+}
+
+std::list<std::shared_ptr<WorkStatus>> WorkQueue::GetDeepIdleWorks()
+{
+    std::list<std::shared_ptr<WorkStatus>> works;
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
+    for (shared_ptr<WorkStatus> work : workList_) {
+        if (work->IsRunning() && work->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN) {
+            works.emplace_back(work);
+        }
+    }
+    return works;
 }
 
 void WorkQueue::GetWorkIdStr(string& result)
