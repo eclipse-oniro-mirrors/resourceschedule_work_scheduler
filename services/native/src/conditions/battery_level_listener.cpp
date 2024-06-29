@@ -29,7 +29,7 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
     const int MIN_DEEP_IDLE_BATTERY_CAPACITY = 91;
-    const int MIN_DEEP_IDLE_SCREEN_OFF_TIME = 10 * 60 * 1000;
+    const int MIN_DEEP_IDLE_SCREEN_OFF_TIME_SECOND = 10 * 60 * 1000;
 }
 BatteryLevelEventSubscriber::BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     BatteryLevelListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
@@ -104,7 +104,7 @@ void BatteryLevelListener::OnConditionChanged(WorkCondition::Type conditionType,
         uint64_t currentTime = static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs());
         if (!service_->IsDeepIdle()
             && screenOffTime != 0
-            && (currentTime - screenOffTime) >= MIN_DEEP_IDLE_SCREEN_OFF_TIME
+            && (currentTime - screenOffTime) >= MIN_DEEP_IDLE_SCREEN_OFF_TIME_SECOND
             && conditionVal->intVal >= MIN_DEEP_IDLE_BATTERY_CAPACITY) {
             service_->SetDeepIdle(true);
             workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,

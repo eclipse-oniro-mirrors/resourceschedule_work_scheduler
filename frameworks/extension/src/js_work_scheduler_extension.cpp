@@ -301,11 +301,7 @@ void SetDeepIdleInfo(napi_env env, napi_value workInfoData, WorkCondition::DeepI
         return;
     }
     napi_value isDeepIdle;
-    if (value == WorkCondition::DeepIdle::DEEP_IDLE_IN) {
-        napi_get_boolean(env, true, &isDeepIdle);
-    } else {
-        napi_get_boolean(env, false, &isDeepIdle);
-    }
+    napi_get_boolean(env, (value == WorkCondition::DeepIdle::DEEP_IDLE_IN), &isDeepIdle);
     napi_set_named_property(env, workInfoData, "isDeepIdle", isDeepIdle);
 }
 

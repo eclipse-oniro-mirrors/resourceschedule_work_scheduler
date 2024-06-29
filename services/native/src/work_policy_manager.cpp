@@ -491,6 +491,7 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
         watchdogId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
     wss_.lock()->WatchdogTimeOut(workStatus);
+    std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.erase(watchdogId);
 }
 
