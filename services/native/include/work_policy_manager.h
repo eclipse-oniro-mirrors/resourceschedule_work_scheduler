@@ -256,6 +256,20 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t ResumePausedWorks(int32_t uid);
+
+    /**
+     * @brief Remove watchdog From Queue.
+     *
+     * @param workStatus The workStatus.
+     */
+    void RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus);
+
+    /**
+     * @brief Get All DeepIdle Works.
+     *
+     * @return All DeepIdle Works.
+     */
+    std::list<std::shared_ptr<WorkStatus>> GetDeepIdleWorks();
 private:
     int32_t GetMaxRunningCount(std::string& policyName);
     int32_t GetRunningCount();

@@ -295,18 +295,14 @@ void SetRepeatInfo(napi_env env, napi_value workInfoData, bool isRepeat,
     }
 }
 
-void SetNapInfo(napi_env env, napi_value workInfoData, WorkCondition::Nap value)
+void SetDeepIdleInfo(napi_env env, napi_value workInfoData, WorkCondition::DeepIdle value)
 {
-    if (value == WorkCondition::Nap::NAP_UNKNOWN) {
+    if (value == WorkCondition::DeepIdle::DEEP_IDLE_UNKNOWN) {
         return;
     }
-    napi_value isNap;
-    if (value == WorkCondition::Nap::NAP_IN) {
-        napi_get_boolean(env, true, &isNap);
-    } else {
-        napi_get_boolean(env, false, &isNap);
-    }
-    napi_set_named_property(env, workInfoData, "isDeepIdle", isNap);
+    napi_value isDeepIdle;
+    napi_get_boolean(env, (value == WorkCondition::DeepIdle::DEEP_IDLE_IN), &isDeepIdle);
+    napi_set_named_property(env, workInfoData, "isDeepIdle", isDeepIdle);
 }
 
 bool CallFuncation(napi_env env, napi_value workInfoData,
@@ -358,7 +354,7 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     uint32_t timeInterval = workInfo.GetTimeInterval();
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
-    WorkCondition::Nap napValue = workInfo.GetNap();
+    WorkCondition::DeepIdle deepIdleValue = workInfo.GetDeepIdle();
     std::string extrasStr;
     bool getExtrasRet = GetExtrasJsonStr(workInfo, extrasStr);
     WorkSchedulerExtension::OnWorkStart(workInfo);
@@ -379,7 +375,7 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
         SetChargerTypeInfo(env, workInfoData, charger);
         SetBatteryInfo(env, workInfoData, batteryLevel, batteryStatus);
         SetStorageInfo(env, workInfoData, storageLevel);
-        SetNapInfo(env, workInfoData, napValue);
+        SetDeepIdleInfo(env, workInfoData, deepIdleValue);
 
         if (timeInterval > 0) {
             SetRepeatInfo(env, workInfoData, isRepeat, timeInterval, cycleCount);
@@ -410,7 +406,7 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
     uint32_t timeInterval = workInfo.GetTimeInterval();
     bool isRepeat = workInfo.IsRepeat();
     int32_t cycleCount = workInfo.GetCycleCount();
-    WorkCondition::Nap napValue = workInfo.GetNap();
+    WorkCondition::DeepIdle deepIdleValue = workInfo.GetDeepIdle();
     std::string extrasStr;
     bool getExtrasRet = GetExtrasJsonStr(workInfo, extrasStr);
     WorkSchedulerExtension::OnWorkStop(workInfo);
@@ -431,7 +427,7 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
         SetChargerTypeInfo(env, workInfoData, charger);
         SetBatteryInfo(env, workInfoData, batteryLevel, batteryStatus);
         SetStorageInfo(env, workInfoData, storageLevel);
-        SetNapInfo(env, workInfoData, napValue);
+        SetDeepIdleInfo(env, workInfoData, deepIdleValue);
 
         if (timeInterval > 0) {
             SetRepeatInfo(env, workInfoData, isRepeat, timeInterval, cycleCount);

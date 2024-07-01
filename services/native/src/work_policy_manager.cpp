@@ -47,6 +47,7 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
+const int32_t DEEP_IDLE_WATCHDOG_TIME = 30 * 60 * 1000;
 const int32_t INIT_DUMP_SET_CPU = 0;
 const int32_t INVALID_VALUE = -1;
 const int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
@@ -119,8 +120,8 @@ std::string WorkPolicyManager::GetConditionString(const shared_ptr<WorkStatus> w
         conditions.append("TIMER-");
     }
 
-    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::NAP) > 0) {
-        conditions.append("NAP-");
+    if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::DEEP_IDLE) > 0) {
+        conditions.append("DEEP_IDLE-");
     }
     conditions.pop_back();
     return conditions;
@@ -428,6 +429,14 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
     std::shared_ptr<WorkStatus> &topWork)
 {
+    if (topWork->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN
+        && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNKNOWN
+        && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNPLUGGED) {
+        WS_HILOGD("charger is in CHARGING status, update watchdog time:%{public}d", DEEP_IDLE_WATCHDOG_TIME);
+        SetWatchdogTime(DEEP_IDLE_WATCHDOG_TIME);
+        return;
+    }
+
     if (!wmsptr->CheckEffiResApplyInfo(topWork->uid_)) {
         SetWatchdogTime(g_lastWatchdogTime);
         return;
@@ -482,6 +491,8 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
         watchdogId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
     wss_.lock()->WatchdogTimeOut(workStatus);
+    std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
+    watchdogIdMap_.erase(watchdogId);
 }
 
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
@@ -712,7 +723,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             long long oldWatchdogTime = workStatus->workWatchDogTime_;
             long long currTime = WorkSchedUtils::GetCurrentTimeMs();
             long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
-            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+            if (newWatchdogTime > DEEP_IDLE_WATCHDOG_TIME) {
                 WS_HILOGE("invalid watchdogtime: %{public}lld", newWatchdogTime);
                 newWatchdogTime = WATCHDOG_TIME;
             }
@@ -757,6 +768,42 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
         return E_UID_NO_MATCHING_WORK_ERR;
     }
     return ERR_OK;
+}
+
+void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
+{
+    if (!workStatus || workStatus->workId_.empty()) {
+        WS_HILOGE("remove watchdog error, workStatus or workId is null");
+        return;
+    }
+
+    std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
+    uint32_t watchdogId = -1;
+    for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
+        if (workStatus->workId_ == it->second->workId_) {
+            watchdog_->RemoveWatchdog(it->first);
+            watchdogId = it->first;
+            break;
+        }
+    }
+    if (watchdogId != -1) {
+        watchdogIdMap_.erase(watchdogId);
+    }
+}
+
+std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetDeepIdleWorks()
+{
+    std::list<shared_ptr<WorkStatus>> deepIdleWorkds;
+    std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
+    auto it = uidQueueMap_.begin();
+    while (it != uidQueueMap_.end()) {
+        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetDeepIdleWorks();
+        if (workList.size() != 0) {
+            deepIdleWorkds.insert(deepIdleWorkds.end(), workList.begin(), workList.end());
+        }
+        it++;
+    }
+    return deepIdleWorkds;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

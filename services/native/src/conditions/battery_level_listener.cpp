@@ -23,9 +23,14 @@
 #include "matching_skills.h"
 #include "want.h"
 #include "work_sched_hilog.h"
+#include "work_sched_utils.h"
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+    const int MIN_DEEP_IDLE_BATTERY_CAPACITY = 91;
+    const int MIN_DEEP_IDLE_SCREEN_OFF_TIME_SECOND = 10 * 60 * 1000;
+}
 BatteryLevelEventSubscriber::BatteryLevelEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     BatteryLevelListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
@@ -57,9 +62,11 @@ std::shared_ptr<EventFwk::CommonEventSubscriber> CreateBatteryEventSubscriber(Ba
     return std::make_shared<BatteryLevelEventSubscriber>(info, listener);
 }
 
-BatteryLevelListener::BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager)
+BatteryLevelListener::BatteryLevelListener(std::shared_ptr<WorkQueueManager> workQueueManager,
+    std::shared_ptr<WorkSchedulerService> service)
 {
     workQueueManager_ = workQueueManager;
+    service_ = service;
 }
 
 BatteryLevelListener::~BatteryLevelListener()
@@ -92,6 +99,17 @@ void BatteryLevelListener::OnConditionChanged(WorkCondition::Type conditionType,
 {
     if (workQueueManager_ != nullptr) {
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
+
+        uint64_t screenOffTime = service_->GetScreenOffTime();
+        uint64_t currentTime = static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs());
+        if (!service_->IsDeepIdle()
+            && screenOffTime != 0
+            && (currentTime - screenOffTime) >= MIN_DEEP_IDLE_SCREEN_OFF_TIME_SECOND
+            && conditionVal->intVal >= MIN_DEEP_IDLE_BATTERY_CAPACITY) {
+            service_->SetDeepIdle(true);
+            workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
+                std::make_shared<DetectorValue>(0, 0, true, std::string()));
+        }
     } else {
         WS_HILOGE("workQueueManager_ is nullptr.");
     }
