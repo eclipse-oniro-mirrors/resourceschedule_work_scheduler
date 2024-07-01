@@ -84,6 +84,7 @@ const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
+const int32_t UID_TRANSFORM_DIVISOR = 200000;
 const int32_t INIT_DELAY = 2 * 1000;
 const int32_t CHECK_CONDITION_DELAY = 5 * 1000;
 const int32_t MAX_BUFFER = 2048;
@@ -524,15 +525,51 @@ bool WorkSchedulerService::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &a
     return false;
 }
 
+bool WorkSchedulerService::CheckExtensionInfos(WorkInfo &workInfo, int32_t uid)
+{
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        WS_HILOGE("fail to get system ability mgr.");
+        return false;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        WS_HILOGE("fail to get bundle manager proxy.");
+        return false;
+    }
+    sptr<IBundleMgr> bundleMgr =  iface_cast<IBundleMgr>(remoteObject);
+    BundleInfo bundleInfo;
+    if (bundleMgr->GetBundleInfo(workInfo.GetBundleName(),
+        BundleFlag::GET_BUNDLE_WITH_EXTENSION_INFO,
+        bundleInfo, uid / UID_TRANSFORM_DIVISOR)) {
+        auto findIter = std::find_if(bundleInfo.extensionInfos.begin(), bundleInfo.extensionInfos.end(),
+            [&](const auto &info) {
+                WS_HILOGD("%{public}s %{public}s %{public}d", info.bundleName.c_str(), info.name.c_str(), info.type);
+                return info.bundleName == workInfo.GetBundleName() &&
+                    info.name == workInfo.GetAbilityName() &&
+                    info.type == ExtensionAbilityType::WORK_SCHEDULER;
+            });
+        if (findIter == bundleInfo.extensionInfos.end()) {
+            WS_HILOGE("extension info is error");
+            return false;
+        }
+    }
+    return true;
+}
+
 bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
 {
     int32_t appIndex;
     string bundleName;
     if (GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
         workInfo.RefreshAppIndex(appIndex);
-        return workInfo.GetBundleName() == bundleName;
+        if (workInfo.GetBundleName() != bundleName) {
+            WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
+            return false;
+        }
     }
-    return false;
+    return CheckExtensionInfos(workInfo, uid);
 }
 
 bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
