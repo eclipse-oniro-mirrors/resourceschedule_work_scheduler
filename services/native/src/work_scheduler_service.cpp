@@ -543,12 +543,13 @@ bool WorkSchedulerService::CheckExtensionInfos(WorkInfo &workInfo, int32_t uid)
     if (bundleMgr->GetBundleInfo(workInfo.GetBundleName(),
         BundleFlag::GET_BUNDLE_WITH_EXTENSION_INFO,
         bundleInfo, uid / UID_TRANSFORM_DIVISOR)) {
-        auto findIter = std::find_if(bundleInfo.extensionInfos.begin(),
-            bundleInfo.extensionInfos.end(), [&](const auto &info) {
+        auto findIter = std::find_if(bundleInfo.extensionInfos.begin(), bundleInfo.extensionInfos.end(),
+            [&](const auto &info) {
                 WS_HILOGD("%{public}s %{public}s %{public}d", info.bundleName.c_str(), info.name.c_str(), info.type);
                 return info.bundleName == workInfo.GetBundleName() &&
                     info.name == workInfo.GetAbilityName() &&
-                    info.type == ExtensionAbilityType::WORK_SCHEDULER;});
+                    info.type == ExtensionAbilityType::WORK_SCHEDULER;
+            });
         if (findIter == bundleInfo.extensionInfos.end()) {
             WS_HILOGE("extension info is error");
             return false;
