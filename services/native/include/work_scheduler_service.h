@@ -326,7 +326,7 @@ private:
     void InitPersistedWork();
     bool CheckProcessName();
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
-    bool CheckExtensionInfos(WorkInfo& workInfo, int32_t& uid);
+    bool CheckExtensionInfos(WorkInfo &workInfo, int32_t &uid);
 
 private:
     std::set<int32_t> whitelist_;

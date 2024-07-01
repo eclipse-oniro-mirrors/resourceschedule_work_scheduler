@@ -525,7 +525,7 @@ bool WorkSchedulerService::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &a
     return false;
 }
 
-bool WorkSchedulerService::CheckExtensionInfos(WorkInfo& workInfo, int32_t& uid)
+bool WorkSchedulerService::CheckExtensionInfos(WorkInfo &workInfo, int32_t uid)
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -548,7 +548,7 @@ bool WorkSchedulerService::CheckExtensionInfos(WorkInfo& workInfo, int32_t& uid)
                 WS_HILOGD("%{public}s %{public}s %{public}d", info.bundleName.c_str(), info.name.c_str(), info.type);
                 return info.bundleName == workInfo.GetBundleName() &&
                     info.name == workInfo.GetAbilityName() &&
-                    info.type == ExtensionAbilityType::WORK_SCHEDULER;})
+                    info.type == ExtensionAbilityType::WORK_SCHEDULER;});
         if (findIter == bundleInfo.extensionInfos.end()) {
             WS_HILOGE("extension info is error");
             return false;
@@ -563,8 +563,8 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     string bundleName;
     if (GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
         workInfo.RefreshAppIndex(appIndex);
-        if (workInfo.GetBundleName != bundleName) {
-            WS_HILOGE("bundleName %{pulick}s is invalid", workInfo.GetBundleName().c_str());
+        if (workInfo.GetBundleName() != bundleName) {
+            WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
             return false;
         }
     }
