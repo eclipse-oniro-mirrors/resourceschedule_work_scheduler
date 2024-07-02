@@ -786,7 +786,7 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
             break;
         }
     }
-    if (watchdogId != -1) {
+    if (watchdogId != static_cast<uint32_t>(-1)) {
         watchdogIdMap_.erase(watchdogId);
     }
 }
