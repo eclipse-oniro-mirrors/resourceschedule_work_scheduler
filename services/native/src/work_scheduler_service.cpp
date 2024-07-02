@@ -564,12 +564,12 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     string bundleName;
     if (GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
         workInfo.RefreshAppIndex(appIndex);
-        if (workInfo.GetBundleName() != bundleName) {
-            WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
-            return false;
+        if (workInfo.GetBundleName() == bundleName) {
+            return CheckExtensionInfos(workInfo, uid);
         }
     }
-    return CheckExtensionInfos(workInfo, uid);
+    WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
+    return false;
 }
 
 bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
