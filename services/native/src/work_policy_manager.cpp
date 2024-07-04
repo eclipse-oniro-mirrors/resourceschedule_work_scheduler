@@ -47,7 +47,7 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
-const int32_t DEEP_IDLE_WATCHDOG_TIME = 30 * 60 * 1000;
+const int32_t DEEP_IDLE_WATCHDOG_TIME = 20 * 60 * 1000;
 const int32_t INIT_DUMP_SET_CPU = 0;
 const int32_t INVALID_VALUE = -1;
 const int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
@@ -778,7 +778,8 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
     }
 
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
-    uint32_t watchdogId = -1;
+    uint32_t invalidId = -1;
+    uint32_t watchdogId = invalidId;
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         if (workStatus->workId_ == it->second->workId_) {
             watchdog_->RemoveWatchdog(it->first);
@@ -786,7 +787,7 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
             break;
         }
     }
-    if (watchdogId != -1) {
+    if (watchdogId != invalidId) {
         watchdogIdMap_.erase(watchdogId);
     }
 }
