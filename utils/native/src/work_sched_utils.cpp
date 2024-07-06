@@ -99,7 +99,7 @@ bool WorkSchedUtils::IsSystemApp()
     return Security::AccessToken::TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
 }
 
-long long WorkSchedUtils::GetCurrentTimeMs()
+uint64_t WorkSchedUtils::GetCurrentTimeMs()
 {
     using namespace std;
     auto now = chrono::system_clock::now();

@@ -161,7 +161,8 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut
         HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
             HiSysEvent::EventType::STATISTIC, "UID",
             workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_,
-            "REASON", isTimeOut, "DURATION", (WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_));
+            "REASON", isTimeOut, "DURATION",
+            (workStatus->duration_ + (WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_)));
 #ifdef DEVICE_STANDBY_ENABLE
         WS_HILOGI("OnWorkStop uid: %{public}d", workStatus->uid_);
         DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,

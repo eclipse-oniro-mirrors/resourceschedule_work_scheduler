@@ -466,7 +466,7 @@ void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatu
         watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_);
     watchdog_->AddWatchdog(watchId, watchdogTime_);
     workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
-    workStatus->workWatchDogTime_ = static_cast<long long>(watchdogTime_);
+    workStatus->workWatchDogTime_ = static_cast<uint64_t>(watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
 }
@@ -720,17 +720,21 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
         auto workStatus = it->second;
         if (workStatus->uid_ == uid && workStatus->IsRunning() && !workStatus->IsPaused()) {
             hasWorkWithUid = true;
-            long long oldWatchdogTime = workStatus->workWatchDogTime_;
-            long long currTime = WorkSchedUtils::GetCurrentTimeMs();
-            long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
+            uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
+            uint64_t currTime = WorkSchedUtils::GetCurrentTimeMs();
+            uint64_t runningTime = currTime - workStatus->workStartTime_;
+            uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
             if (newWatchdogTime > DEEP_IDLE_WATCHDOG_TIME) {
-                WS_HILOGE("invalid watchdogtime: %{public}lld", newWatchdogTime);
-                newWatchdogTime = WATCHDOG_TIME;
+                WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}llu,"
+                "oldWatchdogTime:%{public}llu, runningTime:%{public}llu", workStatus->bundleName_.c_str(),
+                workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);
+                newWatchdogTime = 0;
             }
-            WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
-                " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
+            workStatus->duration_ += runningTime;
+            WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s,"
+                " oldWatchdogTime:%{public}llu, newWatchdogTime:%{public}llu, duration:%{public}llu",
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
-                oldWatchdogTime, newWatchdogTime);
+                oldWatchdogTime, newWatchdogTime, workStatus->duration_);
             workStatus->paused_ = true;
             workStatus->workWatchDogTime_ = newWatchdogTime;
             watchdog_->RemoveWatchdog(it->first);
@@ -778,8 +782,7 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
     }
 
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
-    uint32_t invalidId = -1;
-    uint32_t watchdogId = invalidId;
+    uint32_t watchdogId = UINT32_MAX;
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         if (workStatus->workId_ == it->second->workId_) {
             watchdog_->RemoveWatchdog(it->first);
@@ -787,7 +790,7 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
             break;
         }
     }
-    if (watchdogId != invalidId) {
+    if (watchdogId != UINT32_MAX) {
         watchdogIdMap_.erase(watchdogId);
     }
 }
