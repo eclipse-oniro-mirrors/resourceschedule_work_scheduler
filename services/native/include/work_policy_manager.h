@@ -292,7 +292,6 @@ private:
         const std::string &abilityName);
     void SendIdeWorkRetriggerEvent(int32_t delaytime);
     bool IsSpecialScene(std::shared_ptr<WorkStatus> topWork);
-    uint64_t GetCurrentTimeMs();
     std::string GetConditionString(const std::shared_ptr<WorkStatus> workStatus);
 
 private:
