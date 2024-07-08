@@ -98,7 +98,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     Want want;
     want.SetElementName(workStatus->bundleName_, workStatus->abilityName_);
     want.SetParam(PARAM_APP_CLONE_INDEX_KEY, workStatus->workInfo_->GetAppIndex());
-    int32_t ret = abilityMgr_->ConnectAbility(want, connection, nullptr,
+    int32_t ret = abilityMgr_->ConnectAbilityCommon(want, connection, nullptr,
         AppExecFwk::ExtensionAbilityType::WORK_SCHEDULER, workStatus->userId_);
     if (ret != ERR_OK) {
         WS_HILOGE("connect failed");
