@@ -84,7 +84,6 @@ const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
-const int32_t UID_TRANSFORM_DIVISOR = 200000;
 const int32_t INIT_DELAY = 2 * 1000;
 const int32_t CHECK_CONDITION_DELAY = 5 * 1000;
 const int32_t MAX_BUFFER = 2048;
