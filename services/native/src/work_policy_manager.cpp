@@ -721,8 +721,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
         if (workStatus->uid_ == uid && workStatus->IsRunning() && !workStatus->IsPaused()) {
             hasWorkWithUid = true;
             uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
-            uint64_t currTime = WorkSchedUtils::GetCurrentTimeMs();
-            uint64_t runningTime = currTime - workStatus->workStartTime_;
+            uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
             uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
             if (newWatchdogTime > DEEP_IDLE_WATCHDOG_TIME) {
                 WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}llu,"
