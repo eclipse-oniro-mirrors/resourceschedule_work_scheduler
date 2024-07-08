@@ -47,7 +47,6 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
-const int32_t DEEP_IDLE_WATCHDOG_TIME = 20 * 60 * 1000;
 const int32_t INIT_DUMP_SET_CPU = 0;
 const int32_t INVALID_VALUE = -1;
 const int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
@@ -432,8 +431,8 @@ void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerSe
     if (topWork->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNKNOWN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNPLUGGED) {
-        WS_HILOGD("charger is in CHARGING status, update watchdog time:%{public}d", DEEP_IDLE_WATCHDOG_TIME);
-        SetWatchdogTime(DEEP_IDLE_WATCHDOG_TIME);
+        WS_HILOGD("deep idle and charger condition, update watchdog time:%{public}d", LONG_WATCHDOG_TIME);
+        SetWatchdogTime(LONG_WATCHDOG_TIME);
         return;
     }
 
@@ -723,7 +722,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
             uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
             uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
-            if (newWatchdogTime > DEEP_IDLE_WATCHDOG_TIME) {
+            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
                 WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}llu,"
                     "oldWatchdogTime:%{public}llu, runningTime:%{public}llu", workStatus->bundleName_.c_str(),
                     workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);

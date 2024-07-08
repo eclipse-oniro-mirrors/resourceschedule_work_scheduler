@@ -63,7 +63,7 @@ public:
      *
      * @return Millisecond time.
      */
-    static std::uint64_t GetCurrentTimeMs();
+    static uint64_t GetCurrentTimeMs();
 };
 } // namespace WorkScheduler
 } // namespace OHOS
