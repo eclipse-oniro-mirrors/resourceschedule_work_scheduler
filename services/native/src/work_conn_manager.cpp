@@ -158,13 +158,14 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut
     // Notify work remove event to battery statistics only work has started
     if (ret) {
         int32_t pid = IPCSkeleton::GetCallingPid();
+        workStatus->duration_ += WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
         HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
             HiSysEvent::EventType::STATISTIC, "UID",
             workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_,
-            "REASON", isTimeOut, "DURATION",
-            (workStatus->duration_ + (WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_)));
+            "REASON", isTimeOut, "DURATION", workStatus->duration_);
 #ifdef DEVICE_STANDBY_ENABLE
-        WS_HILOGI("OnWorkStop uid: %{public}d", workStatus->uid_);
+        WS_HILOGI("OnWorkStop uid: %{public}d, duration:%{public}llu, startTime:%{public}llu", 
+            workStatus->uid_, workStatus->duration_, workStatus->workStartTime_);
         DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,
             workStatus->uid_, workStatus->bundleName_);
 #endif // DEVICE_STANDBY_ENABLE
