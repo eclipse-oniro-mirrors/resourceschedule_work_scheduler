@@ -101,7 +101,7 @@ void BatteryLevelListener::OnConditionChanged(WorkCondition::Type conditionType,
         workQueueManager_->OnConditionChanged(conditionType, conditionVal);
 
         uint64_t screenOffTime = service_->GetScreenOffTime();
-        uint64_t currentTime = static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs());
+        uint64_t currentTime = WorkSchedUtils::GetCurrentTimeMs();
         if (!service_->IsDeepIdle()
             && screenOffTime != 0
             && (currentTime - screenOffTime) >= MIN_DEEP_IDLE_SCREEN_OFF_TIME_SECOND

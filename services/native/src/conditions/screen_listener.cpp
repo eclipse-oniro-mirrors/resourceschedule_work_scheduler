@@ -45,7 +45,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
             WS_HILOGI("stop work by condition successed.");
         }
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
-        listener_.service_->SetScreenOffTime(static_cast<uint64_t>(WorkSchedUtils::GetCurrentTimeMs()));
+        listener_.service_->SetScreenOffTime(WorkSchedUtils::GetCurrentTimeMs());
     }
 }
 

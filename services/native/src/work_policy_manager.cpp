@@ -47,7 +47,6 @@ const int32_t INIT_DUMP_SET_MEMORY = -1;
 const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
-const int32_t DEEP_IDLE_WATCHDOG_TIME = 20 * 60 * 1000;
 const int32_t INIT_DUMP_SET_CPU = 0;
 const int32_t INVALID_VALUE = -1;
 const int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
@@ -432,8 +431,8 @@ void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerSe
     if (topWork->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNKNOWN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNPLUGGED) {
-        WS_HILOGD("charger is in CHARGING status, update watchdog time:%{public}d", DEEP_IDLE_WATCHDOG_TIME);
-        SetWatchdogTime(DEEP_IDLE_WATCHDOG_TIME);
+        WS_HILOGD("deep idle and charger condition, update watchdog time:%{public}d", LONG_WATCHDOG_TIME);
+        SetWatchdogTime(LONG_WATCHDOG_TIME);
         return;
     }
 
@@ -466,7 +465,7 @@ void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatu
         watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_);
     watchdog_->AddWatchdog(watchId, watchdogTime_);
     workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
-    workStatus->workWatchDogTime_ = static_cast<long long>(watchdogTime_);
+    workStatus->workWatchDogTime_ = static_cast<uint64_t>(watchdogTime_);
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
 }
@@ -720,17 +719,20 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
         auto workStatus = it->second;
         if (workStatus->uid_ == uid && workStatus->IsRunning() && !workStatus->IsPaused()) {
             hasWorkWithUid = true;
-            long long oldWatchdogTime = workStatus->workWatchDogTime_;
-            long long currTime = WorkSchedUtils::GetCurrentTimeMs();
-            long long newWatchdogTime = oldWatchdogTime - (currTime - workStatus->workStartTime_);
-            if (newWatchdogTime > DEEP_IDLE_WATCHDOG_TIME) {
-                WS_HILOGE("invalid watchdogtime: %{public}lld", newWatchdogTime);
-                newWatchdogTime = WATCHDOG_TIME;
+            uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
+            uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
+            uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
+            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+                WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}llu,"
+                    "oldWatchdogTime:%{public}llu, runningTime:%{public}llu", workStatus->bundleName_.c_str(),
+                    workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);
+                newWatchdogTime = 0;
             }
-            WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
-                " oldWatchdogTime:%{public}lld, newWatchdogTime:%{public}lld",
+            workStatus->duration_ += runningTime;
+            WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s,"
+                " oldWatchdogTime:%{public}llu, newWatchdogTime:%{public}llu, duration:%{public}llu",
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
-                oldWatchdogTime, newWatchdogTime);
+                oldWatchdogTime, newWatchdogTime, workStatus->duration_);
             workStatus->paused_ = true;
             workStatus->workWatchDogTime_ = newWatchdogTime;
             watchdog_->RemoveWatchdog(it->first);
@@ -778,8 +780,7 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
     }
 
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
-    uint32_t invalidId = -1;
-    uint32_t watchdogId = invalidId;
+    uint32_t watchdogId = UINT32_MAX;
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         if (workStatus->workId_ == it->second->workId_) {
             watchdog_->RemoveWatchdog(it->first);
@@ -787,7 +788,7 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
             break;
         }
     }
-    if (watchdogId != invalidId) {
+    if (watchdogId != UINT32_MAX) {
         watchdogIdMap_.erase(watchdogId);
     }
 }

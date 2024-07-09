@@ -51,8 +51,9 @@ public:
     std::string abilityName_;
     int32_t uid_;
     int32_t userId_;
-    long long workStartTime_ = 0LL;
-    long long workWatchDogTime_ = 0LL;
+    uint64_t workStartTime_ {0};
+    uint64_t workWatchDogTime_ {0};
+    uint64_t duration_ {0};
     bool paused_ {false};
     bool persisted_;
     int32_t priority_;
