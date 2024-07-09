@@ -569,7 +569,6 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
             CheckExtensionInfos(workInfo, uid);
             return true;
         }
-        
     }
     WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
     return false;

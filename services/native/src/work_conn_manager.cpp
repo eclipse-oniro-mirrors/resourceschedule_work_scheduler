@@ -68,10 +68,10 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
         return false;
     }
 
-    if(!workStatus->workInfo_->GetExtension()) {
+    if (!workStatus->workInfo_->GetExtension()) {
         WS_HILOGE("extension's type is not workScheduler, connect failed");
         return false;
-    } 
+    }
 
     WS_HILOGD("Start Work with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
         workStatus->workId_.c_str(), workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str());
