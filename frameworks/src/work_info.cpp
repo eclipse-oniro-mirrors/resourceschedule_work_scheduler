@@ -570,7 +570,7 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
     if (value.isMember("appIndex") && value["appIndex"].isInt()) {
         this->appIndex_ = value["appIndex"].asInt();
     }
-    if (value.isMember("extension") && value["extension"].isBool()) {
+    if (IsHasBoolProp(value, "extension")) {
         this->extension_ = value["extension"].asBool();
     }
     ParseConditionFromJsonStr(value);
