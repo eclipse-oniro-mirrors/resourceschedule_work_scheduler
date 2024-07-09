@@ -30,6 +30,7 @@ WorkInfo::WorkInfo()
     persisted_ = false;
     extras_ = nullptr;
     appIndex_ = APPINDEX_INIT_VALUE;
+    extension_ = true;
 }
 
 WorkInfo::~WorkInfo() {}
@@ -133,6 +134,11 @@ void WorkInfo::RefreshAppIndex(int32_t appIndex)
     appIndex_ = appIndex;
 }
 
+void WorkInfo::RefreshExtension(int32_t extension)
+{
+    extension_ = extension;
+}
+
 void WorkInfo::RequestDeepIdle(bool deepIdle)
 {
     std::shared_ptr<Condition> deepIdleCondition = std::make_shared<Condition>();
@@ -188,6 +194,11 @@ bool WorkInfo::IsPersisted()
 int32_t WorkInfo::GetAppIndex() const
 {
     return appIndex_;
+}
+
+bool WorkInfo::GetExtension() const
+{
+    return extension_;
 }
 
 WorkCondition::Network WorkInfo::GetNetworkType()
@@ -456,6 +467,7 @@ std::string WorkInfo::ParseToJsonStr()
     root["uriKey"] = uriKey_;
     root["callBySystemApp"] = callBySystemApp_;
     root["appIndex"] = appIndex_;
+    root["extension"] = extension_;
     ParseConditionToJsonStr(root);
     if (extras_) {
         Json::Value extras;
@@ -557,6 +569,9 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
     }
     if (value.isMember("appIndex") && value["appIndex"].isInt()) {
         this->appIndex_ = value["appIndex"].asInt();
+    }
+    if (value.isMember("extension") && value["extension"].isBool()) {
+        this->extension_ = value["extension"].asBool();
     }
     ParseConditionFromJsonStr(value);
     if (!value.isMember("parameters")) {
