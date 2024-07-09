@@ -68,7 +68,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
         return false;
     }
 
-    if(!workStatus->workInfo_->GetAppIndex()) {
+    if(!workStatus->workInfo_->GetExtension()) {
         WS_HILOGE("extension's type is not workScheduler, connect failed");
         return false;
     } 

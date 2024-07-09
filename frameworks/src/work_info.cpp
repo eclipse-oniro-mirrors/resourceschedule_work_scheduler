@@ -134,7 +134,7 @@ void WorkInfo::RefreshAppIndex(int32_t appIndex)
     appIndex_ = appIndex;
 }
 
-void WorkInfo::RefreshExtension(int32_t extension)
+void WorkInfo::RefreshExtension(bool extension)
 {
     extension_ = extension;
 }
