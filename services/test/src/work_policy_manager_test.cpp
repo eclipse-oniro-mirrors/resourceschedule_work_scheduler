@@ -363,5 +363,39 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_004, TestSize.Level1)
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
     EXPECT_EQ(ret, ERR_OK);
 }
+
+/**
+ * @tc.name: WatchdogTimeOut_001
+ * @tc.desc: Test WorkPolicyManagerTest WatchdogTimeOut.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, WatchdogTimeOut_001, TestSize.Level1)
+{
+    workPolicyManager_->watchdogIdMap_.clear();
+    uint32_t watchdogId = 1;
+    workPolicyManager_->WatchdogTimeOut(watchdogId);
+    EXPECT_TRUE(workPolicyManager_->watchdogIdMap_.count(watchdogId) == 0);
+}
+
+/**
+ * @tc.name: WatchdogTimeOut_002
+ * @tc.desc: Test WorkPolicyManagerTest WatchdogTimeOut.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, WatchdogTimeOut_002, TestSize.Level1)
+{
+    workPolicyManager_->watchdogIdMap_.clear();
+    uint32_t watchdogId = 1;
+    int32_t uid = 10000;
+    WorkInfo workinfo;
+    workinfo.SetElement("com.demo.app", "demoAbility");
+    workinfo.SetWorkId(10010);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workPolicyManager_->AddWatchdogForWork(workStatus);
+    workPolicyManager_->WatchdogTimeOut(watchdogId);
+    EXPECT_TRUE(workPolicyManager_->watchdogIdMap_.count(watchdogId) == 0);
+}
 }
 }
