@@ -169,7 +169,7 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut
             workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_,
             "REASON", isTimeOut, "DURATION", workStatus->duration_);
 #ifdef DEVICE_STANDBY_ENABLE
-        WS_HILOGI("OnWorkStop uid: %{public}d, duration:%{public}zu, startTime:%{public}zu",
+        WS_HILOGI("OnWorkStop uid: %{public}d, duration:%{public}" PRIu64 ", startTime:%{public}" PRIu64,
             workStatus->uid_, workStatus->duration_, workStatus->workStartTime_);
         DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,
             workStatus->uid_, workStatus->bundleName_);
