@@ -135,6 +135,12 @@ public:
      */
     void RefreshAppIndex(int32_t appIndex);
     /**
+     * @brief Refresh extension.
+     *
+     * @param extension The extension.
+     */
+    void RefreshExtension(bool extension);
+    /**
      * @brief Set callBySystemApp flag.
      */
     void SetCallBySystemApp(bool callBySystemApp);
@@ -294,6 +300,12 @@ public:
      * @return The appIndex.
      */
     int32_t GetAppIndex() const;
+    /**
+     * @brief Get extension.
+     *
+     * @return The extension.
+     */
+    bool GetExtension() const;
 
 private:
     int32_t workId_;
@@ -307,12 +319,14 @@ private:
     bool preinstalled_ {false};
     std::string uriKey_;
     int32_t appIndex_;
+    bool extension_;
 private:
     static bool UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
     void ParseConditionFromJsonStr(const Json::Value &value);
     void ParseParametersFromJsonStr(const Json::Value &value);
     void ParseTimerFormJsonStr(const Json::Value &conditions);
+    bool IsHasBoolProp(const Json::Value &value, std::string key);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

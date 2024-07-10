@@ -551,6 +551,7 @@ bool WorkSchedulerService::CheckExtensionInfos(WorkInfo &workInfo, int32_t uid)
                     info.type == ExtensionAbilityType::WORK_SCHEDULER;
             });
         if (findIter == bundleInfo.extensionInfos.end()) {
+            workInfo.RefreshExtension(false);
             WS_HILOGE("extension info is error");
             return false;
         }
@@ -565,7 +566,8 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     if (GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
         workInfo.RefreshAppIndex(appIndex);
         if (workInfo.GetBundleName() == bundleName) {
-            return CheckExtensionInfos(workInfo, uid);
+            CheckExtensionInfos(workInfo, uid);
+            return true;
         }
     }
     WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
