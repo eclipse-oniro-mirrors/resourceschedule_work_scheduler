@@ -728,8 +728,9 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
             if (newWatchdogTime > LONG_WATCHDOG_TIME) {
                 WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
-                    ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64, workStatus->bundleName_.c_str(),
-                    workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);
+                    ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
+                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime,
+                    runningTime);
                 newWatchdogTime = 0;
             }
             workStatus->duration_ += runningTime;
