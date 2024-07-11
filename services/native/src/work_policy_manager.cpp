@@ -487,6 +487,10 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
         return;
     }
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
+    if (workStatus == nullptr) {
+        WS_HILOGE("watchdog:%{public}u time out error, workStatus is nullptr", watchdogId);
+        return;
+    }
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
         watchdogId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
     wss_.lock()->WatchdogTimeOut(workStatus);
@@ -497,7 +501,7 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
 {
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
-    return watchdogIdMap_.at(id);
+    return watchdogIdMap_.count(id) > 0 ? watchdogIdMap_.at(id) : nullptr;
 }
 
 list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
@@ -723,14 +727,15 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
             uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
             if (newWatchdogTime > LONG_WATCHDOG_TIME) {
-                WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}llu,"
-                    "oldWatchdogTime:%{public}llu, runningTime:%{public}llu", workStatus->bundleName_.c_str(),
-                    workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);
+                WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
+                    ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
+                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime,
+                    runningTime);
                 newWatchdogTime = 0;
             }
             workStatus->duration_ += runningTime;
             WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s,"
-                " oldWatchdogTime:%{public}llu, newWatchdogTime:%{public}llu, duration:%{public}llu",
+                " oldWatchdogTime:%{public}" PRIu64 ", newWatchdogTime:%{public}" PRIu64 ", duration:%{public}" PRIu64,
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
                 oldWatchdogTime, newWatchdogTime, workStatus->duration_);
             workStatus->paused_ = true;
