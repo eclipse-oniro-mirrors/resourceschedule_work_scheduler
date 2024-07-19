@@ -110,10 +110,6 @@ extern "C" {
         if (ret != 0) {
             return ret;
         }
-        ret = GetChargeInfo(cwork, workInfo, hasConditions);
-        if (ret != 0) {
-            return ret;
-        }
         ret = GetBatteryInfo(cwork, workInfo, hasConditions);
         if (ret != 0) {
             return ret;
