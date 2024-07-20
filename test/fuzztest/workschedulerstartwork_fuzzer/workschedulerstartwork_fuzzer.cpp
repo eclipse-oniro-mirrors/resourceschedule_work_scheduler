@@ -187,7 +187,7 @@ namespace WorkScheduler {
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-watchdog_time");
-        argsInStr.push_back("50000");
+        argsInStr.push_back("5000");
         workSchedulerService_->DumpProcess(argsInStr, result);
         
         argsInStr.clear();
@@ -255,7 +255,6 @@ namespace WorkScheduler {
         data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB));
         chargerListener.commonEventSubscriber->OnReceiveEvent(data);
 
-
         data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS));
         chargerListener.commonEventSubscriber->OnReceiveEvent(data);
 
@@ -293,7 +292,7 @@ namespace WorkScheduler {
     void OnReceiveEvent()
     {
         OnBatteryLevelListener();
-        OnBatteryStatusListenner();
+        OnBatteryStatusListener();
         OnChargerListener();
         OnScreenListener();
     }
