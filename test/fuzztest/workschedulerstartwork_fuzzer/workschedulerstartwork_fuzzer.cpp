@@ -25,11 +25,11 @@
 #include "work_conn_manager.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
-#include "battery_level_listener.h"
+#include "conditions/battery_level_listener.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "battery_info.h"
-#include "condition/screen_listener.h"
+#include "conditions/screen_listener.h"
 #include "work_queue_manager.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
@@ -52,7 +52,7 @@ namespace WorkScheduler {
         int32_t battery = 20;
         WorkInfo workInfo = WorkInfo();
         workInfo.SetWorkId(workId);
-        workInfo.SetElement("com.huawei.hnos.hiviewx", "MainWorkSchedulerAbility");
+        workInfo.SetElement("com.huawei.hmos.hiviewx", "MainWorkSchedulerAbility");
         workInfo.RequestPersisted(true);
         workInfo.RequestRepeatCycle(timeInterval);
         workInfo.RefreshUid(uid);
@@ -61,139 +61,139 @@ namespace WorkScheduler {
         workInfo.RequestBatteryLevel(battery);
         workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
         workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW);
-        workInfo.RequestNetworkType(WorkCondition::NETWORK::NETWORK_TYPE_WIFI);
+        workInfo.RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_WIFI);
         return workInfo;
     }
 
     void OnStorageChange()
     {
-        std::vector<std:string> argsInStr;
+        std::vector<std::string> argsInStr;
         std::string result;
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("stroage");
-        argsInStr.push_bach("invalid");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("storage");
+        argsInStr.push_back("invalid");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("stroage");
-        argsInStr.push_bach("ok");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("storage");
+        argsInStr.push_back("ok");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("stroage");
-        argsInStr.push_bach("low");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("storage");
+        argsInStr.push_back("low");
         workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void OnNetworkChange()
     {
-        std::vector<std:string> argsInStr;
+        std::vector<std::string> argsInStr;
         std::string result;
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("network");
-        argsInStr.push_bach("invalid");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("network");
+        argsInStr.push_back("invalid");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("network");
-        argsInStr.push_bach("disconnect");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("network");
+        argsInStr.push_back("disconnect");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("network");
-        argsInStr.push_bach("wifi");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("network");
+        argsInStr.push_back("wifi");
         workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void OnChargingChange()
     {
-        std::vector<std:string> argsInStr;
+        std::vector<std::string> argsInStr;
         std::string result;
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("charging");
-        argsInStr.push_bach("none");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("charging");
+        argsInStr.push_back("none");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("charging");
-        argsInStr.push_bach("usb");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("charging");
+        argsInStr.push_back("usb");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("charging");
-        argsInStr.push_bach("wrieless");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("charging");
+        argsInStr.push_back("wireless");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("charging");
-        argsInStr.push_bach("ac");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("charging");
+        argsInStr.push_back("ac");
         workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void OnBatteryStatusChange()
     {
-        std::vector<std:string> argsInStr;
+        std::vector<std::string> argsInStr;
         std::string result;
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("batteryStatus");
-        argsInStr.push_bach("ok");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("batteryStatus");
+        argsInStr.push_back("ok");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-d");
-        argsInStr.push_bach("batteryStatus");
-        argsInStr.push_bach("low");
+        argsInStr.push_back("-d");
+        argsInStr.push_back("batteryStatus");
+        argsInStr.push_back("low");
         workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
     void OnTimerChange()
     {
-        std::vector<std:string> argsInStr;
+        std::vector<std::string> argsInStr;
         std::string result;
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-repeat_time_min");
-        argsInStr.push_bach("10000");
+        argsInStr.push_back("-repeat_time_min");
+        argsInStr.push_back("10000");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-watchdog_time");
-        argsInStr.push_bach("50000");
+        argsInStr.push_back("-watchdog_time");
+        argsInStr.push_back("50000");
         workSchedulerService_->DumpProcess(argsInStr, result);
         
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-min_interval");
-        argsInStr.push_bach("20000");
+        argsInStr.push_back("-min_interval");
+        argsInStr.push_back("20000");
         workSchedulerService_->DumpProcess(argsInStr, result);
     }
 
@@ -209,14 +209,14 @@ namespace WorkScheduler {
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
         data.SetWant(want);
         batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
-    
+
         want.SetParam(PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY, 20);
         data.SetWant(want);
         batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
         batteryLevelListener.Stop();
     }
 
-    void OnBatteryStatusListenner()
+    void OnBatteryStatusListener()
     {
         BatteryStatusListener batteryStatusListener(workSchedulerService_->workQueueManager_);
 
@@ -237,7 +237,7 @@ namespace WorkScheduler {
         batteryStatusListener.Stop();
     }
 
-    void OnCharingListener()
+    void OnChargerListener()
     {
         ChargerListener chargerListener(workSchedulerService_->workQueueManager_);
 
@@ -268,59 +268,59 @@ namespace WorkScheduler {
 
     void OnScreenListener()
     {
-        std::shared_ptr<ScreenListener> screenListener_ = std::make_shared<ScreenListener>(
+        std::shared_ptr<ScreenListener> screenListener = std::make_shared<ScreenListener>(
             workSchedulerService_->workQueueManager_, workSchedulerService_);
         
-        screenListener_->Start();
+        screenListener->Start();
         EventFwk::CommonEventData data;
-        screenListener_->commonEventSubscriber->OnReceiveEvent(data);
+        screenListener->commonEventSubscriber->OnReceiveEvent(data);
 
         EventFwk::Want want;
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
         data.SetWant(want);
-        screenListener_->commonEventSubscriber->OnReceiveEvent(data);
+        screenListener->commonEventSubscriber->OnReceiveEvent(data);
 
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
         data.SetWant(want);
-        screenListener_->commonEventSubscriber->OnReceiveEvent(data);
+        screenListener->commonEventSubscriber->OnReceiveEvent(data);
 
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
         data.SetWant(want);
-        screenListener_->commonEventSubscriber->OnReceiveEvent(data);
-        screenListener_->Stop();
+        screenListener->commonEventSubscriber->OnReceiveEvent(data);
+        screenListener->Stop();
     }
 
     void OnReceiveEvent()
     {
         OnBatteryLevelListener();
         OnBatteryStatusListenner();
-        OnCharingListener();
+        OnChargerListener();
         OnScreenListener();
     }
 
-    void TriggWork(WorkInfo &workInfo)
+    void TriggerWork(WorkInfo &workInfo)
     {
         OnStorageChange();
         OnNetworkChange();
-        OnNetworkChange();
+        OnChargingChange();
         OnBatteryStatusChange();
         OnTimerChange();
 
         OnReceiveEvent();
 
-        std::vector<std:string> argsInStr;
+        std::vector<std::string> argsInStr;
         std::string result;
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-k");
+        argsInStr.push_back("-k");
         argsInStr.push_back("settings.power.suspend_sources");
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
-        argsInStr.push_bach("-t");
-        argsInStr.push_bach(workInfo.GetBundleName());
-        argsInStr.push_bach(workInfo.GetAbilityName());
+        argsInStr.push_back("-t");
+        argsInStr.push_back(workInfo.GetBundleName());
+        argsInStr.push_back(workInfo.GetAbilityName());
         workSchedulerService_->DumpProcess(argsInStr, result);
 
         workSchedulerService_->PauseRunningWorks(workInfo.GetUid());
@@ -328,7 +328,7 @@ namespace WorkScheduler {
 
         std::shared_ptr<WorkConnManager> workConnManager = std::make_shared<WorkConnManager>();
         std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, workInfo.GetUid());
-        workConnManager->WriteStartWorkEvent(workStatue);
+        workConnManager->WriteStartWorkEvent(workStatus);
     }
 
     void OnProcEfficiencyResourcesChange()
@@ -380,7 +380,7 @@ namespace WorkScheduler {
         OnWorkBundleGroupChange();
 
         if (workSchedulerService_->workQueueManager_ == nullptr) {
-            workSchedulerService_->workQueueManager_ = make_shared<WorkQueueManager>(workSchedulerService_);
+            workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
         }
         if (!workSchedulerService_->ready_) {
             workSchedulerService_->ready_ = true;
@@ -389,13 +389,13 @@ namespace WorkScheduler {
             workSchedulerService_->checkBundle_ = false;
         }
 
-        WorkInfo workInfo = WorkInfo();
+        WorkInfo workInfo = CreateWorkInfo();
         if (!dataMessageParcel.WriteParcelable(&workInfo)) {
             return false;
         }
         workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
         workSchedulerService_->TriggerWorkIfConditionReady();
-        TriggerWork();
+        TriggerWork(workInfo);
         workSchedulerService_->StopAndClearWorks();
         workSchedulerService_->OnStop();
         return true;
