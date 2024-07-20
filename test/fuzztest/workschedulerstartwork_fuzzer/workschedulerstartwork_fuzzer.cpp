@@ -52,7 +52,7 @@ namespace WorkScheduler {
         int32_t battery = 20;
         WorkInfo workInfo = WorkInfo();
         workInfo.SetWorkId(workId);
-        workInfo.SetElement("com.huawei.hmos.hiviewx", "MainWorkSchedulerAbility");
+        workInfo.SetElement("bundleName", "MainWorkSchedulerAbility");
         workInfo.RequestPersisted(true);
         workInfo.RequestRepeatCycle(timeInterval);
         workInfo.RefreshUid(uid);
@@ -199,6 +199,7 @@ namespace WorkScheduler {
 
     void OnBatteryLevelListener()
     {
+        int32_t capacity = 20;
         BatteryLevelListener batteryLevelListener(workSchedulerService_->workQueueManager_, workSchedulerService_);
         batteryLevelListener.Start();
 
@@ -210,7 +211,7 @@ namespace WorkScheduler {
         data.SetWant(want);
         batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
 
-        want.SetParam(PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY, 20);
+        want.SetParam(PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY, capacity);
         data.SetWant(want);
         batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
         batteryLevelListener.Stop();
@@ -355,9 +356,10 @@ namespace WorkScheduler {
 
     void OnWorkBundleGroupChange()
     {
-        OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo1(0, 1, 2, 0, "bundlename");
+        int32_t value = 2;
+        OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo1(0, 1, value, 0, "bundlename");
         workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo1);
-        OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo2(0, 2, 1, 0, "bundlename");
+        OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo2(0, value, 1, 0, "bundlename");
         workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo2);
     }
 
