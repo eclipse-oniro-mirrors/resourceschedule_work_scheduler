@@ -707,7 +707,7 @@ std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllIdeWorkStatus(co
         auto work = it->second->GetWorkList().front();
         if (work->workInfo_->GetBundleName() != bundleName ||
             work->workInfo_->GetAbilityName() != abilityName ||
-            work->uid_ != currentAccountId) {
+            work->userId_ != currentAccountId) {
             it++;
             continue;
         }
