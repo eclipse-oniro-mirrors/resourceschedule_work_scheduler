@@ -91,6 +91,8 @@ const int32_t MAX_BUFFER = 2048;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
+const int32_t TIME_OUT = 4;
+const int64_t DEVICE_IDLE = 5;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
@@ -173,7 +175,7 @@ void WorkSchedulerService::InitPreinstalledWork()
 {
     WS_HILOGD("init preinstalled work");
     bool needRefresh = false;
-    list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
+    static <shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
     for (auto work : preinstalledWorks) {
         WS_HILOGD("preinstalled workinfo id %{public}d, uid %{public}d", work->GetWorkId(), work->GetUid());
         if (!work->IsPersisted()) {
@@ -252,6 +254,10 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
         Json::Value workJson = preinstalledWorksRoot[it];
         shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
         if (workinfo->ParseFromJson(workJson)) {
+            if (workinfo->GetSaId() > 0) {
+                saMap_.emplace(workinfo->GetSaId(), workinfo->IsResidentSa());
+                continue;
+            }
             int32_t uid;
             if (!GetUidByBundleName(workinfo->GetBundleName(), uid)) {
                 continue;
@@ -1286,6 +1292,37 @@ int32_t WorkSchedulerService::StopDeepIdleWorks()
         workPolicyManager_->RemoveWatchDog(workStatus);
     }
     return ERR_OK;
+}
+
+void WorkSchedulerService::LoadSa()
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return;
+    }
+    if (saIdList_.empty()) {
+        WS_HILOGD("saIdList_ is empty.");
+        return;
+    }
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        WS_HILOGE("get sa manager failed.");
+        return;
+    }
+    for (auto it : saIdList_) {
+        if (it.second) {
+            std::vector vec = {it.first};
+            std::string action = "strat";
+            samgr->SendStrategy(DEVICE_IDLE, vec, 0, action);
+            continue;
+        }
+        auto res = samgr->LoadSystemAbility(it.first, TIME_OUT);
+        if (res == nullptr) {
+            WS_HILOGE("load sa: %{public}d failed.", it.first);
+            continue;
+        }
+        WS_HILOGD("load sa: %{public}d success.", it.first);
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -295,6 +295,10 @@ public:
      * @return success or fail.
      */
     int32_t StopDeepIdleWorks();
+    /**
+     * @brief load sa.
+     */
+    void LoadSa();
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -331,6 +335,7 @@ private:
 private:
     std::set<int32_t> whitelist_;
     std::mutex whitelistMutex_;
+    std::map<int32_t, bool> saMap_;
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif

@@ -31,6 +31,7 @@ WorkInfo::WorkInfo()
     extras_ = nullptr;
     appIndex_ = APPINDEX_INIT_VALUE;
     extension_ = true;
+    saId_ = INVALID_VALUE;
 }
 
 WorkInfo::~WorkInfo() {}
@@ -546,6 +547,11 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
         WS_HILOGE("workinfo json is empty");
         return false;
     }
+    if (value.isMember("saId") && value["saId"].isInt() && IsHasBoolProp(value, "residentSa")) {
+        this->saId_ = value["saId"].asInt();
+        this->residentSa_ = value["residentSa"].asBool();
+        return true;
+    }
     if (!value.isMember("workId") || !value["workId"].isInt() ||
         !value.isMember("bundleName") || !value["bundleName"].isString() ||
         !value.isMember("abilityName") || !value["abilityName"].isString()) {
@@ -555,16 +561,16 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
     this->workId_ = value["workId"].asInt();
     this->bundleName_ = value["bundleName"].asString();
     this->abilityName_ = value["abilityName"].asString();
-    if (value.isMember("persisted") && value["persisted"].isBool()) {
+    if (IsHasBoolProp(value, "persisted")) {
         this->persisted_ = value["persisted"].asBool();
     }
-    if (value.isMember("preinstalled") && value["preinstalled"].isBool()) {
+    if (IsHasBoolProp(value, "preinstalled")) {
         this->preinstalled_ = value["preinstalled"].asBool();
     }
     if (value.isMember("uriKey") && value["uriKey"].isString()) {
         this->uriKey_ = value["uriKey"].asString();
     }
-    if (value.isMember("callBySystemApp") && value["callBySystemApp"].isBool()) {
+    if (IsHasBoolProp(value, "callBySystemApp")) {
         this->callBySystemApp_ = value["callBySystemApp"].asBool();
     }
     if (value.isMember("appIndex") && value["appIndex"].isInt()) {
@@ -653,12 +659,27 @@ void WorkInfo::Dump(std::string &result)
     result.append(ParseToJsonStr());
 }
 
-bool WorkInfo::IsHasBoolProp(const Json::Value &value, std::string key)
+bool WorkInfo::IsHasBoolProp(const Json::Value &value, const std::string &key)
 {
     if (value.isMember(key) && value[key].isBool()) {
         return true;
     }
     return false;
+}
+
+int32_t WorkInfo::GetSaId() const
+{
+    return saId_;
+}
+
+void WorkInfo::RefreshSaId(int32_t saId)
+{
+    saId_ = saId;
+}
+
+bool WorkInfo::IsResidentSa() const
+{
+    return residentSa_;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
