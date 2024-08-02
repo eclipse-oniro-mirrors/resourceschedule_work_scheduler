@@ -1300,8 +1300,8 @@ void WorkSchedulerService::LoadSa()
         WS_HILOGE("service is not ready.");
         return;
     }
-    if (saIdList_.empty()) {
-        WS_HILOGD("saIdList_ is empty.");
+    if (saMap_.empty()) {
+        WS_HILOGD("saMap_ is empty.");
         return;
     }
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -1309,7 +1309,7 @@ void WorkSchedulerService::LoadSa()
         WS_HILOGE("get sa manager failed.");
         return;
     }
-    for (auto it : saIdList_) {
+    for (auto it : saMap_) {
         if (it.second) {
             std::vector vec = {it.first};
             std::string action = "strat";
