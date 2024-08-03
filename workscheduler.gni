@@ -80,7 +80,7 @@ declare_args() {
   }
   
   workscheduler_hicollie_enable = true
-  if (defined(global_parts_info)) &&
+  if (defined(global_parts_info) &&
       !defined(global_parts_info.hiviewdfx_hicollie)) {
     workscheduler_hicollie_enable = false
   }
