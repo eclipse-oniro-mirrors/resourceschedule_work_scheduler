@@ -17,9 +17,13 @@
 #include <message_parcel.h>
 #include <string_ex.h>
 
-#include "iwork_sched_service_ipc_interface_code.h"
 #include "work_sched_common.h"
 #include "work_sched_errors.h"
+
+#ifdef HICOLLIE_ENABLE
+#include "xcollie/xcollie.h"
+#include "xcollie/xcollie_define.h"
+#endif
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -135,7 +139,10 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
         WS_HILOGE("failed, descriptor is not matched!");
         return E_PARCEL_OPERATION_FAILED;
     }
-    return HandleRequest(code, data, reply, option);
+    int32_t idTimer = SetTimer(code);
+    int32_t result = HandleRequest(code, data, reply, option);
+    CancelTimer(idTimer);
+    return result;
 }
 
 int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
@@ -224,6 +231,42 @@ int32_t WorkSchedServiceStub::ResumePausedWorksStub(MessageParcel& data, Message
         return E_PARCEL_OPERATION_FAILED;
     }
     return ret;
+}
+
+int32_t WorkSchedServiceStub::SetTimer(uint32_t code)
+{
+#ifdef HICOLLIE_ENABLE
+    int32_t idTimer = HiviewDFX::INVALID_ID;
+    std::map<int32_t, std::string>::iterator itCollieId = collieCodeStringMap_.find(code);
+    if (itCollieId != collieCodeStringMap_.end()) {
+        std::string collieStr = itCollieId->second;
+        std::string collieName = "WorkSchedulerServiceStub:" + collieStr;
+        unsigned int flag = HiviewDFX::XCOLLIE_FLAG_LOG;
+        auto TimerCallbak = [collieStr](void *) {
+            WS_HILOGE("OnRemoteRequest timeout func: %{public}s", collieStr.c_str());
+        };
+        idTimer = HiviewDFX::XCollie::GetInstance().SetTimer(
+            collieName, XCOLLIE_TIMEOUT_SECONDS, TimerCallbak, nullptr, flag);
+        WS_HILOGD("SetTimer id: %{public}d, name: %{public}s.", idTimer, collieName.c_str());
+    }
+    return idTimer;
+#else
+    WS_HILOGD("No HICOLLIE_ENABLE");
+    return -1;
+#endif
+}
+
+void WorkSchedServiceStub::CancelTimer(int32_t id)
+{
+#ifdef HICOLLIE_ENABLE
+    if (id == HiviewDFX::INVALID_ID) {
+        return;
+    }
+    WS_HILOGD("CancelTimer id: %{public}d", id);
+    HiviewDFX::Xcollie::GetInstance().CancelTimer(id);
+#else
+    return;
+#endif
 }
 } // namespace WorkScheduler
 } // namespace OHOS
