@@ -21,6 +21,7 @@
 #include <memory>
 
 #include "iwork_sched_service.h"
+#include "iwork_sched_service_ipc_interface_code.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -125,6 +126,12 @@ private:
     int32_t HandleGetAllRunningWorksRequest(MessageParcel &reply);
     int32_t HandleIsLastWorkTimeOutRequest(MessageParcel &data, MessageParcel &reply);
     int32_t HandleRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
+    int32_t SetTimer(uint32_t code);
+    void CancelTimer(int32_t id);
+private:
+    std::map<uint32_t, std::string> collieCodeStringMap_ = {
+        { uint32_t(IWorkSchedServiceInterfaceCode::START_WORK), "START_WORK" },
+    };
 };
 } // namespace WorkScheduler
 } // namespace OHOS
