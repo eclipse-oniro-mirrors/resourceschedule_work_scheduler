@@ -78,4 +78,10 @@ declare_args() {
       !defined(global_parts_info.powermgr_power_manager)) {
     powermgr_power_manager_enable = false
   }
+  
+  workscheduler_hicollie_enable = true
+  if (defined(global_parts_info)) &&
+      !defined(global_parts_info.hiviewdfx_hicollie)) {
+    workscheduler_hicollie_enable = false
+  }
 }
