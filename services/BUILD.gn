@@ -246,7 +246,7 @@ ohos_static_library("workschedservice_static") {
     external_deps += [ "hicollie:libhicollie" ]
     defines += [ "HICOLLIE_ENABLE" ]
   }
-  
+
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
 }
