@@ -242,7 +242,6 @@ ohos_static_library("workschedservice_static") {
     defines += [ "COMMUNICATION_NETMANAGER_BASE_ENABLE" ]
     external_deps += [ "netmanager_base:net_conn_manager_if" ]
   }
-
   if (workscheduler_hicollie_enable) {
     external_deps += [ "hicollie:libhicollie" ]
     defines += [ "HICOLLIE_ENABLE" ]
