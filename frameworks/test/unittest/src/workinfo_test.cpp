@@ -689,12 +689,12 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils006, Function | MediumTest | Level0)
 }
 
 /**
- * @tc.name GetSaId_001
+ * @tc.name GetSaId001
  * @tc.desc test GetSaId and IsResidentSa
  * @tc.type FUNC
- * @tc.require: issueI5Y6YK
+ * @tc.require: issueIAHY0B
  */
-HWTEST_F (WorkInfoTest, GetSaId_001, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, GetSaId001, Function | MediumTest | Level0)
 {
     int32_t saId = 5300;
     WorkInfo workInfo = WorkInfo();

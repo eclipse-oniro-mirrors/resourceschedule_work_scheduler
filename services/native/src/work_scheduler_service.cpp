@@ -1301,7 +1301,7 @@ void WorkSchedulerService::LoadSa()
         return;
     }
     if (saMap_.empty()) {
-        WS_HILOGD("saMap_ is empty.");
+        WS_HILOGD("saMap is empty.");
         return;
     }
     auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
@@ -1311,14 +1311,14 @@ void WorkSchedulerService::LoadSa()
     }
     for (auto it : saMap_) {
         std::vector vec = {it.first};
-        std::string action = "strat";
+        std::string action = "start";
         if (!it.second) {
             auto res = samgr->LoadSystemAbility(it.first, TIME_OUT);
             if (res == nullptr) {
                 WS_HILOGE("load sa: %{public}d failed.", it.first);
                 continue;
             }
-            WS_HILOGD("load sa: %{public}d success.", it.first);
+            WS_HILOGD("load sa: %{public}d successed.", it.first);
         }
         int32_t ret = samgr->SendStrategy(DEVICE_IDLE, vec, 0, action);
         if (ret != ERR_OK) {

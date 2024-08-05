@@ -691,7 +691,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetAppIndexAndBundleNameByUid_001, TestSize.L
  * @tc.name: LoadSa_001
  * @tc.desc: Test WorkSchedulerService LoadSa.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAHY0B
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
 {
