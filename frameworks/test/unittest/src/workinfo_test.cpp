@@ -687,5 +687,23 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils006, Function | MediumTest | Level0)
     bool res = WorkSchedUtils::IsSystemApp();
     EXPECT_EQ(res, false);
 }
+
+/**
+ * @tc.name GetSaId_001
+ * @tc.desc test GetSaId and IsResidentSa
+ * @tc.type FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F (WorkInfoTest, GetSaId_001, Function | MediumTest | Level0)
+{
+    int32_t saId = 5300;
+    WorkInfo workInfo = WorkInfo();
+    workInfo.RefreshSaId(saId);
+    int32_t id = workInfo.GetSaId();
+    EXPECT_EQ(id, saId);
+
+    bool residentSa = workInfo.IsResidentSa();
+    EXPECT_FALSE(residentSa);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

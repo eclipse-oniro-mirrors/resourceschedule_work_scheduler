@@ -175,7 +175,7 @@ void WorkSchedulerService::InitPreinstalledWork()
 {
     WS_HILOGD("init preinstalled work");
     bool needRefresh = false;
-    static <shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
+    static list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
     for (auto work : preinstalledWorks) {
         WS_HILOGD("preinstalled workinfo id %{public}d, uid %{public}d", work->GetWorkId(), work->GetUid());
         if (!work->IsPersisted()) {
@@ -1310,18 +1310,22 @@ void WorkSchedulerService::LoadSa()
         return;
     }
     for (auto it : saMap_) {
-        if (it.second) {
-            std::vector vec = {it.first};
-            std::string action = "strat";
-            samgr->SendStrategy(DEVICE_IDLE, vec, 0, action);
+        std::vector vec = {it.first};
+        std::string action = "strat";
+        if (!it.second) {
+            auto res = samgr->LoadSystemAbility(it.first, TIME_OUT);
+            if (res == nullptr) {
+                WS_HILOGE("load sa: %{public}d failed.", it.first);
+                continue;
+            }
+            WS_HILOGD("load sa: %{public}d success.", it.first);
+        }
+        int32_t ret = samgr->SendStrategy(DEVICE_IDLE, vec, 0, action);
+        if (ret != ERR_OK) {
+            WS_HILOGE("sa: %{public}d sendStrategy failed.", it.first);
             continue;
         }
-        auto res = samgr->LoadSystemAbility(it.first, TIME_OUT);
-        if (res == nullptr) {
-            WS_HILOGE("load sa: %{public}d failed.", it.first);
-            continue;
-        }
-        WS_HILOGD("load sa: %{public}d success.", it.first);
+        WS_HILOGD("sa: %{public}d sendStrategy successed.", it.first);
     }
 }
 } // namespace WorkScheduler

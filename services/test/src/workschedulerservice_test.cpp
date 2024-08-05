@@ -686,5 +686,28 @@ HWTEST_F(WorkSchedulerServiceTest, GetAppIndexAndBundleNameByUid_001, TestSize.L
     bool ret = workSchedulerService_->GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName);
     EXPECT_FALSE(ret);
 }
+
+/**
+ * @tc.name: LoadSa_001
+ * @tc.desc: Test WorkSchedulerService LoadSa.
+ * @tc.type: FUNC
+ * @tc.require: I9TL53
+ */
+HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    workSchedulerService_->LoadSa();
+
+    workSchedulerService_->ready_ = true;
+    workSchedulerService_->saMap_.clear();
+    workSchedulerService_->LoadSa();
+
+    int32_t saId = 5300;
+    workSchedulerService_->saMap_.emplace(saId, true);
+    workSchedulerService_->LoadSa();
+
+    workSchedulerService_->saMap_.emplace(1, false);
+    workSchedulerService_->LoadSa();
+}
 }
 }

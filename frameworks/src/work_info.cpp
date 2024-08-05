@@ -547,7 +547,7 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
         WS_HILOGE("workinfo json is empty");
         return false;
     }
-    if (value.isMember("saId") && value["saId"].isInt() && IsHasBoolProp(value, "residentSa")) {
+    if ((value.isMember("saId") && value["saId"].isInt()) && IsHasBoolProp(value, "residentSa")) {
         this->saId_ = value["saId"].asInt();
         this->residentSa_ = value["residentSa"].asBool();
         return true;
