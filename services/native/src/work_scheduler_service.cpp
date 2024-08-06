@@ -1320,7 +1320,7 @@ void WorkSchedulerService::LoadSa()
             WS_HILOGE("resident sa: %{public}d does not exist.", it.first);
             continue;
         } else if (!it.second && object == nullptr) {
-            auto object = samgr->LoadSystemAbility(it.first, TIME_OUT);
+            object = samgr->LoadSystemAbility(it.first, TIME_OUT);
             if (object == nullptr) {
                 WS_HILOGE("load sa: %{public}d failed.", it.first);
                 continue;
@@ -1341,7 +1341,7 @@ void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std
 {
     if (saIdStr.empty() || residentSaStr.empty()) {
         result.append("param error.");
-        return
+        return;
     }
     int32_t saId = std::stoi(saIdStr);
     if (saId < 0 || (residentSaStr != "true" && residentSaStr != "false")) {
