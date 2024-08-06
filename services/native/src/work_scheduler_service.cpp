@@ -853,6 +853,8 @@ void WorkSchedulerService::DumpProcess(std::vector<std::string> &argsInStr, std:
                 DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else if (argsInStr[DUMP_OPTION] == "-x") {
                 DumpRunningWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+            } else if (argsInStr[DUMP_OPTION] == "-s") {
+                DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else {
                 result.append("Error params.");
             }
@@ -903,7 +905,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
         .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
         .append("    -cpu (number): set the usage cpu.\n")
-        .append("    -count (number): set the max running task count.\n");
+        .append("    -count (number): set the max running task count.\n")
+        .append("    -s (number) (bool): set the sa id running task.\n");
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -1301,20 +1304,24 @@ void WorkSchedulerService::LoadSa()
         return;
     }
     if (saMap_.empty()) {
-        WS_HILOGD("saMap is empty.");
+        WS_HILOGI("saMap is empty.");
         return;
     }
-    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
         WS_HILOGE("get sa manager failed.");
         return;
     }
-    for (auto it : saMap_) {
-        std::vector vec = {it.first};
-        std::string action = "start";
-        if (!it.second) {
-            auto res = samgr->LoadSystemAbility(it.first, TIME_OUT);
-            if (res == nullptr) {
+    for (auto &it : saMap_) {
+        std::vector vec = { it.first };
+        std::string action = "";
+        sptr<IRemoteObject> object = samgr->CheckSystemAbility(it.first);
+        if (it.second && object == nullptr) {
+            WS_HILOGE("resident sa: %{public}d does not exist.", it.first);
+            continue;
+        } else if (!it.second && object == nullptr) {
+            auto object = samgr->LoadSystemAbility(it.first, TIME_OUT);
+            if (object == nullptr) {
                 WS_HILOGE("load sa: %{public}d failed.", it.first);
                 continue;
             }
@@ -1327,6 +1334,27 @@ void WorkSchedulerService::LoadSa()
         }
         WS_HILOGD("sa: %{public}d sendStrategy successed.", it.first);
     }
+}
+
+void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr,
+    std::string &result) 
+{
+    if (saIdStr.empty() || residentSaStr.empty()) {
+        result.append("param error.");
+        return
+    }
+    int32_t saId = std::stoi(saIdStr);
+    if (saId < 0 || (residentSaStr != "true" && residentSaStr != "false")) {
+        result.append("the parameter is invalid.");
+        return;
+    }
+    bool residentSa = (residentSaStr == "true") ? true : false;
+    if (saMap_.count(saId) > 0) {
+        saMap_.at(saId) = residentSa;
+    } else {
+        saMap_.emplace(saId, residentSa);
+    }
+    LoadSa();
 }
 } // namespace WorkScheduler
 } // namespace OHOS

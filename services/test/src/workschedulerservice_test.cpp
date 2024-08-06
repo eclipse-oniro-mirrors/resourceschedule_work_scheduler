@@ -487,6 +487,49 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_005, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_005 end ====== ");
 }
 
+/**
+ * @tc.name: Dump_006
+ * @tc.desc: Test WorkSchedulerService Dump.
+ * @tc.type: FUNC
+ * @tc.require: IAHY0B
+ */
+HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-s");
+    argsInStr.push_back("1");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-s");
+    argsInStr.push_back("1");
+    argsInStr.push_back("1");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-s");
+    argsInStr.push_back("1");
+    argsInStr.push_back("true");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-s");
+    argsInStr.push_back("1");
+    argsInStr.push_back("false");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 end ====== ");
+}
+
 HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 begin ====== ");
@@ -702,11 +745,18 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
     workSchedulerService_->saMap_.clear();
     workSchedulerService_->LoadSa();
 
-    int32_t saId = 5300;
-    workSchedulerService_->saMap_.emplace(saId, true);
+    int32_t saId1 = 401;
+    workSchedulerService_->saMap_.emplace(saId1, true);
     workSchedulerService_->LoadSa();
 
-    workSchedulerService_->saMap_.emplace(1, false);
+    workSchedulerService_->saMap_.emplace(saId1, false);
+    workSchedulerService_->LoadSa();
+
+    int32_t saId2 = 5300;
+    workSchedulerService_->saMap_.emplace(saId2, true);
+    workSchedulerService_->LoadSa();
+
+    workSchedulerService_->saMap_.emplace(saId2, false);
     workSchedulerService_->LoadSa();
 }
 }
