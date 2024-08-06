@@ -1332,7 +1332,7 @@ void WorkSchedulerService::LoadSa()
             WS_HILOGE("sa: %{public}d sendStrategy failed.", it.first);
             continue;
         }
-        WS_HILOGD("sa: %{public}d sendStrategy successed.", it.first);
+        WS_HILOGI("sa: %{public}d sendStrategy successed.", it.first);
     }
 }
 
