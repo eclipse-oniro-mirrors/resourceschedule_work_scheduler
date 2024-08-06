@@ -511,6 +511,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     argsInStr.push_back("1");
     workSchedulerService_->DumpProcess(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
 
     argsInStr.clear();
     result.clear();
@@ -519,6 +520,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     argsInStr.push_back("true");
     workSchedulerService_->DumpProcess(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), true);
 
     argsInStr.clear();
     result.clear();
@@ -527,6 +529,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     argsInStr.push_back("false");
     workSchedulerService_->DumpProcess(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), true);
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 end ====== ");
 }
 

@@ -1337,7 +1337,7 @@ void WorkSchedulerService::LoadSa()
 }
 
 void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr,
-    std::string &result) 
+    std::string &result)
 {
     if (saIdStr.empty() || residentSaStr.empty()) {
         result.append("param error.");
