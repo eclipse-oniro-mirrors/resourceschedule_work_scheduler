@@ -254,7 +254,7 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
         Json::Value workJson = preinstalledWorksRoot[it];
         shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
         if (workinfo->ParseFromJson(workJson)) {
-            if (workinfo->GetSaId() > 0) {
+            if (workinfo->GetSaId() > -1) {
                 saMap_.emplace(workinfo->GetSaId(), workinfo->IsResidentSa());
                 continue;
             }
