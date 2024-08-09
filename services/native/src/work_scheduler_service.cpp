@@ -94,7 +94,6 @@ const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const int32_t TIME_OUT = 4;
-const int64_t DEVICE_IDLE = 5;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
