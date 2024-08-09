@@ -72,6 +72,8 @@
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
 #include "hitrace_meter.h"
+#include "res_type.h"
+#include "res_sched_client.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -1313,8 +1315,6 @@ void WorkSchedulerService::LoadSa()
         return;
     }
     for (auto &it : saMap_) {
-        std::vector vec = { it.first };
-        std::string action = "";
         sptr<IRemoteObject> object = samgr->CheckSystemAbility(it.first);
         if (it.second && object == nullptr) {
             WS_HILOGE("resident sa: %{public}d does not exist.", it.first);
@@ -1327,12 +1327,12 @@ void WorkSchedulerService::LoadSa()
             }
             WS_HILOGD("load sa: %{public}d successed.", it.first);
         }
-        int32_t ret = samgr->SendStrategy(DEVICE_IDLE, vec, 0, action);
-        if (ret != ERR_OK) {
-            WS_HILOGE("sa: %{public}d sendStrategy failed.", it.first);
-            continue;
-        }
-        WS_HILOGI("sa: %{public}d sendStrategy successed.", it.first);
+        std::string action = "";
+        std::unordered_map<std::string, std::string> payload;
+        payload["action"] = action;
+        payload["saId"] = std::to_string(it.first);
+        uint32_t type = ResourceSchedule::ResType::RES_TYPE_DEVICE_IDLE;
+        ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, payload);
     }
 }
 
