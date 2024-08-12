@@ -109,6 +109,7 @@ void BatteryLevelListener::OnConditionChanged(WorkCondition::Type conditionType,
             service_->SetDeepIdle(true);
             workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
                 std::make_shared<DetectorValue>(0, 0, true, std::string()));
+            service_->LoadSa();
         }
     } else {
         WS_HILOGE("workQueueManager_ is nullptr.");
