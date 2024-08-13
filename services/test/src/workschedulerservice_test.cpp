@@ -540,7 +540,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
  * @tc.name: Dump_007
  * @tc.desc: Test WorkSchedulerService Dump.
  * @tc.type: FUNC
- * @tc.require: I9RYLE
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, Dump_007, TestSize.Level1)
 {
@@ -816,7 +816,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
  * @tc.name: CheckExtensionInfos_001
  * @tc.desc: Test WorkSchedulerService CheckExtensionInfos.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
 {
@@ -832,7 +832,7 @@ HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
  * @tc.name: InitBgTaskSubscriber_001
  * @tc.desc: Test WorkSchedulerService InitBgTaskSubscriber.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, InitBgTaskSubscriber_001, TestSize.Level1)
 {
@@ -844,7 +844,7 @@ HWTEST_F(WorkSchedulerServiceTest, InitBgTaskSubscriber_001, TestSize.Level1)
  * @tc.name: AllowDump_001
  * @tc.desc: Test WorkSchedulerService AllowDump.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, AllowDump_001, TestSize.Level1)
 {
@@ -856,7 +856,7 @@ HWTEST_F(WorkSchedulerServiceTest, AllowDump_001, TestSize.Level1)
  * @tc.name: UpdateWorkBeforeRealStart_001
  * @tc.desc: Test WorkSchedulerService UpdateWorkBeforeRealStart.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_001, TestSize.Level1)
 {
@@ -878,7 +878,7 @@ HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_001, TestSize.Level
  * @tc.name: CheckEffiResApplyInfo_001
  * @tc.desc: Test WorkSchedulerService CheckEffiResApplyInfo.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, CheckEffiResApplyInfo_001, TestSize.Level1)
 {
@@ -890,7 +890,7 @@ HWTEST_F(WorkSchedulerServiceTest, CheckEffiResApplyInfo_001, TestSize.Level1)
  * @tc.name: PauseRunningWorks_001
  * @tc.desc: Test WorkSchedulerService PauseRunningWorks.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_001, TestSize.Level1)
 {
@@ -903,7 +903,7 @@ HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_001, TestSize.Level1)
  * @tc.name: OnAddSystemAbility_001
  * @tc.desc: Test WorkSchedulerService OnAddSystemAbility.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, OnAddSystemAbility_001, TestSize.Level1)
 {
@@ -918,7 +918,7 @@ HWTEST_F(WorkSchedulerServiceTest, OnAddSystemAbility_001, TestSize.Level1)
  * @tc.name: IsDebugApp_001
  * @tc.desc: Test WorkSchedulerService IsDebugApp.
  * @tc.type: FUNC
- * @tc.require: I9TL53
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, IsDebugApp_001, TestSize.Level1)
 {

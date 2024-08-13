@@ -60,7 +60,7 @@ void NetworkListenerTest::SetUpTestCase()
  * @tc.name: OnConditionChanged_001
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
@@ -75,7 +75,7 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_001, TestSize.Level1)
  * @tc.name: OnConditionChanged_002
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_002, TestSize.Level1)
 {
@@ -96,7 +96,7 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_002, TestSize.Level1)
  * @tc.name: OnConditionChanged_003
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_003, TestSize.Level1)
 {
@@ -117,7 +117,7 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_003, TestSize.Level1)
  * @tc.name: OnConditionChanged_004
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_004, TestSize.Level1)
 {
@@ -138,7 +138,7 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_004, TestSize.Level1)
  * @tc.name: OnConditionChanged_005
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_005, TestSize.Level1)
 {
@@ -159,7 +159,7 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_005, TestSize.Level1)
  * @tc.name: OnConditionChanged_006
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_006, TestSize.Level1)
 {
@@ -180,7 +180,7 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_006, TestSize.Level1)
  * @tc.name: OnConditionChanged_007
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_007, TestSize.Level1)
 {
@@ -201,7 +201,7 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_007, TestSize.Level1)
  * @tc.name: OnConditionChanged_008
  * @tc.desc: Test etworkListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: IAJSVG
  */
 HWTEST_F(ScreenListenerTest, OnConditionChanged_008, TestSize.Level1)
 {

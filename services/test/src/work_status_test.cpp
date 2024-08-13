@@ -501,7 +501,7 @@ HWTEST_F(WorkStatusTest, isRepeating_001, TestSize.Level1)
  * @tc.name: IsReadyStatus_001
  * @tc.desc: Test WorkStatus IsReadyStatus.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, IsReadyStatus_001, TestSize.Level1)
 {
@@ -514,7 +514,7 @@ HWTEST_F(WorkStatusTest, IsReadyStatus_001, TestSize.Level1)
  * @tc.name: IsRemoved_001
  * @tc.desc: Test WorkStatus IsRemoved.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, IsRemoved_001, TestSize.Level1)
 {
@@ -528,7 +528,7 @@ HWTEST_F(WorkStatusTest, IsRemoved_001, TestSize.Level1)
  * @tc.name: NeedRemove_001
  * @tc.desc: Test WorkStatus NeedRemove.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, NeedRemove_001, TestSize.Level1)
 {
@@ -541,7 +541,7 @@ HWTEST_F(WorkStatusTest, NeedRemove_001, TestSize.Level1)
  * @tc.name: NeedRemove_002
  * @tc.desc: Test WorkStatus NeedRemove.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, NeedRemove_002, TestSize.Level1)
 {
@@ -557,7 +557,7 @@ HWTEST_F(WorkStatusTest, NeedRemove_002, TestSize.Level1)
  * @tc.name: NeedRemove_003
  * @tc.desc: Test WorkStatus NeedRemove.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, NeedRemove_003, TestSize.Level1)
 {
@@ -574,7 +574,7 @@ HWTEST_F(WorkStatusTest, NeedRemove_003, TestSize.Level1)
  * @tc.name: NeedRemove_004
  * @tc.desc: Test WorkStatus NeedRemove.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, NeedRemove_004, TestSize.Level1)
 {
@@ -591,7 +591,7 @@ HWTEST_F(WorkStatusTest, NeedRemove_004, TestSize.Level1)
  * @tc.name: UpdateTimerIfNeed_001
  * @tc.desc: Test WorkStatus UpdateTimerIfNeed.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, UpdateTimerIfNeed_001, TestSize.Level1)
 {
@@ -608,7 +608,7 @@ HWTEST_F(WorkStatusTest, UpdateTimerIfNeed_001, TestSize.Level1)
  * @tc.name: UpdateTimerIfNeed_002
  * @tc.desc: Test WorkStatus UpdateTimerIfNeed.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, UpdateTimerIfNeed_002, TestSize.Level1)
 {
@@ -626,7 +626,7 @@ HWTEST_F(WorkStatusTest, UpdateTimerIfNeed_002, TestSize.Level1)
  * @tc.name: MarkTimeout_001
  * @tc.desc: Test WorkStatus MarkTimeout.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, MarkTimeout_001, TestSize.Level1)
 {
@@ -639,7 +639,7 @@ HWTEST_F(WorkStatusTest, MarkTimeout_001, TestSize.Level1)
  * @tc.name: IsNapReady_001
  * @tc.desc: Test WorkStatus IsNapReady.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, IsNapReady_001, TestSize.Level1)
 {
@@ -661,7 +661,7 @@ HWTEST_F(WorkStatusTest, IsNapReady_001, TestSize.Level1)
  * @tc.name: IsNapReady_002
  * @tc.desc: Test WorkStatus IsNapReady.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, IsNapReady_002, TestSize.Level1)
 {
@@ -683,7 +683,7 @@ HWTEST_F(WorkStatusTest, IsNapReady_002, TestSize.Level1)
  * @tc.name: UpdateUidLastTimeMap_001
  * @tc.desc: Test WorkStatus UpdateUidLastTimeMap.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, UpdateUidLastTimeMap_001, TestSize.Level1)
 {
@@ -696,14 +696,12 @@ HWTEST_F(WorkStatusTest, UpdateUidLastTimeMap_001, TestSize.Level1)
  * @tc.name: GetStatus_001
  * @tc.desc: Test WorkStatus GetStatus.
  * @tc.type: FUNC
- * @tc.require: I95QHG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkStatusTest, GetStatus_001, TestSize.Level1)
 {
     workStatus_->MarkStatus(WorkStatus::Status::RUNNING);
     EXPECT_EQ(workStatus_->GetStatus(), WorkStatus::Status::RUNNING);
 }
-
-
 }
 }
