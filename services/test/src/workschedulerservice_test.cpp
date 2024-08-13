@@ -91,9 +91,6 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 using namespace testing::ext;
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID = 1914;
-const int32_t DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID = 1907;
-
 class WorkSchedulerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
@@ -836,7 +833,7 @@ HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, InitBgTaskSubscriber_001, TestSize.Level1)
 {
-    bool ret = workSchedulerService_->InitBgTaskSubscriber_001(workInfo, uid);
+    bool ret = workSchedulerService_->InitBgTaskSubscriber(workInfo, uid);
     EXPECT_TRUE(ret);
 }
 
@@ -907,11 +904,14 @@ HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, OnAddSystemAbility_001, TestSize.Level1)
 {
-    workSchedulerService_->OnAddSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID);
-    workSchedulerService_->OnRemoveSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID);
+    std::string deviceId;
+    int32_t DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID = 1914;
+    int32_t DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID = 1907;
+    workSchedulerService_->OnAddSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID, deviceId);
+    workSchedulerService_->OnRemoveSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID, deviceId);
 
-    workSchedulerService_->OnAddSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID);
-    workSchedulerService_->OnRemoveSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID);
+    workSchedulerService_->OnAddSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID, deviceId);
+    workSchedulerService_->OnRemoveSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID, deviceId);
 }
 
 /**

@@ -40,46 +40,44 @@ public:
     static void TearDownTestCase() {};
     void SetUp() {};
     void TearDown() {};
-    static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
     static std::shared_ptr<WorkQueueManager> workQueueManager_;
-    static std::shared_ptr<NetworkListenerTest> networkListenerTest_;
-}
+    static std::shared_ptr<NetworkListener> networkListener_;
+};
 
-std::shared_ptr<WorkSchedulerService> NetworkListenerTest::workSchedulerService_ = nullptr;
 std::shared_ptr<WorkQueueManager> NetworkListenerTest::workQueueManager_ = nullptr;
-std::shared_ptr<NetworkListenerTest> NetworkListenerTest::networkListenerTest_ = nullptr;
+std::shared_ptr<NetworkListener> NetworkListenerTest::networkListener_ = nullptr;
 
 void NetworkListenerTest::SetUpTestCase()
 {
-    workSchedulerService_ = std::make_shared<WorkSchedulerService>();
+    std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedulerService>();
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
-    networkListenerTest_ = std::make_shared<NetworkListener>(workQueueManager_, workSchedulerService_);
+    networkListener_ = std::make_shared<NetworkListener>(workQueueManager_);
 }
 
 /**
  * @tc.name: OnConditionChanged_001
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_001, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 
 /**
  * @tc.name: OnConditionChanged_002
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_002, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_002, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
@@ -87,20 +85,20 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_002, TestSize.Level1)
     data.SetWant(want);
     data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
     EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 
 /**
  * @tc.name: OnConditionChanged_003
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_003, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_003, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
@@ -108,20 +106,20 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_003, TestSize.Level1)
     data.SetWant(want);
     data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
     EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 
 /**
  * @tc.name: OnConditionChanged_004
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_004, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_004, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
@@ -129,20 +127,20 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_004, TestSize.Level1)
     data.SetWant(want);
     data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
     EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 
 /**
  * @tc.name: OnConditionChanged_005
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_005, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_005, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
@@ -150,20 +148,20 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_005, TestSize.Level1)
     data.SetWant(want);
     data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
     EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 
 /**
  * @tc.name: OnConditionChanged_006
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_006, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_006, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
@@ -171,20 +169,20 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_006, TestSize.Level1)
     data.SetWant(want);
     data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
     EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 
 /**
  * @tc.name: OnConditionChanged_007
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_007, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_007, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
@@ -192,28 +190,28 @@ HWTEST_F(ScreenListenerTest, OnConditionChanged_007, TestSize.Level1)
     data.SetWant(want);
     data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
     EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 
 /**
  * @tc.name: OnConditionChanged_008
- * @tc.desc: Test etworkListener OnConditionChanged.
+ * @tc.desc: Test networkListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_008, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnConditionChanged_008, TestSize.Level1)
 {
-    networkListenerTest_->Start();
+    networkListener_->Start();
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
     data.SetWant(want);
     data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
     EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListenerTest_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListenerTest_->Stop();
+    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
+    bool ret = networkListener_->Stop();
     EXPECT_TRUE(ret);
 }
 }
