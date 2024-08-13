@@ -833,7 +833,7 @@ HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, InitBgTaskSubscriber_001, TestSize.Level1)
 {
-    bool ret = workSchedulerService_->InitBgTaskSubscriber(workInfo, uid);
+    bool ret = workSchedulerService_->InitBgTaskSubscriber();
     EXPECT_TRUE(ret);
 }
 
