@@ -533,6 +533,52 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 end ====== ");
 }
 
+/**
+ * @tc.name: Dump_007
+ * @tc.desc: Test WorkSchedulerService Dump.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, Dump_007, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_007 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-x");
+    argsInStr.push_back("1");
+    argsInStr.push_back("1");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-x");
+    argsInStr.push_back("1");
+    argsInStr.push_back("p");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-x");
+    argsInStr.push_back("1");
+    argsInStr.push_back("r");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-cpu");
+    argsInStr.push_back("1");
+    workSchedulerService_->DumpProcess(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_EQ(result.empty(), false);
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_007 end ====== ");
+}
+
 HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 begin ====== ");
@@ -761,6 +807,123 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
 
     workSchedulerService_->saMap_.emplace(saId2, false);
     workSchedulerService_->LoadSa();
+}
+
+/**
+ * @tc.name: CheckExtensionInfos_001
+ * @tc.desc: Test WorkSchedulerService CheckExtensionInfos.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
+{
+    int32_t uid =1;
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.SetElement("bundleName", "abilityName");
+    bool ret = workSchedulerService_->CheckExtensionInfos(workInfo, uid);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: InitBgTaskSubscriber_001
+ * @tc.desc: Test WorkSchedulerService InitBgTaskSubscriber.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, InitBgTaskSubscriber_001, TestSize.Level1)
+{
+    bool ret = workSchedulerService_->InitBgTaskSubscriber();
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: AllowDump_001
+ * @tc.desc: Test WorkSchedulerService AllowDump.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, AllowDump_001, TestSize.Level1)
+{
+    bool ret = workSchedulerService_->AllowDump();
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: UpdateWorkBeforeRealStart_001
+ * @tc.desc: Test WorkSchedulerService UpdateWorkBeforeRealStart.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_001, TestSize.Level1)
+{
+    std::shared_ptr<WorkStatus> workStatus = nullptr;
+    workSchedulerService_->UpdateWorkBeforeRealStart(workStatus);
+
+    WorkInfo workInfo = WorkInfo();
+    workStatus = std::make_shared<WorkStatus>(workInfo, 1);
+    workStatus->conditionMap_.clear();
+    workSchedulerService_->UpdateWorkBeforeRealStart(workStatus);
+
+    std::shared_ptr<Condition> repeatCycle = std::make_shared<Condition>();
+    repeatCycle->boolVal = true;
+    workStatus->conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
+    workSchedulerService_->UpdateWorkBeforeRealStart(workStatus);
+}
+
+/**
+ * @tc.name: CheckEffiResApplyInfo_001
+ * @tc.desc: Test WorkSchedulerService CheckEffiResApplyInfo.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckEffiResApplyInfo_001, TestSize.Level1)
+{
+    bool ret = workSchedulerService_->CheckEffiResApplyInfo(1);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: PauseRunningWorks_001
+ * @tc.desc: Test WorkSchedulerService PauseRunningWorks.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_001, TestSize.Level1)
+{
+    workSchedulerService_->TriggerWorkIfConditionReady();
+    workSchedulerService_->PauseRunningWorks(1);
+    workSchedulerService_->ResumePausedWorks(1);
+}
+
+/**
+ * @tc.name: OnAddSystemAbility_001
+ * @tc.desc: Test WorkSchedulerService OnAddSystemAbility.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, OnAddSystemAbility_001, TestSize.Level1)
+{
+    std::string deviceId;
+    int32_t DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID = 1914;
+    int32_t DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID = 1907;
+    workSchedulerService_->OnAddSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID, deviceId);
+    workSchedulerService_->OnRemoveSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID, deviceId);
+
+    workSchedulerService_->OnAddSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID, deviceId);
+    workSchedulerService_->OnRemoveSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID, deviceId);
+}
+
+/**
+ * @tc.name: IsDebugApp_001
+ * @tc.desc: Test WorkSchedulerService IsDebugApp.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsDebugApp_001, TestSize.Level1)
+{
+    bool ret = workSchedulerService_->IsDebugApp("bundleName");
+    EXPECT_FALSE(ret);
 }
 }
 }
