@@ -32,6 +32,7 @@ WorkInfo::WorkInfo()
     appIndex_ = APPINDEX_INIT_VALUE;
     extension_ = true;
     saId_ = INVALID_VALUE;
+    residentSa_ = false;
 }
 
 WorkInfo::~WorkInfo() {}

@@ -817,7 +817,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
 {
-    int32_t uid =1;
+    int32_t uid = 1;
     WorkInfo workInfo = WorkInfo();
     workInfo.SetWorkId(1);
     workInfo.SetElement("bundleName", "abilityName");
