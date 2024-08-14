@@ -813,7 +813,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
  * @tc.name: CheckExtensionInfos_001
  * @tc.desc: Test WorkSchedulerService CheckExtensionInfos.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IAJVZG
  */
 HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
 {
