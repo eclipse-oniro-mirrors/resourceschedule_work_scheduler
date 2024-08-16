@@ -132,6 +132,10 @@ void JsWorkSchedulerExtension::BindContext(napi_env env, napi_value obj)
     napi_value contextObj = CreateJsWorkSchedulerExtensionContext(env, context);
     shellContextRef_ = jsRuntime_.LoadSystemModule("application.WorkSchedulerExtensionContext",
         &contextObj, 1);
+    if (shellContextRef_ == nullptr) {
+        WS_HILOGE("WorkSchedulerExtension Failed to get shellContextRef_");
+        return;
+    }
     contextObj = shellContextRef_->GetNapiValue();
 
     auto workContext = new (std::nothrow) std::weak_ptr<WorkSchedulerExtensionContext>(context);

@@ -333,17 +333,6 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             service->StopAndClearWorksByUid(detectorVal->intVal);
             break;
         }
-        case PolicyType::APP_DATA_CLEAR: {
-            service->StopAndClearWorksByUid(detectorVal->intVal);
-            break;
-        }
-        case PolicyType::APP_CHANGED: {
-            int32_t uid = detectorVal->intVal;
-            WorkStatus::ClearUidLastTimeMap(uid);
-            service->StopAndClearWorksByUid(detectorVal->intVal);
-            service->InitPreinstalledWork();
-            break;
-        }
         default: {}
     }
     CheckWorkToRun();
@@ -695,6 +684,7 @@ void WorkPolicyManager::SendIdeWorkRetriggerEvent(int32_t delaytime)
 std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllIdeWorkStatus(const std::string &bundleName,
     const std::string &abilityName)
 {
+    int32_t currentAccountId = WorkSchedUtils::GetCurrentAccountId();
     std::lock_guard<std::recursive_mutex> lock(uidMapMutex_);
     std::list<shared_ptr<WorkStatus>> allWorks;
     auto it = uidQueueMap_.begin();
@@ -704,7 +694,9 @@ std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllIdeWorkStatus(co
             continue;
         }
         auto work = it->second->GetWorkList().front();
-        if (work->workInfo_->GetBundleName() != bundleName || work->workInfo_->GetAbilityName() != abilityName) {
+        if (work->workInfo_->GetBundleName() != bundleName ||
+            work->workInfo_->GetAbilityName() != abilityName ||
+            work->userId_ != currentAccountId) {
             it++;
             continue;
         }
