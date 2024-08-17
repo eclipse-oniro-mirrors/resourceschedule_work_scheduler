@@ -786,6 +786,9 @@ int32_t WorkSchedulerService::GetAllRunningWorks(std::list<std::shared_ptr<WorkI
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
+    if (!CheckProcessName()) {
+        return E_INVALID_PROCESS_NAME;
+    }
     workInfos = workPolicyManager_->GetAllRunningWorks();
     return ERR_OK;
 }
