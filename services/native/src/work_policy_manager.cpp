@@ -693,15 +693,19 @@ std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllIdeWorkStatus(co
             it++;
             continue;
         }
-        auto work = it->second->GetWorkList().front();
-        if (work->workInfo_->GetBundleName() != bundleName ||
-            work->workInfo_->GetAbilityName() != abilityName ||
-            work->userId_ != currentAccountId) {
-            it++;
-            continue;
+        bool isExist = false;
+        for (auto work : it->second->GetWorkList()) {
+            if (work->workInfo_->GetBundleName() == bundleName &&
+                work->workInfo_->GetAbilityName() == abilityName &&
+                (work->userId_ == 0 || work->userId_ == currentAccountId)) {
+                allWorks.push_back(work);
+                isExist = true;
+            }
         }
-        allWorks = uidQueueMap_.at(work->uid_)->GetWorkList();
-        return allWorks;
+        if (isExist) {
+            return allWorks;
+        }
+        it++;
     }
     return allWorks;
 }
