@@ -125,7 +125,7 @@ void WorkSchedulerService::OnStart()
 
     // Init handler.
     if (!eventRunner_) {
-        eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME);
+        eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME, AppExecFwk::ThreadMode::FFRT);
     }
     if (eventRunner_ == nullptr) {
         WS_HILOGE("Init failed due to create EventRunner");
@@ -323,7 +323,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
 void WorkSchedulerService::OnStop()
 {
     WS_HILOGI("stop service.");
-    std::lock_guard<std::mutex> observerLock(observerMutex_);
+    std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     DeviceUsageStats::BundleActiveClient::GetInstance().UnRegisterAppGroupCallBack(groupObserver_);
     groupObserver_ = nullptr;
@@ -397,7 +397,7 @@ ErrCode WorkSchedulerService::QueryResAppliedUid()
         WS_HILOGE("failed to GetEfficiencyResourcesInfos, errcode: %{public}d", result);
         return result;
     }
-    std::lock_guard<std::mutex> lock(whitelistMutex_);
+    std::lock_guard<ffrt::mutex> lock(whitelistMutex_);
     for (const auto& info : appList) {
         if ((info->GetResourceNumber() & BackgroundTaskMgr::ResourceType::WORK_SCHEDULER) != 0) {
             whitelist_.emplace(info->GetUid());
@@ -622,7 +622,7 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
     if (ret == ERR_OK) {
         workQueueManager_->AddWork(workStatus);
         if (workInfo.IsPersisted()) {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard<ffrt::mutex> lock(mutex_);
             workStatus->workInfo_->RefreshUid(uid);
             persistedMap_.emplace(workStatus->workId_, workStatus->workInfo_);
             RefreshPersistedWorks();
@@ -686,7 +686,7 @@ int32_t WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
     }
     StopWorkInner(workStatus, uid, true, false);
     if (workStatus->persisted_) {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::lock_guard<ffrt::mutex> lock(mutex_);
         persistedMap_.erase(workStatus->workId_);
         RefreshPersistedWorks();
     }
@@ -728,7 +728,7 @@ bool WorkSchedulerService::StopAndClearWorksByUid(int32_t uid)
     bool ret = workQueueManager_->StopAndClearWorks(allWorks)
         && workPolicyManager_->StopAndClearWorks(uid);
     if (ret) {
-        std::lock_guard<std::mutex> lock(mutex_);
+        std::lock_guard<ffrt::mutex> lock(mutex_);
         for (auto workId : workIdList) {
             if (persistedMap_.count(workId) != 0) {
                 persistedMap_.erase(workId);
@@ -993,7 +993,7 @@ void WorkSchedulerService::DumpRunningWorks(const std::string &uidStr, const std
 
 std::string WorkSchedulerService::GetEffiResApplyUid()
 {
-    std::lock_guard<std::mutex> lock(whitelistMutex_);
+    std::lock_guard<ffrt::mutex> lock(whitelistMutex_);
     if (whitelist_.empty()) {
         return "empty";
     }
@@ -1110,7 +1110,7 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 
 void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
 {
-    std::lock_guard<std::mutex> lock(whitelistMutex_);
+    std::lock_guard<ffrt::mutex> lock(whitelistMutex_);
     if (isAdd) {
         whitelist_.emplace(uid);
     } else {
@@ -1120,7 +1120,7 @@ void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
 
 bool WorkSchedulerService::CheckEffiResApplyInfo(int32_t uid)
 {
-    std::lock_guard<std::mutex> lock(whitelistMutex_);
+    std::lock_guard<ffrt::mutex> lock(whitelistMutex_);
     return whitelist_.find(uid) != whitelist_.end();
 }
 
@@ -1128,7 +1128,7 @@ bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
 {
     WS_HILOGD("%{public}s is checking standby applyInfo", bundleName.c_str());
 #ifdef  DEVICE_STANDBY_ENABLE
-    std::lock_guard<std::mutex> observerLock(observerMutex_);
+    std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
     if (!standbyStateObserver_) {
         return true;
     }
@@ -1166,12 +1166,12 @@ void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const 
         workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
 #ifdef  DEVICE_STANDBY_ENABLE
-        std::lock_guard<std::mutex> observerLock(observerMutex_);
+        std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
         standbyStateObserver_ = nullptr;
 #endif
     } else if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-        std::lock_guard<std::mutex> observerLock(observerMutex_);
+        std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
         groupObserver_ = nullptr;
 #endif
     }
@@ -1183,7 +1183,7 @@ __attribute__((no_sanitize("cfi"))) void WorkSchedulerService::GroupObserverInit
     if (!workQueueManager_) {
         return;
     }
-    std::lock_guard<std::mutex> observerLock(observerMutex_);
+    std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
     if (!groupObserver_) {
         groupObserver_ = new (std::nothrow) WorkBundleGroupChangeCallback(workQueueManager_);
     }
@@ -1200,7 +1200,7 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
         return;
     }
 #ifdef  DEVICE_STANDBY_ENABLE
-    std::lock_guard<std::mutex> observerLock(observerMutex_);
+    std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
     if (standbyStateObserver_) {
         WS_HILOGD("standbyStateObserver_ is already exist, do not need repeat process.");
         return;

@@ -40,7 +40,7 @@ const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
 const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
-std::mutex WorkStatus::s_uid_last_time_mutex;
+ffrt::mutex WorkStatus::s_uid_last_time_mutex;
 
 time_t getCurrentTime()
 {
@@ -74,7 +74,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
         if (!workTimerCondition->boolVal) {
             timeCondition->intVal = workTimerCondition->intVal;
         }
-        std::lock_guard<std::mutex> lock(conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
     }
     this->persisted_ = workInfo.IsPersisted();
@@ -92,7 +92,7 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
     if (workInfo_->GetConditionMap()->count(type) > 0
         && type != WorkCondition::Type::TIMER
         && type != WorkCondition::Type::GROUP) {
-        std::lock_guard<std::mutex> lock(conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
         if (conditionMap_.count(type) > 0) {
             conditionMap_.at(type) = value;
         } else {
@@ -140,7 +140,7 @@ void WorkStatus::MarkRound() {}
 
 void WorkStatus::UpdateTimerIfNeed()
 {
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
         baseTime_ = getCurrentTime();
         if (conditionMap_.at(WorkCondition::Type::TIMER)->boolVal) {
@@ -157,7 +157,7 @@ void WorkStatus::UpdateTimerIfNeed()
 
 bool WorkStatus::NeedRemove()
 {
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return true;
     }
@@ -209,7 +209,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     auto workConditionMap = workInfo_->GetConditionMap();
-    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
             return false;
@@ -403,14 +403,14 @@ int64_t WorkStatus::GetMinInterval()
 
 void WorkStatus::UpdateUidLastTimeMap()
 {
-    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     time_t lastTime = getOppositeTime();
     s_uid_last_time_map[uid_] = lastTime;
 }
 
 void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
-    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     s_uid_last_time_map.erase(uid);
 }
 
@@ -441,7 +441,7 @@ bool WorkStatus::IsLastWorkTimeout()
 
 bool WorkStatus::IsRepeating()
 {
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return false;
     }
@@ -475,7 +475,7 @@ void WorkStatus::Dump(string& result)
     result.append(string("\"paused\":") + (paused_ ? "true" : "false") + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
         result.append(string("\"networkType\":") +
             to_string(conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal) + ",\n");
