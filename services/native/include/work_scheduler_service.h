@@ -34,6 +34,7 @@
 #include "work_event_handler.h"
 #include "singleton.h"
 #include "work_standby_state_change_callback.h"
+#include "ffrt.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -335,15 +336,15 @@ private:
 
 private:
     std::set<int32_t> whitelist_;
-    std::mutex whitelistMutex_;
+    ffrt::mutex whitelistMutex_;
     std::map<int32_t, bool> saMap_;
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
-    std::mutex mutex_;
-    std::mutex observerMutex_;
+    ffrt::mutex mutex_;
+    ffrt::mutex observerMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
     std::atomic<bool> deepIdle_ {false};

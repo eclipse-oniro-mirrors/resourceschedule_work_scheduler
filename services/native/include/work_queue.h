@@ -20,6 +20,7 @@
 
 #include "work_status.h"
 #include "detector_value.h"
+#include "ffrt.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -144,7 +145,7 @@ public:
      */
     void SetMinIntervalByDump(int64_t interval);
 private:
-    std::recursive_mutex workListMutex_;
+    ffrt::recursive_mutex workListMutex_;
     std::list<std::shared_ptr<WorkStatus>> workList_;
 };
 class WorkComp {

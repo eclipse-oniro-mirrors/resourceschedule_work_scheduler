@@ -19,18 +19,19 @@
 #include "system_ability_definition.h"
 #include "iservice_registry.h"
 #include "work_sched_service_stub.h"
+#include "ffrt.h"
 
 namespace OHOS {
 namespace WorkScheduler {
     constexpr int32_t MIN_LEN = 4;
     constexpr int32_t MAX_CODE_TEST = 15; // current max code is 7
     static bool isInited = false;
-    std::mutex mutexLock;
+    ffrt::mutex mutexLock;
     sptr<IRemoteObject> remoteObject;
 
     bool DoInit()
     {
-        std::lock_guard<std::mutex> lock(mutexLock);
+        std::lock_guard<ffrt::mutex> lock(mutexLock);
         if (remoteObject != nullptr) {
             return true;
         }

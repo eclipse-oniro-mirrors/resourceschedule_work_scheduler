@@ -23,6 +23,7 @@
 #include "conditions/icondition_listener.h"
 #include "work_queue.h"
 #include "work_status.h"
+#include "ffrt.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -121,7 +122,7 @@ private:
         std::shared_ptr<DetectorValue> conditionVal);
 
 private:
-    std::mutex mutex_;
+    ffrt::mutex mutex_;
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::map<WorkCondition::Type, std::shared_ptr<WorkQueue>> queueMap_;
     std::map<WorkCondition::Type, std::shared_ptr<IConditionListener>> listenerMap_;

@@ -36,6 +36,7 @@
           "battery_manager",
           "ability_base",
           "eventhandler",
+          "ffrt",
           "background_task_mgr",
           "device_standby",
           "device_usage_statistics",
