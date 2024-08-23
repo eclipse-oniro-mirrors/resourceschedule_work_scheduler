@@ -300,7 +300,7 @@ HWTEST_F(WorkSchedulerServiceTest, Datashare_001, TestSize.Level1)
     argsInStr.push_back("-k");
     argsInStr.push_back("settings.power.suspend_sources");
     std::string result;
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), 0);
     WS_HILOGI("====== test end ====== ");
@@ -347,39 +347,39 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_001, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_001 begin ====== ");
     std::vector<std::string> argsInStr;
     std::string result;
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     argsInStr.clear();
     result.clear();
     argsInStr.push_back("-h");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     result.clear();
     argsInStr.clear();
     argsInStr.push_back("-a");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     result.clear();
     argsInStr.clear();
     argsInStr.push_back("-x");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     result.clear();
     argsInStr.clear();
     argsInStr.push_back("-memory");
     argsInStr.push_back("100");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     result.clear();
     argsInStr.clear();
     argsInStr.push_back("-watchdog_time");
     argsInStr.push_back("100");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_001 end ====== ");
 }
@@ -391,21 +391,21 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_002, TestSize.Level1)
     std::string result;
     argsInStr.push_back("-repeat_time_min");
     argsInStr.push_back("100");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     result.clear();
     argsInStr.clear();
     argsInStr.push_back("-min_interval");
     argsInStr.push_back("100");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     result.clear();
     argsInStr.clear();
     argsInStr.push_back("-test");
     argsInStr.push_back("100");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_002 end ====== ");
@@ -422,7 +422,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_003, TestSize.Level1)
     argsInStr.push_back("-d");
     argsInStr.push_back("storage");
     argsInStr.push_back("ok");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     argsInStr.clear();
@@ -430,7 +430,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_003, TestSize.Level1)
     argsInStr.push_back("-t");
     argsInStr.push_back("bundlename");
     argsInStr.push_back("abilityname");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     WorkInfo workinfo = WorkInfo();
@@ -439,7 +439,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_003, TestSize.Level1)
     workinfo.RefreshUid(2);
     workinfo.SetElement("bundlename", "abilityname");
     workSchedulerService_->AddWorkInner(workinfo);
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_003 end ====== ");
 }
@@ -452,7 +452,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_004, TestSize.Level1)
     argsInStr.push_back("-d");
     argsInStr.push_back("storage");
     argsInStr.push_back("ok");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
 
     argsInStr.clear();
@@ -462,7 +462,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_004, TestSize.Level1)
     argsInStr.push_back("arg3");
     argsInStr.push_back("arg4");
     result.clear();
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_004 end ====== ");
@@ -481,7 +481,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_005, TestSize.Level1)
     std::string result;
     argsInStr.push_back("-count");
     argsInStr.push_back("1");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_005 end ====== ");
@@ -500,7 +500,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     std::string result;
     argsInStr.push_back("-s");
     argsInStr.push_back("1");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
 
@@ -509,7 +509,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     argsInStr.push_back("-s");
     argsInStr.push_back("1");
     argsInStr.push_back("1");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
 
@@ -518,7 +518,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     argsInStr.push_back("-s");
     argsInStr.push_back("1");
     argsInStr.push_back("true");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), true);
 
@@ -527,7 +527,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     argsInStr.push_back("-s");
     argsInStr.push_back("1");
     argsInStr.push_back("false");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), true);
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 end ====== ");
@@ -547,7 +547,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_007, TestSize.Level1)
     argsInStr.push_back("-x");
     argsInStr.push_back("1");
     argsInStr.push_back("1");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
 
@@ -556,7 +556,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_007, TestSize.Level1)
     argsInStr.push_back("-x");
     argsInStr.push_back("1");
     argsInStr.push_back("p");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
 
@@ -565,7 +565,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_007, TestSize.Level1)
     argsInStr.push_back("-x");
     argsInStr.push_back("1");
     argsInStr.push_back("r");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
 
@@ -573,10 +573,29 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_007, TestSize.Level1)
     result.clear();
     argsInStr.push_back("-cpu");
     argsInStr.push_back("1");
-    workSchedulerService_->DumpProcess(argsInStr, result);
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
     EXPECT_EQ(result.empty(), false);
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_007 end ====== ");
+}
+
+/**
+ * @tc.name: Dump_008
+ * @tc.desc: Test WorkSchedulerService Dump.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, Dump_008, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_008 begin ====== ");
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-t");
+    argsInStr.push_back("bundlename");
+    argsInStr.push_back("abilityname");
+    workSchedulerService_->DumpProcessForUserMode(argsInStr, result);
+    EXPECT_EQ(result.empty(), true);
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_008 end ====== ");
 }
 
 HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)

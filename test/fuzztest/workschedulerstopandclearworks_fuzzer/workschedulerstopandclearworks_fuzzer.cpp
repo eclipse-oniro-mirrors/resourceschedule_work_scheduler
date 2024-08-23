@@ -47,7 +47,7 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("batteryStatus");
         argsInStr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void TirggerStorageLevelListener()
@@ -65,7 +65,7 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("storage");
         argsInStr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void TirggerChargerListener()
@@ -83,7 +83,7 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("charging");
         argsInStr.push_back("usb");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void TirggerNetworkListener()
@@ -101,7 +101,7 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("network");
         argsInStr.push_back("wifi");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void ShowTaskStatusInfo()
@@ -111,7 +111,7 @@ namespace WorkScheduler {
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-a");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
