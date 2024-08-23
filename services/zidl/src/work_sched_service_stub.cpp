@@ -23,6 +23,7 @@
 #ifdef HICOLLIE_ENABLE
 #include "xcollie/xcollie.h"
 #include "xcollie/xcollie_define.h"
+#define XCOLLIE_TIMEOUT_SECONDS 30
 #endif
 
 namespace OHOS {
@@ -237,16 +238,16 @@ int32_t WorkSchedServiceStub::SetTimer(uint32_t code)
 {
 #ifdef HICOLLIE_ENABLE
     int32_t idTimer = HiviewDFX::INVALID_ID;
-    std::map<int32_t, std::string>::iterator itCollieId = collieCodeStringMap_.find(code);
+    std::map<uint32_t, std::string>::iterator itCollieId = collieCodeStringMap_.find(code);
     if (itCollieId != collieCodeStringMap_.end()) {
         std::string collieStr = itCollieId->second;
         std::string collieName = "WorkSchedulerServiceStub:" + collieStr;
         unsigned int flag = HiviewDFX::XCOLLIE_FLAG_LOG;
-        auto TimerCallbak = [collieStr](void *) {
+        auto TimerCallback = [collieStr](void *) {
             WS_HILOGE("OnRemoteRequest timeout func: %{public}s", collieStr.c_str());
         };
         idTimer = HiviewDFX::XCollie::GetInstance().SetTimer(
-            collieName, XCOLLIE_TIMEOUT_SECONDS, TimerCallbak, nullptr, flag);
+            collieName, XCOLLIE_TIMEOUT_SECONDS, TimerCallback, nullptr, flag);
         WS_HILOGD("SetTimer id: %{public}d, name: %{public}s.", idTimer, collieName.c_str());
     }
     return idTimer;
@@ -262,8 +263,8 @@ void WorkSchedServiceStub::CancelTimer(int32_t id)
     if (id == HiviewDFX::INVALID_ID) {
         return;
     }
-    WS_HILOGD("CancelTimer id: %{public}d", id);
-    HiviewDFX::Xcollie::GetInstance().CancelTimer(id);
+    WS_HILOGD("CancelTimer id: %{public}d.", id);
+    HiviewDFX::XCollie::GetInstance().CancelTimer(id);
 #else
     return;
 #endif
