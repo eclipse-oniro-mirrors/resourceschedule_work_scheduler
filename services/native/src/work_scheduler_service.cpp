@@ -812,17 +812,10 @@ bool WorkSchedulerService::AllowDump()
         WS_HILOGE("CheckPermission failed");
         return false;
     }
-    int32_t ENG_MODE = OHOS::system::GetIntParameter("const.debuggable", 0);
-    bool SECURE_MODE = OHOS::system::GetBoolParameter("const.security.developermode.state", false);
-    if (ENG_MODE == 1 || SECURE_MODE) {
-        return true;
-    }
-
-    WS_HILOGE("Not eng mode and developer mode");
-    return false;
+    return true;
 }
 
-void WorkSchedulerService::DumpProcess(std::vector<std::string> &argsInStr, std::string &result)
+void WorkSchedulerService::DumpProcessForEngMode(std::vector<std::string> &argsInStr, std::string &result)
 {
     switch (argsInStr.size()) {
         case 0:
@@ -888,11 +881,26 @@ int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>
         [](const std::u16string &arg) {
         return Str16ToStr8(arg);
     });
-    DumpProcess(argsInStr, result);
+    bool secureMode = OHOS::system::GetBoolParameter("const.security.developermode.state", false);
+    bool debugable = OHOS::system::GetIntParameter("const.debuggable", 0) == 1;
+    if (secureMode && !debugable) {
+        WS_HILOGD("User mode.");
+        DumpProcessForUserMode(argsInStr, result);
+    } else if (debugable) {
+        WS_HILOGD("Eng mode.");
+        DumpProcessForEngMode(argsInStr, result);
+    }
     if (!SaveStringToFd(fd, result)) {
         WS_HILOGE("save to fd failed.");
     }
     return ERR_OK;
+}
+
+void WorkSchedulerService::DumpProcessForUserMode(std::vector<std::string> &argsInStr, std::string &result)
+{
+    if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-t") {
+        DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    }
 }
 
 void WorkSchedulerService::DumpUsage(std::string &result)
