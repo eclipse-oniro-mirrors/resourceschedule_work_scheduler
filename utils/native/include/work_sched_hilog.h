@@ -25,8 +25,6 @@
 #define WORKSCHEDULER_MGR_LOG_TAG "WORK_SCHEDULER"
 #endif
 
-#define FILENAME (__builtin_strrchr(__FILE__, '/') ? __builtin_strrchr(__FILE__, '/') + 1 : __FILE__)
-
 #define WS_HILOGF(fmt, ...)            \
     ((void)HILOG_IMPL(LOG_CORE, LOG_FATAL, WORKSCHEDULER_MGR_LOG_DOMAIN, WORKSCHEDULER_MGR_LOG_TAG, \
     "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
