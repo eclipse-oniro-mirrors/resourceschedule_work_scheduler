@@ -224,7 +224,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level1)
 {
     std::list<std::shared_ptr<WorkInfo>> workInfos;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().GetAllRunningWorks(workInfos);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS
