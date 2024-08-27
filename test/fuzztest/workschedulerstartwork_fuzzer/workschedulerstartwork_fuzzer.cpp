@@ -75,21 +75,21 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("storage");
         argsInStr.push_back("invalid");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("storage");
         argsInStr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("storage");
         argsInStr.push_back("low");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void OnNetworkChange()
@@ -102,21 +102,21 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("network");
         argsInStr.push_back("invalid");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("network");
         argsInStr.push_back("disconnect");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("network");
         argsInStr.push_back("wifi");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void OnChargingChange()
@@ -129,28 +129,28 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("charging");
         argsInStr.push_back("none");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("charging");
         argsInStr.push_back("usb");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("charging");
         argsInStr.push_back("wireless");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("charging");
         argsInStr.push_back("ac");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void OnBatteryStatusChange()
@@ -163,14 +163,14 @@ namespace WorkScheduler {
         argsInStr.push_back("-d");
         argsInStr.push_back("batteryStatus");
         argsInStr.push_back("ok");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
         argsInStr.push_back("batteryStatus");
         argsInStr.push_back("low");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void OnTimerChange()
@@ -182,19 +182,19 @@ namespace WorkScheduler {
         result.clear();
         argsInStr.push_back("-repeat_time_min");
         argsInStr.push_back("10000");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-watchdog_time");
         argsInStr.push_back("5000");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
         
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-min_interval");
         argsInStr.push_back("20000");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     }
 
     void OnBatteryLevelListener()
@@ -314,14 +314,14 @@ namespace WorkScheduler {
         result.clear();
         argsInStr.push_back("-k");
         argsInStr.push_back("settings.power.suspend_sources");
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-t");
         argsInStr.push_back(workInfo.GetBundleName());
         argsInStr.push_back(workInfo.GetAbilityName());
-        workSchedulerService_->DumpProcess(argsInStr, result);
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
 
         workSchedulerService_->PauseRunningWorks(workInfo.GetUid());
         workSchedulerService_->ResumePausedWorks(workInfo.GetUid());

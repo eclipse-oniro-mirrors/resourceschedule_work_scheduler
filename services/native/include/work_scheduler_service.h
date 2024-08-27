@@ -316,7 +316,8 @@ private:
     void DumpRunningWorks(const std::string& uidStr, const std::string& option, std::string& result);
     bool IsDebugApp(const std::string& bundleName);
     bool AllowDump();
-    void DumpProcess(std::vector<std::string>& argsInStr, std::string& result);
+    void DumpProcessForEngMode(std::vector<std::string>& argsInStr, std::string& result);
+    void DumpProcessForUserMode(std::vector<std::string>& argsInStr, std::string& result);
     bool GetJsonFromFile(const char* filePath, Json::Value& root);
     bool GetUidByBundleName(const std::string& bundleName, int32_t& uid);
     void InitWorkInner();
