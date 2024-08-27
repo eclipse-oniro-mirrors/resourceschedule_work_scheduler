@@ -284,7 +284,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_001, TestSize.Level1)
     std::list<std::shared_ptr<WorkInfo>> workInfos;
 
     auto ret = workSchedulerService_->GetAllRunningWorks(workInfos);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
 }
 
 /**
