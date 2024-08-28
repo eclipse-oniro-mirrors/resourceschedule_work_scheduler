@@ -216,6 +216,9 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
             RemoveFromReadyQueue(workStatus);
             hasCanceled = true;
         } else {
+            workStatus->workStartTime_ = 0;
+            workStatus->workWatchDogTime_ = 0;
+            workStatus->duration_ = 0;
             workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
         }
     }
