@@ -129,7 +129,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
         if ((*it)->needRetrigger_) {
             if (conditionType != WorkCondition::Type::TIMER
                     && conditionType != WorkCondition::Type::GROUP) {
-                WS_HILOGD("Need retrigger, start group listener, bundleName:%{public}s, workId:%{public}s"
+                WS_HILOGD("Need retrigger, start group listener, bundleName:%{public}s, workId:%{public}s",
                     (*it)->bundleName_.c_str(), (*it)->workId_.c_str());
                 SetTimeRetrigger((*it)->timeRetrigger_);
                 listenerMap_.at(WorkCondition::Type::GROUP)->Start();
