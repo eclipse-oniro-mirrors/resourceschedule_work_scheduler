@@ -226,12 +226,16 @@ bool WorkStatus::IsReady()
         return true;
     }
     if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
-        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
+        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group, "
+            "bundleName:%{public}s, minInterval:%{public}" PRId64 ", workId:%{public}s",
+            bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
 
     auto itMap = s_uid_last_time_map.find(uid_);
     if (itMap == s_uid_last_time_map.end()) {
+        WS_HILOGI("bundleName:%{public}s, workId:%{public}s, uid:%{public}d",
+            bundleName_.c_str(), workId_.c_str(), uid_);
         return true;
     }
     time_t lastTime = s_uid_last_time_map[uid_];
@@ -243,6 +247,9 @@ bool WorkStatus::IsReady()
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;
     }
+    WS_HILOGI("bundleName:%{public}s, abilityName:%{public}s, workId:%{public}s, "
+        "callbackFlag:%{public}d, minInterval:%{public}" PRId64 ", del = %{public}f",
+        bundleName_.c_str(), abilityName_.c_str(), workId_.c_str(), callbackFlag_, minInterval_, del);
     return true;
 }
 
@@ -380,6 +387,8 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
     if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
         minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
     } else {
+        WS_HILOGE("Query package group interval failed. group:%{public}d, bundleName:%{public}s",
+            group, bundleName_.c_str());
         minInterval_ = -1;
     }
 #else
