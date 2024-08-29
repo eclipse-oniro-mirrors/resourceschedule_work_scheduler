@@ -226,22 +226,19 @@ bool WorkStatus::IsReady()
         return true;
     }
     if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
-        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group, "
-            "bundleName:%{public}s, minInterval:%{public}" PRId64 ", workId:%{public}s",
-            bundleName_.c_str(), minInterval_, workId_.c_str());
+        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group, bundleName:%{public}s, "
+            "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
 
     auto itMap = s_uid_last_time_map.find(uid_);
     if (itMap == s_uid_last_time_map.end()) {
-        WS_HILOGI("bundleName:%{public}s, workId:%{public}s, uid:%{public}d",
-            bundleName_.c_str(), workId_.c_str(), uid_);
+        WS_HILOGI("bundleName:%{public}s, uid:%{public}d", bundleName_.c_str(), uid_);
         return true;
     }
     time_t lastTime = s_uid_last_time_map[uid_];
     double del = difftime(getOppositeTime(), lastTime);
-    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
-        callbackFlag_, minInterval_, del);
+    WS_HILOGD("CbFlag:%{public}d, minInterval:%{public}" PRId64 ", del:%{public}f", callbackFlag_, minInterval_, del);
     if (del < minInterval_) {
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
