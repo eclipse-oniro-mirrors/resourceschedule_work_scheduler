@@ -326,6 +326,10 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
         return;
     }
     switch (policyType) {
+        case PolicyType::USER_SWITCHED: {
+            service->InitPreinstalledWork();
+            break;
+        }
         case PolicyType::APP_ADDED: {
             service->InitPreinstalledWork();
             break;
