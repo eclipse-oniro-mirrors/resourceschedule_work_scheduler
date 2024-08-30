@@ -176,7 +176,7 @@ void WorkSchedulerService::InitPreinstalledWork()
 {
     WS_HILOGD("init preinstalled work");
     bool needRefresh = false;
-    static list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
+    list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
     for (auto work : preinstalledWorks) {
         WS_HILOGD("preinstalled workinfo id %{public}d, uid %{public}d", work->GetWorkId(), work->GetUid());
         if (!work->IsPersisted()) {
