@@ -327,7 +327,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
     }
     switch (policyType) {
         case PolicyType::USER_SWITCHED: {
-            iservice->InitPreinstalledWork();
+            service->InitPreinstalledWork();
             break;
         }
         case PolicyType::APP_ADDED: {
