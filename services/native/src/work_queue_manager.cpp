@@ -148,7 +148,7 @@ void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus>> &works, vector<sh
 {
     for (const auto &work : works) {
         auto iter = std::find_if(result.begin(), result.end(),
-        [work](const shared_ptr<WorkStatus> &existingWork) {
+        [&](const auto &existingWork) {
             WS_HILOGE("WorkId:%{public}s existing, bundleName:%{public}s",
                 work->workId_.c_str(), work->bundleName_.c_str());
             return existingWork->workId_ == work->workId_;
