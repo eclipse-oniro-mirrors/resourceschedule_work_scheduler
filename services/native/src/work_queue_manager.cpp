@@ -144,7 +144,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
     return result;
 }
 
-void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus> &works, vector<shared_ptr<WorkStatus> &result)
+void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus>> &works, vector<shared_ptr<WorkStatus>> &result)
 {
     for (const auto &work : works) {
         auto iter = std::find_if(result.begin(), result.end(),
