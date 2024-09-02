@@ -125,7 +125,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
                 auto iter = std::find_if(result.begin(), result.end(),
                 [work](const shared_ptr<WorkStatus> &existingWork) {
                     WS_HILOGE("WorkId:%{public}s existing, bundleName:%{public}s",
-                    work->workId_.c_str(), work->bundleName_.c_str());
+                        work->workId_.c_str(), work->bundleName_.c_str());
                     return existingWork->workId_ == work->workId_;
                 });
                 if (iter == result.end()) {
