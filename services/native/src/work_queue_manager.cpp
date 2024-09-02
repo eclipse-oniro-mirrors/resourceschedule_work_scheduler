@@ -122,12 +122,13 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
             shared_ptr<WorkQueue> workQueue = it.second;
             auto works = workQueue->OnConditionChanged(conditionType, conditionVal);
             for (const auto &work : works) {
-                auto iter = std::find_if(result.begin, result.end,
+                auto iter = std::find_if(result.begin(), result.end(),
                 [work](const shared_ptr<WorkStatus> &existingWork) {
                     WS_HILOGE("WorkId:%{public}s existing, bundleName:%{public}s",
                     work->workId_.c_str(), work->bundleName_.c_str());
+                    return existingWork->workId_ == work->workId_;
                 });
-                if (iter == result.end) {
+                if (iter == result.end()) {
                     result.push_back(work);
                 }
             }
