@@ -120,6 +120,7 @@ public:
 private:
     std::vector<std::shared_ptr<WorkStatus>> GetReayQueue(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
+    void PushWork(std::vector<std::shared_ptr<WorkStatus>> &works, std::vector<std::shared_ptr<WorkStatus>> &result);
 
 private:
     ffrt::mutex mutex_;
