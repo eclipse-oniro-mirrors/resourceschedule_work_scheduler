@@ -333,6 +333,17 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             service->StopAndClearWorksByUid(detectorVal->intVal);
             break;
         }
+        case PolicyType::APP_DATA_CLEAR: {
+            service->StopAndClearWorksByUid(detectorVal->intVal);
+            break;
+        }
+        case PolicyType::APP_CHANGED: {
+            int32_t uid = detectorVal->intVal;
+            WorkStatus::ClearUidLastTimeMap(uid);
+            service->StopAndClearWorksByUid(detectorVal->intVal);
+            service->InitPreinstalledWork();
+            break;
+        }
         default: {}
     }
     CheckWorkToRun();
