@@ -491,103 +491,11 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_005, TestSize.Level1)
  * @tc.name: Dump_006
  * @tc.desc: Test WorkSchedulerService Dump.
  * @tc.type: FUNC
- * @tc.require: IAHY0B
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 begin ====== ");
-    std::vector<std::string> argsInStr;
-    std::string result;
-    argsInStr.push_back("-s");
-    argsInStr.push_back("1");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
-
-    argsInStr.clear();
-    result.clear();
-    argsInStr.push_back("-s");
-    argsInStr.push_back("1");
-    argsInStr.push_back("1");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
-
-    argsInStr.clear();
-    result.clear();
-    argsInStr.push_back("-s");
-    argsInStr.push_back("1");
-    argsInStr.push_back("true");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), true);
-
-    argsInStr.clear();
-    result.clear();
-    argsInStr.push_back("-s");
-    argsInStr.push_back("1");
-    argsInStr.push_back("false");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), true);
-    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 end ====== ");
-}
-
-/**
- * @tc.name: Dump_007
- * @tc.desc: Test WorkSchedulerService Dump.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(WorkSchedulerServiceTest, Dump_007, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_007 begin ====== ");
-    std::vector<std::string> argsInStr;
-    std::string result;
-    argsInStr.push_back("-x");
-    argsInStr.push_back("1");
-    argsInStr.push_back("1");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
-
-    argsInStr.clear();
-    result.clear();
-    argsInStr.push_back("-x");
-    argsInStr.push_back("1");
-    argsInStr.push_back("p");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
-
-    argsInStr.clear();
-    result.clear();
-    argsInStr.push_back("-x");
-    argsInStr.push_back("1");
-    argsInStr.push_back("r");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
-
-    argsInStr.clear();
-    result.clear();
-    argsInStr.push_back("-cpu");
-    argsInStr.push_back("1");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
-    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_007 end ====== ");
-}
-
-/**
- * @tc.name: Dump_008
- * @tc.desc: Test WorkSchedulerService Dump.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(WorkSchedulerServiceTest, Dump_008, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_008 begin ====== ");
     std::vector<std::string> argsInStr;
     std::string result;
     argsInStr.push_back("-t");
@@ -595,7 +503,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_008, TestSize.Level1)
     argsInStr.push_back("abilityname");
     workSchedulerService_->DumpProcessForUserMode(argsInStr, result);
     EXPECT_EQ(result.empty(), true);
-    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_008 end ====== ");
+    WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 end ====== ");
 }
 
 HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)
