@@ -121,7 +121,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
         for (auto it : queueMap_) {
             shared_ptr<WorkQueue> workQueue = it.second;
             auto works = workQueue->OnConditionChanged(conditionType, conditionVal);
-            result.insert(result.end(), works.begin(), works.end());
+            PushWork(works, result);
         }
     }
     auto it = result.begin();
@@ -141,6 +141,22 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
         }
     }
     return result;
+}
+
+void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus>> &works, vector<shared_ptr<WorkStatus>> &result)
+{
+    for (const auto &work : works) {
+        auto iter = std::find_if(result.begin(), result.end(),
+        [&](const auto &existingWork) {
+            return existingWork->workId_ == work->workId_;
+        });
+        if (iter != result.end()) {
+            WS_HILOGE("WorkId:%{public}s existing, bundleName:%{public}s",
+                work->workId_.c_str(), work->bundleName_.c_str());
+            continue;
+        }
+        result.push_back(work);
+    }
 }
 
 void WorkQueueManager::OnConditionChanged(WorkCondition::Type conditionType,
