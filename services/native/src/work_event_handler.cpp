@@ -62,7 +62,6 @@ void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& 
         }
         case CHECK_DEEPIDLE_MSG: {
             WS_HILOGI("Into deep idle mode");
-            service->SetDeepIdle(true);
             service->GetWorkQueueManager()->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
                 std::make_shared<DetectorValue>(0, 0, true, std::string()));
             service->LoadSa();

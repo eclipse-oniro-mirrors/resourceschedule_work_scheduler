@@ -23,9 +23,14 @@
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
 #include "work_status.h"
+#include "work_event_handler.h"
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+const int MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN = 31 * 60 * 1000;
+}
+
 ScreenEventSubscriber::ScreenEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     ScreenListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
@@ -34,8 +39,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
     const std::string action = data.GetWant().GetAction();
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
-        listener_.service_->SetScreenOffTime(0);
-        listener_.service_->SetDeepIdle(false);
+        listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
         listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
         int32_t ret = listener_.service_->StopDeepIdleWorks();
@@ -45,7 +49,9 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
             WS_HILOGI("stop work by condition successed.");
         }
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
-        listener_.service_->SetScreenOffTime(WorkSchedUtils::GetCurrentTimeMs());
+        listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
+        listener_.service_->GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::CHECK_DEEPIDLE_MSG, 0),
+            MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
     }
 }
 

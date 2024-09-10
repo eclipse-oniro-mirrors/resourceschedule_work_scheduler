@@ -271,26 +271,6 @@ public:
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
     /**
-     * @brief Set screen off time.
-     *
-     * @param screenOffTime screen off time.
-     */
-    void SetScreenOffTime(uint64_t screenOffTime);
-    /**
-     * @brief Get screen off time.
-     */
-    uint64_t GetScreenOffTime();
-    /**
-     * @brief Set deepIdle.
-     *
-     * @param deepIdle If deepIdle,true or false.
-     */
-    void SetDeepIdle(bool deepIdle);
-    /**
-     * @brief Is DeepIdle.
-     */
-    bool IsDeepIdle();
-    /**
      * @brief stop deepIdle works.
      *
      * @return success or fail.
