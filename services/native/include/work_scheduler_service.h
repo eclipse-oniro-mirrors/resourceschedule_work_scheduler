@@ -328,8 +328,6 @@ private:
     ffrt::mutex observerMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
-    std::atomic<bool> deepIdle_ {false};
-    std::atomic<uint64_t> screenOffTime_ {0};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};

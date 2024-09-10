@@ -50,8 +50,8 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
         }
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
         listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
-        listener_.service_->GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::CHECK_DEEPIDLE_MSG, 0),
-            MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
+        listener_.service_->GetHandler()->SendEvent(
+            AppExecFwk::InnerEvent::Get(WorkEventHandler::CHECK_DEEPIDLE_MSG, 0), MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
     }
 }
 
