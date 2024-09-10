@@ -105,6 +105,7 @@ const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
     "resource_schedule_service",
     "hidumper_service",
 };
+const int MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN = 31 * 60 * 1000;
 }
 
 #ifdef WORK_SCHEDULER_TEST
@@ -1271,6 +1272,11 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
 void WorkSchedulerService::SetScreenOffTime(uint64_t screenOffTime)
 {
     screenOffTime_.store(screenOffTime);
+    GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
+    if (screenOffTime != 0) {
+        GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::CHECK_DEEPIDLE_MSG, 0),
+            MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
+    }
 }
 
 uint64_t WorkSchedulerService::GetScreenOffTime()
