@@ -1268,26 +1268,6 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
     checker.CheckAllStatus();
 }
 
-void WorkSchedulerService::SetScreenOffTime(uint64_t screenOffTime)
-{
-    screenOffTime_.store(screenOffTime);
-}
-
-uint64_t WorkSchedulerService::GetScreenOffTime()
-{
-    return screenOffTime_.load();
-}
-
-void WorkSchedulerService::SetDeepIdle(bool deepIdle)
-{
-    deepIdle_.store(deepIdle);
-}
-
-bool WorkSchedulerService::IsDeepIdle()
-{
-    return deepIdle_.load();
-}
-
 int32_t WorkSchedulerService::StopDeepIdleWorks()
 {
     if (!ready_) {
