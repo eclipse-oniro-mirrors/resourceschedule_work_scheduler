@@ -1258,26 +1258,6 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
     checker.CheckAllStatus();
 }
 
-void WorkSchedulerService::SetScreenOffTime(uint64_t screenOffTime)
-{
-    screenOffTime_.store(screenOffTime);
-}
-
-uint64_t WorkSchedulerService::GetScreenOffTime()
-{
-    return screenOffTime_.load();
-}
-
-void WorkSchedulerService::SetDeepIdle(bool deepIdle)
-{
-    deepIdle_.store(deepIdle);
-}
-
-bool WorkSchedulerService::IsDeepIdle()
-{
-    return deepIdle_.load();
-}
-
 int32_t WorkSchedulerService::StopDeepIdleWorks()
 {
     if (!ready_) {
@@ -1297,6 +1277,16 @@ int32_t WorkSchedulerService::StopDeepIdleWorks()
         workPolicyManager_->RemoveWatchDog(workStatus);
     }
     return ERR_OK;
+}
+
+void HandleDeepIdleMsg()
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
+        std::make_shared<DetectorValue>(0, 0, true, std::string()));
 }
 } // namespace WorkScheduler
 } // namespace OHOS
