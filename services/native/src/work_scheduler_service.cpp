@@ -1279,7 +1279,7 @@ int32_t WorkSchedulerService::StopDeepIdleWorks()
     return ERR_OK;
 }
 
-void HandleDeepIdleMsg()
+void WorkSchedulerService::HandleDeepIdleMsg()
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
