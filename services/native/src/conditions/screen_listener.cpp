@@ -30,6 +30,7 @@ namespace WorkScheduler {
 namespace {
 const int MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN = 31 * 60 * 1000;
 }
+
 ScreenEventSubscriber::ScreenEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     ScreenListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
