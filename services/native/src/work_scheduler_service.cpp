@@ -1283,7 +1283,7 @@ void WorkSchedulerService::HandleDeepIdleMsg()
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return E_SERVICE_NOT_READY;
+        return;
     }
     workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
         std::make_shared<DetectorValue>(0, 0, true, std::string()));
