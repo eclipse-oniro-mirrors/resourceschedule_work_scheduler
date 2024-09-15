@@ -326,7 +326,7 @@ private:
     void ParseConditionFromJsonStr(const Json::Value &value);
     void ParseParametersFromJsonStr(const Json::Value &value);
     void ParseTimerFormJsonStr(const Json::Value &conditions);
-    bool IsHasBoolProp(const Json::Value &value, std::string key);
+    bool IsHasBoolProp(const Json::Value &value, const std::string &key);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

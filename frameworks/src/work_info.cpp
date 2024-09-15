@@ -653,7 +653,7 @@ void WorkInfo::Dump(std::string &result)
     result.append(ParseToJsonStr());
 }
 
-bool WorkInfo::IsHasBoolProp(const Json::Value &value, std::string key)
+bool WorkInfo::IsHasBoolProp(const Json::Value &value, const std::string &key)
 {
     if (value.isMember(key) && value[key].isBool()) {
         return true;

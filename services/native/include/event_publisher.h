@@ -32,35 +32,35 @@ public:
      * @param eventType The event type.
      * @param eventValue The event value.
      */
-    void PublishEvent(std::string &result, const std::string &eventType, const std::string &eventValue);
+    void PublishEvent(std::string &result, std::string &eventType, std::string &eventValue);
     /**
      * @brief Publish network event.
      *
      * @param result The dump result.
      * @param eventValue The event value.
      */
-    void PublishNetworkEvent(std::string &result, const std::string &eventValue);
+    void PublishNetworkEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publish charging event.
      *
      * @param result The dump result.
      * @param eventValue The event value.
      */
-    void PublishChargingEvent(std::string &result, const std::string &eventValue);
+    void PublishChargingEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publish storage event.
      *
      * @param result The dump result.
      * @param eventValue The event value.
      */
-    void PublishStorageEvent(std::string &result, const std::string &eventValue);
+    void PublishStorageEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Publish battery status event.
      *
      * @param result The dump result.
      * @param eventValue The event value.
      */
-    void PublishBatteryStatusEvent(std::string &result, const std::string &eventValue);
+    void PublishBatteryStatusEvent(std::string &result, std::string &eventValue);
     /**
      * @brief Dump event info.
      *
@@ -68,7 +68,7 @@ public:
      * @param eventType The event type.
      * @param eventValue The event value.
      */
-    void Dump(std::string &result, const std::string &eventType, const std::string &eventValue);
+    void Dump(std::string &result, std::string &eventType, std::string &eventValue);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
