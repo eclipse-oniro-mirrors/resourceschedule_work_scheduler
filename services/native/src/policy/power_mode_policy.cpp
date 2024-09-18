@@ -14,7 +14,9 @@
  */
 #include "policy/power_mode_policy.h"
 
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include "battery_srv_client.h"
+#endif
 #include "power_mgr_client.h"
 #include "power_mode_info.h"
 #include "work_sched_hilog.h"
@@ -24,7 +26,9 @@ using namespace OHOS::PowerMgr;
 
 namespace OHOS {
 namespace WorkScheduler {
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 const int32_t COUNT_POWER_MODE_CRUCIAL = 1;
+#endif
 const int32_t COUNT_POWER_MODE_NORMAL = 3;
 
 PowerModePolicy::PowerModePolicy(shared_ptr<WorkPolicyManager> workPolicyManager)
@@ -47,11 +51,10 @@ int32_t PowerModePolicy::GetPolicyMaxRunning()
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     auto charge = BatterySrvClient::GetInstance().GetChargingStatus();
     if (charge == BatteryChargeState::CHARGE_STATE_NONE || charge == BatteryChargeState::CHARGE_STATE_DISABLE) {
-        WS_HILOGI("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
         res = COUNT_POWER_MODE_CRUCIAL;
+        WS_HILOGI("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
     }
 #endif
-    WS_HILOGI("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
     return res;
 }
 

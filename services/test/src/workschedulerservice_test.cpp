@@ -28,6 +28,7 @@
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
 #include "event_publisher.h"
+#include "json/json.h"
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
@@ -689,6 +690,20 @@ HWTEST_F(WorkSchedulerServiceTest, SendEvent_001, TestSize.Level1)
     workSchedulerService_->GetHandler()->
         SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), initDelay);
     EXPECT_TRUE(workSchedulerService_->ready_);
+}
+
+/**
+ * @tc.name: GetJsonFromFile_001
+ * @tc.desc: Test WorkSchedulerService GetJsonFromFile.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetJsonFromFile_001, TestSize.Level1)
+{
+    Json::Value root;
+    const char* path = "/a/b/c";
+    bool ret = workSchedulerService_->GetJsonFromFile(path, root);
+    EXPECT_FALSE(ret);
 }
 
 /**
