@@ -19,6 +19,16 @@ class WorkSchedulerExtensionContext extends ExtensionContext {
     constructor(obj) {
         super(obj);
     }
+
+    startServiceExtensionAbility(want, callback) {
+        console.log('startServiceExtensionAbility');
+        return this.__context_impl__.startServiceExtensionAbility(want, callback);
+    }
+
+    stopServiceExtensionAbility(want, callback) {
+        console.log('stopServiceExtensionAbility');
+        return this.__context_impl__.stopServiceExtensionAbility(want, callback);
+    }
 }
 
 export default WorkSchedulerExtensionContext;
