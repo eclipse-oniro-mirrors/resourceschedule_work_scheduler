@@ -18,11 +18,17 @@
 #include "js_extension_context.h"
 #include "js_runtime.h"
 #include "js_runtime_utils.h"
+#include "js_error_utils.h"
 #include "napi/native_api.h"
+#include "napi_common_want.h"
+#include "napi_common_util.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
+using namespace OHOS::AbilityRuntime;
+constexpr size_t ARGC_ONE = 1;
+constexpr size_t INDEX_ZERO = 0;
 class JsWorkSchedulerExtensionContext final {
 public:
     explicit JsWorkSchedulerExtensionContext(const std::shared_ptr<WorkSchedulerExtensionContext>& context)
@@ -34,6 +40,93 @@ public:
         std::unique_ptr<JsWorkSchedulerExtensionContext>(
             static_cast<JsWorkSchedulerExtensionContext*>(data));
     }
+
+    static napi_value StartServiceExtensionAbility(napi_env env, napi_callback_info info)
+    {
+        GET_NAPI_INFO_AND_CALL(env, info, JsWorkSchedulerExtensionContext, OnStartExtensionAbility);
+    }
+
+    static napi_value StopServiceExtensionAbility(napi_env env, napi_callback_info info)
+    {
+        GET_NAPI_INFO_AND_CALL(env, info, JsWorkSchedulerExtensionContext, OnStopExtensionAbility);
+    }
+
+    napi_value OnStartExtensionAbility(napi_env env, NapiCallbackInfo& info)
+    {
+        WS_HILOGI("called");
+        if (info.argc < ARGC_ONE) {
+            WS_HILOGE("invalid argc");
+            ThrowTooFewParametersError(env);
+            return CreateJsUndefined(env);
+        }
+        AAFwk::Want want;
+        if (!AppExecFwk::UnwrapWant(env, info.argv[INDEX_ZERO], want)) {
+            ThrowInvalidParamError(env, "Parse param want failed, must be a Want.");
+            return CreateJsUndefined(env);
+        }
+        WS_HILOGI("%{public}s", want.ToString().c_str());
+        NapiAsyncTask::CompleteCallback complete =
+            [weak = context_, want](napi_env env, NapiAsyncTask& task, int32_t status) {
+                auto context = weak.lock();
+                if (!context) {
+                    WS_HILOGE("context released");
+                    task.Reject(env, CreateJsError(env, AbilityErrorCode::ERROR_CODE_INVALID_CONTEXT));
+                    return;
+                }
+                auto innerErrorCode = context->StartServiceExtensionAbility(want);
+                if (innerErrorCode == 0) {
+                    WS_HILOGI("OK");
+                    task.Resolve(env, CreateJsUndefined(env));
+                } else {
+                    WS_HILOGE("failed");
+                    task.Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
+                }
+            };
+
+        napi_value lastParam = (info.argc <= ARGC_ONE) ? nullptr : info.argv[ARGC_ONE];
+        napi_value result = nullptr;
+        NapiAsyncTask::ScheduleHighQos("JSWorkSchedulerExtensionContext::OnStartExtensionAbility",
+            env, CreateAsyncTaskWithLastParam(env, lastParam, nullptr, std::move(complete), &result));
+        return result;
+    }
+
+    napi_value OnStopExtensionAbility(napi_env env, NapiCallbackInfo& info)
+    {
+        WS_HILOGI("called");
+        if (info.argc < ARGC_ONE) {
+            WS_HILOGE("invalid argc");
+            ThrowTooFewParametersError(env);
+            return CreateJsUndefined(env);
+        }
+        AAFwk::Want want;
+        if (!AppExecFwk::UnwrapWant(env, info.argv[INDEX_ZERO], want)) {
+            ThrowInvalidParamError(env, "Parse param want failed, must be a Want.");
+            return CreateJsUndefined(env);
+        }
+        WS_HILOGI("%{public}s", want.ToString().c_str());
+        NapiAsyncTask::CompleteCallback complete =
+            [weak = context_, want](napi_env env, NapiAsyncTask& task, int32_t status) {
+                auto context = weak.lock();
+                if (!context) {
+                    WS_HILOGE("context released");
+                    task.Reject(env, CreateJsError(env, AbilityErrorCode::ERROR_CODE_INVALID_CONTEXT));
+                    return;
+                }
+                auto innerErrorCode = context->StopServiceExtensionAbility(want);
+                if (innerErrorCode == 0) {
+                    task.Resolve(env, CreateJsUndefined(env));
+                } else {
+                    task.Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
+                }
+            };
+
+        napi_value lastParam = (info.argc <= ARGC_ONE) ? nullptr : info.argv[ARGC_ONE];
+        napi_value result = nullptr;
+        NapiAsyncTask::Schedule("JSWorkSchedulerExtensionContext::OnStopExtensionAbility",
+            env, CreateAsyncTaskWithLastParam(env, lastParam, nullptr, std::move(complete), &result));
+        return result;
+    }
+
 private:
     std::weak_ptr<WorkSchedulerExtensionContext> context_;
 };
@@ -52,6 +145,11 @@ napi_value CreateJsWorkSchedulerExtensionContext(napi_env env,
         WS_HILOGE("JsWorkSchedulerExtensionContext failed to wrap the object");
         return nullptr;
     }
+    const char *moduleName = "JsWorkSchedulerExtensionContext";
+    BindNativeFunction(env, objValue, "startServiceExtensionAbility", moduleName,
+        JsWorkSchedulerExtensionContext::StartServiceExtensionAbility);
+    BindNativeFunction(env, objValue, "stopServiceExtensionAbility", moduleName,
+        JsWorkSchedulerExtensionContext::StopServiceExtensionAbility);
     return objValue;
 }
 } // namespace WorkScheduler
