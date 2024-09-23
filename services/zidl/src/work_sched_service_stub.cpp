@@ -23,7 +23,7 @@
 #ifdef HICOLLIE_ENABLE
 #include "xcollie/xcollie.h"
 #include "xcollie/xcollie_define.h"
-#define XCOLLIE_TIMEOUT_SECONDS 30
+#define XCOLLIE_TIMEOUT_SECONDS 10
 #endif
 
 namespace OHOS {
@@ -242,7 +242,7 @@ int32_t WorkSchedServiceStub::SetTimer(uint32_t code)
     if (itCollieId != collieCodeStringMap_.end()) {
         std::string collieStr = itCollieId->second;
         std::string collieName = "WorkSchedulerServiceStub:" + collieStr;
-        unsigned int flag = HiviewDFX::XCOLLIE_FLAG_LOG;
+        unsigned int flag = HiviewDFX::XCOLLIE_FLAG_LOG | HiviewDFX::XCOLLIE_FLAG_RECOVERY;
         auto TimerCallback = [collieStr](void *) {
             WS_HILOGE("OnRemoteRequest timeout func: %{public}s", collieStr.c_str());
         };
