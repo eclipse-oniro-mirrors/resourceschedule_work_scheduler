@@ -14,7 +14,7 @@
  */
 #include "policy/cpu_policy.h"
 #include "work_sched_hilog.h"
-#include "cpu_collector.h"
+#include "cpu_collector_client.h"
 
 using namespace std;
 
