@@ -600,8 +600,10 @@ HWTEST_F(WorkStatusTest, UpdateTimerIfNeed_001, TestSize.Level1)
 
     std::shared_ptr<Condition> repeatCycle = std::make_shared<Condition>();
     repeatCycle->boolVal = false;
+    repeatCycle->intVal = 1;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
     workStatus_->UpdateTimerIfNeed();
+    EXPECT_TRUE(repeatCycle->intVal == 0);
 }
 
 /**
@@ -620,6 +622,7 @@ HWTEST_F(WorkStatusTest, UpdateTimerIfNeed_002, TestSize.Level1)
     repeatCycle->intVal = 1;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
     workStatus_->UpdateTimerIfNeed();
+    EXPECT_TRUE(repeatCycle->intVal == 1);
 }
 
 /**
@@ -687,9 +690,11 @@ HWTEST_F(WorkStatusTest, IsNapReady_002, TestSize.Level1)
  */
 HWTEST_F(WorkStatusTest, UpdateUidLastTimeMap_001, TestSize.Level1)
 {
+    workStatus_->s_uid_last_time_map.clear();
     workStatus_->uid_ = 1;
     workStatus_->UpdateUidLastTimeMap();
     workStatus_->ClearUidLastTimeMap(1);
+    EXPECT_TRUE(workStatus_->s_uid_last_time_map.empty());
 }
 
 /**
