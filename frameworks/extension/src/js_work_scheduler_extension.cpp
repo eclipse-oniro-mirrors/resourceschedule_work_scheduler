@@ -327,7 +327,7 @@ bool CallFuncation(napi_env env, napi_value workInfoData,
     napi_value method;
     napi_get_named_property(env, value, functionName, &method);
     if (method == nullptr) {
-        WS_HILOGE("WorkSchedulerExtension Failed to get onWorkStart from WorkSchedulerExtension object");
+        WS_HILOGE("WorkSchedulerExtension call function %{public}s error", functionName);
         return false;
     }
 
@@ -470,7 +470,7 @@ bool JsWorkSchedulerExtension::GetExtrasJsonStr(const WorkInfo& workInfo, std::s
     std::shared_ptr<AAFwk::WantParams> extras = workInfo.GetExtras();
     Json::Value extrasJson;
     if (!extras) {
-        WS_HILOGI("parameter is null.");
+        WS_HILOGD("parameter is null.");
         return false;
     }
     auto extrasMap = extras->GetParams();
