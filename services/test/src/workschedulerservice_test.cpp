@@ -380,6 +380,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_001, TestSize.Level1)
     argsInStr.push_back("-watchdog_time");
     argsInStr.push_back("100");
     workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
+    EXPECT_FALSE(result.empty());
     WS_HILOGI("%{public}s", result.c_str());
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_001 end ====== ");
 }
@@ -440,6 +441,7 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_003, TestSize.Level1)
     workinfo.SetElement("bundlename", "abilityname");
     workSchedulerService_->AddWorkInner(workinfo);
     workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
+    EXPECT_TRUE(result.empty());
     WS_HILOGI("%{public}s", result.c_str());
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_003 end ====== ");
 }
@@ -826,6 +828,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
 
     workSchedulerService_->saMap_.emplace(saId2, false);
     workSchedulerService_->LoadSa();
+    EXPECT_FALSE(workSchedulerService_->saMap_.empty());
 }
 
 /**
@@ -888,6 +891,7 @@ HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_001, TestSize.Level
     repeatCycle->boolVal = true;
     workStatus->conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
     workSchedulerService_->UpdateWorkBeforeRealStart(workStatus);
+    EXPECT_TRUE(repeatCycle->intVal == 0);
 }
 
 /**
