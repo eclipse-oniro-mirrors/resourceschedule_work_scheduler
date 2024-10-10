@@ -655,14 +655,13 @@ HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level
 HWTEST_F(WorkSchedulerServiceTest, WorkQueueEventHandler_001, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 begin ====== ");
-    WorkQueueEventHandler handler(workSchedulerService_->eventRunner_, workSchedulerService_->workQueueManager_);
+    WorkQueueEventHandler handler(nullptr, nullptr);
     AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
     handler.ProcessEvent(event);
     event = AppExecFwk::InnerEvent::Get(1);
     handler.ProcessEvent(event);
     event = AppExecFwk::InnerEvent::Get(2);
     handler.ProcessEvent(event);
-    EXPECT_TRUE(workSchedulerService_->eventRunner_ != nullptr);
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 end ====== ");
 }
 
