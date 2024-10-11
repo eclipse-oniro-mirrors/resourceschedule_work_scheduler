@@ -21,6 +21,7 @@
 #include "work_bundle_group_change_callback.h"
 #include "work_scheduler_connection.h"
 #include "work_queue_event_handler.h"
+#include "work_event_handler.h"
 #include "conditions/battery_level_listener.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
@@ -662,6 +663,26 @@ HWTEST_F(WorkSchedulerServiceTest, WorkQueueEventHandler_001, TestSize.Level1)
     event = AppExecFwk::InnerEvent::Get(2);
     handler.ProcessEvent(event);
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 end ====== ");
+}
+
+HWTEST_F(WorkSchedulerServiceTest, WorkEventHandler_001, TestSize.Level1)
+{
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkEventHandler_001 begin ====== ");
+    WorkEventHandler handler(workSchedulerService_->eventRunner_, workSchedulerService_);
+    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
+    handler.ProcessEvent(event);
+    event = AppExecFwk::InnerEvent::Get(1);
+    handler.ProcessEvent(event);
+    event = AppExecFwk::InnerEvent::Get(2);
+    handler.ProcessEvent(event);
+    event = AppExecFwk::InnerEvent::Get(3);
+    handler.ProcessEvent(event);
+    event = AppExecFwk::InnerEvent::Get(4);
+    handler.ProcessEvent(event);
+    event = AppExecFwk::InnerEvent::Get(5);
+    handler.ProcessEvent(event);
+    EXPECT_TRUE(workSchedulerService_->eventRunner_ != nullptr);
+    WS_HILOGI("====== WorkSchedulerServiceTest.WorkEventHandler_001 end ====== ");
 }
 
 HWTEST_F(WorkSchedulerServiceTest, BatteryLevelListener_001, TestSize.Level1)
