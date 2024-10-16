@@ -80,6 +80,11 @@ HWTEST_F(AppDataClearListenerTest, OnReceiveEvent_001, TestSize.Level1)
     appDataClearListener_->commonEventSubscriber->OnReceiveEvent(event4);
     EXPECT_EQ(event4.GetWant().GetAction(), CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED);
 
+    want.SetAction(CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
+    CommonEventData event5{want};
+    appDataClearListener_->commonEventSubscriber->OnReceiveEvent(event5);
+    EXPECT_EQ(event5.GetWant().GetAction(), CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
+
     bool ret2 = appDataClearListener_->Stop();
     EXPECT_TRUE(ret2);
 }

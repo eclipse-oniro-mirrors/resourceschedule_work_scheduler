@@ -72,6 +72,8 @@
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
 #include "hitrace_meter.h"
+#include "res_type.h"
+#include "res_sched_client.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -91,6 +93,7 @@ const int32_t MAX_BUFFER = 2048;
 const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
+const int32_t TIME_OUT = 4;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
@@ -252,6 +255,10 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
         Json::Value workJson = preinstalledWorksRoot[it];
         shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
         if (workinfo->ParseFromJson(workJson)) {
+            if (workinfo->GetSaId() > -1) {
+                saMap_.emplace(workinfo->GetSaId(), workinfo->IsResidentSa());
+                continue;
+            }
             int32_t uid;
             if (!GetUidByBundleName(workinfo->GetBundleName(), uid)) {
                 continue;
@@ -843,6 +850,8 @@ void WorkSchedulerService::DumpProcessForEngMode(std::vector<std::string> &argsI
                 DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else if (argsInStr[DUMP_OPTION] == "-x") {
                 DumpRunningWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+            } else if (argsInStr[DUMP_OPTION] == "-s") {
+                DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else {
                 result.append("Error params.");
             }
@@ -908,7 +917,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -repeat_time_min (number): set min repeat cycle time, default 1200000.\n")
         .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
         .append("    -cpu (number): set the usage cpu.\n")
-        .append("    -count (number): set the max running task count.\n");
+        .append("    -count (number): set the max running task count.\n")
+        .append("    -s (number) (bool): set the sa id running task.\n");
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -1258,26 +1268,6 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
     checker.CheckAllStatus();
 }
 
-void WorkSchedulerService::SetScreenOffTime(uint64_t screenOffTime)
-{
-    screenOffTime_.store(screenOffTime);
-}
-
-uint64_t WorkSchedulerService::GetScreenOffTime()
-{
-    return screenOffTime_.load();
-}
-
-void WorkSchedulerService::SetDeepIdle(bool deepIdle)
-{
-    deepIdle_.store(deepIdle);
-}
-
-bool WorkSchedulerService::IsDeepIdle()
-{
-    return deepIdle_.load();
-}
-
 int32_t WorkSchedulerService::StopDeepIdleWorks()
 {
     if (!ready_) {
@@ -1297,6 +1287,75 @@ int32_t WorkSchedulerService::StopDeepIdleWorks()
         workPolicyManager_->RemoveWatchDog(workStatus);
     }
     return ERR_OK;
+}
+
+void WorkSchedulerService::LoadSa()
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return;
+    }
+    if (saMap_.empty()) {
+        WS_HILOGI("saMap is empty.");
+        return;
+    }
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        WS_HILOGE("get sa manager failed.");
+        return;
+    }
+    for (auto &it : saMap_) {
+        sptr<IRemoteObject> object = samgr->CheckSystemAbility(it.first);
+        if (it.second && object == nullptr) {
+            WS_HILOGE("resident sa: %{public}d does not exist.", it.first);
+            continue;
+        } else if (!it.second && object == nullptr) {
+            object = samgr->LoadSystemAbility(it.first, TIME_OUT);
+            if (object == nullptr) {
+                WS_HILOGE("load sa: %{public}d failed.", it.first);
+                continue;
+            }
+            WS_HILOGD("load sa: %{public}d successed.", it.first);
+        }
+        std::string action = "";
+        std::unordered_map<std::string, std::string> payload;
+        payload["action"] = action;
+        payload["saId"] = std::to_string(it.first);
+        uint32_t type = ResourceSchedule::ResType::RES_TYPE_DEVICE_IDLE;
+        ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, payload);
+    }
+}
+
+void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr,
+    std::string &result)
+{
+    if (saIdStr.empty() || residentSaStr.empty()) {
+        result.append("param error.");
+        return;
+    }
+    int32_t saId = std::stoi(saIdStr);
+    if (saId < 0 || (residentSaStr != "true" && residentSaStr != "false")) {
+        result.append("the parameter is invalid.");
+        return;
+    }
+    bool residentSa = (residentSaStr == "true") ? true : false;
+    if (saMap_.count(saId) > 0) {
+        saMap_.at(saId) = residentSa;
+    } else {
+        saMap_.emplace(saId, residentSa);
+    }
+    LoadSa();
+}
+
+void WorkSchedulerService::HandleDeepIdleMsg()
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return;
+    }
+    workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
+        std::make_shared<DetectorValue>(0, 0, true, std::string()));
+    LoadSa();
 }
 } // namespace WorkScheduler
 } // namespace OHOS

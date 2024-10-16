@@ -326,6 +326,10 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
         return;
     }
     switch (policyType) {
+        case PolicyType::USER_SWITCHED: {
+            service->InitPreinstalledWork();
+            break;
+        }
         case PolicyType::APP_ADDED: {
             service->InitPreinstalledWork();
             break;
@@ -334,17 +338,6 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             int32_t uid = detectorVal->intVal;
             WorkStatus::ClearUidLastTimeMap(uid);
             service->StopAndClearWorksByUid(detectorVal->intVal);
-            break;
-        }
-        case PolicyType::APP_DATA_CLEAR: {
-            service->StopAndClearWorksByUid(detectorVal->intVal);
-            break;
-        }
-        case PolicyType::APP_CHANGED: {
-            int32_t uid = detectorVal->intVal;
-            WorkStatus::ClearUidLastTimeMap(uid);
-            service->StopAndClearWorksByUid(detectorVal->intVal);
-            service->InitPreinstalledWork();
             break;
         }
         default: {}
@@ -707,15 +700,19 @@ std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllIdeWorkStatus(co
             it++;
             continue;
         }
-        auto work = it->second->GetWorkList().front();
-        if (work->workInfo_->GetBundleName() != bundleName ||
-            work->workInfo_->GetAbilityName() != abilityName ||
-            work->userId_ != currentAccountId) {
-            it++;
-            continue;
+        bool isExist = false;
+        for (auto work : it->second->GetWorkList()) {
+            if (work->workInfo_->GetBundleName() == bundleName &&
+                work->workInfo_->GetAbilityName() == abilityName &&
+                (work->userId_ == 0 || work->userId_ == currentAccountId)) {
+                allWorks.push_back(work);
+                isExist = true;
+            }
         }
-        allWorks = uidQueueMap_.at(work->uid_)->GetWorkList();
-        return allWorks;
+        if (isExist) {
+            return allWorks;
+        }
+        it++;
     }
     return allWorks;
 }

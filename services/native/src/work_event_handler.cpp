@@ -60,6 +60,11 @@ void WorkEventHandler::ProcessEvent([[maybe_unused]] const InnerEvent::Pointer& 
             service->TriggerWorkIfConditionReady();
             break;
         }
+        case CHECK_DEEPIDLE_MSG: {
+            WS_HILOGI("into deep idle state");
+            service->HandleDeepIdleMsg();
+            break;
+        }
         default:
             return;
     }
