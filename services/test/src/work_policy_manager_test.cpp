@@ -264,8 +264,8 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_004, TestSize.Level1)
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     workStatus->paused_ = false;
-    workStatus->workWatchDogTime_ = 120000;
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->workStartTime_ = 120000;
+    workStatus->workWatchDogTime_ = WorkSchedUtils::GetCurrentTimeMs();
     std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::shared_ptr<AppExecFwk::EventRunner> runner;
     std::shared_ptr<Watchdog> watchdog_ =
@@ -352,8 +352,8 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_004, TestSize.Level1)
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     workStatus->paused_ = true;
-    workStatus->workWatchDogTime_ = 120000;
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->workStartTime_ = 120000;
+    workStatus->workWatchDogTime_ = WorkSchedUtils::GetCurrentTimeMs();
     std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::shared_ptr<AppExecFwk::EventRunner> runner;
     std::shared_ptr<Watchdog> watchdog_ =

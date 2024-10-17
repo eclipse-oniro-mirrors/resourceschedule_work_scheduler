@@ -46,6 +46,8 @@ void AppDataClearSubscriber::OnReceiveEvent(const CommonEventData &data)
         listener_.OnPolicyChanged(PolicyType::APP_CHANGED, detectorVal);
     } else if (action == CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED) {
         listener_.OnPolicyChanged(PolicyType::APP_ADDED, detectorVal);
+    } else if (action == CommonEventSupport::COMMON_EVENT_USER_SWITCHED) {
+        listener_.OnPolicyChanged(PolicyType::USER_SWITCHED, detectorVal);
     }
 }
 
@@ -56,6 +58,7 @@ shared_ptr<CommonEventSubscriber> CreateAppDataClearSubscriber(AppDataClearListe
     skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_REMOVED);
     skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_CHANGED);
     skill.AddEvent(CommonEventSupport::COMMON_EVENT_PACKAGE_ADDED);
+    skill.AddEvent(CommonEventSupport::COMMON_EVENT_USER_SWITCHED);
     CommonEventSubscribeInfo info(skill);
     return make_shared<AppDataClearSubscriber>(info, listener);
 }

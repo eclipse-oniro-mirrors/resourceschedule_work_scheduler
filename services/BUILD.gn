@@ -78,7 +78,6 @@ ohos_shared_library("workschedservice") {
   external_deps = [
     "ability_base:want",
     "ability_base:zuri",
-    "ability_runtime:ability_connect_callback_stub",
     "ability_runtime:ability_manager",
     "ability_runtime:wantagent_innerkits",
     "access_token:libaccesstoken_sdk",
@@ -96,6 +95,7 @@ ohos_shared_library("workschedservice") {
     "hiview:libucollection_client",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "resource_schedule_service:ressched_client",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "time_service:time_client",
@@ -207,6 +207,7 @@ ohos_static_library("workschedservice_static") {
     "hiview:libucollection_client",
     "init:libbegetutil",
     "ipc:ipc_single",
+    "resource_schedule_service:ressched_client",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "time_service:time_client",

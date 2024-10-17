@@ -306,6 +306,24 @@ public:
      * @return The extension.
      */
     bool GetExtension() const;
+    /**
+     * @brief Get saId.
+     *
+     * @return The saId.
+     */
+    int32_t GetSaId() const;
+    /**
+     * @brief Refresh saId.
+     *
+     * @param saId The saId.
+     */
+    void RefreshSaId(int32_t saId);
+    /**
+     * @brief Get the work is residentSa.
+     *
+     * @return ResidentSa or not.
+     */
+    bool IsResidentSa() const;
 
 private:
     int32_t workId_;
@@ -320,13 +338,15 @@ private:
     std::string uriKey_;
     int32_t appIndex_;
     bool extension_;
+    int32_t saId_;
+    bool residentSa_;
 private:
     static bool UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
     void ParseConditionFromJsonStr(const Json::Value &value);
     void ParseParametersFromJsonStr(const Json::Value &value);
     void ParseTimerFormJsonStr(const Json::Value &conditions);
-    bool IsHasBoolProp(const Json::Value &value, std::string key);
+    bool IsHasBoolProp(const Json::Value &value, const std::string &key);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

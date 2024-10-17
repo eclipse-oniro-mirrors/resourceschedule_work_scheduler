@@ -270,79 +270,34 @@ public:
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
     /**
-     * @brief Set screen off time.
-     *
-     * @param screenOffTime screen off time.
-     */
-    void SetScreenOffTime(uint64_t screenOffTime);
-    /**
-     * @brief Get screen off time.
-     */
-    uint64_t GetScreenOffTime();
-    /**
-     * @brief Set deepIdle.
-     *
-     * @param deepIdle If deepIdle,true or false.
-     */
-    void SetDeepIdle(bool deepIdle);
-    /**
-     * @brief Is DeepIdle.
-     */
-    bool IsDeepIdle();
-    /**
      * @brief stop deepIdle works.
      *
      * @return success or fail.
      */
     int32_t StopDeepIdleWorks();
-private:
-    void RegisterStandbyStateObserver();
-    void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
-    bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
-    void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-    void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    void GroupObserverInit();
-#endif
-    std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
-    void DumpAllInfo(std::string& result);
-    bool CheckWorkInfo(WorkInfo& workInfo, int32_t& uid);
-    bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
-    bool CheckCondition(WorkInfo& workInfo);
-    bool IsBaseAbilityReady();
-    void DumpUsage(std::string& result);
-    void DumpParamSet(std::string& key, std::string& value, std::string& result);
-    void DumpProcessWorks(const std::string& bundleName, const std::string& abilityName, std::string& result);
-    void DumpRunningWorks(const std::string& uidStr, const std::string& option, std::string& result);
-    bool IsDebugApp(const std::string& bundleName);
-    bool AllowDump();
-    void DumpProcessForEngMode(std::vector<std::string>& argsInStr, std::string& result);
-    void DumpProcessForUserMode(std::vector<std::string>& argsInStr, std::string& result);
-    bool GetJsonFromFile(const char* filePath, Json::Value& root);
-    bool GetUidByBundleName(const std::string& bundleName, int32_t& uid);
-    void InitWorkInner();
-    void AddWorkInner(WorkInfo& workInfo);
-    std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
-    void LoadWorksFromFile(const char *path, std::list<std::shared_ptr<WorkInfo>> &workInfos);
-    void InitPersistedWork();
-    bool CheckProcessName();
-    bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
-    bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
-
+    /**
+     * @brief load sa.
+     */
+    void LoadSa();
+    /**
+     * @brief Handle DeepIdle callback Msg.
+     */
+    void HandleDeepIdleMsg();
 private:
     std::set<int32_t> whitelist_;
     std::mutex whitelistMutex_;
+    std::map<int32_t, bool> saMap_;
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif
+
+private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     std::mutex mutex_;
     std::mutex observerMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
-    std::atomic<bool> deepIdle_ {false};
-    std::atomic<uint64_t> screenOffTime_ {0};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};
@@ -352,6 +307,39 @@ private:
 #ifdef  DEVICE_STANDBY_ENABLE
     sptr<WorkStandbyStateChangeCallback> standbyStateObserver_;
 #endif
+    void RegisterStandbyStateObserver();
+    void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
+    void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+    void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    void GroupObserverInit();
+#endif
+    std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
+    void DumpAllInfo(std::string &result);
+    bool CheckWorkInfo(WorkInfo &workInfo, int32_t &uid);
+    bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
+    bool CheckCondition(WorkInfo& workInfo);
+    bool IsBaseAbilityReady();
+    void DumpUsage(std::string &result);
+    void DumpParamSet(std::string &key, std::string &value, std::string &result);
+    void DumpProcessWorks(const std::string &bundleName, const std::string &abilityName, std::string &result);
+    void DumpRunningWorks(const std::string &uidStr, const std::string &option, std::string &result);
+    bool IsDebugApp(const std::string &bundleName);
+    bool AllowDump();
+    void DumpProcessForEngMode(std::vector<std::string> &argsInStr, std::string &result);
+    void DumpProcessForUserMode(std::vector<std::string> &argsInStr, std::string &result);
+    bool GetJsonFromFile(const char *filePath, Json::Value &root);
+    bool GetUidByBundleName(const std::string &bundleName, int32_t &uid);
+    void InitWorkInner();
+    void AddWorkInner(WorkInfo& workInfo);
+    std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
+    void LoadWorksFromFile(const char *path, std::list<std::shared_ptr<WorkInfo>> &workInfos);
+    void InitPersistedWork();
+    bool CheckProcessName();
+    bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
+    bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
+    void DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr, std::string &result);
 };
 } // namespace WorkScheduler
 } // namespace OHOS
