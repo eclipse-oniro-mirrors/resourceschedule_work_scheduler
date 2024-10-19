@@ -133,7 +133,7 @@ bool WorkQueue::Remove(shared_ptr<WorkStatus> workStatus)
 
 uint32_t WorkQueue::GetSize()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
+    std::lock_guard<std::recursive_mutex> lock(workListMutex_);
     return workList_.size();
 }
 
