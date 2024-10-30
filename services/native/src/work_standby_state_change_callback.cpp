@@ -15,7 +15,11 @@
 
 #ifdef DEVICE_STANDBY_ENABLE
 #include "work_standby_state_change_callback.h"
+#include "allow_type.h"
 #include "work_sched_hilog.h"
+#include "work_scheduler_service.h"
+#include "work_policy_manager.h"
+#include "work_sched_data_manager.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -28,25 +32,42 @@ WorkStandbyStateChangeCallback::WorkStandbyStateChangeCallback(std::shared_ptr<W
 void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping)
 {
     WS_HILOGI("napped is %{public}d, sleeping is %{public}d", napped, sleeping);
-    if (napped && !isSleep_) {
-        WS_HILOGI("device_standby state is nap, do not need process");
+    if (napped && !sleeping) {
+        WS_HILOGI("Device standby state is nap, do not need process");
         return;
     }
+    if (!napped && sleeping) {
+        WS_HILOGI("Device standby state is sleeping");
+    } else {
+        // (1, 0) or (0, 0)
+        WS_HILOGI("Device standby exit sleeping state");
+    }
+    DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(sleeping);
     workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
         std::make_shared<DetectorValue>(0, 0, sleeping, std::string()));
-    isSleep_ = sleeping;
 }
 
 void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::string& name,
     uint32_t allowType, bool added)
 {
-    WS_HILOGD("%{public}s apply allow, added type is %{public}d", name.c_str(), added);
-    if (!isSleep_) {
-        WS_HILOGD("current device_standby state is not sleep");
+    if (allowType != DevStandbyMgr::AllowType::WORK_SCHEDULER) {
+        WS_HILOGE("Standby allow list changed, allowType is not WORK_SCHEDULER");
+        return;
+    }
+    WS_HILOGI("%{public}s apply allow, added %{public}d", name.c_str(), added);
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->OnDeviceStandyWhitelistChanged(name, added);
+    auto policy = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetWorkPolicyManager();
+    if (!policy) {
+        WS_HILOGE("Standby allow list changed callback error, WorkPolicyManager is nullptr");
+        return;
+    }
+    if (!policy->FindWork(uid)) {
+        WS_HILOGI("Standby allow list changed callback return, uid:%{public}d has no work", uid);
         return;
     }
     workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
-        std::make_shared<DetectorValue>(0, 0, isSleep_, std::string()));
+        std::make_shared<DetectorValue>(0, 0, dataManager->GetDeviceSleep(), std::string()));
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS

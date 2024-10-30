@@ -74,6 +74,7 @@
 #include "hitrace_meter.h"
 #include "res_type.h"
 #include "res_sched_client.h"
+#include "work_sched_data_manager.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -83,6 +84,7 @@ namespace WorkScheduler {
 namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
+const std::string EXEMPTION_BUNDLES_KEY = "work_scheduler_exemption_bundles";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
@@ -272,6 +274,36 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
     }
 }
 
+void WorkSchedulerService::LoadExemptionBundlesFromFile(const char *path)
+{
+    if (!path) {
+        return;
+    }
+    Json::Value root;
+    if (!GetJsonFromFile(path, root) || root.empty()) {
+        WS_HILOGE("file is empty %{private}s", path);
+        return;
+    }
+    if (!root.isMember(EXEMPTION_BUNDLES_KEY)) {
+        WS_HILOGE("no work_scheduler_exemption_bundles key");
+        return;
+    }
+    Json::Value exemptionBundlesRoot = root[EXEMPTION_BUNDLES_KEY];
+    if (exemptionBundlesRoot.empty() || !exemptionBundlesRoot.isArray()) {
+        WS_HILOGE("work_scheduler_exemption_bundles content is empty");
+        return;
+    }
+
+    for (const auto &exemptionBundleName : exemptionBundlesRoot) {
+        if (exemptionBundleName.empty() || !exemptionBundleName.isString()) {
+            WS_HILOGE("Item type error");
+        } else {
+            WS_HILOGI("bundle name:%{public}s", exemptionBundleName.asString().c_str());
+            exemptionBundles_.insert(exemptionBundleName.asString());
+        }
+    }
+}
+
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
@@ -283,6 +315,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
     // china->base
     for (int i = MAX_CFG_POLICY_DIRS_CNT - 1; i >= 0; i--) {
         LoadWorksFromFile(files->paths[i], workInfos);
+        LoadExemptionBundlesFromFile(files->paths[i]);
     }
     FreeCfgFiles(files);
     return workInfos;
@@ -699,6 +732,9 @@ bool WorkSchedulerService::StopWorkInner(std::shared_ptr<WorkStatus> workStatus,
     if (workPolicyManager_->StopWork(workStatus, uid, needCancel, isTimeOut)) {
         workQueueManager_->CancelWork(workStatus);
     }
+    if (!isTimeOut) {
+        workPolicyManager_->RemoveWatchDog(workStatus);
+    }
     return true;
 }
 
@@ -801,6 +837,11 @@ void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus>
     work->UpdateTimerIfNeed();
     if (work->NeedRemove()) {
         workQueueManager_->RemoveWork(work);
+        if (work->persisted_ && !work->IsRepeating()) {
+            std::lock_guard<ffrt::mutex> lock(mutex_);
+            persistedMap_.erase(work->workId_);
+            RefreshPersistedWorks();
+        }
     }
 }
 
@@ -936,7 +977,8 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
         .append("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()) + "\n")
         .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
         .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n")
-        .append("whitelist:" + GetEffiResApplyUid());
+        .append("Exemption bundle whitelist:" + GetExemptionBundles() + "\n")
+        .append("Efficiency Resource whitelist:" + GetEffiResApplyUid() + "\n");
 }
 
 bool WorkSchedulerService::IsDebugApp(const std::string &bundleName)
@@ -1013,6 +1055,19 @@ std::string WorkSchedulerService::GetEffiResApplyUid()
     return res;
 }
 
+std::string WorkSchedulerService::GetExemptionBundles()
+{
+    if (exemptionBundles_.empty()) {
+        return "[]";
+    }
+
+    std::string bundles {""};
+    for (auto &bundle : exemptionBundles_) {
+        bundles.append(bundle + " ");
+    }
+    return bundles;
+}
+
 void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, std::string &result)
 {
     if (!std::all_of(value.begin(), value.end(), ::isdigit)) {
@@ -1066,7 +1121,6 @@ void WorkSchedulerService::RefreshPersistedWorks()
     unique_ptr<Json::StreamWriter> jsonWriter(writerBuilder.newStreamWriter());
     jsonWriter->write(root, &os);
     string result = os.str();
-    WS_HILOGD("Work JSON os result %{public}s", result.c_str());
     CreateNodeDir(PERSISTED_PATH);
     CreateNodeFile(PERSISTED_FILE_PATH);
     ofstream fout;
@@ -1079,7 +1133,7 @@ void WorkSchedulerService::RefreshPersistedWorks()
     fout.open(realPath, ios::out);
     fout<<result.c_str()<<endl;
     fout.close();
-    WS_HILOGD("come out");
+    WS_HILOGD("Refresh persisted works success");
 }
 
 int32_t WorkSchedulerService::CreateNodeDir(std::string dir)
@@ -1132,25 +1186,24 @@ bool WorkSchedulerService::CheckEffiResApplyInfo(int32_t uid)
     return whitelist_.find(uid) != whitelist_.end();
 }
 
-bool WorkSchedulerService::CheckStandbyApplyInfo(std::string& bundleName)
+void WorkSchedulerService::InitDeviceStandyWhitelist()
 {
-    WS_HILOGD("%{public}s is checking standby applyInfo", bundleName.c_str());
-#ifdef  DEVICE_STANDBY_ENABLE
-    std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
-    if (!standbyStateObserver_) {
-        return true;
-    }
+#ifdef DEVICE_STANDBY_ENABLE
     std::vector<DevStandbyMgr::AllowInfo> allowInfoArray;
-    DevStandbyMgr::StandbyServiceClient::GetInstance().GetAllowList(DevStandbyMgr::AllowType::WORK_SCHEDULER,
+    auto res = DevStandbyMgr::StandbyServiceClient::GetInstance().GetAllowList(DevStandbyMgr::AllowType::WORK_SCHEDULER,
         allowInfoArray, DevStandbyMgr::ReasonCodeEnum::REASON_APP_API);
-    WS_HILOGD("allowInfoArray size is %{public}d", static_cast<int32_t>(allowInfoArray.size()));
-    for (const auto& item : allowInfoArray) {
-        if (item.GetName() == bundleName) {
-            return true;
-        }
+    if (res != ERR_OK) {
+        WS_HILOGE("GetAllowList fail");
+        return;
     }
+    WS_HILOGI("allowInfoArray size is %{public}d", static_cast<int32_t>(allowInfoArray.size()));
+    std::list<std::string> tempList = {};
+    for (const auto& item : allowInfoArray) {
+        WS_HILOGI("Allow bundleName %{public}s", item.GetName().c_str());
+        tempList.push_back(item.GetName());
+    }
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyWhitelist(tempList);
 #endif
-    return false;
 }
 
 void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
@@ -1161,6 +1214,7 @@ void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std
 #endif
     }
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
+        InitDeviceStandyWhitelist();
         RegisterStandbyStateObserver();
     }
 }
@@ -1168,6 +1222,7 @@ void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std
 void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
 {
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
+        DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyWhitelist();
         if (!workQueueManager_) {
             return;
         }
@@ -1181,6 +1236,7 @@ void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
         std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
         groupObserver_ = nullptr;
+        DelayedSingleton<DataManager>::GetInstance()->ClearAllGroup();
 #endif
     }
 }
@@ -1243,6 +1299,7 @@ bool WorkSchedulerService::CheckProcessName()
 int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    std::lock_guard<ffrt::mutex> workLock(workMutex_);
     if (!CheckProcessName()) {
         return E_INVALID_PROCESS_NAME;
     }
@@ -1254,6 +1311,7 @@ int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 {
     WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    std::lock_guard<ffrt::mutex> workLock(workMutex_);
     if (!CheckProcessName()) {
         return E_INVALID_PROCESS_NAME;
     }
@@ -1268,25 +1326,47 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
     checker.CheckAllStatus();
 }
 
-int32_t WorkSchedulerService::StopDeepIdleWorks()
+int32_t WorkSchedulerService::StopRunningWorks()
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetDeepIdleWorks();
+    std::lock_guard<ffrt::mutex> workLock(workMutex_);
+    std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetRunningWorkStatus();
     if (works.size() == 0) {
-        WS_HILOGD("stop work by condition, no matched works");
+        WS_HILOGD("stop work after unlocking, no running works");
         return ERR_OK;
     }
 
     for (shared_ptr<WorkStatus> workStatus : works) {
-        WS_HILOGI("stop work by condition, bundleName:%{public}s, workId:%{public}s",
+        if (ExemptionBundle(workStatus->bundleName_)) {
+            continue;
+        }
+        WS_HILOGI("stop work after unlocking, bundleName:%{public}s, workId:%{public}s",
             workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
         StopWorkInner(workStatus, workStatus->uid_, false, false);
         workPolicyManager_->RemoveWatchDog(workStatus);
     }
     return ERR_OK;
+}
+
+bool WorkSchedulerService::ExemptionBundle(const std::string& checkBundleName)
+{
+    if (checkBundleName.empty()) {
+        WS_HILOGE("Check exemption bundle error, bundleName is empty");
+        return false;
+    }
+    auto iter = std::find_if(exemptionBundles_.begin(), exemptionBundles_.end(),
+    [&](const std::string &bundleName) {
+        return checkBundleName == bundleName;
+    });
+    return iter != exemptionBundles_.end();
+}
+
+WEAK_FUNC void WorkSchedulerService::CheckWorkToRun()
+{
+    workPolicyManager_->CheckWorkToRun();
 }
 
 void WorkSchedulerService::LoadSa()
@@ -1344,6 +1424,17 @@ void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std
     } else {
         saMap_.emplace(saId, residentSa);
     }
+    LoadSa();
+}
+
+void WorkSchedulerService::HandleDeepIdleMsg()
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return;
+    }
+    workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
+        std::make_shared<DetectorValue>(0, 0, true, std::string()));
     LoadSa();
 }
 } // namespace WorkScheduler

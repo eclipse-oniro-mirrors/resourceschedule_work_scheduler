@@ -266,11 +266,13 @@ public:
     void RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus);
 
     /**
-     * @brief Get All DeepIdle Works.
+     * @brief Get All Running WorkStatus.
      *
-     * @return All DeepIdle Works.
+     * @return All Running WorkStatus.
      */
-    std::list<std::shared_ptr<WorkStatus>> GetDeepIdleWorks();
+    std::list<std::shared_ptr<WorkStatus>> GetRunningWorkStatus();
+    bool FindWork(int32_t uid);
+    bool FindWork(const int32_t userId, const std::string &bundleName);
 private:
     int32_t GetMaxRunningCount(std::string& policyName);
     int32_t GetRunningCount();

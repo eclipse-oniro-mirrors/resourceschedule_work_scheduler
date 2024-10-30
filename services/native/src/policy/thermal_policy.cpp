@@ -48,7 +48,7 @@ int32_t ThermalPolicy::GetPolicyMaxRunning()
     } else {
         res = COUNT_THERMAL_NORMAL;
     }
-    WS_HILOGI("ThermalLevel:%{public}d, PolicyRes:%{public}d", thermalLevel, res);
+    WS_HILOGD("ThermalLevel:%{public}d, PolicyRes:%{public}d", thermalLevel, res);
     return res;
 }
 

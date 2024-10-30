@@ -28,7 +28,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerService;
-class WorkQueueManager : std::enable_shared_from_this<WorkQueueManager> {
+class WorkQueueManager : public std::enable_shared_from_this<WorkQueueManager> {
 public:
     explicit WorkQueueManager(const std::shared_ptr<WorkSchedulerService>& wss);
     ~WorkQueueManager() = default;

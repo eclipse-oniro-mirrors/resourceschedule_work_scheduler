@@ -27,6 +27,10 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
+void WorkSchedulerService::CheckWorkToRun()
+{
+    return;
+}
 class ScreenListenerTest : public testing::Test {
 public:
     static void SetUpTestCase();

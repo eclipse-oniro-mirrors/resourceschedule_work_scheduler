@@ -58,7 +58,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
-            if (it.first != WorkCondition::Type::BATTERY_LEVEL && listenerMap_.count(it.first) != 0) {
+            if (listenerMap_.count(it.first) != 0) {
                 listenerMap_.at(it.first)->Start();
             }
         }
@@ -94,9 +94,6 @@ bool WorkQueueManager::CancelWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : queueMap_) {
         it.second->CancelWork(workStatus);
         if (queueMap_.count(it.first) == 0) {
-            if (it.first == WorkCondition::Type::BATTERY_LEVEL) {
-                continue;
-            }
             listenerMap_.at(it.first)->Stop();
         }
     }
@@ -163,18 +160,32 @@ void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus>> &works, vector<sh
 void WorkQueueManager::OnConditionChanged(WorkCondition::Type conditionType,
     shared_ptr<DetectorValue> conditionVal)
 {
-    vector<shared_ptr<WorkStatus>> readyWorkVector = GetReayQueue(conditionType, conditionVal);
-    if (readyWorkVector.size() == 0) {
+    auto service = wss_.lock();
+    if (!service) {
+        WS_HILOGE("service is null");
         return;
     }
-    for (auto it : readyWorkVector) {
-        it->MarkStatus(WorkStatus::Status::CONDITION_READY);
-    }
-    if (wss_.expired()) {
-        WS_HILOGE("wss_ expired");
+    auto task = [weak = weak_from_this(), service, conditionType, conditionVal]() {
+        auto strong = weak.lock();
+        if (!strong) {
+            WS_HILOGE("strong is null");
+            return;
+        }
+        vector<shared_ptr<WorkStatus>> readyWorkVector = strong->GetReayQueue(conditionType, conditionVal);
+        if (readyWorkVector.size() == 0) {
+            return;
+        }
+        for (auto it : readyWorkVector) {
+            it->MarkStatus(WorkStatus::Status::CONDITION_READY);
+        }
+        service->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
+    };
+    auto handler = service->GetHandler();
+    if (!handler) {
+        WS_HILOGE("handler is null");
         return;
     }
-    wss_.lock()->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
+    handler->PostTask(task);
 }
 
 bool WorkQueueManager::StopAndClearWorks(list<shared_ptr<WorkStatus>> workList)

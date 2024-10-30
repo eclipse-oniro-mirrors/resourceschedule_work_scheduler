@@ -29,6 +29,7 @@
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "watchdog.h"
+#include "work_sched_data_manager.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -338,6 +339,8 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             int32_t uid = detectorVal->intVal;
             WorkStatus::ClearUidLastTimeMap(uid);
             service->StopAndClearWorksByUid(detectorVal->intVal);
+            int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
+            DelayedSingleton<DataManager>::GetInstance()->ClearGroup(detectorVal->strVal, userId);
             break;
         }
         default: {}
@@ -347,13 +350,19 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 
 bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork)
 {
-    return (OHOS::system::GetIntParameter("const.debuggable", 0) == 1) &&
-        (topWork->bundleName_ == "com.huawei.hmos.hiviewx");
+    if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1 || WorkSchedUtils::IsBetaVersion()) {
+        return wss_.lock()->ExemptionBundle(topWork->bundleName_);
+    }
+    return false;
 }
 
 void WorkPolicyManager::CheckWorkToRun()
 {
     WS_HILOGD("Check work to run.");
+    if (wss_.expired()) {
+        WS_HILOGE("wss_ expired");
+        return;
+    }
     RemoveAllUnReady();
     if (handler_ == nullptr) {
         WS_HILOGE("handler lock() returns nullptr");
@@ -367,18 +376,22 @@ void WorkPolicyManager::CheckWorkToRun()
     }
     std::string policyName;
     int32_t runningCount = GetRunningCount();
-    if (runningCount < GetMaxRunningCount(policyName) || IsSpecialScene(topWork)) {
+    int32_t allowRunningCount = GetMaxRunningCount(policyName);
+    if (runningCount < allowRunningCount || IsSpecialScene(topWork)) {
         WS_HILOGD("running count < max running count");
         RealStartWork(topWork);
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
         WS_HILOGD("trigger delay: %{public}d", DELAY_TIME_LONG);
         if (runningCount == MAX_RUNNING_COUNT) {
-            topWork->delayReason_ = "OVER_LIMIT";
+            policyName = "OVER_LIMIT";
         }
 
         if (!policyName.empty()) {
             topWork->delayReason_= policyName;
+            WS_HILOGI("trigger delay, reason: %{public}s, bundleName: %{public}s, runningCount:%{public}d,"
+                " allowRunningCount:%{public}d",
+                policyName.c_str(), topWork->bundleName_.c_str(), runningCount, allowRunningCount);
         }
         SendRetrigger(DELAY_TIME_LONG);
     }
@@ -579,8 +592,8 @@ void WorkPolicyManager::Dump(string& result)
 
     std::string policyName;
     result.append("3. GetMaxRunningCount:");
-    std::string reason = policyName.empty() ? "" : " reason:" + policyName;
-    result.append(to_string(GetMaxRunningCount(policyName)) + reason + "\n");
+    result.append(to_string(GetMaxRunningCount(policyName))
+        + (policyName.empty() ? "" : " reason: " + policyName) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()
@@ -724,8 +737,13 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         auto workStatus = it->second;
-        if (workStatus->uid_ == uid && workStatus->IsRunning() && !workStatus->IsPaused()) {
+        if (workStatus->uid_ == uid && workStatus->IsRunning()) {
             hasWorkWithUid = true;
+            if (workStatus->IsPaused()) {
+                WS_HILOGE("Work has paused, bundleName:%{public}s, workId:%{public}s",
+                        workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+                continue;
+            }
             uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
             uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
             uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
@@ -761,8 +779,13 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         auto workStatus = it->second;
-        if (workStatus->uid_ == uid && workStatus->IsRunning() && workStatus->IsPaused()) {
+        if (workStatus->uid_ == uid && workStatus->IsRunning()) {
             hasWorkWithUid = true;
+            if (!workStatus->IsPaused()) {
+                WS_HILOGE("Work has resumed, bundleName:%{public}s, workId:%{public}s",
+                        workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+                continue;
+            }
             int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
             WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " watchdogTime:%{public}d",
@@ -801,19 +824,37 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
     }
 }
 
-std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetDeepIdleWorks()
+std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetRunningWorkStatus()
 {
-    std::list<shared_ptr<WorkStatus>> deepIdleWorkds;
+    std::list<shared_ptr<WorkStatus>> runningWorkStatus;
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
-        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetDeepIdleWorks();
+        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetRunningWorkStatus();
         if (workList.size() != 0) {
-            deepIdleWorkds.insert(deepIdleWorkds.end(), workList.begin(), workList.end());
+            runningWorkStatus.insert(runningWorkStatus.end(), workList.begin(), workList.end());
         }
         it++;
     }
-    return deepIdleWorkds;
+    return runningWorkStatus;
+}
+
+bool WorkPolicyManager::FindWork(int32_t uid)
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
+    auto iter = uidQueueMap_.find(uid);
+    return iter != uidQueueMap_.end() && iter->second->GetSize() > 0;
+}
+
+bool WorkPolicyManager::FindWork(const int32_t userId, const std::string &bundleName)
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
+    for (auto list : uidQueueMap_) {
+        if (list.second && list.second->Find(userId, bundleName)) {
+            return true;
+        }
+    }
+    return false;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

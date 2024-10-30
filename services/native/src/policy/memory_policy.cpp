@@ -80,7 +80,7 @@ int32_t MemoryPolicy::GetMemAvailable()
 int32_t MemoryPolicy::GetPolicyMaxRunning()
 {
     int32_t memAvailable = GetMemAvailable();
-    WS_HILOGI("mem_available: %{public}d", memAvailable);
+    WS_HILOGD("mem_available: %{public}d", memAvailable);
     if (memAvailable <= MEM_CRUCIAL) {
         return COUNT_MEMORY_CRUCIAL;
     }
