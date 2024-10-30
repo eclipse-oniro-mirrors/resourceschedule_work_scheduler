@@ -328,13 +328,13 @@ bool CallFuncation(napi_env env, napi_value workInfoData,
     napi_value method;
     napi_get_named_property(env, value, functionName, &method);
     if (method == nullptr) {
-        WS_HILOGE("WorkSchedulerExtension call function %{public}s error", functionName);
+        WS_HILOGE("WorkSchedulerExtension call function %{public}s error, method name is nullptr", functionName);
         return false;
     }
 
     napi_value callFunctionResult;
     if (napi_call_function(env, value, method, 1, argv, &callFunctionResult) != napi_ok) {
-        WS_HILOGE("WorkSchedulerExtension call function onWorkStart error");
+        WS_HILOGE("WorkSchedulerExtension call function %{public}s error", functionName);
         return false;
     }
 
