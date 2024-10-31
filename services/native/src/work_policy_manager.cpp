@@ -351,7 +351,10 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork)
 {
     if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1 || WorkSchedUtils::IsBetaVersion()) {
-        return wss_.lock()->ExemptionBundle(topWork->bundleName_);
+        if (wss_.lock() == nullptr) {
+            return false;
+        }
+        return wss_.lock()->IsExemptionBundle(topWork->bundleName_);
     }
     return false;
 }
@@ -359,7 +362,7 @@ bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::CheckWorkToRun()
 {
     WS_HILOGD("Check work to run.");
-    if (wss_.expired()) {
+    if (wss_.lock() == nullptr) {
         WS_HILOGE("wss_ expired");
         return;
     }
@@ -372,6 +375,10 @@ void WorkPolicyManager::CheckWorkToRun()
     shared_ptr<WorkStatus> topWork = GetWorkToRun();
     if (topWork == nullptr) {
         WS_HILOGD("no condition ready work not running, return.");
+        return;
+    }
+    if (!DelayedSingleton<DataManager>::GetInstance()->AllowToStart(topWork->bundleName_)) {
+        SendRetrigger(DELAY_TIME_LONG);
         return;
     }
     std::string policyName;
@@ -405,7 +412,10 @@ void WorkPolicyManager::RemoveAllUnReady()
 
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkToRun()
 {
-    shared_ptr<WorkStatus> topWork = conditionReadyQueue_->GetWorkToRunByPriority();
+    shared_ptr<WorkStatus> topWork = conditionReadyQueue_->FindExemptionWork();
+    if (topWork == nullptr) {
+        topWork = conditionReadyQueue_->GetWorkToRunByPriority();
+    }
     return topWork;
 }
 

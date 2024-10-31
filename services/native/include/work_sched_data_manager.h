@@ -31,16 +31,17 @@ public:
     void SetDeviceSleep(const bool isSleep);
     bool GetDeviceSleep() const;
 
-    bool IsInDeviceStandyWhitelist(const std::string&);
-    void OnDeviceStandyWhitelistChanged(const std::string &bundleName, const bool add);
-    void AddDeviceStandyWhitelist(const std::list<std::string> &bundleNames);
+    bool IsInDeviceStandyWhitelist(const std::string& bundleName);
+    void OnDeviceStandyWhitelistChanged(const std::string& bundleName, const bool add);
+    void AddDeviceStandyWhitelist(const std::list<std::string>& bundleNames);
     void ClearDeviceStandyWhitelist();
     bool IsDeviceStandyWhitelistEmpty();
 
     void AddGroup(const std::string& bundleName, const int32_t userId, const int32_t appGroup);
-    bool FindGroup(const std::string& bundleName, const int32_t userId, int32_t &appGroup);
+    bool FindGroup(const std::string& bundleName, const int32_t userId, int32_t& appGroup);
     void ClearGroup(const std::string& bundleName, const int32_t userId);
     void ClearAllGroup();
+    bool AllowToStart(const std::string& bundleName);
 
 private:
     std::atomic<bool> deviceSleep_ = false;

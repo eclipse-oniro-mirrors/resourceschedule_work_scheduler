@@ -215,7 +215,7 @@ bool WorkStatus::IsReady()
             return false;
         }
         if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) ||
-            !IsChargerReady(it.first) || !IsNapReady(it.first) || !IsUnLockReady()) {
+            !IsChargerReady(it.first) || !IsNapReady(it.first)) {
             return false;
         }
     }
@@ -246,7 +246,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     WS_HILOGI("Condition Ready, bundleName:%{public}s, abilityName:%{public}s, workId:%{public}s, "
-        "callbackFlag:%{public}d, minInterval:%{public}" PRId64 ", del = %{public}f",
+        "groupChanged:%{public}d, minInterval:%{public}" PRId64 ", del = %{public}f",
         bundleName_.c_str(), abilityName_.c_str(), workId_.c_str(), groupChanged_, minInterval_, del);
     return true;
 }
@@ -362,19 +362,19 @@ bool WorkStatus::SetMinInterval()
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
     if (workInfo_->IsCallBySystemApp()) {
-        WS_HILOGD("Is system app, default group is active.");
+        WS_HILOGD("system app %{public}s, default group is active.", bundleName_.c_str());
         return SetMinIntervalByGroup(ACTIVE_GROUP);
     }
     bool res = DelayedSingleton<DataManager>::GetInstance()->FindGroup(bundleName_, userId_, group);
     if (!res) {
-        WS_HILOGI("No cache find, bundleName:%{public}s", bundleName_.c_str());
+        WS_HILOGI("no cache find, bundleName:%{public}s", bundleName_.c_str());
         auto errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
         if (errCode != ERR_OK) {
-            WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
+            WS_HILOGE("query package group failed. userId = %{public}d, bundleName = %{public}s",
                 userId_, bundleName_.c_str());
             group = ACTIVE_GROUP;
-            DelayedSingleton<DataManager>::GetInstance()->AddGroup(bundleName_, userId_, group);
         }
+        DelayedSingleton<DataManager>::GetInstance()->AddGroup(bundleName_, userId_, group);
     }
 #else
     int32_t group = ACTIVE_GROUP;
@@ -390,20 +390,20 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
     if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
         minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
     } else {
-        WS_HILOGE("Query package group interval failed. group:%{public}d, bundleName:%{public}s",
+        WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
             group, bundleName_.c_str());
         minInterval_ = -1;
     }
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
 #endif
-    WS_HILOGD("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
+    WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
     return true;
 }
 
 void WorkStatus::SetMinIntervalByDump(int64_t interval)
 {
-    WS_HILOGD("Set min interval by dump to %{public}" PRId64 "", interval);
+    WS_HILOGD("set min interval by dump to %{public}" PRId64 "", interval);
     groupDebugMode = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
@@ -527,24 +527,6 @@ void WorkStatus::Dump(string& result)
     workInfo_->Dump(result);
     result.append("}\n");
     result.append("\n");
-}
-
-bool WorkStatus::IsUnLockReady()
-{
-    if (WorkSchedUtils::IsDebugMode()) {
-        WS_HILOGI("Debug mode allow to run work");
-        return true;
-    }
-    if (WorkSchedUtils::IsUnlock()) {
-        if (WorkSchedUtils::IsBetaVersion()
-            && DelayedSingleton<WorkSchedulerService>::GetInstance()->ExemptionBundle(bundleName_)) {
-            WS_HILOGI("Beta version and exemption bundle:%{public}s, allow to run work", bundleName_.c_str());
-            return true;
-        }
-        WS_HILOGI("Unlock state not allow to run work");
-        return false;
-    }
-    return true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

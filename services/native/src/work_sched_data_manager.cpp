@@ -14,6 +14,8 @@
  */
 #include "work_sched_data_manager.h"
 #include "work_sched_hilog.h"
+#include "work_sched_utils.h"
+#include "work_scheduler_service.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -37,7 +39,7 @@ bool DataManager::IsInDeviceStandyWhitelist(const std::string& bundleName)
     return deviceStandySet.count(bundleName) > 0;
 }
 
-void DataManager::OnDeviceStandyWhitelistChanged(const std::string &bundleName, const bool add)
+void DataManager::OnDeviceStandyWhitelistChanged(const std::string& bundleName, const bool add)
 {
     std::lock_guard<ffrt::mutex> lock(mutex_);
     if (add) {
@@ -47,7 +49,7 @@ void DataManager::OnDeviceStandyWhitelistChanged(const std::string &bundleName, 
     }
 }
 
-void DataManager::AddDeviceStandyWhitelist(const std::list<std::string> &bundleNames)
+void DataManager::AddDeviceStandyWhitelist(const std::list<std::string>& bundleNames)
 {
     std::lock_guard<ffrt::mutex> lock(mutex_);
     for (const auto& item : bundleNames) {
@@ -67,7 +69,7 @@ bool DataManager::IsDeviceStandyWhitelistEmpty()
     return deviceStandySet.empty();
 }
 
-bool DataManager::FindGroup(const std::string& bundleName, const int32_t userId, int32_t &appGroup)
+bool DataManager::FindGroup(const std::string& bundleName, const int32_t userId, int32_t& appGroup)
 {
     std::lock_guard<ffrt::mutex> lock(activeGroupMapMutex_);
     std::string key = bundleName + "_" + std::to_string(userId);
@@ -106,6 +108,24 @@ void DataManager::ClearAllGroup()
 {
     std::lock_guard<ffrt::mutex> lock(activeGroupMapMutex_);
     activeGroupMap_.clear();
+}
+
+bool DataManager::AllowToStart(const std::string& bundleName)
+{
+    if (WorkSchedUtils::IsDebugMode()) {
+        WS_HILOGD("debug mode allow to run work");
+        return true;
+    }
+    if (WorkSchedUtils::IsUnlock()) {
+        if (WorkSchedUtils::IsBetaVersion()
+            && DelayedSingleton<WorkSchedulerService>::GetInstance()->IsExemptionBundle(bundleName)) {
+            WS_HILOGI("beta version and exemption bundle:%{public}s, allow to run work", bundleName.c_str());
+            return true;
+        }
+        WS_HILOGI("unlock state not allow to run work, bundle:%{public}s", bundleName.c_str());
+        return false;
+    }
+    return true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

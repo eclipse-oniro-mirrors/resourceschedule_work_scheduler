@@ -250,7 +250,7 @@ public:
      *
      * @return std::string string consists of uid
      */
-    std::string GetEffiResApplyUid();
+    std::string DumpEffiResApplyUid();
 
     /**
      * @brief Get the Efficiency Resources Infos object
@@ -287,7 +287,7 @@ public:
      * @param bundle Need Check bundleName
      * @return true or false.
      */
-    bool ExemptionBundle(const std::string& checkBundleName);
+    bool IsExemptionBundle(const std::string& checkBundleName);
     void InitDeviceStandyWhitelist();
 private:
     void RegisterStandbyStateObserver();
@@ -324,7 +324,7 @@ private:
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
     bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr, std::string &result);
-    std::string GetExemptionBundles();
+    std::string DumpExemptionBundles();
 
 private:
     std::set<int32_t> whitelist_;

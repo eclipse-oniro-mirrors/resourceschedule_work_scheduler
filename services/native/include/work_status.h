@@ -185,7 +185,6 @@ private:
     bool IsChargerReady(WorkCondition::Type type);
     bool IsNapReady(WorkCondition::Type type);
     int GetPriority();
-    bool IsUnLockReady();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -977,8 +977,8 @@ void WorkSchedulerService::DumpAllInfo(std::string &result)
         .append("Dump set memory:" + std::to_string(workPolicyManager_->GetDumpSetMemory()) + "\n")
         .append("Repeat cycle time min:" + std::to_string(workQueueManager_->GetTimeCycle()) + "\n")
         .append("Watchdog time:" + std::to_string(workPolicyManager_->GetWatchdogTime()) + "\n")
-        .append("Exemption bundle whitelist:" + GetExemptionBundles() + "\n")
-        .append("Efficiency Resource whitelist:" + GetEffiResApplyUid() + "\n");
+        .append("Exemption bundle whitelist:" + DumpExemptionBundles() + "\n")
+        .append("Efficiency Resource whitelist:" + DumpEffiResApplyUid() + "\n");
 }
 
 bool WorkSchedulerService::IsDebugApp(const std::string &bundleName)
@@ -1041,11 +1041,11 @@ void WorkSchedulerService::DumpRunningWorks(const std::string &uidStr, const std
     }
 }
 
-std::string WorkSchedulerService::GetEffiResApplyUid()
+std::string WorkSchedulerService::DumpEffiResApplyUid()
 {
     std::lock_guard<ffrt::mutex> lock(whitelistMutex_);
     if (whitelist_.empty()) {
-        return "empty";
+        return "[]";
     }
     std::string res {""};
     for (auto &it : whitelist_) {
@@ -1055,7 +1055,7 @@ std::string WorkSchedulerService::GetEffiResApplyUid()
     return res;
 }
 
-std::string WorkSchedulerService::GetExemptionBundles()
+std::string WorkSchedulerService::DumpExemptionBundles()
 {
     if (exemptionBundles_.empty()) {
         return "[]";
@@ -1289,7 +1289,7 @@ bool WorkSchedulerService::CheckProcessName()
     Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenId, callingTokenInfo);
     WS_HILOGD("process name: %{public}s called CheckProcessName.", callingTokenInfo.processName.c_str());
     if (WORK_SCHED_NATIVE_OPERATE_CALLER.find(callingTokenInfo.processName) == WORK_SCHED_NATIVE_OPERATE_CALLER.end()) {
-        WS_HILOGE("CheckProcessName illegal access to this interface; process name: %{public}s.",
+        WS_HILOGE("check process name illegal access to this interface; process name: %{public}s.",
             callingTokenInfo.processName.c_str());
         return false;
     }
@@ -1298,7 +1298,7 @@ bool WorkSchedulerService::CheckProcessName()
 
 int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 {
-    WS_HILOGD("Pause Running Work Scheduler Work, uid:%{public}d", uid);
+    WS_HILOGD("pause Running Work Scheduler Work, uid:%{public}d", uid);
     std::lock_guard<ffrt::mutex> workLock(workMutex_);
     if (!CheckProcessName()) {
         return E_INVALID_PROCESS_NAME;
@@ -1310,7 +1310,7 @@ int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 
 int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 {
-    WS_HILOGD("Resume Paused Work Scheduler Work, uid:%{public}d", uid);
+    WS_HILOGD("resume Paused Work Scheduler Work, uid:%{public}d", uid);
     std::lock_guard<ffrt::mutex> workLock(workMutex_);
     if (!CheckProcessName()) {
         return E_INVALID_PROCESS_NAME;
@@ -1340,7 +1340,7 @@ int32_t WorkSchedulerService::StopRunningWorks()
     }
 
     for (shared_ptr<WorkStatus> workStatus : works) {
-        if (ExemptionBundle(workStatus->bundleName_)) {
+        if (IsExemptionBundle(workStatus->bundleName_)) {
             continue;
         }
         WS_HILOGI("stop work after unlocking, bundleName:%{public}s, workId:%{public}s",
@@ -1351,10 +1351,10 @@ int32_t WorkSchedulerService::StopRunningWorks()
     return ERR_OK;
 }
 
-bool WorkSchedulerService::ExemptionBundle(const std::string& checkBundleName)
+bool WorkSchedulerService::IsExemptionBundle(const std::string& checkBundleName)
 {
     if (checkBundleName.empty()) {
-        WS_HILOGE("Check exemption bundle error, bundleName is empty");
+        WS_HILOGE("check exemption bundle error, bundleName is empty");
         return false;
     }
     auto iter = std::find_if(exemptionBundles_.begin(), exemptionBundles_.end(),

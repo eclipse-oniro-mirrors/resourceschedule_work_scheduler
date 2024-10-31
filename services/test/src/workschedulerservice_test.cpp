@@ -1017,72 +1017,72 @@ HWTEST_F(WorkSchedulerServiceTest, CheckWorkToRun_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: ExemptionBundle_001
- * @tc.desc: Test WorkSchedulerService ExemptionBundle.
+ * @tc.name: IsExemptionBundle_001
+ * @tc.desc: Test WorkSchedulerService IsExemptionBundle.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(WorkSchedulerServiceTest, ExemptionBundle_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_001, TestSize.Level1)
 {
     workSchedulerService_->exemptionBundles_.clear();
     std::string bundleName = "com.demo.bundle";
-    bool ret = workSchedulerService_->ExemptionBundle(bundleName);
+    bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
     EXPECT_FALSE(ret);
 }
 
 /**
- * @tc.name: ExemptionBundle_002
- * @tc.desc: Test WorkSchedulerService ExemptionBundle.
+ * @tc.name: IsExemptionBundle_002
+ * @tc.desc: Test WorkSchedulerService IsExemptionBundle.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(WorkSchedulerServiceTest, ExemptionBundle_002, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_002, TestSize.Level1)
 {
     std::string bundleName = "com.demo.bundle";
     workSchedulerService_->exemptionBundles_.clear();
     workSchedulerService_->exemptionBundles_.insert(bundleName);
-    bool ret = workSchedulerService_->ExemptionBundle(bundleName);
+    bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
     EXPECT_TRUE(ret);
 }
 
 /**
- * @tc.name: ExemptionBundle_003
- * @tc.desc: Test WorkSchedulerService ExemptionBundle.
+ * @tc.name: IsExemptionBundle_003
+ * @tc.desc: Test WorkSchedulerService IsExemptionBundle.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(WorkSchedulerServiceTest, ExemptionBundle_003, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_003, TestSize.Level1)
 {
     std::string bundleName = "com.demo.bundle";
     workSchedulerService_->exemptionBundles_.clear();
     workSchedulerService_->exemptionBundles_.insert("com.demo.bundle1");
-    bool ret = workSchedulerService_->ExemptionBundle(bundleName);
+    bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
     EXPECT_FALSE(ret);
 }
 
 /**
- * @tc.name: GetExemptionBundles_001
- * @tc.desc: Test WorkSchedulerService GetExemptionBundles.
+ * @tc.name: DumpExemptionBundles_001
+ * @tc.desc: Test WorkSchedulerService DumpExemptionBundles.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(WorkSchedulerServiceTest, GetExemptionBundles_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, DumpExemptionBundles_001, TestSize.Level1)
 {
     workSchedulerService_->exemptionBundles_.clear();
-    std::string ret = workSchedulerService_->GetExemptionBundles();
+    std::string ret = workSchedulerService_->DumpExemptionBundles();
     EXPECT_TRUE(ret == "[]");
 }
 
 /**
- * @tc.name: GetExemptionBundles_002
- * @tc.desc: Test WorkSchedulerService GetExemptionBundles.
+ * @tc.name: DumpExemptionBundles_002
+ * @tc.desc: Test WorkSchedulerService DumpExemptionBundles.
  * @tc.type: FUNC
  * @tc.require: IAJSVG
  */
-HWTEST_F(WorkSchedulerServiceTest, GetExemptionBundles_002, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, DumpExemptionBundles_002, TestSize.Level1)
 {
     workSchedulerService_->exemptionBundles_.insert("com.demo.bundle1");
-    std::string ret = workSchedulerService_->GetExemptionBundles();
+    std::string ret = workSchedulerService_->DumpExemptionBundles();
     EXPECT_FALSE(ret.empty());
 }
 

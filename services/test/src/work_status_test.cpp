@@ -27,11 +27,6 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
-bool WorkSchedUtils::IsDebugMode()
-{
-    return false;
-}
-
 class WorkStatusTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -713,31 +708,6 @@ HWTEST_F(WorkStatusTest, GetStatus_001, TestSize.Level1)
 {
     workStatus_->MarkStatus(WorkStatus::Status::RUNNING);
     EXPECT_EQ(workStatus_->GetStatus(), WorkStatus::Status::RUNNING);
-}
-
-/**
- * @tc.name: IsUnLockReady_001
- * @tc.desc: Test WorkStatus IsUnLockReady.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(WorkStatusTest, IsUnLockReady_001, TestSize.Level1)
-{
-    WorkSchedUtils::SetUnlock(true);
-    workStatus_->bundleName_ = "com.example.bundle";
-    DelayedSingleton<WorkSchedulerService>::GetInstance()->exemptionBundles_.clear();
-    bool ret = workStatus_->IsUnLockReady();
-    EXPECT_FALSE(ret);
-
-    WorkSchedUtils::SetUnlock(true);
-    workStatus_->bundleName_ = "com.example.bundle";
-    DelayedSingleton<WorkSchedulerService>::GetInstance()->exemptionBundles_.insert(workStatus_->bundleName_);
-    ret = workStatus_->IsUnLockReady();
-    EXPECT_TRUE(ret);
-
-    WorkSchedUtils::SetUnlock(false);
-    ret = workStatus_->IsUnLockReady();
-    EXPECT_TRUE(ret);
 }
 }
 }

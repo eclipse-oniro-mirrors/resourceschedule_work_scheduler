@@ -145,6 +145,7 @@ public:
      */
     void SetMinIntervalByDump(int64_t interval);
     bool Find(const int32_t userId, const std::string &bundleName);
+    std::shared_ptr<WorkStatus> FindExemptionWork();
 private:
     ffrt::recursive_mutex workListMutex_;
     std::list<std::shared_ptr<WorkStatus>> workList_;
