@@ -42,9 +42,13 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
                 it->uid_, it->bundleName_.c_str());
             continue;
         }
-        if (it->IsReadyStatus()) {
+        if (it->IsReady()) {
             result.emplace_back(it);
             uidList.insert(it->uid_);
+        } else {
+            if (it->IsReadyStatus()) {
+                it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+            }
         }
         if (it->needRetrigger_) {
             result.emplace_back(it);
