@@ -166,19 +166,6 @@ bool WorkQueue::Find(const int32_t userId, const std::string &bundleName)
     return iter != workList_.end();
 }
 
-std::shared_ptr<WorkStatus> WorkQueue::FindExemptionWork()
-{
-    std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
-    auto iter = std::find_if(workList_.cbegin(), workList_.cend(),
-        [](const shared_ptr<WorkStatus> &workStatus) {
-            return DelayedSingleton<WorkSchedulerService>::GetInstance()->IsExemptionBundle(workStatus->bundleName_);
-        });
-    if (iter != workList_.end()) {
-        return *iter;
-    }
-    return nullptr;
-}
-
 shared_ptr<WorkStatus> WorkQueue::GetWorkToRunByPriority()
 {
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);

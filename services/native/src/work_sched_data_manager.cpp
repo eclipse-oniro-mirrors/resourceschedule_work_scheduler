@@ -35,13 +35,13 @@ void DataManager::SetDeviceSleep(const bool isSleep)
 
 bool DataManager::IsInDeviceStandyWhitelist(const std::string& bundleName)
 {
-    std::lock_guard<ffrt::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(deviceStandySetMutex_);
     return deviceStandySet.count(bundleName) > 0;
 }
 
 void DataManager::OnDeviceStandyWhitelistChanged(const std::string& bundleName, const bool add)
 {
-    std::lock_guard<ffrt::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(deviceStandySetMutex_);
     if (add) {
         deviceStandySet.insert(bundleName);
     } else {
@@ -51,7 +51,7 @@ void DataManager::OnDeviceStandyWhitelistChanged(const std::string& bundleName, 
 
 void DataManager::AddDeviceStandyWhitelist(const std::list<std::string>& bundleNames)
 {
-    std::lock_guard<ffrt::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(deviceStandySetMutex_);
     for (const auto& item : bundleNames) {
         deviceStandySet.insert(item);
     }
@@ -59,13 +59,13 @@ void DataManager::AddDeviceStandyWhitelist(const std::list<std::string>& bundleN
 
 void DataManager::ClearDeviceStandyWhitelist()
 {
-    std::lock_guard<ffrt::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(deviceStandySetMutex_);
     deviceStandySet.clear();
 }
 
 bool DataManager::IsDeviceStandyWhitelistEmpty()
 {
-    std::lock_guard<ffrt::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(deviceStandySetMutex_);
     return deviceStandySet.empty();
 }
 

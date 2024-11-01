@@ -34,7 +34,7 @@ using namespace std;
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
-static bool groupDebugMode = false;
+static bool g_groupDebugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 10000;
@@ -225,19 +225,17 @@ bool WorkStatus::IsReady()
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
         return true;
     }
-    if (!groupDebugMode && ((!groupChanged_ && !SetMinInterval()) || minInterval_ == -1)) {
+    if (!g_groupDebugMode && ((!groupChanged_ && !SetMinInterval()) || minInterval_ == -1)) {
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group, bundleName:%{public}s, "
             "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
 
-    auto itMap = s_uid_last_time_map.find(uid_);
-    if (itMap == s_uid_last_time_map.end()) {
+    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
         WS_HILOGI("First trigger, bundleName:%{public}s, uid:%{public}d", bundleName_.c_str(), uid_);
         return true;
     }
-    time_t lastTime = s_uid_last_time_map[uid_];
-    double del = difftime(getOppositeTime(), lastTime);
+    double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
     if (del < minInterval_) {
         WS_HILOGI("Condition not ready, bundleName:%{public}s, workId:%{public}s, "
             "minInterval:%{public}" PRId64 ", del:%{public}f", bundleName_.c_str(), workId_.c_str(), minInterval_, del);
@@ -404,7 +402,7 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 void WorkStatus::SetMinIntervalByDump(int64_t interval)
 {
     WS_HILOGD("set min interval by dump to %{public}" PRId64 "", interval);
-    groupDebugMode = interval == 0 ? false : true;
+    g_groupDebugMode = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 

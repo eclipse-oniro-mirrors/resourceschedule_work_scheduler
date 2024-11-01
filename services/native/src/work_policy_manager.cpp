@@ -412,10 +412,7 @@ void WorkPolicyManager::RemoveAllUnReady()
 
 std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkToRun()
 {
-    shared_ptr<WorkStatus> topWork = conditionReadyQueue_->FindExemptionWork();
-    if (topWork == nullptr) {
-        topWork = conditionReadyQueue_->GetWorkToRunByPriority();
-    }
+    shared_ptr<WorkStatus> topWork = conditionReadyQueue_->GetWorkToRunByPriority();
     return topWork;
 }
 
@@ -751,7 +748,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
             hasWorkWithUid = true;
             if (workStatus->IsPaused()) {
                 WS_HILOGE("Work has paused, bundleName:%{public}s, workId:%{public}s",
-                        workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
             uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
@@ -793,7 +790,7 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
             hasWorkWithUid = true;
             if (!workStatus->IsPaused()) {
                 WS_HILOGE("Work has resumed, bundleName:%{public}s, workId:%{public}s",
-                        workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
             int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);

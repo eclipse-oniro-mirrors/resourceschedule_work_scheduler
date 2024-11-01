@@ -455,39 +455,5 @@ HWTEST_F(WorkQueueTest, GetRunningWorkStatus_001, TestSize.Level1)
     workQueue_->Push(workStatus);
     EXPECT_TRUE(workQueue_->GetRunningWorkStatus().size() == 1);
 }
-
-/**
- * @tc.name: FindExemptionWork_001
- * @tc.desc: Test WorkQueue FindExemptionWork.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, FindExemptionWork_001, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto ret = workQueue_->FindExemptionWork();
-    EXPECT_TRUE(ret == nullptr);
-}
-
-/**
- * @tc.name: FindExemptionWork_002
- * @tc.desc: Test WorkQueue FindExemptionWork.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, FindExemptionWork_002, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto workInfo_ = WorkInfo();
-    workInfo_.SetWorkId(1);
-    std::string bundleName = "com.example.workStatus";
-    std::string abilityName = "workStatusAbility";
-    workInfo_.SetElement(bundleName, abilityName);
-    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workQueue_->Push(workStatus);
-    DelayedSingleton<WorkSchedulerService>::GetInstance()->exemptionBundles_.insert(bundleName);
-    auto ret = workQueue_->FindExemptionWork();
-    EXPECT_TRUE(ret != nullptr);
-}
 }
 }
