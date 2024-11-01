@@ -119,11 +119,11 @@ public:
      */
     std::list<std::shared_ptr<WorkInfo>> GetRunningWorks();
     /**
-     * @brief Get All DeepIdle Works.
+     * @brief Get All Running WorkStatus.
      *
-     * @return All DeepIdle Works;
+     * @return All Running WorkStatus;
      */
-    std::list<std::shared_ptr<WorkStatus>> GetDeepIdleWorks();
+    std::list<std::shared_ptr<WorkStatus>> GetRunningWorkStatus();
     /**
      * @brief Get work id str.
      *
@@ -144,6 +144,7 @@ public:
      * @brief Set min interval by dump.
      */
     void SetMinIntervalByDump(int64_t interval);
+    bool Find(const int32_t userId, const std::string &bundleName);
 private:
     ffrt::recursive_mutex workListMutex_;
     std::list<std::shared_ptr<WorkStatus>> workList_;

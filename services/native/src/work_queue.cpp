@@ -160,6 +160,16 @@ shared_ptr<WorkStatus> WorkQueue::Find(string workId)
     return nullptr;
 }
 
+bool WorkQueue::Find(const int32_t userId, const std::string &bundleName)
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
+    auto iter = std::find_if(workList_.cbegin(), workList_.cend(),
+        [userId, &bundleName](const shared_ptr<WorkStatus> &workStatus) {
+            return workStatus->userId_ == userId && workStatus->bundleName_ == bundleName;
+        });
+    return iter != workList_.end();
+}
+
 shared_ptr<WorkStatus> WorkQueue::GetWorkToRunByPriority()
 {
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
@@ -225,12 +235,12 @@ std::list<std::shared_ptr<WorkInfo>> WorkQueue::GetRunningWorks()
     return workInfo;
 }
 
-std::list<std::shared_ptr<WorkStatus>> WorkQueue::GetDeepIdleWorks()
+std::list<std::shared_ptr<WorkStatus>> WorkQueue::GetRunningWorkStatus()
 {
     std::list<std::shared_ptr<WorkStatus>> works;
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
     for (shared_ptr<WorkStatus> work : workList_) {
-        if (work->IsRunning() && work->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN) {
+        if (work->IsRunning()) {
             works.emplace_back(work);
         }
     }

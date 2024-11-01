@@ -20,6 +20,7 @@
 #include "matching_skills.h"
 #include "want.h"
 #include "work_sched_hilog.h"
+#include "work_scheduler_service.h"
 
 using namespace std;
 
@@ -93,7 +94,17 @@ bool AppDataClearListener::Stop()
 
 void AppDataClearListener::OnPolicyChanged(PolicyType policyType, shared_ptr<DetectorValue> detectorVal)
 {
-    workPolicyManager_->OnPolicyChanged(policyType, detectorVal);
+    auto handler = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetHandler();
+    if (handler) {
+        handler->PostTask([weak = weak_from_this(), policyType, detectorVal]() {
+            auto strong = weak.lock();
+            if (!strong) {
+                WS_HILOGE("AppDataClearListener::OnPolicyChanged strong is null");
+                return;
+            }
+            strong->workPolicyManager_->OnPolicyChanged(policyType, detectorVal);
+        });
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

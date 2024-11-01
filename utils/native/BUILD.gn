@@ -33,10 +33,13 @@ ohos_source_set("workschedutils") {
     "access_token:libtokenid_sdk",
     "c_utils:utils",
     "hilog:libhilog",
+    "init:libbegetutil",
     "ipc:ipc_single",
     "jsoncpp:jsoncpp",
     "os_account:os_account_innerkits",
   ]
+
+  defines = [ "WORK_SCHEDULER_TEST" ]
 
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"

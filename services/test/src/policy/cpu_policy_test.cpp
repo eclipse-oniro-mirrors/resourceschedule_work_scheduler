@@ -159,5 +159,17 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_006, TestSize.Level1)
     int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
     EXPECT_TRUE(maxRunning >= 0 && maxRunning <= 3);
 }
+
+/**
+ * @tc.name: GetPolicyName_001
+ * @tc.desc: Test CpuPolicy GetPolicyName.
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(CpuPolicyTest, GetPolicyName_001, TestSize.Level1)
+{
+    std::string policyName = cpuPolicy_->GetPolicyName();
+    EXPECT_TRUE(policyName == "CPU_POLICY");
+}
 }
 }

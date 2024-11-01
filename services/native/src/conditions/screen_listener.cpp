@@ -24,6 +24,7 @@
 #include "work_sched_utils.h"
 #include "work_status.h"
 #include "work_event_handler.h"
+#include "work_scheduler_service.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -38,20 +39,34 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
 {
     const std::string action = data.GetWant().GetAction();
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
+    WorkSchedUtils::SetUnlock(true);
+    listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
+    listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
+        std::make_shared<DetectorValue>(0, 0, false, std::string()));
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
-        listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
-        listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
-            std::make_shared<DetectorValue>(0, 0, false, std::string()));
-        int32_t ret = listener_.service_->StopDeepIdleWorks();
-        if (ret != ERR_OK) {
-            WS_HILOGE("stop work by condition failed, error code:%{public}d.", ret);
-        } else {
-            WS_HILOGI("stop work by condition successed.");
+        auto task = [weak = weak_from_this()]() {
+            auto strong = weak.lock();
+            if (!strong) {
+                WS_HILOGE("ScreenEventSubscriber::OnReceiveEvent strong is null");
+                return;
+            }
+            int32_t ret = strong->listener_.service_->StopRunningWorks();
+            if (ret != ERR_OK) {
+                WS_HILOGE("stop work after unlocking failed, error code:%{public}d.", ret);
+            } else {
+                WS_HILOGI("stop work after unlocking successed.");
+            }
+        };
+        auto handler = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetHandler();
+        if (handler) {
+            handler->PostTask(task);
         }
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
+        WorkSchedUtils::SetUnlock(false);
         listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
         listener_.service_->GetHandler()->SendEvent(
             AppExecFwk::InnerEvent::Get(WorkEventHandler::CHECK_DEEPIDLE_MSG, 0), MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
+        listener_.service_->CheckWorkToRun();
     }
 }
 

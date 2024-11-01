@@ -27,13 +27,14 @@
 #include "bundle_active_group_map.h"
 #endif
 #include "parameters.h"
+#include "work_sched_data_manager.h"
 
 using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
-static bool debugMode = false;
+static bool g_groupDebugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 10000;
@@ -81,7 +82,7 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
     this->priority_ = GetPriority();
     this->currentStatus_ = WAIT_CONDITION;
     this->minInterval_ = MIN_INTERVAL_DEFAULT;
-    this->callbackFlag_ = false;
+    this->groupChanged_ = false;
 }
 
 WorkStatus::~WorkStatus() {}
@@ -99,20 +100,19 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
             conditionMap_.emplace(type, value);
         }
     }
-    callbackFlag_ = false;
+    groupChanged_ = false;
     if (type == WorkCondition::Type::GROUP && value && value->boolVal) {
         WS_HILOGD("Group changed, bundleName: %{public}s.", value->strVal.c_str());
-        callbackFlag_ = true;
+        groupChanged_ = true;
         if (value->intVal == userId_ && value->strVal == bundleName_) {
             SetMinIntervalByGroup(value->enumVal);
         } else {
             return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
     }
-    if (type == WorkCondition::Type::STANDBY && value) {
-        isStandby_ = value->boolVal;
-    }
-    if (isStandby_ && !DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckStandbyApplyInfo(bundleName_)) {
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    if (dataManager->GetDeviceSleep() && !dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
+        WS_HILOGI("Standby mode, Work status:%{public}s not standby exempted.", bundleName_.c_str());
         return E_GROUP_CHANGE_NOT_MATCH_HAP;
     }
     if (IsReady()) {
@@ -225,28 +225,27 @@ bool WorkStatus::IsReady()
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
         return true;
     }
-    if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
+    if (!g_groupDebugMode && ((!groupChanged_ && !SetMinInterval()) || minInterval_ == -1)) {
         WS_HILOGE("Work can't ready due to false group, forbidden group or unused group, bundleName:%{public}s, "
             "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
 
-    auto itMap = s_uid_last_time_map.find(uid_);
-    if (itMap == s_uid_last_time_map.end()) {
-        WS_HILOGI("bundleName:%{public}s, uid:%{public}d", bundleName_.c_str(), uid_);
+    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+        WS_HILOGI("First trigger, bundleName:%{public}s, uid:%{public}d", bundleName_.c_str(), uid_);
         return true;
     }
-    time_t lastTime = s_uid_last_time_map[uid_];
-    double del = difftime(getOppositeTime(), lastTime);
-    WS_HILOGD("CbFlag:%{public}d, minInterval:%{public}" PRId64 ", del:%{public}f", callbackFlag_, minInterval_, del);
+    double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
     if (del < minInterval_) {
+        WS_HILOGI("Condition not ready, bundleName:%{public}s, workId:%{public}s, "
+            "minInterval:%{public}" PRId64 ", del:%{public}f", bundleName_.c_str(), workId_.c_str(), minInterval_, del);
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;
     }
-    WS_HILOGI("bundleName:%{public}s, abilityName:%{public}s, workId:%{public}s, "
-        "callbackFlag:%{public}d, minInterval:%{public}" PRId64 ", del = %{public}f",
-        bundleName_.c_str(), abilityName_.c_str(), workId_.c_str(), callbackFlag_, minInterval_, del);
+    WS_HILOGI("Condition Ready, bundleName:%{public}s, abilityName:%{public}s, workId:%{public}s, "
+        "groupChanged:%{public}d, minInterval:%{public}" PRId64 ", del = %{public}f",
+        bundleName_.c_str(), abilityName_.c_str(), workId_.c_str(), groupChanged_, minInterval_, del);
     return true;
 }
 
@@ -361,14 +360,19 @@ bool WorkStatus::SetMinInterval()
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
     if (workInfo_->IsCallBySystemApp()) {
-        WS_HILOGD("Is system app, default group is active.");
+        WS_HILOGD("system app %{public}s, default group is active.", bundleName_.c_str());
         return SetMinIntervalByGroup(ACTIVE_GROUP);
     }
-    int32_t errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
-    if (errCode != ERR_OK) {
-        WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
-            userId_, bundleName_.c_str());
-        group = ACTIVE_GROUP;
+    bool res = DelayedSingleton<DataManager>::GetInstance()->FindGroup(bundleName_, userId_, group);
+    if (!res) {
+        WS_HILOGI("no cache find, bundleName:%{public}s", bundleName_.c_str());
+        auto errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
+        if (errCode != ERR_OK) {
+            WS_HILOGE("query package group failed. userId = %{public}d, bundleName = %{public}s",
+                userId_, bundleName_.c_str());
+            group = ACTIVE_GROUP;
+        }
+        DelayedSingleton<DataManager>::GetInstance()->AddGroup(bundleName_, userId_, group);
     }
 #else
     int32_t group = ACTIVE_GROUP;
@@ -378,27 +382,27 @@ bool WorkStatus::SetMinInterval()
 
 bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 {
-    callbackFlag_ = true;
+    groupChanged_ = true;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
     if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
         minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
     } else {
-        WS_HILOGE("Query package group interval failed. group:%{public}d, bundleName:%{public}s",
+        WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
             group, bundleName_.c_str());
         minInterval_ = -1;
     }
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
 #endif
-    WS_HILOGD("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
+    WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
     return true;
 }
 
 void WorkStatus::SetMinIntervalByDump(int64_t interval)
 {
-    WS_HILOGD("Set min interval by dump to %{public}" PRId64 "", interval);
-    debugMode = interval == 0 ? false : true;
+    WS_HILOGD("set min interval by dump to %{public}" PRId64 "", interval);
+    g_groupDebugMode = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 

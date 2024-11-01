@@ -173,8 +173,7 @@ private:
     Status currentStatus_;
     time_t baseTime_;
     int64_t minInterval_;
-    bool callbackFlag_;
-    bool isStandby_ {false};
+    bool groupChanged_;
     ffrt::mutex conditionMapMutex_;
     static ffrt::mutex s_uid_last_time_mutex;
     static std::map<int32_t, time_t> s_uid_last_time_map;

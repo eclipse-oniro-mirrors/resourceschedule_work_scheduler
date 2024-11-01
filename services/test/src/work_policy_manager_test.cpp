@@ -243,7 +243,7 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_003, TestSize.Level1)
     workStatus->paused_ = true;
     workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
     int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
-    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**
@@ -331,7 +331,7 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_003, TestSize.Level1)
     workStatus->paused_ = false;
     workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
-    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**

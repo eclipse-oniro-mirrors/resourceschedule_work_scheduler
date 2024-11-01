@@ -23,7 +23,7 @@ namespace OHOS {
 using namespace EventFwk;
 namespace WorkScheduler {
 class WorkPolicyManager;
-class AppDataClearListener : public IPolicyListener {
+class AppDataClearListener : public IPolicyListener, public std::enable_shared_from_this<AppDataClearListener> {
 public:
     explicit AppDataClearListener(std::shared_ptr<WorkPolicyManager> workPolicyManager);
     ~AppDataClearListener() override;

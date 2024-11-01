@@ -29,6 +29,7 @@
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
 #include "event_publisher.h"
+#include "json/json.h"
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
@@ -44,6 +45,7 @@
 #endif
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
+#include "work_sched_utils.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
 namespace OHOS {
@@ -81,6 +83,11 @@ ErrCode BundleActiveClient::RegisterAppGroupCallBack(const sptr<IAppGroupCallbac
 namespace OHOS {
 namespace WorkScheduler {
 bool WorkSchedulerService::IsBaseAbilityReady()
+{
+    return true;
+}
+
+bool WorkSchedUtils::IsBetaVersion()
 {
     return true;
 }
@@ -807,6 +814,20 @@ HWTEST_F(WorkSchedulerServiceTest, SendEvent_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: GetJsonFromFile_001
+ * @tc.desc: Test WorkSchedulerService GetJsonFromFile.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetJsonFromFile_001, TestSize.Level1)
+{
+    Json::Value root;
+    const char* path = "/a/b/c";
+    bool ret = workSchedulerService_->GetJsonFromFile(path, root);
+    EXPECT_FALSE(ret);
+}
+
+/**
  * @tc.name: GetAppIndexAndBundleNameByUid_001
  * @tc.desc: Test WorkSchedulerService GetAppIndexAndBundleNameByUid.
  * @tc.type: FUNC
@@ -856,7 +877,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
  * @tc.name: CheckExtensionInfos_001
  * @tc.desc: Test WorkSchedulerService CheckExtensionInfos.
  * @tc.type: FUNC
- * @tc.require: IAJVZG
+ * @tc.require: IAJSVG
  */
 HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
 {
@@ -968,6 +989,129 @@ HWTEST_F(WorkSchedulerServiceTest, IsDebugApp_001, TestSize.Level1)
 {
     bool ret = workSchedulerService_->IsDebugApp("bundleName");
     EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: IsUnlock_001
+ * @tc.desc: Test WorkSchedulerService IsUnlock.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsUnlock_001, TestSize.Level1)
+{
+    WorkSchedUtils::SetUnlock(true);
+    EXPECT_TRUE(WorkSchedUtils::IsUnlock());
+}
+
+/**
+ * @tc.name: CheckWorkToRun_001
+ * @tc.desc: Test WorkSchedulerService CheckWorkToRun.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckWorkToRun_001, TestSize.Level1)
+{
+    WorkSchedUtils::SetUnlock(true);
+    workSchedulerService_->CheckWorkToRun();
+    EXPECT_TRUE(WorkSchedUtils::IsUnlock());
+}
+
+/**
+ * @tc.name: IsExemptionBundle_001
+ * @tc.desc: Test WorkSchedulerService IsExemptionBundle.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_001, TestSize.Level1)
+{
+    workSchedulerService_->exemptionBundles_.clear();
+    std::string bundleName = "com.demo.bundle";
+    bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: IsExemptionBundle_002
+ * @tc.desc: Test WorkSchedulerService IsExemptionBundle.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_002, TestSize.Level1)
+{
+    std::string bundleName = "com.demo.bundle";
+    workSchedulerService_->exemptionBundles_.clear();
+    workSchedulerService_->exemptionBundles_.insert(bundleName);
+    bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: IsExemptionBundle_003
+ * @tc.desc: Test WorkSchedulerService IsExemptionBundle.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_003, TestSize.Level1)
+{
+    std::string bundleName = "com.demo.bundle";
+    workSchedulerService_->exemptionBundles_.clear();
+    workSchedulerService_->exemptionBundles_.insert("com.demo.bundle1");
+    bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: DumpExemptionBundles_001
+ * @tc.desc: Test WorkSchedulerService DumpExemptionBundles.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpExemptionBundles_001, TestSize.Level1)
+{
+    workSchedulerService_->exemptionBundles_.clear();
+    std::string ret = workSchedulerService_->DumpExemptionBundles();
+    EXPECT_TRUE(ret == "[]");
+}
+
+/**
+ * @tc.name: DumpExemptionBundles_002
+ * @tc.desc: Test WorkSchedulerService DumpExemptionBundles.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpExemptionBundles_002, TestSize.Level1)
+{
+    workSchedulerService_->exemptionBundles_.insert("com.demo.bundle1");
+    std::string ret = workSchedulerService_->DumpExemptionBundles();
+    EXPECT_FALSE(ret.empty());
+}
+
+/**
+ * @tc.name: LoadExemptionBundlesFromFile_001
+ * @tc.desc: Test WorkSchedulerService LoadExemptionBundlesFromFile.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_001, TestSize.Level1)
+{
+    workSchedulerService_->exemptionBundles_.clear();
+    const char* path = nullptr;
+    workSchedulerService_->LoadExemptionBundlesFromFile(path);
+    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
+}
+
+/**
+ * @tc.name: LoadExemptionBundlesFromFile_002
+ * @tc.desc: Test WorkSchedulerService LoadExemptionBundlesFromFile.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_002, TestSize.Level1)
+{
+    workSchedulerService_->exemptionBundles_.clear();
+    const char *path = "/a/b/c";
+    workSchedulerService_->LoadExemptionBundlesFromFile(path);
+    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
 }
 }
 }

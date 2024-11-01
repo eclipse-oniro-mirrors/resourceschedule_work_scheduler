@@ -23,6 +23,7 @@
 #include "work_scheduler_extension.h"
 #include "js_work_scheduler_extension_context.h"
 #include "work_scheduler_stub_imp.h"
+#include "hitrace_meter.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -327,13 +328,13 @@ bool CallFuncation(napi_env env, napi_value workInfoData,
     napi_value method;
     napi_get_named_property(env, value, functionName, &method);
     if (method == nullptr) {
-        WS_HILOGE("WorkSchedulerExtension call funcation %{public}s error", functionName);
+        WS_HILOGE("WorkSchedulerExtension call function %{public}s error, method name is nullptr", functionName);
         return false;
     }
 
     napi_value callFunctionResult;
     if (napi_call_function(env, value, method, 1, argv, &callFunctionResult) != napi_ok) {
-        WS_HILOGE("WorkSchedulerExtension call funcation onWorkStart error");
+        WS_HILOGE("WorkSchedulerExtension call function %{public}s error", functionName);
         return false;
     }
 
@@ -385,6 +386,7 @@ void JsWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
             SetRepeatInfo(env, workInfoData, isRepeat, timeInterval, cycleCount);
         }
 
+        HitraceScoped traceScoped(HITRACE_TAG_OHOS, "JsWorkSchedulerExtension::onWorkStart");
         if (!CallFuncation(env, workInfoData, jsObj_, "onWorkStart")) {
             return;
         }
@@ -437,6 +439,7 @@ void JsWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
             SetRepeatInfo(env, workInfoData, isRepeat, timeInterval, cycleCount);
         }
 
+        HitraceScoped traceScoped(HITRACE_TAG_OHOS, "JsWorkSchedulerExtension::onWorkStop");
         if (!CallFuncation(env, workInfoData, jsObj_, "onWorkStop")) {
             return;
         }

@@ -250,7 +250,7 @@ public:
      *
      * @return std::string string consists of uid
      */
-    std::string GetEffiResApplyUid();
+    std::string DumpEffiResApplyUid();
 
     /**
      * @brief Get the Efficiency Resources Infos object
@@ -259,27 +259,36 @@ public:
      */
     ErrCode QueryResAppliedUid();
     /**
-     * @brief check bundleName has device_standby allow permission or not.
-     *
-     * @param bundleName bundleName of the application.
-     * @return true mean the application has device_stadnby allow permission, false or not.
-     */
-    bool CheckStandbyApplyInfo(std::string& bundleName);
-    /**
      * @brief init the preinstalled work.
      */
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
     /**
-     * @brief stop deepIdle works.
+     * @brief stop all running works.
      *
      * @return success or fail.
      */
-    int32_t StopDeepIdleWorks();
+    int32_t StopRunningWorks();
     /**
      * @brief load sa.
      */
     void LoadSa();
+    /**
+     * @brief Handle DeepIdle callback Msg.
+     */
+    void HandleDeepIdleMsg();
+    /**
+     * @brief Check work to run.
+     */
+    void CheckWorkToRun();
+    /**
+     * @brief Check If The bundle is in the whitelist.
+     *
+     * @param bundle Need Check bundleName
+     * @return true or false.
+     */
+    bool IsExemptionBundle(const std::string& checkBundleName);
+    void InitDeviceStandyWhitelist();
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -309,11 +318,13 @@ private:
     void AddWorkInner(WorkInfo& workInfo);
     std::list<std::shared_ptr<WorkInfo>> ReadPreinstalledWorks();
     void LoadWorksFromFile(const char *path, std::list<std::shared_ptr<WorkInfo>> &workInfos);
+    void LoadExemptionBundlesFromFile(const char *path);
     void InitPersistedWork();
     bool CheckProcessName();
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
     bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr, std::string &result);
+    std::string DumpExemptionBundles();
 
 private:
     std::set<int32_t> whitelist_;
@@ -326,11 +337,13 @@ private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     ffrt::mutex mutex_;
     ffrt::mutex observerMutex_;
+    ffrt::mutex workMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};
+    std::set<std::string> exemptionBundles_;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif
