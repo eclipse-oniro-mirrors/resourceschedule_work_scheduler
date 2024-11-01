@@ -84,7 +84,7 @@ namespace WorkScheduler {
 namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
-const std::string EXEMPTION_BUNDLES_KEY = "work_scheduler_exemption_bundles";
+const std::string EXEMPTION_BUNDLES_KEY = "work_scheduler_eng_exemption_bundles";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
@@ -285,12 +285,12 @@ void WorkSchedulerService::LoadExemptionBundlesFromFile(const char *path)
         return;
     }
     if (!root.isMember(EXEMPTION_BUNDLES_KEY)) {
-        WS_HILOGE("no work_scheduler_exemption_bundles key");
+        WS_HILOGE("no work_scheduler_eng_exemption_bundles key");
         return;
     }
     Json::Value exemptionBundlesRoot = root[EXEMPTION_BUNDLES_KEY];
     if (exemptionBundlesRoot.empty() || !exemptionBundlesRoot.isArray()) {
-        WS_HILOGE("work_scheduler_exemption_bundles content is empty");
+        WS_HILOGE("work_scheduler_eng_exemption_bundles content is empty");
         return;
     }
 
