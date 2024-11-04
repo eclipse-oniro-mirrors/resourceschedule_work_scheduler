@@ -1445,11 +1445,7 @@ bool WorkSchedulerService::IsPreinstalledBundle(const std::string& checkBundleNa
         WS_HILOGE("check preinstalled bundle error, bundleName is empty");
         return false;
     }
-    auto iter = std::find_if(preinstalledBundles_.begin(), preinstalledBundles_.end(),
-    [&](const std::string &bundleName) {
-        return checkBundleName == bundleName;
-    });
-    return iter != preinstalledBundles_.end();
+    return preinstalledBundles_.find(checkBundleName) != preinstalledBundles_.end();
 }
 } // namespace WorkScheduler
 } // namespace OHOS
