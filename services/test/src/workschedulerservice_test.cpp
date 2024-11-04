@@ -1113,5 +1113,49 @@ HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_002, TestSize.Le
     workSchedulerService_->LoadExemptionBundlesFromFile(path);
     EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
 }
+
+/**
+ * @tc.name: IsPreinstalledBundle_001
+ * @tc.desc: Test WorkSchedulerService IsPreinstalledBundle.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_001, TestSize.Level1)
+{
+    workSchedulerService_->preinstalledBundles_.clear();
+    std::string bundleName = "com.demo.bundle";
+    bool ret = workSchedulerService_->IsPreinstalledBundle(bundleName);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: IsPreinstalledBundle_002
+ * @tc.desc: Test WorkSchedulerService IsPreinstalledBundle.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_002, TestSize.Level1)
+{
+    workSchedulerService_->preinstalledBundles_.clear();
+    std::string bundleName = "com.demo.bundle";
+    workSchedulerService_->preinstalledBundles_.insert(bundleName);
+    bool ret = workSchedulerService_->IsPreinstalledBundle(bundleName);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: IsPreinstalledBundle_003
+ * @tc.desc: Test WorkSchedulerService IsPreinstalledBundle.
+ * @tc.type: FUNC
+ * @tc.require: IAJSVG
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_003, TestSize.Level1)
+{
+    workSchedulerService_->preinstalledBundles_.clear();
+    std::string bundleName = "com.demo.bundle";
+    workSchedulerService_->preinstalledBundles_.insert("com.demo.bundle1");
+    bool ret = workSchedulerService_->IsPreinstalledBundle(bundleName);
+    EXPECT_FALSE(ret);
+}
 }
 }

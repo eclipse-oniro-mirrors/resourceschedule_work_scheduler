@@ -289,6 +289,7 @@ public:
      */
     bool IsExemptionBundle(const std::string& checkBundleName);
     void InitDeviceStandyWhitelist();
+    bool IsPreinstalledBundle(const std::string& checkBundleName);
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -344,6 +345,7 @@ private:
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};
     std::set<std::string> exemptionBundles_;
+    std::set<std::string> preinstalledBundles_;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif
