@@ -1351,6 +1351,19 @@ int32_t WorkSchedulerService::StopRunningWorks()
     return ERR_OK;
 }
 
+int32_t WorkSchedulerService::SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType)
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!CheckProcessName()) {
+        return E_INVALID_PROCESS_NAME;
+    }
+    WS_HILOGD("Set work scheduler configData: %{public}s, sourceType: %{public}d", configData.c_str(), sourceType);
+    return ERR_OK;
+}
+
 bool WorkSchedulerService::IsExemptionBundle(const std::string& checkBundleName)
 {
     if (checkBundleName.empty()) {

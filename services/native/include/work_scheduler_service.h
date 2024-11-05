@@ -288,6 +288,15 @@ public:
      * @return true or false.
      */
     bool IsExemptionBundle(const std::string& checkBundleName);
+
+    /**
+     * @brief Set work scheduler config.
+     *
+     * @param configData config param.
+     * @param sourceType data source.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) override;
     void InitDeviceStandyWhitelist();
 private:
     void RegisterStandbyStateObserver();

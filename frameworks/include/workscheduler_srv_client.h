@@ -103,6 +103,15 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     ErrCode ResumePausedWorks(int32_t uid);
+
+    /**
+     * @brief Set work scheduler config.
+     *
+     * @param configData config param.
+     * @param sourceType data source.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType);
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

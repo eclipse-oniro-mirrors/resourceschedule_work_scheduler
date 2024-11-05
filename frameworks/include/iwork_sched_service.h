@@ -106,6 +106,15 @@ public:
      */
     virtual int32_t ResumePausedWorks(int32_t uid) = 0;
 
+    /**
+     * @brief Set work scheduler config.
+     *
+     * @param configData config param.
+     * @param sourceType data source.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    virtual int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) = 0;
+
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.workscheduler.iworkschedservice");
 };
 } // namespace WorkScheduler
