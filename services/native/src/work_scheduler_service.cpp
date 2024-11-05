@@ -75,6 +75,7 @@
 #include "res_type.h"
 #include "res_sched_client.h"
 #include "work_sched_data_manager.h"
+#include "work_sched_config.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -1359,6 +1360,7 @@ int32_t WorkSchedulerService::SetWorkSchedulerConfig(const std::string &configDa
         return E_INVALID_PROCESS_NAME;
     }
     WS_HILOGD("Set work scheduler configData: %{public}s, sourceType: %{public}d", configData.c_str(), sourceType);
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->InitActiveGroupWhitelist(configData);
     return ERR_OK;
 }
 

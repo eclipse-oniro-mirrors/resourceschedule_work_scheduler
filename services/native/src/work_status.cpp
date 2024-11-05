@@ -28,6 +28,7 @@
 #endif
 #include "parameters.h"
 #include "work_sched_data_manager.h"
+#include "work_sched_config.h"
 
 using namespace std;
 
@@ -382,14 +383,20 @@ bool WorkStatus::SetMinInterval()
 
 bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 {
+    int32_t newGroup = group;
+    if (DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist(bundleName_) &&
+        group > DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED) {
+        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED;
+    }
     groupChanged_ = true;
+ 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
+    auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(newGroup);
     if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
-        minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
+        minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[newGroup];
     } else {
         WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
-            group, bundleName_.c_str());
+            newGroup, bundleName_.c_str());
         minInterval_ = -1;
     }
 #else
