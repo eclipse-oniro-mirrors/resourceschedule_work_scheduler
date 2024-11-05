@@ -126,6 +126,7 @@ private:
     int32_t HandleGetAllRunningWorksRequest(MessageParcel &reply);
     int32_t HandleIsLastWorkTimeOutRequest(MessageParcel &data, MessageParcel &reply);
     int32_t HandleRequest(uint32_t code, MessageParcel &data, MessageParcel &reply, MessageOption &option);
+    int32_t HandleSetWorkSchedulerConfig(MessageParcel &data, MessageParcel &reply);
     int32_t SetTimer(uint32_t code);
     void CancelTimer(int32_t id);
 private:

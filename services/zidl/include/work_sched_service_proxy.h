@@ -106,6 +106,15 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t ResumePausedWorks(int32_t uid) override;
+
+    /**
+     * @brief Set work scheduler config.
+     *
+     * @param configData config param.
+     * @param sourceType data source.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) override;
 private:
     static inline BrokerDelegator<WorkSchedServiceProxy> delegator_;
 };
