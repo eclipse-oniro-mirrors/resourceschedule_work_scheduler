@@ -383,14 +383,14 @@ bool WorkStatus::SetMinInterval()
 
 bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 {
+    groupChanged_ = true;
+
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t newGroup = group;
     if (DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist(bundleName_) &&
         group > DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED) {
         newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED;
     }
-    groupChanged_ = true;
- 
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
     auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(newGroup);
     if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
         minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[newGroup];
