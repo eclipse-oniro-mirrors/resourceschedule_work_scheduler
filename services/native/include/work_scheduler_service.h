@@ -347,7 +347,6 @@ private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
     ffrt::mutex mutex_;
     ffrt::mutex observerMutex_;
-    ffrt::mutex workMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     bool ready_ {false};
     std::shared_ptr<WorkEventHandler> handler_;

@@ -1300,7 +1300,6 @@ bool WorkSchedulerService::CheckProcessName()
 int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGD("pause Running Work Scheduler Work, uid:%{public}d", uid);
-    std::lock_guard<ffrt::mutex> workLock(workMutex_);
     if (!CheckProcessName()) {
         return E_INVALID_PROCESS_NAME;
     }
@@ -1312,7 +1311,6 @@ int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 {
     WS_HILOGD("resume Paused Work Scheduler Work, uid:%{public}d", uid);
-    std::lock_guard<ffrt::mutex> workLock(workMutex_);
     if (!CheckProcessName()) {
         return E_INVALID_PROCESS_NAME;
     }
@@ -1333,7 +1331,6 @@ int32_t WorkSchedulerService::StopRunningWorks()
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    std::lock_guard<ffrt::mutex> workLock(workMutex_);
     std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetRunningWorkStatus();
     if (works.size() == 0) {
         WS_HILOGD("stop work after unlocking, no running works");
