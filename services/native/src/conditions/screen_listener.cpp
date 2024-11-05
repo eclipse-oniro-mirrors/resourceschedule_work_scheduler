@@ -39,11 +39,11 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
 {
     const std::string action = data.GetWant().GetAction();
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
-    WorkSchedUtils::SetUnlock(true);
-    listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
-    listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
-        std::make_shared<DetectorValue>(0, 0, false, std::string()));
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
+        WorkSchedUtils::SetUnlock(true);
+        listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
+        listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
+            std::make_shared<DetectorValue>(0, 0, false, std::string()));
         auto task = [weak = weak_from_this()]() {
             auto strong = weak.lock();
             if (!strong) {
