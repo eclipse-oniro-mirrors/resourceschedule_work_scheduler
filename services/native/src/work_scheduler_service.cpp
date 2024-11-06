@@ -396,13 +396,13 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
+    checkBundle_ = true;
+    ready_ = true;
     WS_HILOGI("start init background task subscriber!");
     if (!InitBgTaskSubscriber()) {
         WS_HILOGE("subscribe background task failed!");
         return false;
     }
-    checkBundle_ = true;
-    ready_ = true;
     WS_HILOGI("init success.");
     return true;
 }
