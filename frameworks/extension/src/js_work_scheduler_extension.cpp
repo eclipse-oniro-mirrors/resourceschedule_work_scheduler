@@ -81,6 +81,8 @@ napi_value AttachWorkSchedulerExtensionContext(napi_env env, void *value, void *
         }, nullptr, nullptr);
     if (status != napi_ok) {
         WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
+        delete workContext;
+        workContext = nullptr;
         return nullptr;
     }
     
@@ -159,6 +161,8 @@ void JsWorkSchedulerExtension::BindContext(napi_env env, napi_value obj)
         }, nullptr, nullptr);
     if (status != napi_ok) {
         WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
+        delete workContext;
+        workContext = nullptr;
     }
 }
 
