@@ -331,6 +331,9 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             break;
         }
         case PolicyType::APP_ADDED: {
+            if (!service->IsPreinstalledBundle(detectorVal->strVal)) {
+                return;
+            }
             service->InitPreinstalledWork();
             break;
         }

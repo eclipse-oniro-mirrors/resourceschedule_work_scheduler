@@ -28,6 +28,7 @@
 #include <system_ability.h>
 
 #include "ability_manager_interface.h"
+
 #include "system_ability_status_change_stub.h"
 #include "work_sched_service_stub.h"
 #include "work_status.h"
@@ -283,6 +284,7 @@ public:
      * @brief Handle DeepIdle callback Msg.
      */
     void HandleDeepIdleMsg();
+    bool IsPreinstalledBundle(const std::string& checkBundleName);
 private:
     std::set<int32_t> whitelist_;
     std::mutex whitelistMutex_;
@@ -301,6 +303,7 @@ private:
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};
+    std::set<std::string> preinstalledBundles_;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif
