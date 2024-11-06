@@ -80,9 +80,9 @@ napi_value AttachWorkSchedulerExtensionContext(napi_env env, void *value, void *
             delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
         }, nullptr, nullptr);
     if (status != napi_ok) {
+        WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
         delete workContext;
         workContext = nullptr;
-        WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
         return nullptr;
     }
     
@@ -160,9 +160,9 @@ void JsWorkSchedulerExtension::BindContext(napi_env env, napi_value obj)
             delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
         }, nullptr, nullptr);
     if (status != napi_ok) {
+        WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
         delete workContext;
         workContext = nullptr;
-        WS_HILOGE("WorkSchedulerExtension failed to wrap the context");
     }
 }
 
