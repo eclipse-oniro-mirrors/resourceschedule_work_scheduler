@@ -28,7 +28,6 @@
 #include <system_ability.h>
 
 #include "ability_manager_interface.h"
-
 #include "system_ability_status_change_stub.h"
 #include "work_sched_service_stub.h"
 #include "work_status.h"
