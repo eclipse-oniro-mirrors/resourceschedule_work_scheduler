@@ -283,6 +283,7 @@ public:
      * @brief Handle DeepIdle callback Msg.
      */
     void HandleDeepIdleMsg();
+    bool IsPreinstalledBundle(const std::string& checkBundleName);
 private:
     std::set<int32_t> whitelist_;
     std::mutex whitelistMutex_;
@@ -301,6 +302,7 @@ private:
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     bool checkBundle_ {true};
+    std::set<std::string> preinstalledBundles_;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif

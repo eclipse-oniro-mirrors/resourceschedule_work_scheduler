@@ -266,6 +266,7 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
             workinfo->RefreshUid(uid);
             workinfo->SetPreinstalled(true);
             workInfos.emplace_back(workinfo);
+            preinstalledBundles_.insert(workinfo->GetBundleName());
         } else {
             WS_HILOGE("ParseFromJson error");
         }
@@ -1356,6 +1357,15 @@ void WorkSchedulerService::HandleDeepIdleMsg()
     workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
         std::make_shared<DetectorValue>(0, 0, true, std::string()));
     LoadSa();
+}
+
+bool WorkSchedulerService::IsPreinstalledBundle(const std::string& checkBundleName)
+{
+    if (checkBundleName.empty()) {
+        WS_HILOGE("check preinstalled bundle error, bundleName is empty");
+        return false;
+    }
+    return preinstalledBundles_.find(checkBundleName) != preinstalledBundles_.end();
 }
 } // namespace WorkScheduler
 } // namespace OHOS

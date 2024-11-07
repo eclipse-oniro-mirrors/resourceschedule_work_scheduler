@@ -43,6 +43,8 @@ std::shared_ptr<WorkQueueManager> ScreenListenerTest::workQueueManager_ = nullpt
 void ScreenListenerTest::SetUpTestCase()
 {
     std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedulerService>();
+    workSchedulerService_->Start();
+    workSchedulerService_->OnStart();
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
     screenListener_ = std::make_shared<ScreenListener>(workQueueManager_, workSchedulerService_);
 }
