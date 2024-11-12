@@ -370,18 +370,22 @@ void WorkPolicyManager::CheckWorkToRun()
     }
     std::string policyName;
     int32_t runningCount = GetRunningCount();
-    if (runningCount < GetMaxRunningCount(policyName) || IsSpecialScene(topWork)) {
+    int32_t allowRunningCount = GetMaxRunningCount(policyName);
+    if (runningCount < allowRunningCount || IsSpecialScene(topWork)) {
         WS_HILOGD("running count < max running count");
         RealStartWork(topWork);
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
         WS_HILOGD("trigger delay: %{public}d", DELAY_TIME_LONG);
         if (runningCount == MAX_RUNNING_COUNT) {
-            topWork->delayReason_ = "OVER_LIMIT";
+            policyName = "OVER_LIMIT";
         }
 
         if (!policyName.empty()) {
             topWork->delayReason_= policyName;
+            WS_HILOGI("trigger delay, reason: %{public}s, bundleName: %{public}s, runningCount:%{public}d,"
+                " allowRunningCount:%{public}d",
+                policyName.c_str(), topWork->bundleName_.c_str(), runningCount, allowRunningCount);
         }
         SendRetrigger(DELAY_TIME_LONG);
     }
@@ -582,8 +586,8 @@ void WorkPolicyManager::Dump(string& result)
 
     std::string policyName;
     result.append("3. GetMaxRunningCount:");
-    std::string reason = policyName.empty() ? "" : " reason:" + policyName;
-    result.append(to_string(GetMaxRunningCount(policyName)) + reason + "\n");
+    result.append(to_string(GetMaxRunningCount(policyName))
+        + (policyName.empty() ? "" : " reason: " + policyName) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()
@@ -727,8 +731,13 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         auto workStatus = it->second;
-        if (workStatus->uid_ == uid && workStatus->IsRunning() && !workStatus->IsPaused()) {
+        if (workStatus->uid_ == uid && workStatus->IsRunning()) {
             hasWorkWithUid = true;
+            if (workStatus->IsPaused()) {
+                WS_HILOGE("Work has paused, bundleName:%{public}s, workId:%{public}s",
+                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+                continue;
+            }
             uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
             uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
             uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
@@ -764,8 +773,13 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
     std::lock_guard<std::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         auto workStatus = it->second;
-        if (workStatus->uid_ == uid && workStatus->IsRunning() && workStatus->IsPaused()) {
+        if (workStatus->uid_ == uid && workStatus->IsRunning()) {
             hasWorkWithUid = true;
+            if (!workStatus->IsPaused()) {
+                WS_HILOGE("Work has resumed, bundleName:%{public}s, workId:%{public}s",
+                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+                continue;
+            }
             int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
             WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " watchdogTime:%{public}d",

@@ -73,7 +73,7 @@ int32_t CpuPolicy::GetPolicyMaxRunning()
     } else {
         policyRes = COUNT_CPU_MAX;
     }
-    WS_HILOGI("cpu_usage: %{public}d, policyRes: %{public}d", cpuUsage, policyRes);
+    WS_HILOGD("cpu_usage: %{public}d, policyRes: %{public}d", cpuUsage, policyRes);
     return policyRes;
 }
 

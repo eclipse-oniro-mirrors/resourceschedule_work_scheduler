@@ -55,6 +55,7 @@ int32_t PowerModePolicy::GetPolicyMaxRunning()
         WS_HILOGI("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
     }
 #endif
+    WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
     return res;
 }
 

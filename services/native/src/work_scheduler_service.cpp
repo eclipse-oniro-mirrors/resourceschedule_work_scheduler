@@ -700,6 +700,9 @@ bool WorkSchedulerService::StopWorkInner(std::shared_ptr<WorkStatus> workStatus,
     if (workPolicyManager_->StopWork(workStatus, uid, needCancel, isTimeOut)) {
         workQueueManager_->CancelWork(workStatus);
     }
+    if (!isTimeOut) {
+        workPolicyManager_->RemoveWatchDog(workStatus);
+    }
     return true;
 }
 
@@ -802,6 +805,11 @@ void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus>
     work->UpdateTimerIfNeed();
     if (work->NeedRemove()) {
         workQueueManager_->RemoveWork(work);
+        if (work->persisted_ && !work->IsRepeating()) {
+            std::lock_guard<std::mutex> lock(mutex_);
+            persistedMap_.erase(work->workId_);
+            RefreshPersistedWorks();
+        }
     }
 }
 
