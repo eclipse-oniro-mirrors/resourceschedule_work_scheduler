@@ -806,7 +806,7 @@ void WorkSchedulerService::UpdateWorkBeforeRealStart(std::shared_ptr<WorkStatus>
     if (work->NeedRemove()) {
         workQueueManager_->RemoveWork(work);
         if (work->persisted_ && !work->IsRepeating()) {
-            std::lock_guard<ffrt::mutex> lock(mutex_);
+            std::lock_guard<std::mutex> lock(mutex_);
             persistedMap_.erase(work->workId_);
             RefreshPersistedWorks();
         }
