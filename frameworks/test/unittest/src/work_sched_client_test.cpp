@@ -226,5 +226,19 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level1)
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().GetAllRunningWorks(workInfos);
     EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
 }
+
+/**
+ * @tc.name: WorkSchedClientTest_015
+ * @tc.desc: Test SetWorkSchedulerConfig
+ * @tc.type: FUNC
+ * @tc.require: issue:#I9EKGI
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_015, TestSize.Level1)
+{
+    int32_t sourceType = 1;
+    std::string configData = "";
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().SetWorkSchedulerConfig(configData, sourceType);
+    EXPECT_NE(ret, ERR_OK);
+}
 }  // namespace WorkScheduler
 }  // namespace OHOS

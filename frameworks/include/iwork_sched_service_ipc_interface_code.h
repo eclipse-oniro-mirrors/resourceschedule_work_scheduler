@@ -30,6 +30,7 @@ namespace WorkScheduler {
         GET_ALL_RUNNING_WORKS,
         PAUSE_RUNNING_WORKS,
         RESUME_PAUSED_WORKS,
+        SET_WORK_SCHEDULER_CONFIG,
     };
 } // namespace WorkScheduler
 } // namespace OHOS

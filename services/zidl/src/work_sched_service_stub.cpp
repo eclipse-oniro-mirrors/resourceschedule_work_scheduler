@@ -80,6 +80,26 @@ int32_t WorkSchedServiceStub::HandleIsLastWorkTimeOutRequest(MessageParcel &data
     return ret;
 }
 
+int32_t WorkSchedServiceStub::HandleSetWorkSchedulerConfig(MessageParcel &data, MessageParcel &reply)
+{
+    std::string configData;
+    if (!data.ReadString(configData)) {
+        WS_HILOGE("HandleSetWorkSchedulerConfig read parce configData error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    int32_t sourceType;
+    if (!data.ReadInt32(sourceType)) {
+        WS_HILOGE("HandleSetWorkSchedulerConfig read parce sourceType error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    int32_t ret = SetWorkSchedulerConfig(configData, sourceType);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("HandleSetWorkSchedulerConfig write result failed, Errcode=%{public}d", ret);
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return ret;
+}
+
 int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, MessageParcel &reply,
     MessageOption &option)
 {
@@ -121,6 +141,9 @@ int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, 
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::RESUME_PAUSED_WORKS): {
             return ResumePausedWorksStub(data, reply);
+        }
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::SET_WORK_SCHEDULER_CONFIG): {
+            return HandleSetWorkSchedulerConfig(data, reply);
         }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);

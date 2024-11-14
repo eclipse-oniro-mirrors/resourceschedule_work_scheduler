@@ -115,6 +115,7 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
     int32_t PauseRunningWorks(int32_t uid) {return 0; }
     int32_t ResumePausedWorks(int32_t uid) {return 0; }
+    int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) { return 0; }
 };
 /**
  * @tc.name: onStart_001

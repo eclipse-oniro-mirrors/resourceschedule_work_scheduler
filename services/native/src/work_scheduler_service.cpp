@@ -74,6 +74,7 @@
 #include "hitrace_meter.h"
 #include "res_type.h"
 #include "res_sched_client.h"
+#include "work_sched_config.h"
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
@@ -362,13 +363,13 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
         WS_HILOGE("OnStart register to system ability manager failed!");
         return false;
     }
+    checkBundle_ = true;
+    ready_ = true;
     WS_HILOGI("start init background task subscriber!");
     if (!InitBgTaskSubscriber()) {
         WS_HILOGE("subscribe background task failed!");
         return false;
     }
-    checkBundle_ = true;
-    ready_ = true;
     WS_HILOGI("init success.");
     return true;
 }
@@ -1275,6 +1276,20 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
 {
     ConditionChecker checker(workQueueManager_);
     checker.CheckAllStatus();
+}
+
+int32_t WorkSchedulerService::SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType)
+{
+    if (!ready_) {
+        WS_HILOGE("service is not ready");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!CheckProcessName()) {
+        return E_INVALID_PROCESS_NAME;
+    }
+    WS_HILOGD("Set work scheduler configData: %{public}s, sourceType: %{public}d", configData.c_str(), sourceType);
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->InitActiveGroupWhitelist(configData);
+    return ERR_OK;
 }
 
 int32_t WorkSchedulerService::StopDeepIdleWorks()
