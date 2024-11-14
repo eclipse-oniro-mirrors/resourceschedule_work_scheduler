@@ -57,6 +57,10 @@ void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::
     WS_HILOGI("%{public}s apply allow, added %{public}d", name.c_str(), added);
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     dataManager->OnDeviceStandyWhitelistChanged(name, added);
+    if (!dataManager->GetDeviceSleep()) {
+        WS_HILOGI("current device standby state is not sleep");
+        return;
+    }
     auto policy = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetWorkPolicyManager();
     if (!policy) {
         WS_HILOGE("Standby allow list changed callback error, WorkPolicyManager is nullptr");

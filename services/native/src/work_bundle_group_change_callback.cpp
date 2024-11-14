@@ -39,7 +39,12 @@ void WorkBundleGroupChangeCallback::OnAppGroupChanged(
         oldGroup, newGroup, userId, bundleName.c_str());
     DelayedSingleton<DataManager>::GetInstance()->AddGroup(bundleName, userId, newGroup);
     auto policy = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetWorkPolicyManager();
-    if (!policy || !policy->FindWork(userId, bundleName)) {
+    if (!policy) {
+        WS_HILOGE("OnAppGroupChanged callback error, WorkPolicyManager is nullptr");
+        return;
+    }
+    if (!policy->FindWork(userId, bundleName)) {
+        WS_HILOGE("OnAppGroupChanged no work found, bundleName = %{public}s", bundleName.c_str());
         return;
     }
     if (newGroup < oldGroup) {
