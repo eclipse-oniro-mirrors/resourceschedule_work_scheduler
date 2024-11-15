@@ -131,7 +131,7 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
     if (IsReady()) {
         MarkStatus(Status::CONDITION_READY);
     }
-    return ERR_OK;  
+    return ERR_OK;
 }
 
 string WorkStatus::MakeWorkId(int32_t workId, int32_t uid)
@@ -225,7 +225,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     if (!IsUriKeySwitchOn()) {
-        conditionStatus_ += DELIMITER + "uriKey&OFF";
+        conditionStatus_ += DELIMITER + "uriKeyOFF";
         return false;
     }
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
@@ -356,10 +356,10 @@ bool WorkStatus::IsStandbyExemption()
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->GetDeviceSleep()) {
         if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
-            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
+            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
             return true;
         }
-        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
+        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
         return false;
     }
     return true;
