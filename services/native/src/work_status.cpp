@@ -43,6 +43,7 @@ const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
 const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
+const string DELIMITER = ",";
 ffrt::mutex WorkStatus::s_uid_last_time_mutex;
 
 std::unordered_map<WorkCondition::Type, std::string> COND_TYPE_STRING_MAP = {
@@ -124,10 +125,13 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
             return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
     }
+    if (!IsStandbyExemption()) {
+        return E_GROUP_CHANGE_NOT_MATCH_HAP;
+    }
     if (IsReady()) {
         MarkStatus(Status::CONDITION_READY);
     }
-    return ERR_OK;
+    return ERR_OK;  
 }
 
 string WorkStatus::MakeWorkId(int32_t workId, int32_t uid)
@@ -208,24 +212,24 @@ bool WorkStatus::IsUriKeySwitchOn()
 
 bool WorkStatus::IsReady()
 {
-    conditionStatus_ = "workStatus:" + bundleName_ + "_" + workId_;
+    conditionStatus_.clear();
     if (!IsSameUser()) {
-        conditionStatus_ += "|notSameUser";
+        conditionStatus_ += DELIMITER + "notSameUser";
         return false;
     }
     if (IsRunning()) {
-        conditionStatus_ += "|running";
+        conditionStatus_ += DELIMITER + "running";
         return false;
     }
     if (!IsConditionReady()) {
         return false;
     }
     if (!IsUriKeySwitchOn()) {
-        conditionStatus_ += "|uriKey&OFF";
+        conditionStatus_ += DELIMITER + "uriKey&OFF";
         return false;
     }
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
-        conditionStatus_ += "|effiResWhitelist";
+        conditionStatus_ += DELIMITER + "effiResWhitelist";
         return true;
     }
     if (!g_groupDebugMode && ((!groupChanged_ && !SetMinInterval()) || minInterval_ == -1)) {
@@ -234,12 +238,12 @@ bool WorkStatus::IsReady()
         return false;
     }
     if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        conditionStatus_ += "|firstTrigger";
+        conditionStatus_ += DELIMITER + "firstTrigger";
         return true;
     }
     double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
     if (del < minInterval_) {
-        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&unready(" +
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&unready(" +
             to_string(static_cast<long>(del)) + ":" + to_string(minInterval_) + ")";
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
@@ -255,19 +259,16 @@ bool WorkStatus::IsConditionReady()
 {
     auto workConditionMap = workInfo_->GetConditionMap();
     std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
-    if (!IsStandbyExemption()) {
-        return false;
-    }
     bool isReady = true;
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
-            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[it.first] + "&unready";
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&unready";
             isReady = false;
             break;
         }
         if (!IsBatteryAndNetworkReady(it.first) || !IsStorageReady(it.first) ||
             !IsChargerReady(it.first) || !IsNapReady(it.first)) {
-            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[it.first] + "&unready";
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&unready";
             isReady = false;
             break;
         }
@@ -275,7 +276,7 @@ bool WorkStatus::IsConditionReady()
             isReady = false;
             break;
         }
-        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[it.first] + "&ready";
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&ready";
     }
     return isReady;
 }
@@ -355,10 +356,10 @@ bool WorkStatus::IsStandbyExemption()
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->GetDeviceSleep()) {
         if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
-            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&standbyWhitelist";
+            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
             return true;
         }
-        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unStandbyWhitelist";
+        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
         return false;
     }
     return true;
@@ -381,7 +382,7 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
     double oppositedel = difftime(getOppositeTime(), lastTime);
     double del = currentdel > oppositedel ? currentdel : oppositedel;
     if (del < intervalTime) {
-        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[type] + "&unready(" +
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[type] + "&unready(" +
             to_string(static_cast<long>(del)) + ":" + to_string(intervalTime) + ")";
         return false;
     }
@@ -584,7 +585,9 @@ void WorkStatus::ToString(WorkCondition::Type type)
     if (conditionStatus_.empty()) {
         return;
     }
-    WS_HILOGI("eventType:%{public}s, %{public}s", COND_TYPE_STRING_MAP[type].c_str(), conditionStatus_.c_str());
+    IsStandbyExemption();
+    WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+        bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
 }
 } // namespace WorkScheduler
 } // namespace OHOS
