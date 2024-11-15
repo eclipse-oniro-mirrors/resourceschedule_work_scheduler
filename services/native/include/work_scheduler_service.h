@@ -283,6 +283,15 @@ public:
      * @brief Handle DeepIdle callback Msg.
      */
     void HandleDeepIdleMsg();
+
+    /**
+     * @brief Set work scheduler config.
+     *
+     * @param configData config param.
+     * @param sourceType data source.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) override;
     bool IsPreinstalledBundle(const std::string& checkBundleName);
 private:
     std::set<int32_t> whitelist_;

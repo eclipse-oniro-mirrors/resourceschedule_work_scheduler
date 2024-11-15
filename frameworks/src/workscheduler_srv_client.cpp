@@ -201,5 +201,16 @@ ErrCode WorkSchedulerSrvClient::ResumePausedWorks(int32_t uid)
     }
     return iWorkSchedService_->ResumePausedWorks(uid);
 }
+
+ErrCode WorkSchedulerSrvClient::SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType)
+{
+    WS_HILOGD("Set work scheduler config");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->SetWorkSchedulerConfig(configData, sourceType);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

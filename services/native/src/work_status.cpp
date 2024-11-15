@@ -27,6 +27,7 @@
 #include "bundle_active_group_map.h"
 #endif
 #include "parameters.h"
+#include "work_sched_config.h"
 
 using namespace std;
 
@@ -376,16 +377,23 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 {
     callbackFlag_ = true;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
-    auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
+    int32_t newGroup = group;
+    if (DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist(bundleName_) &&
+        group > DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED) {
+        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED;
+    }
+    auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(newGroup);
     if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
-        minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
+        minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[newGroup];
     } else {
+        WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
+            newGroup, bundleName_.c_str());
         minInterval_ = -1;
     }
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
 #endif
-    WS_HILOGD("Set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
+    WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
     return true;
 }
 
