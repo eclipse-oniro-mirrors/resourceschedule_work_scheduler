@@ -20,14 +20,10 @@
 #include "tokenid_kit.h"
 #include "ipc_skeleton.h"
 #include "work_sched_hilog.h"
-#include "parameters.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 const int32_t INVALID_DATA = -1;
-const std::string UNLOCK_FEATURE_SWITCH = "persist.sys.work_scheduler_unlock_feature_switch";
-const std::string BETA_VERSION_PARAM_KEY = "const.logsystem.versiontype";
-std::atomic<bool> UNLOCK(false);
 
 #ifdef WORK_SCHEDULER_TEST
 #define WEAK_FUNC __attribute__((weak))
@@ -116,26 +112,6 @@ uint64_t WorkSchedUtils::GetCurrentTimeMs()
     auto now = chrono::system_clock::now();
     chrono::milliseconds currentTimeMs = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch());
     return currentTimeMs.count();
-}
-
-WEAK_FUNC bool WorkSchedUtils::IsBetaVersion()
-{
-    return OHOS::system::GetParameter(BETA_VERSION_PARAM_KEY, "unknown") == "beta";
-}
-
-void WorkSchedUtils::SetUnlock(bool unlock)
-{
-    UNLOCK.store(unlock);
-}
-
-bool WorkSchedUtils::IsUnlock()
-{
-    return UNLOCK.load();
-}
-
-WEAK_FUNC bool WorkSchedUtils::IsDebugMode()
-{
-    return OHOS::system::GetBoolParameter(UNLOCK_FEATURE_SWITCH, false);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

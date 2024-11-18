@@ -1326,23 +1326,20 @@ void WorkSchedulerService::TriggerWorkIfConditionReady()
     checker.CheckAllStatus();
 }
 
-int32_t WorkSchedulerService::StopRunningWorks()
+int32_t WorkSchedulerService::StopDeepIdleWorks()
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetRunningWorkStatus();
+    std::list<std::shared_ptr<WorkStatus>> works =  workPolicyManager_->GetDeepIdleWorks();
     if (works.size() == 0) {
-        WS_HILOGD("stop work after unlocking, no running works");
+        WS_HILOGD("stop work by condition, no matched works");
         return ERR_OK;
     }
 
     for (shared_ptr<WorkStatus> workStatus : works) {
-        if (IsExemptionBundle(workStatus->bundleName_)) {
-            continue;
-        }
-        WS_HILOGI("stop work after unlocking, bundleName:%{public}s, workId:%{public}s",
+        WS_HILOGI("stop work by condition, bundleName:%{public}s, workId:%{public}s",
             workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
         StopWorkInner(workStatus, workStatus->uid_, false, false);
         workPolicyManager_->RemoveWatchDog(workStatus);
@@ -1375,11 +1372,6 @@ bool WorkSchedulerService::IsExemptionBundle(const std::string& checkBundleName)
         return checkBundleName == bundleName;
     });
     return iter != exemptionBundles_.end();
-}
-
-WEAK_FUNC void WorkSchedulerService::CheckWorkToRun()
-{
-    workPolicyManager_->CheckWorkToRun();
 }
 
 void WorkSchedulerService::LoadSa()

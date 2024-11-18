@@ -40,7 +40,6 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
     const std::string action = data.GetWant().GetAction();
     WS_HILOGI("OnReceiveEvent get action: %{public}s", action.c_str());
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
-        WorkSchedUtils::SetUnlock(true);
         listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
         listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
@@ -50,7 +49,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
                 WS_HILOGE("ScreenEventSubscriber::OnReceiveEvent strong is null");
                 return;
             }
-            int32_t ret = strong->listener_.service_->StopRunningWorks();
+            int32_t ret = strong->listener_.service_->StopDeepIdleWorks();
             if (ret != ERR_OK) {
                 WS_HILOGE("stop work after unlocking failed, error code:%{public}d.", ret);
             } else {
@@ -62,11 +61,9 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
             handler->PostTask(task);
         }
     } else if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF) {
-        WorkSchedUtils::SetUnlock(false);
         listener_.service_->GetHandler()->RemoveEvent(WorkEventHandler::CHECK_DEEPIDLE_MSG);
         listener_.service_->GetHandler()->SendEvent(
             AppExecFwk::InnerEvent::Get(WorkEventHandler::CHECK_DEEPIDLE_MSG, 0), MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
-        listener_.service_->CheckWorkToRun();
     }
 }
 

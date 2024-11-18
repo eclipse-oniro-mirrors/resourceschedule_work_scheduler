@@ -41,8 +41,6 @@ public:
     bool FindGroup(const std::string& bundleName, const int32_t userId, int32_t& appGroup);
     void ClearGroup(const std::string& bundleName, const int32_t userId);
     void ClearAllGroup();
-    // allow start ready work
-    bool AllowToStart(const std::string& bundleName);
 private:
     std::atomic<bool> deviceSleep_ = false;
     ffrt::mutex deviceStandySetMutex_;

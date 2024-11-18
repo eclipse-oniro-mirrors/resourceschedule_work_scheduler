@@ -264,11 +264,11 @@ public:
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
     /**
-     * @brief stop all running works.
+     * @brief stop deepIdle works.
      *
      * @return success or fail.
      */
-    int32_t StopRunningWorks();
+    int32_t StopDeepIdleWorks();
     /**
      * @brief load sa.
      */
@@ -277,10 +277,6 @@ public:
      * @brief Handle DeepIdle callback Msg.
      */
     void HandleDeepIdleMsg();
-    /**
-     * @brief Check work to run.
-     */
-    void CheckWorkToRun();
     /**
      * @brief Check If The bundle is in the whitelist.
      *

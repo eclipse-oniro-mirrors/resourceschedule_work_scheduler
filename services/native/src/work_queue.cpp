@@ -235,12 +235,12 @@ std::list<std::shared_ptr<WorkInfo>> WorkQueue::GetRunningWorks()
     return workInfo;
 }
 
-std::list<std::shared_ptr<WorkStatus>> WorkQueue::GetRunningWorkStatus()
+std::list<std::shared_ptr<WorkStatus>> WorkQueue::GetDeepIdleWorks()
 {
     std::list<std::shared_ptr<WorkStatus>> works;
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
     for (shared_ptr<WorkStatus> work : workList_) {
-        if (work->IsRunning()) {
+        if (work->IsRunning() && work->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN) {
             works.emplace_back(work);
         }
     }

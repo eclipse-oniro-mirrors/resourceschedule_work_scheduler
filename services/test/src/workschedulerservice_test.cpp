@@ -45,7 +45,6 @@
 #endif
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
-#include "work_sched_utils.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
 namespace OHOS {
@@ -83,11 +82,6 @@ ErrCode BundleActiveClient::RegisterAppGroupCallBack(const sptr<IAppGroupCallbac
 namespace OHOS {
 namespace WorkScheduler {
 bool WorkSchedulerService::IsBaseAbilityReady()
-{
-    return true;
-}
-
-bool WorkSchedUtils::IsBetaVersion()
 {
     return true;
 }
@@ -990,31 +984,6 @@ HWTEST_F(WorkSchedulerServiceTest, IsDebugApp_001, TestSize.Level1)
 {
     bool ret = workSchedulerService_->IsDebugApp("bundleName");
     EXPECT_FALSE(ret);
-}
-
-/**
- * @tc.name: IsUnlock_001
- * @tc.desc: Test WorkSchedulerService IsUnlock.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(WorkSchedulerServiceTest, IsUnlock_001, TestSize.Level1)
-{
-    WorkSchedUtils::SetUnlock(true);
-    EXPECT_TRUE(WorkSchedUtils::IsUnlock());
-}
-
-/**
- * @tc.name: CheckWorkToRun_001
- * @tc.desc: Test WorkSchedulerService CheckWorkToRun.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(WorkSchedulerServiceTest, CheckWorkToRun_001, TestSize.Level1)
-{
-    WorkSchedUtils::SetUnlock(true);
-    workSchedulerService_->CheckWorkToRun();
-    EXPECT_TRUE(WorkSchedUtils::IsUnlock());
 }
 
 /**
