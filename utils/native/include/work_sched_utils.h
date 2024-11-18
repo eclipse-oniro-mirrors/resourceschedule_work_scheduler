@@ -64,30 +64,6 @@ public:
      * @return Millisecond time.
      */
     static uint64_t GetCurrentTimeMs();
-    /**
-     * @brief Check if this is Beta version.
-     *
-     * @return Beta version or not.
-     */
-    static bool IsBetaVersion();
-    /**
-     * @brief Set Unlock state.
-     *
-     * @param unlock If unlock, true or false
-     */
-    static void SetUnlock(bool unlock);
-    /**
-     * @brief Is Unlock State.
-     *
-     * @return true or false.
-     */
-    static bool IsUnlock();
-    /**
-     * @brief Is Debug mode.
-     *
-     * @return true or false.
-     */
-    static bool IsDebugMode();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

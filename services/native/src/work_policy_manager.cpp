@@ -353,7 +353,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 
 bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork)
 {
-    if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1 || WorkSchedUtils::IsBetaVersion()) {
+    if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1) {
         if (wss_.lock() == nullptr) {
             return false;
         }
@@ -378,10 +378,6 @@ void WorkPolicyManager::CheckWorkToRun()
     shared_ptr<WorkStatus> topWork = GetWorkToRun();
     if (topWork == nullptr) {
         WS_HILOGD("no condition ready work not running, return.");
-        return;
-    }
-    if (!DelayedSingleton<DataManager>::GetInstance()->AllowToStart(topWork->bundleName_)) {
-        SendRetrigger(DELAY_TIME_LONG);
         return;
     }
     std::string policyName;
@@ -834,19 +830,19 @@ void WorkPolicyManager::RemoveWatchDog(std::shared_ptr<WorkStatus> workStatus)
     }
 }
 
-std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetRunningWorkStatus()
+std::list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetDeepIdleWorks()
 {
-    std::list<shared_ptr<WorkStatus>> runningWorkStatus;
+    std::list<shared_ptr<WorkStatus>> deepIdleWorkds;
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
-        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetRunningWorkStatus();
+        std::list<std::shared_ptr<WorkStatus>> workList = it->second->GetDeepIdleWorks();
         if (workList.size() != 0) {
-            runningWorkStatus.insert(runningWorkStatus.end(), workList.begin(), workList.end());
+            deepIdleWorkds.insert(deepIdleWorkds.end(), workList.begin(), workList.end());
         }
         it++;
     }
-    return runningWorkStatus;
+    return deepIdleWorkds;
 }
 
 bool WorkPolicyManager::FindWork(int32_t uid)

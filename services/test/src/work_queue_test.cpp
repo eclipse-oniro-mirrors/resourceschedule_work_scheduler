@@ -436,12 +436,12 @@ HWTEST_F(WorkQueueTest, GetRunningWorks_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: GetRunningWorkStatus_001
- * @tc.desc: Test WorkQueue GetRunningWorkStatus.
+ * @tc.name: GetDeepIdleWorks_001
+ * @tc.desc: Test WorkQueue GetDeepIdleWorks.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkQueueTest, GetRunningWorkStatus_001, TestSize.Level1)
+HWTEST_F(WorkQueueTest, GetDeepIdleWorks_001, TestSize.Level1)
 {
     workQueue_->ClearAll();
     auto workInfo_ = WorkInfo();
@@ -453,7 +453,7 @@ HWTEST_F(WorkQueueTest, GetRunningWorkStatus_001, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     workQueue_->Push(workStatus);
-    EXPECT_TRUE(workQueue_->GetRunningWorkStatus().size() == 1);
+    EXPECT_TRUE(workQueue_->GetDeepIdleWorks().size() == 1);
 }
 }
 }

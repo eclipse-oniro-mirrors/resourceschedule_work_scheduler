@@ -24,10 +24,6 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
-bool WorkSchedUtils::IsDebugMode()
-{
-    return false;
-}
 class DataManagerTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -140,30 +136,6 @@ HWTEST_F(DataManagerTest, SetDeviceSleep_001, TestSize.Level1)
 {
     dataManager_->SetDeviceSleep(false);
     EXPECT_FALSE(dataManager_->GetDeviceSleep());
-}
-
-/**
- * @tc.name: AllowToStart_001
- * @tc.desc: Test WorkStatus AllowToStart.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(DataManagerTest, AllowToStart_001, TestSize.Level1)
-{
-    WorkSchedUtils::SetUnlock(true);
-    DelayedSingleton<WorkSchedulerService>::GetInstance()->exemptionBundles_.clear();
-    std::string bundleName_ = "com.example.bundle";
-    bool ret = dataManager_->AllowToStart(bundleName_);
-    EXPECT_FALSE(ret);
-
-    WorkSchedUtils::SetUnlock(true);
-    DelayedSingleton<WorkSchedulerService>::GetInstance()->exemptionBundles_.insert(bundleName_);
-    ret = dataManager_->AllowToStart(bundleName_);
-    EXPECT_TRUE(ret);
-
-    WorkSchedUtils::SetUnlock(false);
-    ret = dataManager_->AllowToStart(bundleName_);
-    EXPECT_TRUE(ret);
 }
 }
 }

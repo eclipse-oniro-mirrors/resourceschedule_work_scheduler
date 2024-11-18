@@ -109,23 +109,5 @@ void DataManager::ClearAllGroup()
     std::lock_guard<ffrt::mutex> lock(activeGroupMapMutex_);
     activeGroupMap_.clear();
 }
-
-bool DataManager::AllowToStart(const std::string& bundleName)
-{
-    if (WorkSchedUtils::IsDebugMode()) {
-        WS_HILOGD("debug mode allow to run work");
-        return true;
-    }
-    if (WorkSchedUtils::IsUnlock()) {
-        if (WorkSchedUtils::IsBetaVersion()
-            && DelayedSingleton<WorkSchedulerService>::GetInstance()->IsExemptionBundle(bundleName)) {
-            WS_HILOGI("beta version and exemption bundle:%{public}s, allow to run work", bundleName.c_str());
-            return true;
-        }
-        WS_HILOGI("unlock state not allow to run work, bundle:%{public}s", bundleName.c_str());
-        return false;
-    }
-    return true;
-}
 } // namespace WorkScheduler
 } // namespace OHOS
