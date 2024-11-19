@@ -59,7 +59,8 @@ private:
     std::shared_ptr<EventFwk::CommonEventSubscriber> commonEventSubscriber = nullptr;
 };
 
-class ScreenEventSubscriber : public EventFwk::CommonEventSubscriber {
+class ScreenEventSubscriber : public EventFwk::CommonEventSubscriber,
+                              public std::enable_shared_from_this<ScreenEventSubscriber> {
 public:
     ScreenEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo, ScreenListener &listener);
     ~ScreenEventSubscriber() override = default;

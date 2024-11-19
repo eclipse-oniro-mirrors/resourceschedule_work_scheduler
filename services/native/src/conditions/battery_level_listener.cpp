@@ -39,10 +39,11 @@ void BatteryLevelEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData
         std::string KEY_CAPACITY = PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY;
         int32_t defaultCapacity = -1;
         auto capacity = data.GetWant().GetIntParam(KEY_CAPACITY, defaultCapacity);
-        WS_HILOGD("capacity: %{public}d", capacity);
-        if (capacity == defaultCapacity) {
+        if (capacity == defaultCapacity || capacity == capacity_) {
             return;
         }
+        capacity_ = capacity;
+        WS_HILOGI("capacity: %{public}d", capacity);
         listener_.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL,
             std::make_shared<DetectorValue>(capacity, 0, 0, std::string()));
     } else {

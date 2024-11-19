@@ -72,6 +72,7 @@ public:
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
 private:
     BatteryLevelListener &listener_;
+    int32_t capacity_ = -1;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

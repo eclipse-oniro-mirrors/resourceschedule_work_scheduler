@@ -25,6 +25,7 @@
 #include "work_conn_manager.h"
 #include "work_queue.h"
 #include "work_status.h"
+#include "ffrt.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -270,6 +271,8 @@ public:
      * @return All DeepIdle Works.
      */
     std::list<std::shared_ptr<WorkStatus>> GetDeepIdleWorks();
+    bool FindWork(int32_t uid);
+    bool FindWork(const int32_t userId, const std::string &bundleName);
 private:
     int32_t GetMaxRunningCount(std::string& policyName);
     int32_t GetRunningCount();
@@ -298,7 +301,7 @@ private:
     std::shared_ptr<WorkConnManager> workConnManager_;
     std::shared_ptr<WorkEventHandler> handler_;
 
-    std::recursive_mutex uidMapMutex_;
+    ffrt::recursive_mutex uidMapMutex_;
     std::map<int32_t, std::shared_ptr<WorkQueue>> uidQueueMap_;
 
     std::shared_ptr<WorkQueue> conditionReadyQueue_;
@@ -308,7 +311,7 @@ private:
 
     std::shared_ptr<Watchdog> watchdog_;
 
-    std::mutex watchdogIdMapMutex_;
+    ffrt::mutex watchdogIdMapMutex_;
     std::map<uint32_t, std::shared_ptr<WorkStatus>> watchdogIdMap_;
 
     uint32_t watchdogId_;
@@ -317,7 +320,7 @@ private:
     int32_t dumpSetCpu_;
     int32_t dumpSetMaxRunningCount_;
 
-    std::recursive_mutex ideDebugListMutex_;
+    ffrt::recursive_mutex ideDebugListMutex_;
     std::list<std::shared_ptr<WorkStatus>> ideDebugList;
 };
 } // namespace WorkScheduler

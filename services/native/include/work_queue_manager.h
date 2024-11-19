@@ -23,11 +23,12 @@
 #include "conditions/icondition_listener.h"
 #include "work_queue.h"
 #include "work_status.h"
+#include "ffrt.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerService;
-class WorkQueueManager : std::enable_shared_from_this<WorkQueueManager> {
+class WorkQueueManager : public std::enable_shared_from_this<WorkQueueManager> {
 public:
     explicit WorkQueueManager(const std::shared_ptr<WorkSchedulerService>& wss);
     ~WorkQueueManager() = default;
@@ -120,7 +121,7 @@ private:
     std::vector<std::shared_ptr<WorkStatus>> GetReayQueue(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
     void PushWork(std::vector<std::shared_ptr<WorkStatus>> &works, std::vector<std::shared_ptr<WorkStatus>> &result);
-    std::mutex mutex_;
+    ffrt::mutex mutex_;
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::map<WorkCondition::Type, std::shared_ptr<WorkQueue>> queueMap_;
     std::map<WorkCondition::Type, std::shared_ptr<IConditionListener>> listenerMap_;

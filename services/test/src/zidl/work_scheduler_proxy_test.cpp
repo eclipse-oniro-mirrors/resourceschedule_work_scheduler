@@ -20,6 +20,7 @@
 #include "iservice_registry.h"
 #include "work_scheduler_proxy.h"
 #include "work_sched_hilog.h"
+#include "ffrt.h"
 
 using namespace testing::ext;
 
@@ -36,11 +37,11 @@ public:
 };
 
 std::shared_ptr<WorkSchedulerProxy> WorkSchedulerProxyTest::workSchedulerProxy_ = nullptr;
-std::mutex mutexLock;
+ffrt::mutex mutexLock;
 
 void WorkSchedulerProxyTest::SetUpTestCase()
 {
-    std::lock_guard<std::mutex> lock(mutexLock);
+    std::lock_guard<ffrt::mutex> lock(mutexLock);
     sptr<ISystemAbilityManager> SystemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (SystemAbilityManager == nullptr) {

@@ -22,6 +22,7 @@
 
 #include "work_scheduler_connection.h"
 #include "work_status.h"
+#include "ffrt.h"
 
 namespace OHOS {
 using namespace Utils;
@@ -49,7 +50,7 @@ private:
     sptr<WorkSchedulerConnection> GetConnInfo(std::string &workId);
     bool DisConnect(sptr<WorkSchedulerConnection> connect);
     void WriteStartWorkEvent(std::shared_ptr<WorkStatus> workStatus);
-    std::mutex connMapMutex_;
+    ffrt::mutex connMapMutex_;
     std::map<std::string, sptr<WorkSchedulerConnection>> connMap_;
     std::map<std::string, int32_t> eventIdMap_;
 };
