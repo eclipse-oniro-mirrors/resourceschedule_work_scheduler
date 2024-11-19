@@ -41,7 +41,7 @@ void WorkSchedulerConfig::InitActiveGroupWhitelist(const std::string &configData
         return;
     }
     nlohmann::json appArray = jsonObj[ACTIVE_GROUP_WHITELIST];
-        for (const auto &app : appArray) {
+    for (const auto &app : appArray) {
         activeGroupWhitelist_.insert(app);
     }
     for (const auto &app : activeGroupWhitelist_) {

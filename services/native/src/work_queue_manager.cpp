@@ -39,7 +39,7 @@ bool WorkQueueManager::Init()
 
 bool WorkQueueManager::AddListener(WorkCondition::Type type, shared_ptr<IConditionListener> listener)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     if (listenerMap_.count(type) > 0) {
         return false;
     }
@@ -53,7 +53,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
         return false;
     }
     WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     auto map = workStatus->workInfo_->GetConditionMap();
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
@@ -73,7 +73,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
 
 bool WorkQueueManager::RemoveWork(shared_ptr<WorkStatus> workStatus)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
     auto map = workStatus->workInfo_->GetConditionMap();
     for (auto it : *map) {
@@ -89,7 +89,7 @@ bool WorkQueueManager::RemoveWork(shared_ptr<WorkStatus> workStatus)
 
 bool WorkQueueManager::CancelWork(shared_ptr<WorkStatus> workStatus)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     WS_HILOGD("workStatus ID: %{public}s", workStatus->workId_.c_str());
     for (auto it : queueMap_) {
         it.second->CancelWork(workStatus);
@@ -112,7 +112,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
     shared_ptr<DetectorValue> conditionVal)
 {
     vector<shared_ptr<WorkStatus>> result;
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     if (conditionType != WorkCondition::Type::GROUP && queueMap_.count(conditionType) > 0) {
         shared_ptr<WorkQueue> workQueue = queueMap_.at(conditionType);
         result = workQueue->OnConditionChanged(conditionType, conditionVal);
@@ -129,7 +129,8 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
         if ((*it)->needRetrigger_) {
             if (conditionType != WorkCondition::Type::TIMER
                     && conditionType != WorkCondition::Type::GROUP) {
-                WS_HILOGD("Need retrigger, start group listener.");
+                WS_HILOGI("Need retrigger, start group listener, bundleName:%{public}s, workId:%{public}s",
+                    (*it)->bundleName_.c_str(), (*it)->workId_.c_str());
                 SetTimeRetrigger((*it)->timeRetrigger_);
                 listenerMap_.at(WorkCondition::Type::GROUP)->Start();
             }
@@ -162,18 +163,32 @@ void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus>> &works, vector<sh
 void WorkQueueManager::OnConditionChanged(WorkCondition::Type conditionType,
     shared_ptr<DetectorValue> conditionVal)
 {
-    vector<shared_ptr<WorkStatus>> readyWorkVector = GetReayQueue(conditionType, conditionVal);
-    if (readyWorkVector.size() == 0) {
+    auto service = wss_.lock();
+    if (!service) {
+        WS_HILOGE("service is null");
         return;
     }
-    for (auto it : readyWorkVector) {
-        it->MarkStatus(WorkStatus::Status::CONDITION_READY);
-    }
-    if (wss_.expired()) {
-        WS_HILOGE("wss_ expired");
+    auto task = [weak = weak_from_this(), service, conditionType, conditionVal]() {
+        auto strong = weak.lock();
+        if (!strong) {
+            WS_HILOGE("strong is null");
+            return;
+        }
+        vector<shared_ptr<WorkStatus>> readyWorkVector = strong->GetReayQueue(conditionType, conditionVal);
+        if (readyWorkVector.size() == 0) {
+            return;
+        }
+        for (auto it : readyWorkVector) {
+            it->MarkStatus(WorkStatus::Status::CONDITION_READY);
+        }
+        service->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
+    };
+    auto handler = service->GetHandler();
+    if (!handler) {
+        WS_HILOGE("handler is null");
         return;
     }
-    wss_.lock()->OnConditionReady(make_shared<vector<shared_ptr<WorkStatus>>>(readyWorkVector));
+    handler->PostTask(task);
 }
 
 bool WorkQueueManager::StopAndClearWorks(list<shared_ptr<WorkStatus>> workList)
@@ -186,7 +201,7 @@ bool WorkQueueManager::StopAndClearWorks(list<shared_ptr<WorkStatus>> workList)
 
 void WorkQueueManager::Dump(string& result)
 {
-    std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     string conditionType[] = {"network", "charger", "battery_status", "battery_level",
         "storage", "timer", "group", "deepIdle", "standby", "unknown"};
     uint32_t size = sizeof(conditionType);

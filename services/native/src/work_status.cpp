@@ -27,6 +27,7 @@
 #include "bundle_active_group_map.h"
 #endif
 #include "parameters.h"
+#include "work_sched_data_manager.h"
 #include "work_sched_config.h"
 
 using namespace std;
@@ -34,14 +35,14 @@ using namespace std;
 namespace OHOS {
 namespace WorkScheduler {
 static const double ONE_SECOND = 1000.0;
-static bool debugMode = false;
+static bool g_groupDebugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
 const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
-std::mutex WorkStatus::s_uid_last_time_mutex;
+ffrt::mutex WorkStatus::s_uid_last_time_mutex;
 
 time_t getCurrentTime()
 {
@@ -75,14 +76,14 @@ WorkStatus::WorkStatus(WorkInfo &workInfo, int32_t uid)
         if (!workTimerCondition->boolVal) {
             timeCondition->intVal = workTimerCondition->intVal;
         }
-        std::lock_guard<std::mutex> lock(conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
         conditionMap_.emplace(WorkCondition::Type::TIMER, timeCondition);
     }
     this->persisted_ = workInfo.IsPersisted();
     this->priority_ = GetPriority();
     this->currentStatus_ = WAIT_CONDITION;
     this->minInterval_ = MIN_INTERVAL_DEFAULT;
-    this->callbackFlag_ = false;
+    this->groupChanged_ = false;
 }
 
 WorkStatus::~WorkStatus() {}
@@ -93,27 +94,26 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
     if (workInfo_->GetConditionMap()->count(type) > 0
         && type != WorkCondition::Type::TIMER
         && type != WorkCondition::Type::GROUP) {
-        std::lock_guard<std::mutex> lock(conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
         if (conditionMap_.count(type) > 0) {
             conditionMap_.at(type) = value;
         } else {
             conditionMap_.emplace(type, value);
         }
     }
-    callbackFlag_ = false;
+    groupChanged_ = false;
     if (type == WorkCondition::Type::GROUP && value && value->boolVal) {
         WS_HILOGD("Group changed, bundleName: %{public}s.", value->strVal.c_str());
-        callbackFlag_ = true;
+        groupChanged_ = true;
         if (value->intVal == userId_ && value->strVal == bundleName_) {
             SetMinIntervalByGroup(value->enumVal);
         } else {
             return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
     }
-    if (type == WorkCondition::Type::STANDBY && value) {
-        isStandby_ = value->boolVal;
-    }
-    if (isStandby_ && !DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckStandbyApplyInfo(bundleName_)) {
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    if (dataManager->GetDeviceSleep() && !dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
+        WS_HILOGI("Standby mode, Work status:%{public}s not standby exempted.", bundleName_.c_str());
         return E_GROUP_CHANGE_NOT_MATCH_HAP;
     }
     if (IsReady()) {
@@ -141,7 +141,7 @@ void WorkStatus::MarkRound() {}
 
 void WorkStatus::UpdateTimerIfNeed()
 {
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) > 0) {
         baseTime_ = getCurrentTime();
         if (conditionMap_.at(WorkCondition::Type::TIMER)->boolVal) {
@@ -158,7 +158,7 @@ void WorkStatus::UpdateTimerIfNeed()
 
 bool WorkStatus::NeedRemove()
 {
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return true;
     }
@@ -210,7 +210,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     auto workConditionMap = workInfo_->GetConditionMap();
-    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
             return false;
@@ -226,24 +226,27 @@ bool WorkStatus::IsReady()
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
         return true;
     }
-    if (!debugMode && ((!callbackFlag_ && !SetMinInterval()) || minInterval_ == -1)) {
-        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group.");
+    if (!g_groupDebugMode && ((!groupChanged_ && !SetMinInterval()) || minInterval_ == -1)) {
+        WS_HILOGE("Work can't ready due to false group, forbidden group or unused group, bundleName:%{public}s, "
+            "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
 
-    auto itMap = s_uid_last_time_map.find(uid_);
-    if (itMap == s_uid_last_time_map.end()) {
+    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+        WS_HILOGI("First trigger, bundleName:%{public}s, uid:%{public}d", bundleName_.c_str(), uid_);
         return true;
     }
-    time_t lastTime = s_uid_last_time_map[uid_];
-    double del = difftime(getOppositeTime(), lastTime);
-    WS_HILOGD("CallbackFlag: %{public}d, minInterval = %{public}" PRId64 ", del = %{public}f",
-        callbackFlag_, minInterval_, del);
+    double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
     if (del < minInterval_) {
+        WS_HILOGI("Condition not ready, bundleName:%{public}s, workId:%{public}s, "
+            "minInterval:%{public}" PRId64 ", del:%{public}f", bundleName_.c_str(), workId_.c_str(), minInterval_, del);
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;
     }
+    WS_HILOGI("Condition Ready, bundleName:%{public}s, abilityName:%{public}s, workId:%{public}s, "
+        "groupChanged:%{public}d, minInterval:%{public}" PRId64 ", del = %{public}f",
+        bundleName_.c_str(), abilityName_.c_str(), workId_.c_str(), groupChanged_, minInterval_, del);
     return true;
 }
 
@@ -358,14 +361,19 @@ bool WorkStatus::SetMinInterval()
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
     if (workInfo_->IsCallBySystemApp()) {
-        WS_HILOGD("Is system app, default group is active.");
+        WS_HILOGD("system app %{public}s, default group is active.", bundleName_.c_str());
         return SetMinIntervalByGroup(ACTIVE_GROUP);
     }
-    int32_t errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
-    if (errCode != ERR_OK) {
-        WS_HILOGE("Query package group failed. userId = %{public}d, bundleName = %{public}s",
-            userId_, bundleName_.c_str());
-        group = ACTIVE_GROUP;
+    bool res = DelayedSingleton<DataManager>::GetInstance()->FindGroup(bundleName_, userId_, group);
+    if (!res) {
+        WS_HILOGI("no cache find, bundleName:%{public}s", bundleName_.c_str());
+        auto errCode = DeviceUsageStats::BundleActiveClient::GetInstance().QueryAppGroup(group, bundleName_, userId_);
+        if (errCode != ERR_OK) {
+            WS_HILOGE("query package group failed. userId = %{public}d, bundleName = %{public}s",
+                userId_, bundleName_.c_str());
+            group = ACTIVE_GROUP;
+        }
+        DelayedSingleton<DataManager>::GetInstance()->AddGroup(bundleName_, userId_, group);
     }
 #else
     int32_t group = ACTIVE_GROUP;
@@ -375,7 +383,8 @@ bool WorkStatus::SetMinInterval()
 
 bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 {
-    callbackFlag_ = true;
+    groupChanged_ = true;
+
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t newGroup = group;
     if (DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist(bundleName_) &&
@@ -399,8 +408,8 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 
 void WorkStatus::SetMinIntervalByDump(int64_t interval)
 {
-    WS_HILOGD("Set min interval by dump to %{public}" PRId64 "", interval);
-    debugMode = interval == 0 ? false : true;
+    WS_HILOGD("set min interval by dump to %{public}" PRId64 "", interval);
+    g_groupDebugMode = interval == 0 ? false : true;
     minInterval_ = interval == 0 ? minInterval_ : interval;
 }
 
@@ -411,14 +420,14 @@ int64_t WorkStatus::GetMinInterval()
 
 void WorkStatus::UpdateUidLastTimeMap()
 {
-    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     time_t lastTime = getOppositeTime();
     s_uid_last_time_map[uid_] = lastTime;
 }
 
 void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
-    std::lock_guard<std::mutex> lock(s_uid_last_time_mutex);
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     s_uid_last_time_map.erase(uid);
 }
 
@@ -449,7 +458,7 @@ bool WorkStatus::IsLastWorkTimeout()
 
 bool WorkStatus::IsRepeating()
 {
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::TIMER) <= 0) {
         return false;
     }
@@ -483,7 +492,7 @@ void WorkStatus::Dump(string& result)
     result.append(string("\"paused\":") + (paused_ ? "true" : "false") + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
-    std::lock_guard<std::mutex> lock(conditionMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
         result.append(string("\"networkType\":") +
             to_string(conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal) + ",\n");

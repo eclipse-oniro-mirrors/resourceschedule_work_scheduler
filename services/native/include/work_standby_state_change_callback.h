@@ -45,7 +45,6 @@ public:
     void OnAllowListChanged(int32_t uid, const std::string& name, uint32_t allowType, bool added) override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
-    bool isSleep_ {false};
 };
 }  // namespace WorkScheduler
 }  // namespace OHOS

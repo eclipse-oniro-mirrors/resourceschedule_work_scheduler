@@ -41,19 +41,19 @@ const std::string PARAM_APP_CLONE_INDEX_KEY = "ohos.extra.param.key.appCloneInde
 
 void WorkConnManager::AddConnInfo(string &workId, sptr<WorkSchedulerConnection> &connection)
 {
-    std::lock_guard<std::mutex> lock(connMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(connMapMutex_);
     connMap_.emplace(workId, connection);
 }
 
 void WorkConnManager::RemoveConnInfo(string &workId)
 {
-    std::lock_guard<std::mutex> lock(connMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(connMapMutex_);
     connMap_.erase(workId);
 }
 
 sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
 {
-    std::lock_guard<std::mutex> lock(connMapMutex_);
+    std::lock_guard<ffrt::mutex> lock(connMapMutex_);
     if (connMap_.count(workId) > 0) {
         return connMap_.at(workId);
     }
@@ -69,7 +69,8 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     }
 
     if (!workStatus->workInfo_->GetExtension()) {
-        WS_HILOGE("extension's type is not workScheduler, connect failed");
+        WS_HILOGE("Work %{public}s extension's type is not workScheduler, connect failed",
+            workStatus->bundleName_.c_str());
         return false;
     }
 
