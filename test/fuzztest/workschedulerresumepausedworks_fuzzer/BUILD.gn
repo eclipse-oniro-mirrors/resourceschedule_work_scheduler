@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2024 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -14,9 +14,9 @@
 #####################hydra-fuzz###################
 import("//build/config/features.gni")
 import("//build/test.gni")
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 module_output_path = "work_scheduler/work_scheduler"
 
-import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 config("worksched_private_config") {
   include_dirs = [
     "${worksched_service_path}/zidl/include",
@@ -25,10 +25,10 @@ config("worksched_private_config") {
 }
 
 ##############################fuzztest##########################################
-ohos_fuzztest("WorkScheduleServiceFuzzTest") {
+ohos_fuzztest("WorkSchedulerResumePausedWorksFuzzTest") {
   module_out_path = module_output_path
   fuzz_config_file =
-      "${worksched_test_path}/fuzztest/workscheduleservice_fuzzer"
+      "${worksched_test_path}/fuzztest/workschedulerresumepausedworks_fuzzer"
 
   configs = [ ":worksched_private_config" ]
   cflags = [
@@ -36,13 +36,15 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "-O0",
     "-Wno-unused-variable",
     "-fno-omit-frame-pointer",
+    "-Dprivate=public",
+    "-Dprotected=public",
   ]
-  sources = [ "workscheduleservice_fuzzer.cpp" ]
+  sources = [ "workschedulerresumepausedworks_fuzzer.cpp" ]
 
   deps = [
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_frameworks_path}/extension:workschedextension",
-    "${worksched_service_path}:workschedservice",
+    "${worksched_service_path}:workschedservice_static",
     "${worksched_utils_path}:workschedutils",
   ]
 
@@ -54,16 +56,33 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_consumer",
     "eventhandler:libeventhandler",
     "ffrt:libffrt",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
     "jsoncpp:jsoncpp",
+    "resource_management:global_resmgr",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
-  defines = []
+
+  resource_config_file = "${worksched_test_path}/resource/ohos_test.xml"
+
+  defines = [ "WORK_SCHEDULER_TEST" ]
+  if (bundle_active_enable) {
+    external_deps += [ "device_usage_statistics:usagestatsinner" ]
+    defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]
+  }
+  if (device_standby_enable) {
+    external_deps += [ "device_standby:standby_innerkits" ]
+    defines += [ "DEVICE_STANDBY_ENABLE" ]
+  }
+  if (resourceschedule_bgtaskmgr_enable) {
+    external_deps += [ "background_task_mgr:bgtaskmgr_innerkits" ]
+    defines += [ "RESOURCESCHEDULE_BGTASKMGR_ENABLE" ]
+  }
   if (powermgr_battery_manager_enable) {
     external_deps += [ "battery_manager:batterysrv_client" ]
     defines += [ "POWERMGR_BATTERY_MANAGER_ENABLE" ]
@@ -76,7 +95,10 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     external_deps += [ "power_manager:powermgr_client" ]
     defines += [ "POWERMGR_POWER_MANAGER_ENABLE" ]
   }
-  resource_config_file = "${worksched_test_path}/resource/ohos_test.xml"
+  if (workscheduler_with_communication_netmanager_base_enable) {
+    defines += [ "COMMUNICATION_NETMANAGER_BASE_ENABLE" ]
+    external_deps += [ "netmanager_base:net_conn_manager_if" ]
+  }
 }
 
 ###############################################################################
@@ -85,7 +107,7 @@ group("fuzztest") {
   deps = []
   deps += [
     # deps file
-    ":WorkScheduleServiceFuzzTest",
+    ":WorkSchedulerResumePausedWorksFuzzTest",
   ]
 }
 ###############################################################################
