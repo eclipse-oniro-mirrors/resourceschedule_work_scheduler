@@ -27,8 +27,7 @@ config("worksched_private_config") {
 ##############################fuzztest##########################################
 ohos_fuzztest("WorkSchedulerSetWorkSchedulerConfigTest") {
   module_out_path = module_output_path
-  fuzz_config_file =
-      "${worksched_test_path}/fuzztest/workschedulersetworkschedulerconfig_fuzzer"
+  fuzz_config_file = "${worksched_test_path}/fuzztest/workschedulersetworkschedulerconfig_fuzzer"
 
   configs = [ ":worksched_private_config" ]
   cflags = [
