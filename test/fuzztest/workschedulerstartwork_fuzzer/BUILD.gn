@@ -46,7 +46,6 @@ ohos_fuzztest("WorkSchedulerStartWorkFuzzTest") {
     "${worksched_frameworks_path}/extension:workschedextension",
     "${worksched_service_path}:workschedservice_static",
     "${worksched_utils_path}:workschedutils",
-    "//third_party/jsoncpp",
   ]
 
   external_deps = [
