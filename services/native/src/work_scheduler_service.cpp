@@ -159,7 +159,8 @@ WEAK_FUNC bool WorkSchedulerService::IsBaseAbilityReady()
         || systemAbilityManager->CheckSystemAbility(APP_MGR_SERVICE_ID) == nullptr
         || systemAbilityManager->CheckSystemAbility(COMMON_EVENT_SERVICE_ID) == nullptr
         || systemAbilityManager->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(BACKGROUND_TASK_MANAGER_SERVICE_ID) == nullptr) {
+        || systemAbilityManager->CheckSystemAbility(BACKGROUND_TASK_MANAGER_SERVICE_ID) == nullptr
+        || systemAbilityManager->CheckSystemAbility(TIME_SERVICE_ID) == nullptr) {
         return false;
     }
     return true;

@@ -32,15 +32,6 @@ void WorkQueueEventHandler::ProcessEvent([[maybe_unused]] const AppExecFwk::Inne
 {
     WS_HILOGI("eventId: %{public}u", event->GetInnerEventId());
     switch (event->GetInnerEventId()) {
-        case TIMER_TICK: {
-            if (manager_ == nullptr) {
-                return;
-            }
-            manager_->OnConditionChanged(WorkCondition::Type::TIMER, make_shared<DetectorValue>(0, 0, 0, string()));
-            uint32_t time = manager_->GetTimeCycle();
-            SendEvent(AppExecFwk::InnerEvent::Get(TIMER_TICK, 0), time);
-            break;
-        }
         case GROUP_TICK: {
             if (manager_ == nullptr) {
                 return;
