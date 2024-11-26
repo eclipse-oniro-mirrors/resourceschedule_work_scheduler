@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2024 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -28,9 +28,9 @@ public:
     virtual ~TimerInfo();
     void OnTrigger() override;
     void SetType(const int &type_) override;
-    void SetRepeat(bool repeart_) override;
+    void SetRepeat(bool repeat_) override;
     void SetInterval(const uint64_t &interval_) override;
-    void SetWantAgent(std::shared_ptr<AbilityRuntime::WantAgent::WantAgent> wantAgent) override;
+    void SetWantAgent(std::shared_ptr<AbilityRuntime::WantAgent::WantAgent> wantAgent_) override;
     void SetCallbackInfo(const std::function<void()> &callBack);
 private:
     std::function<void()> callBack_ = nullptr;

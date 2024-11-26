@@ -40,13 +40,13 @@ bool TimerListener::Start()
     }
     uint32_t time = workQueueManager_->GetTimeCycle();
     WS_HILOGI("TimerListener start with time = %{public}u.", time);
-    auto task = [this] () {
+    auto task = [=]() {
         WS_HILOGI("begin check repeat work");
-        workQueueManager_->OnConditionChange(WorkCondition::Type::TIMER, std::make_shared<
+        workQueueManager_->OnConditionChanged(WorkCondition::Type::TIMER, std::make_shared<
             DetectorValue>(0, 0, 0, std::string()));
     };
     auto timerInfo = std::make_shared<TimerInfo>();
-    timerInfo->SetType(timerInfo->TIMER_TYPE_EXACT | timerInfo->TIMER_TYPE_WAKEUP | timerInfo-> TIMER_TYPE_REALTIME);
+    timerInfo->SetType(timerInfo->TIMER_TYPE_EXACT | timerInfo->TIMER_TYPE_WAKEUP | timerInfo->TIMER_TYPE_REALTIME);
     timerInfo->SetRepeat(true);
     timerInfo->SetInterval(time);
     timerInfo->SetCallbackInfo(task);

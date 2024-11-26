@@ -353,11 +353,9 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 
 bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int32_t runningCount)
 {
-    if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1) {
-        if (wss_.lock() == nullptr) {
-            return false;
-        }
-        return wss_.lock()->IsExemptionBundle(topWork->bundleName_);
+    if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1 &&
+        wss_.lock()->IsExemptionBundle(topWork->bundleName_)) {
+        return true;
     }
     if (DelayedSingleton<DataManager>::GetInstance()->GetDeviceSleep() &&
         runningCount < 2 * MAX_RUNNING_COUNT &&
