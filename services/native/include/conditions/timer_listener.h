@@ -55,6 +55,7 @@ private:
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
     std::shared_ptr<WorkQueueEventHandler> handler_;
     const std::string TIMER_LISTENER = "TimerListener";
+    uint64_t timerId_ = 0;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

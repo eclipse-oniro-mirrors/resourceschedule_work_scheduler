@@ -24,7 +24,7 @@ using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
-const uint32_t TIME_CYCLE = 20 * 60 * 1000; // 20min
+const uint32_t TIME_CYCLE = 10 * 60 * 1000; // 10min
 static int32_t g_timeRetrigger = INT32_MAX;
 
 WorkQueueManager::WorkQueueManager(const std::shared_ptr<WorkSchedulerService>& wss) : wss_(wss)

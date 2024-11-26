@@ -351,13 +351,20 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
     CheckWorkToRun();
 }
 
-bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork)
+bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int32_t runningCount)
 {
     if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1) {
         if (wss_.lock() == nullptr) {
             return false;
         }
         return wss_.lock()->IsExemptionBundle(topWork->bundleName_);
+    }
+    if (DelayedSingleton<DataManager>::GetInstance()->GetDeviceSleep() &&
+        runningCount < 2 * MAX_RUNNING_COUNT &&
+        DelayedSingleton<DataManager>::GetInstance()->IsInDeviceStandyWhitelist(topWork->bundleName_)) {
+        WS_HILOGI("device is in standy mode, and work %{public}s is in whitelist, allow to run",
+            topWork->bundleName_.c_str());
+        return true;
     }
     return false;
 }
@@ -383,7 +390,7 @@ void WorkPolicyManager::CheckWorkToRun()
     std::string policyName;
     int32_t runningCount = GetRunningCount();
     int32_t allowRunningCount = GetMaxRunningCount(policyName);
-    if (runningCount < allowRunningCount || IsSpecialScene(topWork)) {
+    if (runningCount < allowRunningCount || IsSpecialScene(topWork, runningCount)) {
         WS_HILOGD("running count < max running count");
         RealStartWork(topWork);
         SendRetrigger(DELAY_TIME_SHORT);

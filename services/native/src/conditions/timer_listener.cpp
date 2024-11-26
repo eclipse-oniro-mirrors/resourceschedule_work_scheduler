@@ -16,6 +16,7 @@
 
 #include "work_queue_event_handler.h"
 #include "work_sched_hilog.h"
+#include "conditions/timer_info.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -23,9 +24,6 @@ TimerListener::TimerListener(std::shared_ptr<WorkQueueManager> workQueueManager,
     const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     workQueueManager_ = workQueueManager;
-    if (runner != nullptr) {
-        eventRunner_ = runner;
-    }
 }
 
 void TimerListener::OnConditionChanged(WorkCondition::Type conditionType,
@@ -36,27 +34,39 @@ void TimerListener::OnConditionChanged(WorkCondition::Type conditionType,
 
 bool TimerListener::Start()
 {
-    if (!eventRunner_) {
-        WS_HILOGE("Init failed due to create EventHandler");
-        return false;
-    }
-    if (!handler_) {
-        handler_ = std::make_shared<WorkQueueEventHandler>(eventRunner_, workQueueManager_);
-    }
     if (workQueueManager_ == nullptr) {
         WS_HILOGE("workQueueManager_ is null");
         return false;
     }
     uint32_t time = workQueueManager_->GetTimeCycle();
     WS_HILOGI("TimerListener start with time = %{public}u.", time);
-    handler_->SendEvent(AppExecFwk::InnerEvent::Get(WorkQueueEventHandler::TIMER_TICK, 0), time);
+    auto task = [this] () {
+        WS_HILOGI("begin check repeat work");
+        workQueueManager_->OnConditionChange(WorkCondition::Type::TIMER, std::make_shared<
+            DetectorValue>(0, 0, 0, std::string()));
+    };
+    auto timerInfo = std::make_shared<TimerInfo>();
+    timerInfo->SetType(timerInfo->TIMER_TYPE_EXACT | timerInfo->TIMER_TYPE_WAKEUP | timerInfo-> TIMER_TYPE_REALTIME);
+    timerInfo->SetRepeat(true);
+    timerInfo->SetInterval(time);
+    timerInfo->SetCallbackInfo(task);
+    timerId_ = TimeServiceClient::GetInstance()->CreateTimer(timerInfo);
+    if (timerId_ == 0) {
+        WS_HILOGE("TimerListener CreateTimer failed");
+        return false;
+    }
+    bool res = TimeServiceClient::GetInstance()->StartTimer(timerId_,
+        TimeServiceClient::GetInstance()->GetBootTimeMs() + time);
+    WS_HILOGI("res is %{public}d, timerId = %{public}" PRIu64, res, timerId_);
     return true;
 }
 
 bool TimerListener::Stop()
 {
-    if (handler_ != nullptr) {
-        handler_->RemoveEvent(WorkQueueEventHandler::TIMER_TICK);
+    if (timerId_ > 0) {
+        MiscServices::TimeServiceClient::GetInstance()->StopTimer(timerId_);
+        MiscServices::TimeServiceClient::GetInstance()->DestroyTimer(timerId_);
+        timerId_ = 0;
     }
     return true;
 }
