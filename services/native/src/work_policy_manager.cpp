@@ -39,6 +39,7 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 const int32_t MAX_RUNNING_COUNT = 3;
+const int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
 const uint32_t MAX_WORK_COUNT_PER_UID = 10;
 const int32_t DELAY_TIME_LONG = 30000;
 const int32_t DELAY_TIME_SHORT = 5000;
@@ -358,7 +359,7 @@ bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int3
         return true;
     }
     if (DelayedSingleton<DataManager>::GetInstance()->GetDeviceSleep() &&
-        runningCount < 2 * MAX_RUNNING_COUNT &&
+        runningCount < STANDBY_MAX_RUNNING_COUNT &&
         DelayedSingleton<DataManager>::GetInstance()->IsInDeviceStandyWhitelist(topWork->bundleName_)) {
         WS_HILOGI("device is in standy mode, and work %{public}s is in whitelist, allow to run",
             topWork->bundleName_.c_str());
