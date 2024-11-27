@@ -97,6 +97,7 @@ const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const int32_t TIME_OUT = 4;
+const uint32_t MIN_TIME_CYCLE = 20 * 60 * 1000;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
@@ -624,9 +625,8 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     }
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         uint32_t time = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER)->uintVal;
-        if (time < workQueueManager_->GetTimeCycle()) {
-            WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time,
-                workQueueManager_->GetTimeCycle());
+        if (time < MIN_TIME_CYCLE) {
+            WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, MIN_TIME_CYCLE);
             return false;
         }
     }
