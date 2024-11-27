@@ -1117,11 +1117,11 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
             WS_HILOGE("Open file fail.");
             return fd;
         } else {
-            WS_HILOGE("Open file success.");
+            WS_HILOGI("Open file success.");
             close(fd);
         }
     } else {
-        WS_HILOGE("The file already exists.");
+        WS_HILOGD("The file already exists.");
     }
     return ERR_OK;
 }

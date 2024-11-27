@@ -23,6 +23,7 @@ class WorkCondition {
 public:
     virtual ~WorkCondition() = default;
 
+    // synchronize the modification of workstatus::conTypeStringMap
     enum Type {
         NETWORK = 0,
         CHARGER,
