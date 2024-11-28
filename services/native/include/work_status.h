@@ -169,6 +169,7 @@ public:
      */
     int64_t GetMinInterval();
     bool IsUriKeySwitchOn();
+    void ToString(WorkCondition::Type conditionType);
 private:
     Status currentStatus_;
     time_t baseTime_;
@@ -177,14 +178,18 @@ private:
     ffrt::mutex conditionMapMutex_;
     static ffrt::mutex s_uid_last_time_mutex;
     static std::map<int32_t, time_t> s_uid_last_time_map;
+    std::string conditionStatus_;
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
     bool IsBatteryAndNetworkReady(WorkCondition::Type type);
-    bool IsStorageAndTimerReady(WorkCondition::Type type);
+    bool IsStorageReady(WorkCondition::Type type);
     bool IsChargerReady(WorkCondition::Type type);
     bool IsNapReady(WorkCondition::Type type);
     int GetPriority();
+    bool IsTimerReady(WorkCondition::Type type);
+    bool IsConditionReady();
+    bool IsStandbyExemption();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

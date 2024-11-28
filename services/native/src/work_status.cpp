@@ -29,6 +29,7 @@
 #include "parameters.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_config.h"
+#include <unordered_map>
 
 using namespace std;
 
@@ -42,7 +43,20 @@ const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
 const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
+const string DELIMITER = ",";
 ffrt::mutex WorkStatus::s_uid_last_time_mutex;
+
+std::unordered_map<WorkCondition::Type, std::string> COND_TYPE_STRING_MAP = {
+    {WorkCondition::Type::NETWORK, "NETWORK"},
+    {WorkCondition::Type::CHARGER, "CHARGER"},
+    {WorkCondition::Type::BATTERY_STATUS, "BATTERY_STATUS"},
+    {WorkCondition::Type::BATTERY_LEVEL, "BATTERY_LEVEL"},
+    {WorkCondition::Type::STORAGE, "STORAGE"},
+    {WorkCondition::Type::TIMER, "TIMER"},
+    {WorkCondition::Type::GROUP, "GROUP"},
+    {WorkCondition::Type::DEEP_IDLE, "DEEP_IDLE"},
+    {WorkCondition::Type::STANDBY, "STANDBY"}
+};
 
 time_t getCurrentTime()
 {
@@ -111,9 +125,7 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
             return E_GROUP_CHANGE_NOT_MATCH_HAP;
         }
     }
-    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
-    if (dataManager->GetDeviceSleep() && !dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
-        WS_HILOGI("Standby mode, Work status:%{public}s not standby exempted.", bundleName_.c_str());
+    if (!IsStandbyExemption()) {
         return E_GROUP_CHANGE_NOT_MATCH_HAP;
     }
     if (IsReady()) {
@@ -200,30 +212,24 @@ bool WorkStatus::IsUriKeySwitchOn()
 
 bool WorkStatus::IsReady()
 {
-    WS_HILOGD("IsReady");
+    conditionStatus_.clear();
     if (!IsSameUser()) {
-        WS_HILOGI("Not same user. WorkId:%{public}s", workId_.c_str());
+        conditionStatus_ += DELIMITER + "notSameUser";
         return false;
     }
     if (IsRunning()) {
-        WS_HILOGD("Work is running");
+        conditionStatus_ += DELIMITER + "running";
         return false;
     }
-    auto workConditionMap = workInfo_->GetConditionMap();
-    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
-    for (auto it : *workConditionMap) {
-        if (conditionMap_.count(it.first) <= 0) {
-            return false;
-        }
-        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageAndTimerReady(it.first) ||
-            !IsChargerReady(it.first) || !IsNapReady(it.first)) {
-            return false;
-        }
+    if (!IsConditionReady()) {
+        return false;
     }
     if (!IsUriKeySwitchOn()) {
+        conditionStatus_ += DELIMITER + "uriKeyOFF";
         return false;
     }
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
+        conditionStatus_ += DELIMITER + "effiResWhitelist";
         return true;
     }
     if (!g_groupDebugMode && ((!groupChanged_ && !SetMinInterval()) || minInterval_ == -1)) {
@@ -231,23 +237,48 @@ bool WorkStatus::IsReady()
             "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
-
     if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        WS_HILOGI("First trigger, bundleName:%{public}s, uid:%{public}d", bundleName_.c_str(), uid_);
+        conditionStatus_ += DELIMITER + "firstTrigger";
         return true;
     }
     double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
     if (del < minInterval_) {
-        WS_HILOGI("Condition not ready, bundleName:%{public}s, workId:%{public}s, "
-            "minInterval:%{public}" PRId64 ", del:%{public}f", bundleName_.c_str(), workId_.c_str(), minInterval_, del);
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&unready(" +
+            to_string(static_cast<long>(del)) + ":" + to_string(minInterval_) + ")";
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
         return false;
     }
-    WS_HILOGI("Condition Ready, bundleName:%{public}s, abilityName:%{public}s, workId:%{public}s, "
+    WS_HILOGI("All condition ready, bundleName:%{public}s, abilityName:%{public}s, workId:%{public}s, "
         "groupChanged:%{public}d, minInterval:%{public}" PRId64 ", del = %{public}f",
         bundleName_.c_str(), abilityName_.c_str(), workId_.c_str(), groupChanged_, minInterval_, del);
     return true;
+}
+
+bool WorkStatus::IsConditionReady()
+{
+    auto workConditionMap = workInfo_->GetConditionMap();
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
+    bool isReady = true;
+    for (auto it : *workConditionMap) {
+        if (conditionMap_.count(it.first) <= 0) {
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&unready";
+            isReady = false;
+            break;
+        }
+        if (!IsBatteryAndNetworkReady(it.first) || !IsStorageReady(it.first) ||
+            !IsChargerReady(it.first) || !IsNapReady(it.first)) {
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&unready";
+            isReady = false;
+            break;
+        }
+        if (!IsTimerReady(it.first)) {
+            isReady = false;
+            break;
+        }
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&ready";
+    }
+    return isReady;
 }
 
 bool WorkStatus::IsBatteryAndNetworkReady(WorkCondition::Type type)
@@ -307,38 +338,53 @@ bool WorkStatus::IsChargerReady(WorkCondition::Type type)
     return true;
 }
 
-
-bool WorkStatus::IsStorageAndTimerReady(WorkCondition::Type type)
+bool WorkStatus::IsStorageReady(WorkCondition::Type type)
 {
+    if (type != WorkCondition::Type::STORAGE) {
+        return true;
+    }
     auto workConditionMap = workInfo_->GetConditionMap();
-    switch (type) {
-        case WorkCondition::Type::STORAGE: {
-            if (workConditionMap->at(type)->enumVal != WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY &&
-                workConditionMap->at(type)->enumVal != conditionMap_.at(type)->enumVal) {
-                return false;
-            }
-            break;
+    if (workConditionMap->at(type)->enumVal != WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY &&
+        workConditionMap->at(type)->enumVal != conditionMap_.at(type)->enumVal) {
+        return false;
+    }
+    return true;
+}
+
+bool WorkStatus::IsStandbyExemption()
+{
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    if (dataManager->GetDeviceSleep()) {
+        if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
+            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
+            return true;
         }
-        case WorkCondition::Type::TIMER: {
-            uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-            time_t lastTime;
-            if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-                lastTime = 0;
-            } else {
-                lastTime = s_uid_last_time_map[uid_];
-            }
-            double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
-            double oppositedel = difftime(getOppositeTime(), lastTime);
-            double del = currentdel > oppositedel ? currentdel : oppositedel;
-            WS_HILOGD("del time: %{public}lf, intervalTime: %{public}u", del, intervalTime);
-            WS_HILOGD("currentdel time: %{public}lf, oppositedel time: %{public}lf", currentdel, oppositedel);
-            if (del < intervalTime) {
-                return false;
-            }
-            break;
-        }
-        default:
-            break;
+        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
+        return false;
+    }
+    return true;
+}
+
+bool WorkStatus::IsTimerReady(WorkCondition::Type type)
+{
+    if (type != WorkCondition::Type::TIMER) {
+        return true;
+    }
+    auto workConditionMap = workInfo_->GetConditionMap();
+    uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
+    time_t lastTime;
+    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+        lastTime = 0;
+    } else {
+        lastTime = s_uid_last_time_map[uid_];
+    }
+    double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
+    double oppositedel = difftime(getOppositeTime(), lastTime);
+    double del = currentdel > oppositedel ? currentdel : oppositedel;
+    if (del < intervalTime) {
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[type] + "&unready(" +
+            to_string(static_cast<long>(del)) + ":" + to_string(intervalTime) + ")";
+        return false;
     }
     return true;
 }
@@ -532,6 +578,16 @@ void WorkStatus::Dump(string& result)
     workInfo_->Dump(result);
     result.append("}\n");
     result.append("\n");
+}
+
+void WorkStatus::ToString(WorkCondition::Type type)
+{
+    if (conditionStatus_.empty()) {
+        return;
+    }
+    IsStandbyExemption();
+    WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+        bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
 }
 } // namespace WorkScheduler
 } // namespace OHOS
