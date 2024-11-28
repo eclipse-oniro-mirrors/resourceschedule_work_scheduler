@@ -50,7 +50,7 @@ void StorageListenerTest::SetUpTestCase()
  * @tc.name: OnConditionChanged_001
  * @tc.desc: Test StorageListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IB7RQR
  */
 HWTEST_F(StorageListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
@@ -65,7 +65,7 @@ HWTEST_F(StorageListenerTest, OnConditionChanged_001, TestSize.Level1)
  * @tc.name: OnConditionChanged_002
  * @tc.desc: Test StorageListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IB7RQR
  */
 HWTEST_F(StorageListenerTest, OnConditionChanged_002, TestSize.Level1)
 {
@@ -82,7 +82,7 @@ HWTEST_F(StorageListenerTest, OnConditionChanged_002, TestSize.Level1)
  * @tc.name: OnConditionChanged_003
  * @tc.desc: Test StorageListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IB7RQR
  */
 HWTEST_F(StorageListenerTest, OnConditionChanged_003, TestSize.Level1)
 {
@@ -99,7 +99,7 @@ HWTEST_F(StorageListenerTest, OnConditionChanged_003, TestSize.Level1)
  * @tc.name: OnConditionChanged_004
  * @tc.desc: Test StorageListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IB7RQR
  */
 HWTEST_F(StorageListenerTest, OnConditionChanged_004, TestSize.Level1)
 {

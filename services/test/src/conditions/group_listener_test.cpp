@@ -54,7 +54,7 @@ void TimerListenerTest::SetUpTestCase()
  * @tc.name: OnConditionChanged_001
  * @tc.desc: Test TimerListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IB7RQR
  */
 HWTEST_F(TimerListenerTest, OnConditionChanged_001, TestSize.Level1)
 {

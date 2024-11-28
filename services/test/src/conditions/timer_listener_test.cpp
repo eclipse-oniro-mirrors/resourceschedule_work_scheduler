@@ -54,7 +54,7 @@ void GroupListenerTest::SetUpTestCase()
  * @tc.name: OnConditionChanged_001
  * @tc.desc: Test GroupListener OnConditionChanged.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IB7RQR
  */
 HWTEST_F(GroupListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
