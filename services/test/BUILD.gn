@@ -42,8 +42,11 @@ ohos_unittest("WorkScheduleServiceTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
+    "src/conditions/group_listener_test.cpp",
     "src/conditions/network_listener_test.cpp",
     "src/conditions/screen_listener_test.cpp",
+    "src/conditions/storage_listener_test.cpp",
+    "src/conditions/timer_listener_test.cpp",
     "src/event_publisher_test.cpp",
     "src/policy/app_data_clear_listener_test.cpp",
     "src/policy/cpu_policy_test.cpp",
