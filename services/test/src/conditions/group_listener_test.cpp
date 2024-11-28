@@ -28,38 +28,43 @@ namespace WorkScheduler {
 
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 
-class TimerListenerTest : public testing::Test {
+class GroupListenerTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase() {};
     void SetUp() {};
     void TearDown() {};
     static std::shared_ptr<WorkQueueManager> workQueueManager_;
-    static std::shared_ptr<TimerListener> timerListener_;
+    static std::shared_ptr<GroupListener> groupListener_;
 };
 
-std::shared_ptr<WorkQueueManager> TimerListenerTest::workQueueManager_ = nullptr;
-std::shared_ptr<TimerListener> TimerListenerTest::timerListener_ = nullptr;
+std::shared_ptr<WorkQueueManager> GroupListenerTest::workQueueManager_ = nullptr;
+std::shared_ptr<GroupListener> GroupListenerTest::groupListener_ = nullptr;
 
-void TimerListenerTest::SetUpTestCase()
+void GroupListenerTest::SetUpTestCase()
 {
     std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedulerService>();
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME,
         AppExecFwk::ThreadMode::FFRT);
-    timerListener_ = std::make_shared<TimerListener>(workQueueManager_);
+    groupListener_ = std::make_shared<GroupListener>(workQueueManager_);
 }
 
 /**
  * @tc.name: OnConditionChanged_001
- * @tc.desc: Test TimerListener OnConditionChanged.
+ * @tc.desc: Test GroupListener OnConditionChanged.
  * @tc.type: FUNC
  * @tc.require: IB7RQR
  */
-HWTEST_F(TimerListenerTest, OnConditionChanged_001, TestSize.Level1)
+HWTEST_F(GroupListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
-    timerListener_->Start();
-    bool ret = timerListener_->Stop();
+    groupListener_->Start();
+    int32_t newGroup = 10;
+    int32_t userId = 100;
+    std::string bundleName = "com.ohos.sceneboard";
+    workQueueManager_->OnConditionChanged(WorkCondition::Type::GROUP,
+        std::make_shared<DetectorValue>(newGroup, userId, true, bundleName));
+    bool ret = groupListener_->Stop();
     EXPECT_TRUE(ret);
 }
 }
