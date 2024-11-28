@@ -355,7 +355,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int32_t runningCount)
 {
     if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1 &&
-        wss_.lock()->IsExemptionBundle(topWork->bundleName_)) {
+        topWork->bundleName_ == "com.huawei.hmos.hiviewx") {
         return true;
     }
     if (DelayedSingleton<DataManager>::GetInstance()->GetDeviceSleep() &&
