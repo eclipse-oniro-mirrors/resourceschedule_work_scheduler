@@ -65,6 +65,10 @@ napi_value AttachWorkSchedulerExtensionContext(napi_env env, void *value, void *
         return nullptr;
     }
     napi_value object = CreateJsWorkSchedulerExtensionContext(env, ptr);
+    if (AbilityRuntime::JsRuntime::LoadSystemModuleByEngine(env,
+        "application.WorkSchedulerExtensionContext", &object, 1) == nullptr) {
+        return nullptr;
+    }
     napi_value contextObj = AbilityRuntime::JsRuntime::LoadSystemModuleByEngine(env,
         "application.WorkSchedulerExtensionContext", &object, 1)->GetNapiValue();
     napi_coerce_to_native_binding_object(env, contextObj, DetachCallbackFunc,
