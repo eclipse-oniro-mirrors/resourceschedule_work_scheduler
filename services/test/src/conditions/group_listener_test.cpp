@@ -23,7 +23,7 @@
 using namespace OHOS::AppExecFwk;
 using namespace testing::ext;
 
-using namespace OHOS {
+namespace OHOS {
 namespace WorkScheduler {
 
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
@@ -47,7 +47,7 @@ void GroupListenerTest::SetUpTestCase()
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME,
         AppExecFwk::ThreadMode::FFRT);
-    groupListener_ = std::make_shared<GroupListener>(workQueueManager_);
+    groupListener_ = std::make_shared<GroupListener>(workQueueManager_, eventRunner_);
 }
 
 /**

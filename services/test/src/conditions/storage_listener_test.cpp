@@ -73,6 +73,7 @@ HWTEST_F(StorageListenerTest, OnConditionChanged_002, TestSize.Level1)
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW);
+    data.SetWant(want);
     storageListener_->commonEventSubscriber->OnReceiveEvent(data);
     bool ret = storageListener_->Stop();
     EXPECT_TRUE(ret);
@@ -90,6 +91,7 @@ HWTEST_F(StorageListenerTest, OnConditionChanged_003, TestSize.Level1)
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_OK);
+    data.SetWant(want);
     storageListener_->commonEventSubscriber->OnReceiveEvent(data);
     bool ret = storageListener_->Stop();
     EXPECT_TRUE(ret);
@@ -107,6 +109,7 @@ HWTEST_F(StorageListenerTest, OnConditionChanged_004, TestSize.Level1)
     EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_FULL);
+    data.SetWant(want);
     storageListener_->commonEventSubscriber->OnReceiveEvent(data);
     bool ret = storageListener_->Stop();
     EXPECT_TRUE(ret);

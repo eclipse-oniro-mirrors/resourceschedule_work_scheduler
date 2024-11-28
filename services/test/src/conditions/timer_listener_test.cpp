@@ -23,7 +23,7 @@
 using namespace OHOS::AppExecFwk;
 using namespace testing::ext;
 
-using namespace OHOS {
+namespace OHOS {
 namespace WorkScheduler {
 
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
@@ -47,7 +47,7 @@ void TimerListenerTest::SetUpTestCase()
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME,
         AppExecFwk::ThreadMode::FFRT);
-    timerListener_ = std::make_shared<TimerListener>(workQueueManager_);
+    timerListener_ = std::make_shared<TimerListener>(workQueueManager_, eventRunner_);
 }
 
 /**
@@ -59,11 +59,6 @@ void TimerListenerTest::SetUpTestCase()
 HWTEST_F(TimerListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
     timerListener_->Start();
-    int32_t newGroup = 10;
-    int32_t userId = 100;
-    std::string bundleName = "com.ohos.sceneboard";
-    workQueueManager_->OnConditionChanged(WorkCondition::Type::GROUP,
-        std::make_shared<DetectorValue>(newGroup, userId, true, bundleName));
     bool ret = timerListener_->Stop();
     EXPECT_TRUE(ret);
 }
