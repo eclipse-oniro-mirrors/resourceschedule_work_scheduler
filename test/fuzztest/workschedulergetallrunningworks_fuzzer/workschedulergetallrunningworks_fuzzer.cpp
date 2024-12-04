@@ -17,6 +17,7 @@
 
 #include "iwork_sched_service_ipc_interface_code.h"
 #include "work_scheduler_service.h"
+#include "work_policy_manager.h"
 
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
@@ -29,6 +30,26 @@ namespace WorkScheduler {
     bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
     {
         return true;
+    }
+
+    void AddWork()
+    {
+        WorkInfo workInfo;
+        int32_t workId = 1;
+        int32_t uid = 100;
+        workInfo.SetWorkId(workId);
+        workInfo.SetElement("bundle_name", "ability_name");
+        workInfo.RefreshUid(uid);
+        workInfo.RequestDeepIdle(true);
+        std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+        workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+        workStatus->userId_ = 100;
+        workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
+        workSchedulerService_->workQueueManager_->AddWork(workStatus);
+        workSchedulerService_->workPolicyManager_->RemoveWork(workStatus, uid);
+        workSchedulerService_->workQueueManager_->RemoveWork(workStatus);
+        workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
+        workSchedulerService_->workPolicyManager_->GetDeepIdleWorks();
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
@@ -46,6 +67,13 @@ namespace WorkScheduler {
         if (!workSchedulerService_->ready_) {
             workSchedulerService_->ready_ = true;
         }
+        if (workSchedulerService_->workPolicyManager_ == nullptr) {
+            workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
+        }
+        if (workSchedulerService_->workQueueManager_ == nullptr) {
+            workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+        }
+        AddWork();
         workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
         workSchedulerService_->OnStop();
         return true;
