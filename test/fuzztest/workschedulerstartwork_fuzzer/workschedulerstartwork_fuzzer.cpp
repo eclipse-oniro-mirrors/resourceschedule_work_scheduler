@@ -31,6 +31,9 @@
 #include "battery_info.h"
 #include "conditions/screen_listener.h"
 #include "work_queue_manager.h"
+#include "conditions/network_listener.h"
+#include "conditions/storage_listener.h"
+#include "net_supplier_info.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
@@ -38,6 +41,13 @@ namespace OHOS {
 namespace WorkScheduler {
     const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
+    const uint32_t allowType = 8;
+    const int32_t DEFAULT_VALUE = -1;
+    const int32_t BEARER_CELLULAR = 0;
+    const int32_t BEARER_WIFI = 1;
+    const int32_t BEARER_BLUETOOTH = 2;
+    const int32_t BEARER_ETHERNET = 3;
+    const int32_t BEARER_WIFI_AWARE = 5;
 
     bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
     {
@@ -268,26 +278,84 @@ namespace WorkScheduler {
 
     void OnScreenListener()
     {
-        std::shared_ptr<ScreenListener> screenListener = std::make_shared<ScreenListener>(
-            workSchedulerService_->workQueueManager_, workSchedulerService_);
+        ScreenListener screenListener(workSchedulerService_->workQueueManager_, workSchedulerService_);
         
-        screenListener->Start();
+        screenListener.Start();
         EventFwk::CommonEventData data;
-        screenListener->commonEventSubscriber->OnReceiveEvent(data);
+        screenListener.commonEventSubscriber->OnReceiveEvent(data);
 
         EventFwk::Want want;
-        want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
-        data.SetWant(want);
-        screenListener->commonEventSubscriber->OnReceiveEvent(data);
-
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
         data.SetWant(want);
-        screenListener->commonEventSubscriber->OnReceiveEvent(data);
+        screenListener.commonEventSubscriber->OnReceiveEvent(data);
 
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
         data.SetWant(want);
-        screenListener->commonEventSubscriber->OnReceiveEvent(data);
-        screenListener->Stop();
+        screenListener.commonEventSubscriber->OnReceiveEvent(data);
+        screenListener.Stop();
+    }
+
+    void OnStorageListener()
+    {
+        StorageListener storageListener(workSchedulerService_->workQueueManager_);
+        storageListener.Start();
+
+        EventFwk::CommonEventData data;
+        EventFwk::Want want;
+        storageListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW);
+        data.SetWant(want);
+        storageListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_OK);
+        data.SetWant(want);
+        storageListener.commonEventSubscriber->OnReceiveEvent(data);
+        storageListener.Stop();
+    }
+
+    void OnNetworkListener()
+    {
+        NetworkListener networkListener(workSchedulerService_->workQueueManager_);
+        networkListener.Start();
+        EventFwk::CommonEventData data;
+        EventFwk::Want want;
+        data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
+        want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
+        data.SetWant(want);
+        EventFwk::CommonEventManager::PublishCommonEvent(data);
+        networkListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetParam("NetType", BEARER_CELLULAR);
+        data.SetWant(want);
+        EventFwk::CommonEventManager::PublishCommonEvent(data);
+        networkListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetParam("NetType", BEARER_WIFI);
+        data.SetWant(want);
+        EventFwk::CommonEventManager::PublishCommonEvent(data);
+        networkListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetParam("NetType", BEARER_BLUETOOTH);
+        data.SetWant(want);
+        EventFwk::CommonEventManager::PublishCommonEvent(data);
+        networkListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetParam("NetType", BEARER_ETHERNET);
+        data.SetWant(want);
+        EventFwk::CommonEventManager::PublishCommonEvent(data);
+        networkListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetParam("NetType", BEARER_WIFI_AWARE);
+        data.SetWant(want);
+        EventFwk::CommonEventManager::PublishCommonEvent(data);
+        networkListener.commonEventSubscriber->OnReceiveEvent(data);
+
+        want.SetParam("NetType", DEFAULT_VALUE);
+        data.SetWant(want);
+        EventFwk::CommonEventManager::PublishCommonEvent(data);
+        networkListener.commonEventSubscriber->OnReceiveEvent(data);
+        networkListener.Stop();
     }
 
     void OnReceiveEvent()
@@ -296,6 +364,8 @@ namespace WorkScheduler {
         OnBatteryStatusListener();
         OnChargerListener();
         OnScreenListener();
+        OnStorageListener();
+        OnNetworkListener();
     }
 
     void TriggerWork(WorkInfo &workInfo)
@@ -351,7 +421,7 @@ namespace WorkScheduler {
         workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, false);
         workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, true);
         workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(false, true);
-        workSchedulerService_->standbyStateObserver_->OnAllowListChanged(0, "bundlename", 0, true);
+        workSchedulerService_->standbyStateObserver_->OnAllowListChanged(0, "bundlename", allowType, true);
     }
 
     void OnWorkBundleGroupChange()
