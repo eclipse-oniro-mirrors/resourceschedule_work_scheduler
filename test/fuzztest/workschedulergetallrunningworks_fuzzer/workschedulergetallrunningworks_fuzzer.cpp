@@ -37,13 +37,14 @@ namespace WorkScheduler {
         WorkInfo workInfo = WorkInfo();
         int32_t workId = 1;
         int32_t uid = 100;
+        int32_t userId = 100;
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name", "ability_name");
         workInfo.RefreshUid(uid);
         workInfo.RequestDeepIdle(true);
         std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
         workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-        workStatus->userId_ = 100;
+        workStatus->userId_ = userId;
         workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
         workSchedulerService_->workQueueManager_->AddWork(workStatus);
         workSchedulerService_->workPolicyManager_->RemoveWork(workStatus, uid);
