@@ -27,11 +27,6 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 namespace OHOS {
 namespace WorkScheduler {
     const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
-    const std::string APP1 = "com.droi.tong";
-    const std::string APP2 = "com.droi.iapps";
-    const std::string APP3 = "com.easy.abroadHarmony.temp";
-    const std::string APP4 = "com.easy.hmos.abroad";
-    const std::string APP5 = "test";
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 
     bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
@@ -50,10 +45,10 @@ namespace WorkScheduler {
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::SET_WORK_SCHEDULER_CONFIG);
         std::string configData = "{\"active_group_whitelist\":["
-                                        "\"com.droi.tong\","
-                                        "\"com.droi.iapps\","
-                                        "\"com.easy.abroadHarmony.temp\","
-                                        "\"com.easy.hmos.abroad\""
+                                        "\"test1\","
+                                        "\"test2\","
+                                        "\"test3\","
+                                        "\"test4\""
                                     "]"
                                 "}";
         if (!dataMessageParcel.WriteString(configData)) {
