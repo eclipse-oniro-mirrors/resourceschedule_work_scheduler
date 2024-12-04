@@ -34,14 +34,14 @@ namespace WorkScheduler {
 
     void AddWork()
     {
-        WorkInfo workInfo;
+        WorkInfo workInfo = WorkInfo();
         int32_t workId = 1;
         int32_t uid = 100;
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name", "ability_name");
         workInfo.RefreshUid(uid);
         workInfo.RequestDeepIdle(true);
-        std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+        std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
         workStatus->MarkStatus(WorkStatus::Status::RUNNING);
         workStatus->userId_ = 100;
         workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);

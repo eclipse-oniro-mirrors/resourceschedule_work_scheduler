@@ -41,6 +41,7 @@ namespace OHOS {
 namespace WorkScheduler {
     const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
+    const uint32_t allowType = 8;
     const int32_t DEFAULT_VALUE = -1;
     const int32_t BEARER_CELLULAR = 0;
     const int32_t BEARER_WIFI = 1;
@@ -354,6 +355,7 @@ namespace WorkScheduler {
         data.SetWant(want);
         EventFwk::CommonEventManager::PublishCommonEvent(data);
         networkListener.commonEventSubscriber->OnReceiveEvent(data);
+        networkListener.Stop();
     }
 
     void OnReceiveEvent()
@@ -419,7 +421,7 @@ namespace WorkScheduler {
         workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, false);
         workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, true);
         workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(false, true);
-        workSchedulerService_->standbyStateObserver_->OnAllowListChanged(0, "bundlename", 0, true);
+        workSchedulerService_->standbyStateObserver_->OnAllowListChanged(0, "bundlename", allowType, true);
     }
 
     void OnWorkBundleGroupChange()
