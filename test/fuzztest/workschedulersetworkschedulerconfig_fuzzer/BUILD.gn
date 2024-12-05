@@ -25,7 +25,7 @@ config("worksched_private_config") {
 }
 
 ##############################fuzztest##########################################
-ohos_fuzztest("WorkSchedulerSetWorkSchedulerConfigTest") {
+ohos_fuzztest("WorkSchedulerSetWorkSchedulerConfigFuzzTest") {
   module_out_path = module_output_path
   fuzz_config_file = "${worksched_test_path}/fuzztest/workschedulersetworkschedulerconfig_fuzzer"
 
@@ -106,7 +106,7 @@ group("fuzztest") {
   deps = []
   deps += [
     # deps file
-    ":WorkSchedulerSetWorkSchedulerConfigTest",
+    ":WorkSchedulerSetWorkSchedulerConfigFuzzTest",
   ]
 }
 ###############################################################################
