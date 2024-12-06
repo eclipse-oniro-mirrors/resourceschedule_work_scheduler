@@ -51,7 +51,7 @@ namespace WorkScheduler {
         workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
         workSchedulerService_->workQueueManager_->AddWork(workStatus);
         std::vector<std::shared_ptr<WorkStatus>> readyWorkVector = {};
-        readyWorkVector.emplace_back(WorkStatus);
+        readyWorkVector.emplace_back(workStatus);
         std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork =
             std::make_shared<std::vector<std::shared_ptr<WorkStatus>>>(readyWorkVector);
         workSchedulerService_->workPolicyManager_->OnConditionReady(readyWork);
