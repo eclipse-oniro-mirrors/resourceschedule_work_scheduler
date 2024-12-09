@@ -24,11 +24,11 @@ using namespace testing::ext;
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
-const std::string APP1 = "com.droi.tong";
-const std::string APP2 = "com.droi.iapps";
-const std::string APP3 = "com.easy.abroadHarmony.temp";
-const std::string APP4 = "com.easy.hmos.abroad";
-const std::string APP5 = "test";
+const std::string APP1 = "test1";
+const std::string APP2 = "test2";
+const std::string APP3 = "test3";
+const std::string APP4 = "test4";
+const std::string APP5 = "test5";
 }
  
 class WorkSchedConfigTest : public testing::Test {
@@ -51,10 +51,10 @@ HWTEST_F(WorkSchedConfigTest, InitActiveGroupWhitelist_001, TestSize.Level1)
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->InitActiveGroupWhitelist(configData);
     EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist(APP1));
     configData = "{\"active_group_whitelist\":["
-                        "\"com.droi.tong\","
-                        "\"com.droi.iapps\","
-                        "\"com.easy.abroadHarmony.temp\","
-                        "\"com.easy.hmos.abroad\""
+                        "\"test1\","
+                        "\"test2\","
+                        "\"test3\","
+                        "\"test4\""
                     "]"
                 "}";
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->InitActiveGroupWhitelist(configData);
