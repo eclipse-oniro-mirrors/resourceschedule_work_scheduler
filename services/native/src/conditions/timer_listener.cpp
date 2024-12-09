@@ -47,7 +47,7 @@ bool TimerListener::Start()
     };
     auto timerInfo = std::make_shared<TimerInfo>();
     uint8_t type = static_cast<uint8_t>(timerInfo->TIMER_TYPE_EXACT) |
-        static_cast<uint8_t>(timerInfo->TIMER_TYPE_WAKEUP) | static_cast<uint8_t>(timerInfo->TIMER_TYPE_REALTIME);
+        static_cast<uint8_t>(timerInfo->TIMER_TYPE_REALTIME);
     timerInfo->SetType(static_cast<int>(type));
     timerInfo->SetRepeat(true);
     timerInfo->SetInterval(time);
