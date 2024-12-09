@@ -18,6 +18,7 @@
 #include "iwork_sched_service_ipc_interface_code.h"
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
+#include "work_queue_manager.h"
 
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
@@ -51,6 +52,7 @@ namespace WorkScheduler {
         workSchedulerService_->workQueueManager_->RemoveWork(workStatus);
         workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
         workSchedulerService_->workPolicyManager_->GetDeepIdleWorks();
+        workSchedulerService_->workPolicyManager_->GetAllRunningWorks();
     }
 
     bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
