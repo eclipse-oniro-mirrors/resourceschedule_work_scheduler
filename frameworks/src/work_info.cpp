@@ -562,14 +562,8 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
         this->saId_ = value["saId"].asInt();
         this->residentSa_ = value["residentSa"].asBool();
     }
-    if (!IsSA()) {
-        if (!value.isMember("bundleName") || !value["bundleName"].isString() ||
-            !value.isMember("abilityName") || !value["abilityName"].isString()) {
-            WS_HILOGE("workinfo json is invalid, bundleName or abilityName is missing or not string");
-            return false;
-        }
-        this->bundleName_ = value["bundleName"].asString();
-        this->abilityName_ = value["abilityName"].asString();
+    if (!ParseElementFromJson(value)) {
+        return false;
     }
     if (IsHasBoolProp(value, "persisted")) {
         this->persisted_ = value["persisted"].asBool();
@@ -594,6 +588,20 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
         return true;
     }
     ParseParametersFromJsonStr(value);
+    return true;
+}
+
+bool WorkInfo::ParseElementFromJson(const Json::Value &value)
+{
+    if (!IsSA()) {
+        if (!value.isMember("bundleName") || !value["bundleName"].isString() ||
+            !value.isMember("abilityName") || !value["abilityName"].isString()) {
+            WS_HILOGE("workinfo json is invalid, bundleName or abilityName is missing or not string");
+            return false;
+        }
+        this->bundleName_ = value["bundleName"].asString();
+        this->abilityName_ = value["abilityName"].asString();
+    }
     return true;
 }
 

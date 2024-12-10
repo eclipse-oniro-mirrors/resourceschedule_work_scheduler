@@ -140,6 +140,12 @@ public:
      */
     void Dump(std::string& result);
     /**
+     * @brief Dump Condition.
+     *
+     * @param result The result.
+     */
+    void DumpCondition(std::string& result);
+    /**
      * @brief Update timer if need.
      */
     void UpdateTimerIfNeed();

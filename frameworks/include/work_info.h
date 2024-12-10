@@ -279,6 +279,13 @@ public:
      */
     bool ParseFromJson(const Json::Value &value);
     /**
+     * @brief Parse element from json.
+     *
+     * @param value The value.
+     * @return True if success,else false.
+     */
+    bool ParseElementFromJson(const Json::Value &value);
+    /**
      * @brief Set preinstalled flag.
     */
     void SetPreinstalled(bool preinstalled);

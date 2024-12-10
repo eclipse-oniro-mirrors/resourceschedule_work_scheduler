@@ -104,7 +104,7 @@ WorkStatus::~WorkStatus() {}
 
 int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condition> value)
 {
-    WS_HILOGD("Work status condition changed.");
+    conditionStatus_.clear();
     if (workInfo_->GetConditionMap()->count(type) > 0
         && type != WorkCondition::Type::TIMER
         && type != WorkCondition::Type::GROUP) {
@@ -555,6 +555,15 @@ void WorkStatus::Dump(string& result)
     result.append(string("\"paused\":") + (paused_ ? "true" : "false") + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
+    DumpCondition(result);
+    result.append("},\n\"workInfo\":\n");
+    workInfo_->Dump(result);
+    result.append("}\n");
+    result.append("\n");
+}
+
+void WorkStatus::DumpCondition(string& result)
+{
     std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
     if (conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
         result.append(string("\"networkType\":") +
@@ -591,10 +600,6 @@ void WorkStatus::Dump(string& result)
         result.append(string("\"isDeepIdle\":") +
             to_string(conditionMap_.at(WorkCondition::Type::DEEP_IDLE)->boolVal) + ",\n");
     }
-    result.append("},\n\"workInfo\":\n");
-    workInfo_->Dump(result);
-    result.append("}\n");
-    result.append("\n");
 }
 
 void WorkStatus::ToString(WorkCondition::Type type)
