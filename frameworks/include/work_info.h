@@ -324,6 +324,8 @@ public:
      * @return ResidentSa or not.
      */
     bool IsResidentSa() const;
+    bool IsSA();
+    std::string GetBriefInfo();
 
 private:
     int32_t workId_;

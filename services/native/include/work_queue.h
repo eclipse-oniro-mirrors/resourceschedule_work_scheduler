@@ -84,6 +84,13 @@ public:
      */
     std::shared_ptr<WorkStatus> Find(std::string workId);
     /**
+     * @brief Find SA.
+     *
+     * @param saId The id of sa.
+     * @return The SA of saId.
+     */
+    std::shared_ptr<WorkStatus> FindSA(int32_t saId);
+    /**
      * @brief Get size.
      *
      * @return The work list size.

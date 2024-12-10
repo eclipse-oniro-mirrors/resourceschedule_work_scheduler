@@ -71,6 +71,12 @@ public:
      */
     bool IsReady();
     /**
+     * @brief Judge state whether is ready.
+     *
+     * @return True if success,else false.
+     */
+    bool IsSAReady();
+    /**
      * @brief Judge state whether is ready status.
      *
      * @return True if success,else false.

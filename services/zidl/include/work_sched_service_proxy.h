@@ -115,6 +115,13 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) override;
+    /**
+     * @brief Stop SA.
+     *
+     * @param saId SA id.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t StopWorkForSA(int32_t saId) override;
 private:
     static inline BrokerDelegator<WorkSchedServiceProxy> delegator_;
 };

@@ -321,6 +321,10 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level0)
     workInfo.RequestRepeatCycle(timeInterval);
     res = workInfo.ParseToJsonStr();
 
+    workInfo.saId_ = 1000;
+    workInfo.residentSa_ = true;
+    res = workInfo.ParseToJsonStr();
+
     workInfo.RefreshUid(1);
     workInfo.RequestRepeatCycle(timeInterval, 3);
     AAFwk::WantParams extras;
@@ -500,6 +504,45 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson005, Function | MediumTest | Level0)
     root["abilityName"] = 1;
     res = workInfo.ParseFromJson(root);
     EXPECT_FALSE(res);
+}
+
+/**
+ * @tc.name WorkInfoTestJson006
+ * @tc.desc Set workInfo json func
+ * @tc.type FUNC
+ * @tc.require: issueI5Y6YK
+ */
+HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level0)
+{
+    using namespace OHOS::WorkScheduler;
+    WorkInfo workInfo = WorkInfo();
+    Json::Value root;
+    root.clear();
+    root["workId"] = 1;
+    root["bundleName"] = "bundleName";
+    root["abilityName"] = "abilityName";
+    root["saId"] = "1";
+    root["residentSa"] = true;
+    bool res = workInfo.ParseFromJson(root);
+    EXPECT_TRUE(res);
+
+    root.clear();
+    root["workId"] = 1;
+    root["bundleName"] = "bundleName";
+    root["abilityName"] = "abilityName";
+    root["saId"] = 1;
+    root["residentSa"] = "true";
+    res = workInfo.ParseFromJson(root);
+    EXPECT_TRUE(res);
+
+    root.clear();
+    root["workId"] = 1;
+    root["bundleName"] = "bundleName";
+    root["abilityName"] = "abilityName";
+    root["saId"] = 1;
+    root["residentSa"] = true;
+    res = workInfo.ParseFromJson(root);
+    EXPECT_TRUE(res);
 }
 
 /**

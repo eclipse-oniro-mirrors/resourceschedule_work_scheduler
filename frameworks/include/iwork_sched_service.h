@@ -115,6 +115,14 @@ public:
      */
     virtual int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) = 0;
 
+    /**
+     * @brief Stop SA.
+     *
+     * @param saId SA id.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    virtual int32_t StopWorkForSA(int32_t saId) = 0;
+
     DECLARE_INTERFACE_DESCRIPTOR(u"ohos.workscheduler.iworkschedservice");
 };
 } // namespace WorkScheduler

@@ -105,24 +105,16 @@ int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, 
 {
     switch (code) {
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::START_WORK): {
-            int32_t ret = StartWorkStub(data);
-            reply.WriteInt32(ret);
-            return ret;
+            return StartWorkStub(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK): {
-            int32_t ret = StopWorkStub(data);
-            reply.WriteInt32(ret);
-            return ret;
+            return StopWorkStub(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CANCEL_WORK): {
-            int32_t ret = StopAndCancelWorkStub(data);
-            reply.WriteInt32(ret);
-            return ret;
+            return StopAndCancelWorkStub(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_AND_CLEAR_WORKS): {
-            int32_t ret = StopAndClearWorksStub(data);
-            reply.WriteInt32(ret);
-            return ret;
+            return StopAndClearWorksStub(data, reply);
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::IS_LAST_WORK_TIMEOUT): {
             return HandleIsLastWorkTimeOutRequest(data, reply);
@@ -144,6 +136,9 @@ int32_t WorkSchedServiceStub::HandleRequest(uint32_t code, MessageParcel &data, 
         }
         case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::SET_WORK_SCHEDULER_CONFIG): {
             return HandleSetWorkSchedulerConfig(data, reply);
+        }
+        case static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK_FOR_SA): {
+            return StopWorkForSAStub(data, reply);
         }
         default: {
             WS_HILOGD("OnRemoteRequest switch default, code: %{public}u", code);
@@ -169,39 +164,59 @@ int32_t WorkSchedServiceStub::OnRemoteRequest(uint32_t code, MessageParcel &data
     return result;
 }
 
-int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::StartWorkStub(MessageParcel& data, MessageParcel& reply)
 {
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
         return E_PARCEL_OPERATION_FAILED;
     }
-    return StartWork(*workInfo);
+    int32_t ret = StartWork(*workInfo);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("StartWorkStub failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return ret;
 }
 
-int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::StopWorkStub(MessageParcel& data, MessageParcel& reply)
 {
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
         return E_PARCEL_OPERATION_FAILED;
     }
-    return StopWork(*workInfo);
+    int32_t ret = StopWork(*workInfo);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("StopWorkStub failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return ret;
 }
 
-int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::StopAndCancelWorkStub(MessageParcel& data, MessageParcel& reply)
 {
     sptr<WorkInfo> workInfo = data.ReadStrongParcelable<WorkInfo>();
     if (workInfo == nullptr) {
         WS_HILOGD("workInfo is nullptr");
         return E_PARCEL_OPERATION_FAILED;
     }
-    return StopAndCancelWork(*workInfo);
+    int32_t ret = StopAndCancelWork(*workInfo);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("StopAndCancelWorkStub failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return ret;
 }
 
-int32_t WorkSchedServiceStub::StopAndClearWorksStub(MessageParcel& data)
+int32_t WorkSchedServiceStub::StopAndClearWorksStub(MessageParcel& data, MessageParcel& reply)
 {
-    return StopAndClearWorks();
+    int32_t ret = StopAndClearWorks();
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("StopAndClearWorksStub failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return ret;
 }
 
 int32_t WorkSchedServiceStub::IsLastWorkTimeoutStub(MessageParcel& data, bool &result)
@@ -252,6 +267,21 @@ int32_t WorkSchedServiceStub::ResumePausedWorksStub(MessageParcel& data, Message
     int32_t ret = ResumePausedWorks(uid);
     if (!reply.WriteInt32(ret)) {
         WS_HILOGE("ResumePausedWorksStub failed, write result error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return ret;
+}
+
+int32_t WorkSchedServiceStub::StopWorkForSAStub(MessageParcel& data, MessageParcel& reply)
+{
+    int32_t saId = -1;
+    if (!data.ReadInt32(saId)) {
+        WS_HILOGE("StopWorkForSAStub failed, read saId error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    int32_t ret = StopWorkForSA(saId);
+    if (!reply.WriteInt32(ret)) {
+        WS_HILOGE("StopWorkForSAStub failed, write result error");
         return E_PARCEL_OPERATION_FAILED;
     }
     return ret;

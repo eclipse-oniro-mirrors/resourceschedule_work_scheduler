@@ -115,6 +115,12 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
             conditionMap_.emplace(type, value);
         }
     }
+    if (workInfo_->IsSA()) {
+        if (IsSAReady()) {
+            MarkStatus(Status::CONDITION_READY);
+        }
+        return ERR_OK;
+    }
     groupChanged_ = false;
     if (type == WorkCondition::Type::GROUP && value && value->boolVal) {
         WS_HILOGD("Group changed, bundleName: %{public}s.", value->strVal.c_str());
@@ -255,6 +261,16 @@ bool WorkStatus::IsReady()
     return true;
 }
 
+bool WorkStatus::IsSAReady()
+{
+    conditionStatus_.clear();
+    if (!IsConditionReady()) {
+        return false;
+    }
+    WS_HILOGI("All condition ready, saId:%{public}d, workId:%{public}s", workInfo_->GetSaId(), workId_.c_str());
+    return true;
+}
+
 bool WorkStatus::IsConditionReady()
 {
     auto workConditionMap = workInfo_->GetConditionMap();
@@ -355,12 +371,7 @@ bool WorkStatus::IsStandbyExemption()
 {
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->GetDeviceSleep()) {
-        if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
-            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
-            return true;
-        }
-        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
-        return false;
+        return dataManager->IsInDeviceStandyWhitelist(bundleName_);
     }
     return true;
 }
@@ -533,7 +544,13 @@ void WorkStatus::Dump(string& result)
 {
     result.append("{\n");
     result.append(string("\"workId\":") + workId_ + ",\n");
-    result.append(string("\"bundleName\":") + bundleName_ + ",\n");
+    result.append(string("\"isSA\":") + (workInfo_->IsSA() ? "true" : "false") + ",\n");
+    if (workInfo_->IsSA()) {
+        result.append(string("\"SAId\":") + to_string(workInfo_->GetSaId()) + ",\n");
+        result.append(string("\"resident\":") + (workInfo_->IsResidentSa() ? "true" : "false") + ",\n");
+    } else {
+        result.append(string("\"bundleName\":") + bundleName_ + ",\n");
+    }
     result.append(string("\"status\":") + to_string(currentStatus_) + ",\n");
     result.append(string("\"paused\":") + (paused_ ? "true" : "false") + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
@@ -582,12 +599,24 @@ void WorkStatus::Dump(string& result)
 
 void WorkStatus::ToString(WorkCondition::Type type)
 {
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    if (dataManager->GetDeviceSleep()) {
+        if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
+        }
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
+    }
     if (conditionStatus_.empty()) {
+        WS_HILOGE("eventType:%{public}s, conditionStatus is empty", COND_TYPE_STRING_MAP[type].c_str());
         return;
     }
-    IsStandbyExemption();
-    WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
-        bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
+    if (workInfo_->IsSA()) {
+        WS_HILOGI("eventType:%{public}s,SAStatus:%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+            workId_.c_str(), conditionStatus_.c_str());
+    } else {
+        WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+            bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -462,14 +462,19 @@ std::string WorkInfo::ParseToJsonStr()
         root["uid"] = uid_;
     }
     root["workId"] = workId_;
-    root["bundleName"] = bundleName_;
-    root["abilityName"] = abilityName_;
+    if (IsSA()) {
+        root["saId"] = saId_;
+        root["resident"] = IsResidentSa() ? "true" : "false";
+    } else {
+        root["bundleName"] = bundleName_;
+        root["abilityName"] = abilityName_;
+        root["callBySystemApp"] = callBySystemApp_;
+        root["appIndex"] = appIndex_;
+        root["extension"] = extension_;
+    }
     root["persisted"] = persisted_;
     root["preinstalled"] = preinstalled_;
     root["uriKey"] = uriKey_;
-    root["callBySystemApp"] = callBySystemApp_;
-    root["appIndex"] = appIndex_;
-    root["extension"] = extension_;
     ParseConditionToJsonStr(root);
     if (extras_) {
         Json::Value extras;
@@ -548,20 +553,24 @@ bool WorkInfo::ParseFromJson(const Json::Value &value)
         WS_HILOGE("workinfo json is empty");
         return false;
     }
-    if ((value.isMember("saId") && value["saId"].isInt()) && IsHasBoolProp(value, "residentSa")) {
-        this->saId_ = value["saId"].asInt();
-        this->residentSa_ = value["residentSa"].asBool();
-        return true;
-    }
-    if (!value.isMember("workId") || !value["workId"].isInt() ||
-        !value.isMember("bundleName") || !value["bundleName"].isString() ||
-        !value.isMember("abilityName") || !value["abilityName"].isString()) {
-        WS_HILOGE("workinfo json is invalid");
+    if (!value.isMember("workId") || !value["workId"].isInt()) {
+        WS_HILOGE("workinfo json is invalid, workId is missing or not int");
         return false;
     }
     this->workId_ = value["workId"].asInt();
-    this->bundleName_ = value["bundleName"].asString();
-    this->abilityName_ = value["abilityName"].asString();
+    if ((value.isMember("saId") && value["saId"].isInt()) && IsHasBoolProp(value, "residentSa")) {
+        this->saId_ = value["saId"].asInt();
+        this->residentSa_ = value["residentSa"].asBool();
+    }
+    if (!IsSA()) {
+        if (!value.isMember("bundleName") || !value["bundleName"].isString() ||
+            !value.isMember("abilityName") || !value["abilityName"].isString()) {
+            WS_HILOGE("workinfo json is invalid, bundleName or abilityName is missing or not string");
+            return false;
+        }
+        this->bundleName_ = value["bundleName"].asString();
+        this->abilityName_ = value["abilityName"].asString();
+    }
     if (IsHasBoolProp(value, "persisted")) {
         this->persisted_ = value["persisted"].asBool();
     }
@@ -681,6 +690,20 @@ void WorkInfo::RefreshSaId(int32_t saId)
 bool WorkInfo::IsResidentSa() const
 {
     return residentSa_;
+}
+
+bool WorkInfo::IsSA()
+{
+    return saId_ != INVALID_VALUE;
+}
+
+std::string WorkInfo::GetBriefInfo()
+{
+    if (IsSA()) {
+        return std::to_string(GetSaId()) + "_" + std::to_string(GetWorkId());
+    } else {
+        return GetBundleName() + "_" + std::to_string(GetWorkId());
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS
