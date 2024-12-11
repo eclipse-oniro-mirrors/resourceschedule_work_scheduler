@@ -212,5 +212,16 @@ ErrCode WorkSchedulerSrvClient::SetWorkSchedulerConfig(const std::string &config
     }
     return iWorkSchedService_->SetWorkSchedulerConfig(configData, sourceType);
 }
+
+ErrCode WorkSchedulerSrvClient::StopWorkForSA(int32_t saId)
+{
+    WS_HILOGD("Stop SA");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->StopWorkForSA(saId);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

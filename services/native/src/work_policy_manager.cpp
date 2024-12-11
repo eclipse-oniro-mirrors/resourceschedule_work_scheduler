@@ -188,6 +188,16 @@ shared_ptr<WorkStatus> WorkPolicyManager::FindWorkStatus(WorkInfo& workInfo, int
     return nullptr;
 }
 
+shared_ptr<WorkStatus> WorkPolicyManager::FindSA(int32_t saId, int32_t uid)
+{
+    WS_HILOGD("Find SA, saId:%{public}d, uid:%{public}d", saId, uid);
+    std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
+    if (uidQueueMap_.count(uid) > 0) {
+        return uidQueueMap_.at(uid)->FindSA(saId);
+    }
+    return nullptr;
+}
+
 void WorkPolicyManager::RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatus, int32_t uid)
 {
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
@@ -391,7 +401,11 @@ void WorkPolicyManager::CheckWorkToRun()
     int32_t allowRunningCount = GetMaxRunningCount(policyName);
     if (runningCount < allowRunningCount || IsSpecialScene(topWork, runningCount)) {
         WS_HILOGD("running count < max running count");
-        RealStartWork(topWork);
+        if (topWork->workInfo_->IsSA()) {
+            RealStartSA(topWork);
+        } else {
+            RealStartWork(topWork);
+        }
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
         WS_HILOGD("trigger delay: %{public}d", DELAY_TIME_LONG);
@@ -419,6 +433,32 @@ std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkToRun()
 {
     shared_ptr<WorkStatus> topWork = conditionReadyQueue_->GetWorkToRunByPriority();
     return topWork;
+}
+
+void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
+{
+    WS_HILOGI("RealStartSA %{public}d workId:%{public}s", topWork->workInfo_->GetSaId(), topWork->workId_.c_str());
+    if (wss_.expired()) {
+        WS_HILOGE("wss_ expired");
+        return;
+    }
+    wss_.lock()->UpdateWorkBeforeRealStart(topWork);
+    RemoveFromReadyQueue(topWork);
+    bool ret = wss_.lock()->LoadSa(topWork);
+    if (ret) {
+        WS_HILOGI("startSA %{public}d workId:%{public}s success",
+            topWork->workInfo_->GetSaId(), topWork->workId_.c_str());
+        topWork->UpdateUidLastTimeMap();
+        if (!topWork->IsRepeating()) {
+            topWork->MarkStatus(WorkStatus::Status::REMOVED);
+            RemoveFromUidQueue(topWork, topWork->uid_);
+        } else {
+            topWork->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+        }
+        return;
+    }
+    WS_HILOGE("startSA %{public}d workId:%{public}s failed",
+        topWork->workInfo_->GetSaId(), topWork->workId_.c_str());
 }
 
 void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
