@@ -279,6 +279,13 @@ public:
      */
     bool ParseFromJson(const Json::Value &value);
     /**
+     * @brief Parse element from json.
+     *
+     * @param value The value.
+     * @return True if success,else false.
+     */
+    bool ParseElementFromJson(const Json::Value &value);
+    /**
      * @brief Set preinstalled flag.
     */
     void SetPreinstalled(bool preinstalled);
@@ -324,6 +331,8 @@ public:
      * @return ResidentSa or not.
      */
     bool IsResidentSa() const;
+    bool IsSA();
+    std::string GetBriefInfo();
 
 private:
     int32_t workId_;

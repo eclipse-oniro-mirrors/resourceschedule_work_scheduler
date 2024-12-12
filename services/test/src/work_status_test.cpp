@@ -459,6 +459,22 @@ HWTEST_F(WorkStatusTest, dump_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: dump_002
+ * @tc.desc: Test WorkStatus Dump.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, dump_002, TestSize.Level1)
+{
+    workStatus_->workInfo_->saId_ = 1000;
+    workStatus_->workInfo_->residentSa_ = true;
+
+    std::string result;
+    workStatus_->Dump(result);
+    EXPECT_TRUE(workStatus_->workInfo_->IsSA());
+}
+
+/**
  * @tc.name: getMinInterval_001
  * @tc.desc: Test WorkStatus GetMinInterval.
  * @tc.type: FUNC
@@ -708,6 +724,335 @@ HWTEST_F(WorkStatusTest, GetStatus_001, TestSize.Level1)
 {
     workStatus_->MarkStatus(WorkStatus::Status::RUNNING);
     EXPECT_EQ(workStatus_->GetStatus(), WorkStatus::Status::RUNNING);
+}
+
+/**
+ * @tc.name: IsSAReady_001
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_001, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::RUNNING);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_TRUE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_002
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_002, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workInfo_->RequestNetworkType(WorkCondition::Network::NETWORK_UNKNOWN);
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_003
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_003, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_BLUETOOTH);
+    std::shared_ptr<Condition> networkCondition = std::make_shared<Condition>();
+    networkCondition->enumVal = WorkCondition::Network::NETWORK_TYPE_ETHERNET;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::NETWORK, networkCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_004
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_004, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
+    std::shared_ptr<Condition> batteryCondition = std::make_shared<Condition>();
+    batteryCondition->enumVal = WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_STATUS, batteryCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_005
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_005, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workInfo_->RequestBatteryLevel(80);
+    std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
+    batteryLevelCondition->intVal = 70;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_006
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_006, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestBatteryLevel(60);
+    workInfo_->SetPreinstalled(true);
+    std::shared_ptr<Condition> batteryLevelCondition = std::make_shared<Condition>();
+    batteryLevelCondition->intVal = 70;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_TRUE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_007
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_007, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_OKAY);
+    std::shared_ptr<Condition> storageCondition = std::make_shared<Condition>();
+    storageCondition->enumVal = WorkCondition::Storage::STORAGE_LEVEL_LOW;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_008
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_008, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    uint32_t timeInterval = 1200;
+    workInfo_->RequestRepeatCycle(timeInterval);
+    workInfo_->SetPreinstalled(true);
+    workStatus_->workInfo_ = workInfo_;
+
+    std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();
+    timerCondition->boolVal = true;
+    timerCondition->uintVal = 7200001;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
+    bool result = workStatus_->IsSAReady();
+    EXPECT_TRUE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_009
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_009, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_OKAY);
+    std::shared_ptr<Condition> storageCondition = std::make_shared<Condition>();
+    storageCondition->enumVal = WorkCondition::Storage::STORAGE_LEVEL_OKAY;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::STORAGE, storageCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_0010
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_0010, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_OKAY);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_0011
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_0011, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
+    chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_USB;
+    chargingCondition->boolVal = false;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_0012
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_0012, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
+    chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_USB;
+    chargingCondition->boolVal = true;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_0013
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_0013, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestChargerType(false, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
+    chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_USB;
+    chargingCondition->boolVal = false;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: IsSAReady_0014
+ * @tc.desc: Test WorkStatus IsSAReady.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_0014, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workInfo_->RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    std::shared_ptr<Condition> chargingCondition = std::make_shared<Condition>();
+    chargingCondition->enumVal = WorkCondition::Charger::CHARGING_PLUGGED_AC;
+    chargingCondition->boolVal = true;
+    workStatus_->conditionMap_.emplace(WorkCondition::Type::CHARGER, chargingCondition);
+    workStatus_->workInfo_ = workInfo_;
+    bool result = workStatus_->IsSAReady();
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: ToString_001
+ * @tc.desc: Test WorkStatus ToString.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, ToString_001, TestSize.Level1)
+{
+    workStatus_->conditionStatus_.clear();
+    workStatus_->ToString(WorkCondition::Type::TIMER);
+    EXPECT_TRUE(workStatus_->conditionStatus_.empty());
+}
+
+/**
+ * @tc.name: ToString_002
+ * @tc.desc: Test WorkStatus ToString.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, ToString_002, TestSize.Level1)
+{
+    workStatus_->conditionStatus_.clear();
+    workStatus_->conditionStatus_ = "TIMER&ready";
+    workStatus_->workInfo_->saId_ = 1000;
+    workStatus_->workInfo_->residentSa_ = true;
+    workStatus_->ToString(WorkCondition::Type::TIMER);
+    EXPECT_FALSE(workStatus_->conditionStatus_.empty());
+}
+
+/**
+ * @tc.name: ToString_003
+ * @tc.desc: Test WorkStatus ToString.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
+{
+    workStatus_->conditionStatus_.clear();
+    workStatus_->conditionStatus_ = "TIMER&ready";
+    workStatus_->ToString(WorkCondition::Type::TIMER);
+    EXPECT_FALSE(workStatus_->conditionStatus_.empty());
 }
 }
 }

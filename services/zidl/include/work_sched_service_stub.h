@@ -46,30 +46,34 @@ public:
      * @brief Start work stub.
      *
      * @param data The data.
+     * @param reply The reply.
      * @return error code, ERR_OK if success.
      */
-    int32_t StartWorkStub(MessageParcel& data);
+    int32_t StartWorkStub(MessageParcel& data, MessageParcel& reply);
     /**
      * @brief Stop work stub.
      *
      * @param data The data.
+     * @param reply The reply.
      * @return error code, ERR_OK if success.
      */
-    int32_t StopWorkStub(MessageParcel& data);
+    int32_t StopWorkStub(MessageParcel& data, MessageParcel& reply);
     /**
      * @brief Stop and cancel work stub.
      *
      * @param data The data.
+     * @param reply The reply.
      * @return error code, ERR_OK if success.
      */
-    int32_t StopAndCancelWorkStub(MessageParcel& data);
+    int32_t StopAndCancelWorkStub(MessageParcel& data, MessageParcel& reply);
     /**
      * @brief Stop and clear works stub.
      *
      * @param data The data.
+     * @param reply The reply.
      * @return error code, ERR_OK if success.
      */
-    int32_t StopAndClearWorksStub(MessageParcel& data);
+    int32_t StopAndClearWorksStub(MessageParcel& data, MessageParcel& reply);
     /**
      * @brief The last work time out stub.
      *
@@ -120,6 +124,14 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     int32_t ResumePausedWorksStub(MessageParcel &data, MessageParcel& reply);
+    /**
+     * @brief Stop SA.
+     *
+     * @param data The data.
+     * @param reply The reply.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t StopWorkForSAStub(MessageParcel &data, MessageParcel& reply);
 private:
     int32_t HandleObtainAllWorksRequest(MessageParcel &data, MessageParcel &reply);
     int32_t HandleGetWorkStatusRequest(MessageParcel &data, MessageParcel &reply);

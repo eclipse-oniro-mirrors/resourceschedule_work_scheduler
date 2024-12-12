@@ -117,6 +117,7 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t PauseRunningWorks(int32_t uid) {return 0; }
     int32_t ResumePausedWorks(int32_t uid) {return 0; }
     int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) { return 0; }
+    int32_t StopWorkForSA(int32_t saId) { return 0; }
 };
 /**
  * @tc.name: onStart_001
@@ -504,37 +505,42 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_006, TestSize.Level1)
     std::vector<std::string> argsInStr;
     std::string result;
     argsInStr.push_back("-s");
-    argsInStr.push_back("1");
     workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
+    EXPECT_FALSE(result.empty());
+
+    argsInStr.clear();
+    result.clear();
+    argsInStr.push_back("-s");
+    argsInStr.push_back("-1");
+    argsInStr.push_back("-1");
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
+    WS_HILOGI("%{public}s", result.c_str());
+    EXPECT_FALSE(result.empty());
 
     argsInStr.clear();
     result.clear();
     argsInStr.push_back("-s");
     argsInStr.push_back("1");
-    argsInStr.push_back("1");
+    argsInStr.push_back("200000");
     workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), false);
+    EXPECT_FALSE(result.empty());
 
     argsInStr.clear();
     result.clear();
+    WorkInfo workinfo = WorkInfo();
+    workinfo.uid_ = 202000;
+    workinfo.workId_ = 1;
+    workinfo.saId_ = 1000;
+    workinfo.residentSa_ = true;
+    workSchedulerService_->AddWorkInner(workinfo);
     argsInStr.push_back("-s");
-    argsInStr.push_back("1");
-    argsInStr.push_back("true");
+    argsInStr.push_back("1000");
+    argsInStr.push_back("202000");
     workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), true);
-
-    argsInStr.clear();
-    result.clear();
-    argsInStr.push_back("-s");
-    argsInStr.push_back("1");
-    argsInStr.push_back("false");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-    EXPECT_EQ(result.empty(), true);
+    EXPECT_FALSE(result.empty());
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_006 end ====== ");
 }
 
@@ -845,27 +851,35 @@ HWTEST_F(WorkSchedulerServiceTest, GetAppIndexAndBundleNameByUid_001, TestSize.L
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
 {
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->SetWorkId(-1);
+    std::string bundleName = "com.example.workStatus";
+    std::string abilityName = "workStatusAbility";
+    workInfo_->SetElement(bundleName, abilityName);
+    workInfo_->RequestPersisted(false);
+    time_t baseTime;
+    (void)time(&baseTime);
+    workInfo_->RequestBaseTime(baseTime);
+    std::shared_ptr<WorkStatus> workStatus_ = std::make_shared<WorkStatus>(*(workInfo_.get()), -1);
+
     workSchedulerService_->ready_ = false;
-    workSchedulerService_->LoadSa();
+    workSchedulerService_->LoadSa(workStatus_);
 
     workSchedulerService_->ready_ = true;
-    workSchedulerService_->saMap_.clear();
-    workSchedulerService_->LoadSa();
+    workSchedulerService_->LoadSa(workStatus_);
 
-    int32_t saId1 = 401;
-    workSchedulerService_->saMap_.emplace(saId1, true);
-    workSchedulerService_->LoadSa();
+    workInfo_->saId_ = 401;
+    workSchedulerService_->LoadSa(workStatus_);
 
-    workSchedulerService_->saMap_.emplace(saId1, false);
-    workSchedulerService_->LoadSa();
+    workInfo_->residentSa_ = true;
+    workSchedulerService_->LoadSa(workStatus_);
 
-    int32_t saId2 = 5300;
-    workSchedulerService_->saMap_.emplace(saId2, true);
-    workSchedulerService_->LoadSa();
+    workInfo_->saId_ = 5300;
+    workSchedulerService_->LoadSa(workStatus_);
 
-    workSchedulerService_->saMap_.emplace(saId2, false);
-    workSchedulerService_->LoadSa();
-    EXPECT_FALSE(workSchedulerService_->saMap_.empty());
+    workInfo_->residentSa_ = false;
+    bool ret = workSchedulerService_->LoadSa(workStatus_);
+    EXPECT_FALSE(ret);
 }
 
 /**

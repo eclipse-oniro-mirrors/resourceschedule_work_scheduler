@@ -112,6 +112,14 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     ErrCode SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType);
+
+    /**
+     * @brief Stop SA.
+     *
+     * @param saId SA id.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode StopWorkForSA(int32_t saId);
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:
