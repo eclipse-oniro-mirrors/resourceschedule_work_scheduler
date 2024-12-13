@@ -339,6 +339,7 @@ private:
     bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result);
     std::string DumpExemptionBundles();
+    void LoadMinRepeatTimeFromFile(const char *path);
 
 private:
     std::set<int32_t> whitelist_;
@@ -363,6 +364,9 @@ private:
 #ifdef  DEVICE_STANDBY_ENABLE
     sptr<WorkStandbyStateChangeCallback> standbyStateObserver_;
 #endif
+    uint32_t minTimeCycle_ = 20 * 60 * 1000;
+    ffrt::mutex specialMutex_;
+    std::map<std::string, uint32_t> specialMap_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
