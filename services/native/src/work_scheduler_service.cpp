@@ -321,7 +321,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         WS_HILOGE("work_scheduler_min_repeat_time content is empty");
         return;
     }
-    if (!minRepeatTimeRoot.isMember("default") && minRepeatTimeRoot["default"].isInt()) {
+    if (minRepeatTimeRoot.isMember("default") && minRepeatTimeRoot["default"].isInt()) {
         minTimeCycle_ = minRepeatTimeRoot["default"].asInt();
     }
     if (!minRepeatTimeRoot.isMember("special")) {
@@ -329,8 +329,8 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         return;
     }
     Json::Value specialRoot = minRepeatTimeRoot["special"];
-    if (!specialRoot.empty() || !specialRoot.isArray()) {
-        WS_HILOGE("specil content is empty");
+    if (specialRoot.empty() || !specialRoot.isArray()) {
+        WS_HILOGE("special content is empty");
         return;
     }
     uint32_t minCheckTime = workQueueManager_->GetTimeCycle();
