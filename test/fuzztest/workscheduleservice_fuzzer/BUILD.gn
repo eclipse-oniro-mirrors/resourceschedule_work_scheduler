@@ -44,7 +44,6 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "${worksched_frameworks_path}/extension:workschedextension",
     "${worksched_service_path}:workschedservice",
     "${worksched_utils_path}:workschedutils",
-    "//third_party/jsoncpp",
   ]
 
   external_deps = [
@@ -60,6 +59,7 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
+    "jsoncpp:jsoncpp",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
