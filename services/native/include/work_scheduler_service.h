@@ -270,9 +270,10 @@ public:
      */
     int32_t StopDeepIdleWorks();
     /**
-     * @brief load sa.
+     * @brief load SA.
+     * @return success or fail.
      */
-    void LoadSa();
+    bool LoadSa(std::shared_ptr<WorkStatus> workStatus);
     /**
      * @brief Handle DeepIdle callback Msg.
      */
@@ -295,6 +296,13 @@ public:
     int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) override;
     void InitDeviceStandyWhitelist();
     bool IsPreinstalledBundle(const std::string& checkBundleName);
+    /**
+     * @brief Stop SA.
+     *
+     * @param saId SA id.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    int32_t StopWorkForSA(int32_t saId) override;
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -329,13 +337,12 @@ private:
     bool CheckProcessName();
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
     bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
-    void DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr, std::string &result);
+    void DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result);
     std::string DumpExemptionBundles();
 
 private:
     std::set<int32_t> whitelist_;
     ffrt::mutex whitelistMutex_;
-    std::map<int32_t, bool> saMap_;
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     std::shared_ptr<SchedulerBgTaskSubscriber> subscriber_;
 #endif

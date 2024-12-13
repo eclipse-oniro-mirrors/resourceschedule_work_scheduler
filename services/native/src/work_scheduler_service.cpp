@@ -170,49 +170,33 @@ void WorkSchedulerService::InitPersistedWork()
     WS_HILOGD("init persisted work");
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
     for (auto it : persistedWorks) {
-        WS_HILOGI("get persisted work, id: %{public}d", it->GetWorkId());
+        WS_HILOGI("get persisted work, id: %{public}d, isSa:%{public}d", it->GetWorkId(), it->IsSA());
         AddWorkInner(*it);
     }
+    RefreshPersistedWorks();
 }
 
 void WorkSchedulerService::InitPreinstalledWork()
 {
     WS_HILOGD("init preinstalled work");
-    bool needRefresh = false;
     list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
     for (auto work : preinstalledWorks) {
-        WS_HILOGD("preinstalled workinfo id %{public}d, uid %{public}d", work->GetWorkId(), work->GetUid());
-        if (!work->IsPersisted()) {
-            time_t baseTime;
-            (void)time(&baseTime);
-            work->RequestBaseTime(baseTime);
-            AddWorkInner(*work);
-            continue;
-        }
-        auto iter = std::find_if(persistedMap_.begin(), persistedMap_.end(), [&](const auto &pair) {
-            return (pair.second->GetUid() == work->GetUid()) && (pair.second->GetWorkId() == work->GetWorkId());
-        });
-        if (iter != persistedMap_.end()) {
-            WS_HILOGD("find workid %{public}d in persisted map, ignore", work->GetWorkId());
-            continue;
-        }
-        needRefresh = true;
+        WS_HILOGI("preinstalled workinfo id %{public}s, isSa:%{public}d", work->GetBriefInfo().c_str(), work->IsSA());
         time_t baseTime;
         (void)time(&baseTime);
         work->RequestBaseTime(baseTime);
         AddWorkInner(*work);
-        string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
-        persistedMap_.emplace(workId, work);
-    }
-    if (needRefresh) {
-        RefreshPersistedWorks();
+        if (work->IsPersisted()) {
+            string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
+            persistedMap_.emplace(workId, work);
+        }
     }
 }
 
 void WorkSchedulerService::InitWorkInner()
 {
-    InitPersistedWork();
     InitPreinstalledWork();
+    InitPersistedWork();
 }
 
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
@@ -225,12 +209,24 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     for (const auto &it : root.getMemberNames()) {
         Json::Value workJson = root[it];
         shared_ptr<WorkInfo> workInfo = make_shared<WorkInfo>();
-        if (workInfo->ParseFromJson(workJson)) {
-            workInfos.emplace_back(workInfo);
-            WS_HILOGI("find one persisted work %{public}d", workInfo->GetWorkId());
-            string workId = "u" + to_string(workInfo->GetUid()) + "_" + to_string(workInfo->GetWorkId());
-            persistedMap_.emplace(workId, workInfo);
+        if (!workInfo->ParseFromJson(workJson)) {
+            WS_HILOGE("ReadPersistedWorks failed, parseFromJson error");
+            continue;
         }
+        workInfos.emplace_back(workInfo);
+        WS_HILOGI("find one persisted work %{public}s", workInfo->GetBriefInfo().c_str());
+        auto iter = std::find_if(persistedMap_.begin(), persistedMap_.end(), [&](const auto &pair) {
+            return (pair.second->GetUid() == workInfo->GetUid()) && (pair.second->GetWorkId() == workInfo->GetWorkId());
+        });
+        if (iter != persistedMap_.end()) {
+            WS_HILOGI("find work %{public}s in persisted map, ignore, isSA:%{public}d",
+                workInfo->GetBriefInfo().c_str(),
+                workInfo->IsSA());
+            // update basetime
+            continue;
+        }
+        string workId = "u" + to_string(workInfo->GetUid()) + "_" + to_string(workInfo->GetWorkId());
+        persistedMap_.emplace(workId, workInfo);
     }
     return workInfos;
 }
@@ -257,22 +253,20 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
     for (const auto &it : preinstalledWorksRoot.getMemberNames()) {
         Json::Value workJson = preinstalledWorksRoot[it];
         shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
-        if (workinfo->ParseFromJson(workJson)) {
-            if (workinfo->GetSaId() > -1) {
-                saMap_.emplace(workinfo->GetSaId(), workinfo->IsResidentSa());
-                continue;
-            }
+        if (!workinfo->ParseFromJson(workJson)) {
+            WS_HILOGE("LoadWorksFromFile failed, parseFromJson error");
+            continue;
+        }
+        if (!workinfo->IsSA()) {
             int32_t uid;
             if (!GetUidByBundleName(workinfo->GetBundleName(), uid)) {
                 continue;
             }
             workinfo->RefreshUid(uid);
-            workinfo->SetPreinstalled(true);
-            workInfos.emplace_back(workinfo);
             preinstalledBundles_.insert(workinfo->GetBundleName());
-        } else {
-            WS_HILOGE("ParseFromJson error");
         }
+        workinfo->SetPreinstalled(true);
+        workInfos.emplace_back(workinfo);
     }
 }
 
@@ -961,7 +955,7 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
-        .append("    -s (number) (bool): set the sa id running task.\n");
+        .append("    -s (number) (number): load or report sa.\n");
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -1374,62 +1368,63 @@ bool WorkSchedulerService::IsExemptionBundle(const std::string& checkBundleName)
     return iter != exemptionBundles_.end();
 }
 
-void WorkSchedulerService::LoadSa()
+bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        return;
-    }
-    if (saMap_.empty()) {
-        WS_HILOGI("saMap is empty.");
-        return;
+        return false;
     }
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
-        WS_HILOGE("get sa manager failed.");
-        return;
+        WS_HILOGE("get SA manager failed.");
+        return false;
     }
-    for (auto &it : saMap_) {
-        sptr<IRemoteObject> object = samgr->CheckSystemAbility(it.first);
-        if (it.second && object == nullptr) {
-            WS_HILOGE("resident sa: %{public}d does not exist.", it.first);
-            continue;
-        } else if (!it.second && object == nullptr) {
-            object = samgr->LoadSystemAbility(it.first, TIME_OUT);
-            if (object == nullptr) {
-                WS_HILOGE("load sa: %{public}d failed.", it.first);
-                continue;
-            }
-            WS_HILOGD("load sa: %{public}d successed.", it.first);
+    int32_t saId = workStatus->workInfo_->GetSaId();
+    bool isResidentSa = workStatus->workInfo_->IsResidentSa();
+    sptr<IRemoteObject> object = samgr->CheckSystemAbility(saId);
+    if (isResidentSa && object == nullptr) {
+        WS_HILOGE("resident SA: %{public}d residentSA:%{public}d does not exist.", saId, isResidentSa);
+        return false;
+    } else if (!isResidentSa && object == nullptr) {
+        object = samgr->LoadSystemAbility(saId, TIME_OUT);
+        if (object == nullptr) {
+            WS_HILOGE("load SA: %{public}d residentSA:%{public}d failed.", saId, isResidentSa);
+            return false;
         }
-        std::string action = "";
-        std::unordered_map<std::string, std::string> payload;
-        payload["action"] = action;
-        payload["saId"] = std::to_string(it.first);
-        uint32_t type = ResourceSchedule::ResType::RES_TYPE_DEVICE_IDLE;
-        ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, payload);
+        WS_HILOGI("load SA: %{public}d residentSA:%{public}d successed.", saId, isResidentSa);
     }
+    std::string action = "";
+    std::unordered_map<std::string, std::string> payload;
+    payload["action"] = action;
+    payload["saId"] = std::to_string(saId);
+    uint32_t type = ResourceSchedule::ResType::RES_TYPE_DEVICE_IDLE;
+    ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, payload);
+    WS_HILOGI("Report SA: %{public}d residentSA:%{public}d successed.", saId, isResidentSa);
+    return true;
 }
 
-void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr,
-    std::string &result)
+void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result)
 {
-    if (saIdStr.empty() || residentSaStr.empty()) {
+    if (saIdStr.empty() || uidStr.empty()) {
         result.append("param error.");
         return;
     }
     int32_t saId = std::stoi(saIdStr);
-    if (saId < 0 || (residentSaStr != "true" && residentSaStr != "false")) {
+    int32_t uid = std::stoi(uidStr);
+    if (saId < 0 || uid < 0) {
         result.append("the parameter is invalid.");
         return;
     }
-    bool residentSa = (residentSaStr == "true") ? true : false;
-    if (saMap_.count(saId) > 0) {
-        saMap_.at(saId) = residentSa;
-    } else {
-        saMap_.emplace(saId, residentSa);
+    auto sa = workPolicyManager_->FindSA(saId, uid);
+    if (sa == nullptr) {
+        result.append("the sa does not exist.");
+        return;
     }
-    LoadSa();
+    if (LoadSa(sa)) {
+        result.append("load sa success.");
+        return;
+    }
+    result.append("load sa failed.");
 }
 
 void WorkSchedulerService::HandleDeepIdleMsg()
@@ -1440,7 +1435,6 @@ void WorkSchedulerService::HandleDeepIdleMsg()
     }
     workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
         std::make_shared<DetectorValue>(0, 0, true, std::string()));
-    LoadSa();
 }
 
 bool WorkSchedulerService::IsPreinstalledBundle(const std::string& checkBundleName)
@@ -1450,6 +1444,12 @@ bool WorkSchedulerService::IsPreinstalledBundle(const std::string& checkBundleNa
         return false;
     }
     return preinstalledBundles_.find(checkBundleName) != preinstalledBundles_.end();
+}
+
+int32_t WorkSchedulerService::StopWorkForSA(int32_t saId)
+{
+    WS_HILOGI("StopWork for SA:%{public}d success", saId);
+    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

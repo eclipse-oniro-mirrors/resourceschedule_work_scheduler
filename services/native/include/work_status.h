@@ -71,6 +71,12 @@ public:
      */
     bool IsReady();
     /**
+     * @brief Judge state whether is ready.
+     *
+     * @return True if success,else false.
+     */
+    bool IsSAReady();
+    /**
      * @brief Judge state whether is ready status.
      *
      * @return True if success,else false.
@@ -133,6 +139,12 @@ public:
      * @param result The result.
      */
     void Dump(std::string& result);
+    /**
+     * @brief Dump Condition.
+     *
+     * @param result The result.
+     */
+    void DumpCondition(std::string& result);
     /**
      * @brief Update timer if need.
      */

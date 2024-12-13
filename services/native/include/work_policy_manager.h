@@ -106,6 +106,14 @@ public:
      */
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
     /**
+     * @brief Find SA.
+     *
+     * @param saId The id of sa.
+     * @param uid The uid.
+     * @return The SA of uid.
+     */
+    std::shared_ptr<WorkStatus> FindSA(int32_t saId, int32_t uid);
+    /**
      * @brief The OnConditionReady callback.
      *
      * @param workStatusVector The work status vector.
@@ -282,6 +290,7 @@ private:
     void RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus);
     void AddToReadyQueue(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     void RealStartWork(std::shared_ptr<WorkStatus> workStatus);
+    void RealStartSA(std::shared_ptr<WorkStatus> workStatus);
     void AddToRunningQueue(std::shared_ptr<WorkStatus> workStatus);
     void RemoveConditionUnReady();
     std::shared_ptr<WorkStatus> GetWorkToRun();

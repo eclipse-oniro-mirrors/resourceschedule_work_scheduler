@@ -372,5 +372,36 @@ int32_t WorkSchedServiceProxy::SetWorkSchedulerConfig(const std::string &configD
     }
     return ret;
 }
+
+int32_t WorkSchedServiceProxy::StopWorkForSA(int32_t saId)
+{
+    WS_HILOGD("Stop SA, saId:%{public}d", saId);
+    sptr<IRemoteObject> remote = Remote();
+    RETURN_IF_WITH_RET(remote == nullptr, E_CLIENT_CONNECT_SERVICE_FAILED);
+
+    MessageParcel data;
+    MessageParcel reply;
+    MessageOption option;
+    if (!data.WriteInterfaceToken(WorkSchedServiceProxy::GetDescriptor())) {
+        WS_HILOGE("StopWorkForSA failed, write descriptor failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    if (!data.WriteInt32(saId)) {
+        WS_HILOGE("StopWorkForSA failed, write saId failed!");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    int32_t ret = remote->SendRequest(
+        static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK_FOR_SA), data, reply, option);
+    if (ret != ERR_OK) {
+        WS_HILOGE("StopWorkForSA failed, err code: %{public}d", ret);
+        return E_PARCEL_OPERATION_FAILED;
+    }
+
+    if (!reply.ReadInt32(ret)) {
+        WS_HILOGE("StopWorkForSA failed, read errCode error");
+        return E_PARCEL_OPERATION_FAILED;
+    }
+    return ret;
+}
 } // namespace WorkScheduler
 } // namespace OHOS

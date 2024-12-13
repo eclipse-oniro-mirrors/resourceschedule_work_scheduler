@@ -42,7 +42,8 @@ vector<shared_ptr<WorkStatus>> WorkQueue::OnConditionChanged(WorkCondition::Type
                 it->uid_, it->bundleName_.c_str());
             continue;
         }
-        if (it->IsReady()) {
+        bool isReady = it->workInfo_->IsSA() ? it->IsSAReady() : it->IsReady();
+        if (isReady) {
             result.emplace_back(it);
             uidList.insert(it->uid_);
         } else {
@@ -160,6 +161,19 @@ shared_ptr<WorkStatus> WorkQueue::Find(string workId)
     return nullptr;
 }
 
+shared_ptr<WorkStatus> WorkQueue::FindSA(int32_t saId)
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
+    auto iter = std::find_if(workList_.cbegin(), workList_.cend(),
+        [&saId](const shared_ptr<WorkStatus> &workStatus) {
+            return workStatus->workInfo_->IsSA() && workStatus->workInfo_->GetSaId() == saId;
+        });
+    if (iter != workList_.end()) {
+        return *iter;
+    }
+    return nullptr;
+}
+
 bool WorkQueue::Find(const int32_t userId, const std::string &bundleName)
 {
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
@@ -240,7 +254,8 @@ std::list<std::shared_ptr<WorkStatus>> WorkQueue::GetDeepIdleWorks()
     std::list<std::shared_ptr<WorkStatus>> works;
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
     for (shared_ptr<WorkStatus> work : workList_) {
-        if (work->IsRunning() && work->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN) {
+        if (work->IsRunning() && work->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN &&
+            !work->workInfo_->IsSA()) {
             works.emplace_back(work);
         }
     }
