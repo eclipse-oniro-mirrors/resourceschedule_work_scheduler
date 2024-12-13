@@ -1146,7 +1146,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_003, TestSize.Level1)
  * @tc.name: LoadMinRepeatTimeFromFile_001
  * @tc.desc: Test WorkSchedulerService LoadMinRepeatTimeFromFile.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IBB60P
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level1)
 {
@@ -1160,7 +1160,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level
  * @tc.name: LoadMinRepeatTimeFromFile_002
  * @tc.desc: Test WorkSchedulerService LoadMinRepeatTimeFromFile.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: IBB60P
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_002, TestSize.Level1)
 {
