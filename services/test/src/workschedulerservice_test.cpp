@@ -1141,5 +1141,33 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_003, TestSize.Level1)
     bool ret = workSchedulerService_->IsPreinstalledBundle(bundleName);
     EXPECT_FALSE(ret);
 }
+
+/**
+ * @tc.name: LoadMinRepeatTimeFromFile_001
+ * @tc.desc: Test WorkSchedulerService LoadMinRepeatTimeFromFile.
+ * @tc.type: FUNC
+ * @tc.require: IBB60P
+ */
+HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level1)
+{
+    workSchedulerService_->specialMap_.clear();
+    const char* path = nullptr;
+    workSchedulerService_->LoadMinRepeatTimeFromFile(path);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+}
+
+/**
+ * @tc.name: LoadMinRepeatTimeFromFile_002
+ * @tc.desc: Test WorkSchedulerService LoadMinRepeatTimeFromFile.
+ * @tc.type: FUNC
+ * @tc.require: IBB60P
+ */
+HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_002, TestSize.Level1)
+{
+    workSchedulerService_->specialMap_.clear();
+    const char *path = "/a/b/c";
+    workSchedulerService_->LoadMinRepeatTimeFromFile(path);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+}
 }
 }

@@ -86,6 +86,7 @@ namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
 const std::string EXEMPTION_BUNDLES_KEY = "work_scheduler_eng_exemption_bundles";
+const std::string MIN_REPEAT_TIME_KEY = "work_scheduler_min_repeat_time";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
@@ -97,7 +98,6 @@ const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const int32_t TIME_OUT = 4;
-const uint32_t MIN_TIME_CYCLE = 20 * 60 * 1000;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
@@ -192,6 +192,9 @@ void WorkSchedulerService::InitPreinstalledWork()
             string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
             persistedMap_.emplace(workId, work);
         }
+    }
+    if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
+        workQueueManager_->SetTimeCycle(minCheckTime_);
     }
 }
 
@@ -302,6 +305,52 @@ void WorkSchedulerService::LoadExemptionBundlesFromFile(const char *path)
     }
 }
 
+void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
+{
+    if (!path) {
+        return;
+    }
+    Json::Value root;
+    if (!GetJsonFromFile(path, root) || root.empty()) {
+        WS_HILOGE("file is empty %{private}s", path);
+        return;
+    }
+    if (!root.isMember(MIN_REPEAT_TIME_KEY)) {
+        WS_HILOGE("no work_scheduler_min_repeat_time key");
+        return;
+    }
+    Json::Value minRepeatTimeRoot = root[MIN_REPEAT_TIME_KEY];
+    if (minRepeatTimeRoot.empty() || !minRepeatTimeRoot.isObject()) {
+        WS_HILOGE("work_scheduler_min_repeat_time content is empty");
+        return;
+    }
+    if (minRepeatTimeRoot.isMember("default") && minRepeatTimeRoot["default"].isInt()) {
+        minTimeCycle_ = minRepeatTimeRoot["default"].asInt();
+    }
+    if (!minRepeatTimeRoot.isMember("special")) {
+        WS_HILOGE("no special key");
+        return;
+    }
+    Json::Value specialRoot = minRepeatTimeRoot["special"];
+    if (specialRoot.empty() || !specialRoot.isArray()) {
+        WS_HILOGE("special content is empty");
+        return;
+    }
+    minCheckTime_ = workQueueManager_->GetTimeCycle();
+    for (const auto &it : specialRoot) {
+        if (!it.isMember("bundleName") || !it["bundleName"].isString() ||
+            !it.isMember("time") || !it["time"].isInt()) {
+            WS_HILOGE("special content is error");
+            continue;
+        }
+        uint32_t time = it["time"].asInt();
+        if (minCheckTime_ > time) {
+            minCheckTime_ = time;
+        }
+        specialMap_.emplace(it["bundleName"].asString(), time);
+    }
+}
+
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
@@ -314,6 +363,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
     for (int i = MAX_CFG_POLICY_DIRS_CNT - 1; i >= 0; i--) {
         LoadWorksFromFile(files->paths[i], workInfos);
         LoadExemptionBundlesFromFile(files->paths[i]);
+        LoadMinRepeatTimeFromFile(files->paths[i]);
     }
     FreeCfgFiles(files);
     return workInfos;
@@ -619,8 +669,17 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     }
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         uint32_t time = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER)->uintVal;
-        if (time < MIN_TIME_CYCLE) {
-            WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, MIN_TIME_CYCLE);
+        string bundleName = workInfo.GetBundleName();
+        std::lock_guard<ffrt::mutex> lock(specialMutex_);
+        if (specialMap_.count(bundleName) > 0) {
+            if (time < specialMap_.at(bundleName)) {
+                WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, specialMap_.at(bundleName));
+                return false;
+            }
+            return true;
+        }
+        if (time < minTimeCycle_) {
+            WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, minTimeCycle_);
             return false;
         }
     }
