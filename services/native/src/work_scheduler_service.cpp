@@ -336,7 +336,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         WS_HILOGE("special content is empty");
         return;
     }
-    uint32_t minCheckTime_ = workQueueManager_->GetTimeCycle();
+    minCheckTime_ = workQueueManager_->GetTimeCycle();
     for (const auto &it : specialRoot) {
         if (!it.isMember("bundleName") || !it["bundleName"].isString() ||
             !it.isMember("time") || !it["time"].isInt()) {
