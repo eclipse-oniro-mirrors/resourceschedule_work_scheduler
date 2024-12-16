@@ -365,6 +365,7 @@ private:
     sptr<WorkStandbyStateChangeCallback> standbyStateObserver_;
 #endif
     uint32_t minTimeCycle_ = 20 * 60 * 1000;
+    uint32_t minCheckTime_;
     ffrt::mutex specialMutex_;
     std::map<std::string, uint32_t> specialMap_;
 };

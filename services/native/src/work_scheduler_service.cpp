@@ -193,6 +193,9 @@ void WorkSchedulerService::InitPreinstalledWork()
             persistedMap_.emplace(workId, work);
         }
     }
+    if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
+        workQueueManager_->SetTimeCycle(minCheckTime_);
+    }
 }
 
 void WorkSchedulerService::InitWorkInner()
@@ -333,7 +336,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         WS_HILOGE("special content is empty");
         return;
     }
-    uint32_t minCheckTime = workQueueManager_->GetTimeCycle();
+    uint32_t minCheckTime_ = workQueueManager_->GetTimeCycle();
     for (const auto &it : specialRoot) {
         if (!it.isMember("bundleName") || !it["bundleName"].isString() ||
             !it.isMember("time") || !it["time"].isInt()) {
@@ -341,12 +344,11 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
             continue;
         }
         uint32_t time = it["time"].asInt();
-        if (minCheckTime > time) {
-            minCheckTime = time;
+        if (minCheckTime_ > time) {
+            minCheckTime_ = time;
         }
         specialMap_.emplace(it["bundleName"].asString(), time);
     }
-    workQueueManager_->SetTimeCycle(minCheckTime);
 }
 
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
