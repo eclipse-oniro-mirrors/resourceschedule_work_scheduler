@@ -110,7 +110,7 @@ void JsWorkSchedulerExtension::Init(const std::shared_ptr<AppExecFwk::AbilityLoc
     napi_env env = jsRuntime_.GetNapiEnv();
 
     jsObj_ = jsRuntime_.LoadModule(moduleName, srcPath, abilityInfo_->hapPath,
-        abilityInfo_->compileMode == AbilityRuntime::CompileMode::ES_MODULE);
+        abilityInfo_->compileMode == AbilityRuntime::CompileMode::ES_MODULE, false, abilityInfo_->srcEntrance);
     if (jsObj_ == nullptr) {
         WS_HILOGE("WorkSchedulerExtension Failed to get jsObj_");
         return;
