@@ -51,8 +51,7 @@
           "hicollie",
           "hitrace",
           "power_manager",
-          "resource_schedule_service",
-          "googletest"
+          "resource_schedule_service"
         ]
       },
       "build": {
