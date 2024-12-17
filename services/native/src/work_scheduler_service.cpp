@@ -325,7 +325,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         return;
     }
     if (minRepeatTimeRoot.isMember("default") && minRepeatTimeRoot["default"].isInt()) {
-        minTimeCycle_ = minRepeatTimeRoot["default"].asInt();
+        minTimeCycle_ = static_cast<uint32_t>(minRepeatTimeRoot["default"].asInt());
     }
     if (!minRepeatTimeRoot.isMember("special")) {
         WS_HILOGE("no special key");
@@ -343,7 +343,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
             WS_HILOGE("special content is error");
             continue;
         }
-        uint32_t time = it["time"].asInt();
+        uint32_t time = static_cast<uint32_t>(it["time"].asInt());
         if (minCheckTime_ > time) {
             minCheckTime_ = time;
         }
