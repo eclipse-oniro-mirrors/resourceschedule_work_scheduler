@@ -59,6 +59,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
         if (queueMap_.count(it.first) == 0) {
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
             if (it.first != WorkCondition::Type::BATTERY_LEVEL && listenerMap_.count(it.first) != 0) {
+                listenerMap_.at(it.first)->Stop();
                 listenerMap_.at(it.first)->Start();
             }
         }
