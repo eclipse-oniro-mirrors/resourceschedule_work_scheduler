@@ -324,7 +324,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
             minCheckTime_ = time;
         }
         if (time < SYS_APP_MIN_REPEAT_TIME) {
-            WS_HILOGE("bundleName: %{public}s set time: %{public}d not available, must morr than %{public}d",
+            WS_HILOGE("bundleName: %{public}s set time: %{public}d not available, must more than %{public}d",
                 it["bundleName"].asString().c_str(), time, SYS_APP_MIN_REPEAT_TIME);
         }
         specialMap_.emplace(it["bundleName"].asString(), time);
