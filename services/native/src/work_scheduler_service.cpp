@@ -97,6 +97,7 @@ const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const int32_t TIME_OUT = 4;
+const uint32_t SYS_APP_MIN_REPEAT_TIME = 5 * 60 * 1000;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
@@ -319,8 +320,12 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
             continue;
         }
         uint32_t time = static_cast<uint32_t>(it["time"].asInt());
-        if (minCheckTime_ > time) {
+        if (minCheckTime_ > time && time >= SYS_APP_MIN_REPEAT_TIME) {
             minCheckTime_ = time;
+        }
+        if (time < SYS_APP_MIN_REPEAT_TIME) {
+            WS_HILOGE("bundleName: %{public}s set time: %{public}d not available, must morr than %{public}d",
+                it["bundleName"].asString().c_str(), time, SYS_APP_MIN_REPEAT_TIME);
         }
         specialMap_.emplace(it["bundleName"].asString(), time);
     }
