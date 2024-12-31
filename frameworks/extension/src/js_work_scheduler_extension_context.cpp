@@ -65,28 +65,31 @@ public:
             return CreateJsUndefined(env);
         }
         WS_HILOGI("%{public}s", want.ToString().c_str());
-        NapiAsyncTask::CompleteCallback complete =
-            [weak = context_, want](napi_env env, NapiAsyncTask& task, int32_t status) {
-                auto context = weak.lock();
-                if (!context) {
-                    WS_HILOGE("context released");
-                    task.Reject(env, CreateJsError(env, AbilityErrorCode::ERROR_CODE_INVALID_CONTEXT));
-                    return;
-                }
-                auto innerErrorCode = context->StartServiceExtensionAbility(want);
-                if (innerErrorCode == 0) {
-                    WS_HILOGI("OK");
-                    task.Resolve(env, CreateJsUndefined(env));
-                } else {
-                    WS_HILOGE("failed");
-                    task.Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
-                }
-            };
-
         napi_value lastParam = (info.argc <= ARGC_ONE) ? nullptr : info.argv[ARGC_ONE];
         napi_value result = nullptr;
-        NapiAsyncTask::ScheduleHighQos("JSWorkSchedulerExtensionContext::OnStartExtensionAbility",
-            env, CreateAsyncTaskWithLastParam(env, lastParam, nullptr, std::move(complete), &result));
+        std::unique_ptr<NapiAsyncTask> napiAsyncTask = CreateEmptyAsyncTask(env, lastParam, &result);
+        auto asyncTask = [weak = context_, want, env, task = napiAsyncTask.get()]() {
+            auto context = weak.lock();
+            if (!context) {
+                WS_HILOGE("context released");
+                task->Reject(env, CreateJsError(env, AbilityErrorCode::ERROR_CODE_INVALID_CONTEXT));
+                return;
+            }
+            auto innerErrorCode = context->StartServiceExtensionAbility(want);
+            if (innerErrorCode == 0) {
+                WS_HILOGI("OK");
+                task->Resolve(env, CreateJsUndefined(env));
+            } else {
+                WS_HILOGE("failed");
+                task->Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
+            }
+        };
+        if (napi_status::napi_ok != napi_send_event(env, asyncTask, napi_eprio_immediate)) {
+            napiAsyncTask->Reject(env, CreateJsErrorByNativeErr(
+                env, static_cast<int32_t>(AbilityErrorCode::ERROR_CODE_INNER), "send event failed"));
+        } else {
+            napiAsyncTask.release();
+        }
         return result;
     }
 
@@ -104,26 +107,29 @@ public:
             return CreateJsUndefined(env);
         }
         WS_HILOGI("%{public}s", want.ToString().c_str());
-        NapiAsyncTask::CompleteCallback complete =
-            [weak = context_, want](napi_env env, NapiAsyncTask& task, int32_t status) {
-                auto context = weak.lock();
-                if (!context) {
-                    WS_HILOGE("context released");
-                    task.Reject(env, CreateJsError(env, AbilityErrorCode::ERROR_CODE_INVALID_CONTEXT));
-                    return;
-                }
-                auto innerErrorCode = context->StopServiceExtensionAbility(want);
-                if (innerErrorCode == 0) {
-                    task.Resolve(env, CreateJsUndefined(env));
-                } else {
-                    task.Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
-                }
-            };
-
         napi_value lastParam = (info.argc <= ARGC_ONE) ? nullptr : info.argv[ARGC_ONE];
         napi_value result = nullptr;
-        NapiAsyncTask::Schedule("JSWorkSchedulerExtensionContext::OnStopExtensionAbility",
-            env, CreateAsyncTaskWithLastParam(env, lastParam, nullptr, std::move(complete), &result));
+        std::unique_ptr<NapiAsyncTask> napiAsyncTask = CreateEmptyAsyncTask(env, lastParam, &result);
+        auto asyncTask = [weak = context_, want, env, task = napiAsyncTask.get()]() {
+            auto context = weak.lock();
+            if (!context) {
+                WS_HILOGE("context released");
+                task->Reject(env, CreateJsError(env, AbilityErrorCode::ERROR_CODE_INVALID_CONTEXT));
+                return;
+            }
+            auto innerErrorCode = context->StopServiceExtensionAbility(want);
+            if (innerErrorCode == 0) {
+                task->Resolve(env, CreateJsUndefined(env));
+            } else {
+                task->Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
+            }
+        };
+        if (napi_status::napi_ok != napi_send_event(env, asyncTask, napi_eprio_immediate)) {
+            napiAsyncTask->Reject(env, CreateJsErrorByNativeErr(
+                env, static_cast<int32_t>(AbilityErrorCode::ERROR_CODE_INNER), "send event failed"));
+        } else {
+            napiAsyncTask.release();
+        }
         return result;
     }
 
