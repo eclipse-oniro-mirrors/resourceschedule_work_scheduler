@@ -28,7 +28,7 @@ WorkBundleGroupChangeCallback::WorkBundleGroupChangeCallback(std::shared_ptr<Wor
     workQueueManager_ = workQueueManager;
 }
 
-void WorkBundleGroupChangeCallback::OnAppGroupChanged(
+ErrCode WorkBundleGroupChangeCallback::OnAppGroupChanged(
     const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo)
 {
     int32_t newGroup = appGroupCallbackInfo.GetNewGroup();
@@ -41,20 +41,21 @@ void WorkBundleGroupChangeCallback::OnAppGroupChanged(
     auto policy = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetWorkPolicyManager();
     if (!policy) {
         WS_HILOGE("OnAppGroupChanged callback error, WorkPolicyManager is nullptr");
-        return;
+        return ERR_OK;
     }
     if (!policy->FindWork(userId, bundleName)) {
         WS_HILOGE("OnAppGroupChanged no work found, bundleName = %{public}s", bundleName.c_str());
-        return;
+        return ERR_OK;
     }
     if (newGroup < oldGroup) {
         if (!workQueueManager_) {
             WS_HILOGE("WorkBundleGroupChangeCallback::OnAppGroupChanged workQueueManger_ is nullptr");
-            return;
+            return ERR_OK;
         }
         workQueueManager_->OnConditionChanged(WorkCondition::Type::GROUP,
             std::make_shared<DetectorValue>(newGroup, userId, true, bundleName));
     }
+    return ERR_OK;
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS
