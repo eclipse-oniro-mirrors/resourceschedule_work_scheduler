@@ -15,7 +15,7 @@
 
 #include "workschedulersetworkschedulerconfig_fuzzer.h"
 
-#include "iwork_sched_service_ipc_interface_code.h"
+#include "iwork_sched_service.h"
 #include "work_scheduler_service.h"
 #include "work_sched_common.h"
 #include "work_condition.h"
@@ -43,7 +43,7 @@ namespace WorkScheduler {
         MessageParcel reply;
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::SET_WORK_SCHEDULER_CONFIG);
+        uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_SET_WORK_SCHEDULER_CONFIG);
         std::string configData = "{\"active_group_whitelist\":["
                                         "\"test1\","
                                         "\"test2\","

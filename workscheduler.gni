@@ -23,6 +23,8 @@ worksched_root_path = "//foundation/resourceschedule/work_scheduler"
 
 worksched_service_path = "${worksched_root_path}/services"
 
+worksched_zidl_path = "${worksched_service_path}/zidl"
+
 worksched_kits_path = "${worksched_root_path}/kits"
 
 worksched_utils_path = "${worksched_root_path}/utils/native"

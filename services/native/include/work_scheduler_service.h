@@ -64,21 +64,21 @@ public:
      * @param workInfo The info of work.
      * @return error code, ERR_OK if success.
      */
-    int32_t StartWork(WorkInfo& workInfo) override;
+    int32_t StartWork(const WorkInfo& workInfo) override;
     /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
      * @return error code, ERR_OK if success.
      */
-    int32_t StopWork(WorkInfo& workInfo) override;
+    int32_t StopWork(const WorkInfo& workInfo) override;
     /**
      * @brief Stop and cancel work.
      *
      * @param workInfo The info of work.
      * @return error code, ERR_OK if success.
      */
-    int32_t StopAndCancelWork(WorkInfo& workInfo) override;
+    int32_t StopAndCancelWork(const WorkInfo& workInfo) override;
     /**
      * @brief Stop and clear works.
      *
@@ -99,7 +99,7 @@ public:
      * @param workInfos The infos of work.
      * @return error code, ERR_OK if success.
      */
-    int32_t ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) override;
+    int32_t ObtainAllWorks(std::vector<WorkInfo>& workInfos) override;
     /**
      * @brief Get the status of work.
      *
@@ -107,14 +107,14 @@ public:
      * @param workInfo The info of work.
      * @return error code, ERR_OK if success.
      */
-    int32_t GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) override;
+    int32_t GetWorkStatus(int32_t workId, WorkInfo& workInfo) override;
     /**
      * @brief Get the Running Work Scheduler Work object
      *
      * @param workInfos The infos of work.
      * @return ErrCode ERR_OK on success, others on failure
      */
-    int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) override;
+    int32_t GetAllRunningWorks(std::vector<WorkInfo>& workInfos) override;
 
     /**
      * @brief Pause Running Works.
@@ -340,6 +340,8 @@ private:
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result);
     std::string DumpExemptionBundles();
     void LoadMinRepeatTimeFromFile(const char *path);
+    int32_t SetTimer();
+    void CancelTimer(int32_t id);
 
 private:
     std::set<int32_t> whitelist_;

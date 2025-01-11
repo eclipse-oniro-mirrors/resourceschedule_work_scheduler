@@ -77,6 +77,12 @@
 #include "work_sched_data_manager.h"
 #include "work_sched_config.h"
 
+#ifdef HICOLLIE_ENABLE
+#include "xcollie/xcollie.h"
+#include "xcollie/xcollie_define.h"
+#define XCOLLIE_TIMEOUT_SECONDS 10
+#endif
+
 using namespace std;
 using namespace OHOS::AppExecFwk;
 
@@ -686,31 +692,33 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     return true;
 }
 
-int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
+int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
+    int32_t timerId = SetTimer();
+    WorkInfo workInfo_ = workInfo;
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+    if (checkBundle_ && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
     }
-    if (!CheckCondition(workInfo)) {
+    if (!CheckCondition(workInfo_)) {
         return E_REPEAT_CYCLE_TIME_ERR;
     }
     time_t baseTime;
     (void)time(&baseTime);
-    workInfo.RequestBaseTime(baseTime);
+    workInfo_.RequestBaseTime(baseTime);
     WS_HILOGD("workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
-        workInfo.GetBundleName().c_str(), workInfo.GetAbilityName().c_str(), workInfo.GetWorkId(), uid);
-    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
+        workInfo_.GetBundleName().c_str(), workInfo_.GetAbilityName().c_str(), workInfo_.GetWorkId(), uid);
+    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo_, uid);
     int32_t ret = workPolicyManager_->AddWork(workStatus, uid);
     if (ret == ERR_OK) {
         workQueueManager_->AddWork(workStatus);
-        if (workInfo.IsPersisted()) {
+        if (workInfo_.IsPersisted()) {
             std::lock_guard<ffrt::mutex> lock(mutex_);
             workStatus->workInfo_->RefreshUid(uid);
             persistedMap_.emplace(workStatus->workId_, workStatus->workInfo_);
@@ -720,6 +728,7 @@ int32_t WorkSchedulerService::StartWork(WorkInfo& workInfo)
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::CHECK_CONDITION_MSG, 0),
             CHECK_CONDITION_DELAY);
     }
+    CancelTimer(timerId);
     return ret;
 }
 
@@ -736,19 +745,20 @@ void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
     }
 }
 
-int32_t WorkSchedulerService::StopWork(WorkInfo& workInfo)
+int32_t WorkSchedulerService::StopWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StopWork");
+    WorkInfo workInfo_ = workInfo;
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingUid();
-    if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+    if (checkBundle_ && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
     }
-    shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
+    shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo_, uid);
     if (workStatus == nullptr) {
         WS_HILOGE("workStatus is nullptr");
         return E_WORK_NOT_EXIST_FAILED;
@@ -757,18 +767,19 @@ int32_t WorkSchedulerService::StopWork(WorkInfo& workInfo)
     return ERR_OK;
 }
 
-int32_t WorkSchedulerService::StopAndCancelWork(WorkInfo& workInfo)
+int32_t WorkSchedulerService::StopAndCancelWork(const WorkInfo& workInfo)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
+    WorkInfo workInfo_ = workInfo;
     int32_t uid = IPCSkeleton::GetCallingUid();
-    if (checkBundle_ && !CheckWorkInfo(workInfo, uid)) {
+    if (checkBundle_ && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
     }
-    shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo, uid);
+    shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo_, uid);
     if (workStatus == nullptr) {
         WS_HILOGE("workStatus is nullptr");
         return E_WORK_NOT_EXIST_FAILED;
@@ -847,7 +858,7 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
     workPolicyManager_->OnConditionReady(workStatusVector);
 }
 
-int32_t WorkSchedulerService::ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
+int32_t WorkSchedulerService::ObtainAllWorks(std::vector<WorkInfo>& workInfos)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::ObtainAllWorks");
     int32_t uid = IPCSkeleton::GetCallingUid();
@@ -859,20 +870,23 @@ int32_t WorkSchedulerService::ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>
     return ERR_OK;
 }
 
-int32_t WorkSchedulerService::GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo)
+int32_t WorkSchedulerService::GetWorkStatus(int32_t workId, WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::GetWorkStatus");
     int32_t uid = IPCSkeleton::GetCallingUid();
     if (!ready_) {
         WS_HILOGE("service is not ready.");
-        workInfo = nullptr;
         return E_SERVICE_NOT_READY;
     }
-    workInfo = workPolicyManager_->GetWorkStatus(uid, workId);
-    return ERR_OK;
+    std::shared_ptr<WorkInfo> workInfoPtr = workPolicyManager_->GetWorkStatus(uid, workId);
+    if (workInfoPtr != nullptr) {
+        workInfo = *workInfoPtr;
+        return ERR_OK;
+    }
+    return E_WORK_NOT_EXIST_FAILED;
 }
 
-int32_t WorkSchedulerService::GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
+int32_t WorkSchedulerService::GetAllRunningWorks(std::vector<WorkInfo>& workInfos)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
@@ -1510,6 +1524,38 @@ int32_t WorkSchedulerService::StopWorkForSA(int32_t saId)
 {
     WS_HILOGI("StopWork for SA:%{public}d success", saId);
     return ERR_OK;
+}
+
+int32_t WorkSchedulerService::SetTimer()
+{
+#ifdef HICOLLIE_ENABLE
+    int32_t idTimer = HiviewDFX::INVALID_ID;
+    std::string collieName = "WorkSchedulerService:START_WORK";
+    unsigned int flag = HiviewDFX::XCOLLIE_FLAG_LOG | HiviewDFX::XCOLLIE_FLAG_RECOVERY;
+    auto TimerCallback = [](void *) {
+        WS_HILOGE("OnRemoteRequest timeout func: START_WORK");
+    };
+    idTimer = HiviewDFX::XCollie::GetInstance().SetTimer(
+        collieName, XCOLLIE_TIMEOUT_SECONDS, TimerCallback, nullptr, flag);
+    WS_HILOGD("SetTimer id: %{public}d, name: %{public}s.", idTimer, collieName.c_str());
+    return idTimer;
+#else
+    WS_HILOGD("No HICOLLIE_ENABLE");
+    return -1;
+#endif
+}
+
+void WorkSchedulerService::CancelTimer(int32_t id)
+{
+#ifdef HICOLLIE_ENABLE
+    if (id == HiviewDFX::INVALID_ID) {
+        return;
+    }
+    WS_HILOGD("CancelTimer id: %{public}d.", id);
+    HiviewDFX::XCollie::GetInstance().CancelTimer(id);
+#else
+    return;
+#endif
 }
 } // namespace WorkScheduler
 } // namespace OHOS

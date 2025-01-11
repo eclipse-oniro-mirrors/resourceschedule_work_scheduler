@@ -15,7 +15,7 @@
 
 #include "workschedulerstopwork_fuzzer.h"
 
-#include "iwork_sched_service_ipc_interface_code.h"
+#include "iwork_sched_service.h"
 #include "work_scheduler_service.h"
 #include "work_sched_common.h"
 #include "work_condition.h"
@@ -42,7 +42,7 @@ namespace WorkScheduler {
         MessageParcel reply;
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::STOP_WORK);
+        uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_STOP_WORK);
         WorkInfo workInfo = WorkInfo();
         int32_t workId = 1;
         workInfo.SetWorkId(workId);

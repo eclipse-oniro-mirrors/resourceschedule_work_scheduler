@@ -70,6 +70,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "${worksched_frameworks_path}/extension:workschedextension",
     "${worksched_service_path}:workschedservice_static",
     "${worksched_utils_path}:workschedutils",
+    "${worksched_zidl_path}:workschedservice_zidl_proxy",
   ]
 
   external_deps = [

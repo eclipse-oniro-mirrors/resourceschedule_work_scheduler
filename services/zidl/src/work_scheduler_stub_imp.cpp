@@ -19,24 +19,28 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-void WorkSchedulerStubImp::OnWorkStart(WorkInfo& workInfo)
+ErrCode WorkSchedulerStubImp::OnWorkStart(const WorkInfo& workInfo)
 {
     WS_HILOGI("begin.");
     auto extension = extension_.lock();
+    WorkInfo workInfo_ = workInfo;
     if (extension != nullptr) {
-        extension->OnWorkStart(workInfo);
+        extension->OnWorkStart(workInfo_);
         WS_HILOGI("end successfully.");
     }
+    return ERR_OK;
 }
 
-void WorkSchedulerStubImp::OnWorkStop(WorkInfo& workInfo)
+ErrCode WorkSchedulerStubImp::OnWorkStop(const WorkInfo& workInfo)
 {
     WS_HILOGI("begin.");
     auto extension = extension_.lock();
+    WorkInfo workInfo_ = workInfo;
     if (extension != nullptr) {
-        extension->OnWorkStop(workInfo);
+        extension->OnWorkStop(workInfo_);
         WS_HILOGI("end successfully.");
     }
+    return ERR_OK;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

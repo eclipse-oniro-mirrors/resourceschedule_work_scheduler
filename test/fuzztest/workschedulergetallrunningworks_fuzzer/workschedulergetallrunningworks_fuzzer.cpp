@@ -15,7 +15,7 @@
 
 #include "workschedulergetallrunningworks_fuzzer.h"
 
-#include "iwork_sched_service_ipc_interface_code.h"
+#include "iwork_sched_service.h"
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
 #include "work_queue_manager.h"
@@ -64,7 +64,7 @@ namespace WorkScheduler {
         MessageParcel reply;
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::GET_ALL_RUNNING_WORKS);
+        uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_GET_ALL_RUNNING_WORKS);
         workSchedulerService_->OnStart();
         workSchedulerService_->InitBgTaskSubscriber();
         if (!workSchedulerService_->ready_) {

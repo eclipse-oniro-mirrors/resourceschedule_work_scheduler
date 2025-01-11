@@ -143,7 +143,12 @@ ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInf
     if (errCode != ERR_OK) {
         return errCode;
     }
-    return iWorkSchedService_->ObtainAllWorks(workInfos);
+    std::vector<WorkInfo> vectorWorkInfos;
+    ErrCode ret = iWorkSchedService_->ObtainAllWorks(vectorWorkInfos);
+    for (const auto& workInfo : vectorWorkInfos) {
+        workInfos.push_back(std::make_shared<WorkInfo>(workInfo));
+    }
+    return ret;
 }
 
 ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<WorkInfo> &workInfo)
@@ -157,7 +162,12 @@ ErrCode WorkSchedulerSrvClient::GetWorkStatus(int32_t workId, std::shared_ptr<Wo
     if (code != ERR_OK) {
         return code;
     }
-    return iWorkSchedService_->GetWorkStatus(workId, workInfo);
+    WorkInfo workInfoTemp;
+    ErrCode ret = iWorkSchedService_->GetWorkStatus(workId, workInfoTemp);
+    if (ret == ERR_OK) {
+        workInfo = std::make_shared<WorkInfo>(workInfoTemp);
+    }
+    return ret;
 }
 
 ErrCode WorkSchedulerSrvClient::GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos)
@@ -171,7 +181,12 @@ ErrCode WorkSchedulerSrvClient::GetAllRunningWorks(std::list<std::shared_ptr<Wor
     if (code != ERR_OK) {
         return code;
     }
-    return iWorkSchedService_->GetAllRunningWorks(workInfos);
+    std::vector<WorkInfo> vectorWorkInfos;
+    ErrCode ret = iWorkSchedService_->GetAllRunningWorks(vectorWorkInfos);
+    for (const auto& workInfo : vectorWorkInfos) {
+        workInfos.push_back(std::make_shared<WorkInfo>(workInfo));
+    }
+    return ret;
 }
 
 ErrCode WorkSchedulerSrvClient::PauseRunningWorks(int32_t uid)

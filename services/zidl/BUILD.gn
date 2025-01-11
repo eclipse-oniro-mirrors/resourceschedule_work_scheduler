@@ -14,14 +14,10 @@
 import("//build/config/components/idl_tool/idl.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
-idl_gen_interface("work_sched_service_interface") {
-  src_idl = rebase_path("IWorkSchedService.idl")
+idl_gen_interface("work_scheduler_interface") {
+  src_idl = rebase_path("IWorkScheduler.idl")
   log_domainid = "0xD001712"
   log_tag = "WORK_SCHEDULER"
-}
-
-config("worksched_private_config") {
-  include_dirs = [ "${worksched_service_path}/zidl/include" ]
 }
 
 config("worksched_public_config") {
@@ -31,81 +27,45 @@ config("worksched_public_config") {
   ]
 }
 
-ohos_shared_library("workschedclient") {
-  branch_protector_ret = "pac_ret"
-
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
-  output_values = get_target_outputs(":work_sched_service_interface")
-  sources = [
-    "${worksched_frameworks_path}/src/work_info.cpp",
-    "${worksched_frameworks_path}/src/workscheduler_srv_client.cpp",
-  ]
-  sources += filter_include(output_values, [ "*_proxy.cpp" ])
-
-  configs = [ ":worksched_private_config" ]
-
-  public_configs = [ ":worksched_public_config" ]
-
-  deps = [
-    ":work_sched_service_interface",
-    "${worksched_utils_path}:workschedutils"
-  ]
-
-  public_external_deps = [ "jsoncpp:jsoncpp" ]
-
-  external_deps = [
-    "ability_base:want",
-    "hilog:libhilog",
-    "ipc:ipc_single",
-    "samgr:samgr_proxy",
-  ]
-
-  subsystem_name = "resourceschedule"
-  innerapi_tags = [ "platformsdk" ]
-  part_name = "${worksched_native_part_name}"
-}
-
-ohos_source_set("work_sched_service_proxy") {
+ohos_source_set("workschedservice_zidl_stub") {
   sanitize = {
     cfi = true
     cfi_cross_dso = true
     debug = false
   }
   public_configs = [ ":worksched_public_config" ]
-  output_values = get_target_outputs(":work_sched_service_interface")
-  sources = filter_include(output_values, [ "*_proxy.cpp" ])
-  deps = [
-    ":work_sched_service_interface",
-    "${worksched_utils_path}:workschedutils"
-  ]
-  external_deps = [
-    "ability_base:want",
-    "hilog:libhilog",
-    "ipc:ipc_single",
-  ]
-  subsystem_name = "resourceschedule"
-  part_name = "${worksched_native_part_name}"
-}
-
-ohos_source_set("work_sched_service_stub") {
-  sanitize = {
-    cfi = true
-    cfi_cross_dso = true
-    debug = false
-  }
-  public_configs = [ ":worksched_public_config" ]
-  output_values = get_target_outputs(":work_sched_service_interface")
+  output_values = get_target_outputs(":work_scheduler_interface")
   sources = filter_include(output_values, [ "*_stub.cpp" ])
   deps = [
-    ":work_sched_service_interface",
-    "${worksched_utils_path}:workschedutils"
+    ":work_scheduler_interface",
+    "${worksched_frameworks_path}:workschedclient"
   ]
   external_deps = [
     "ability_base:want",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+  ]
+  subsystem_name = "resourceschedule"
+  part_name = "${worksched_native_part_name}"
+}
+
+ohos_source_set("workschedservice_zidl_proxy") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  public_configs = [ ":worksched_public_config" ]
+  output_values = get_target_outputs(":work_scheduler_interface")
+  sources = filter_include(output_values, [ "*_proxy.cpp" ])
+  deps = [
+    ":work_scheduler_interface",
+    "${worksched_frameworks_path}:workschedclient"
+  ]
+  external_deps = [
+    "ability_base:want",
+    "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
   ]

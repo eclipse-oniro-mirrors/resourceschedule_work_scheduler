@@ -124,7 +124,7 @@ public:
      *
      * @return get all running works.
      */
-    std::list<std::shared_ptr<WorkInfo>> GetRunningWorks();
+    std::vector<WorkInfo> GetRunningWorks();
     /**
      * @brief Get All DeepIdle Works.
      *
