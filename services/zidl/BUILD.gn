@@ -23,7 +23,7 @@ idl_gen_interface("work_scheduler_interface") {
 config("worksched_public_config") {
   include_dirs = [
     "${target_gen_dir}",
-    "include"
+    "include",
   ]
 }
 
@@ -38,13 +38,12 @@ ohos_source_set("workschedservice_zidl_stub") {
   sources = filter_include(output_values, [ "*_stub.cpp" ])
   deps = [
     ":work_scheduler_interface",
-    "${worksched_frameworks_path}:workschedclient"
+    "${worksched_frameworks_path}:workschedclient",
   ]
   external_deps = [
-    "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_single",
+    "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
@@ -61,13 +60,12 @@ ohos_source_set("workschedservice_zidl_proxy") {
   sources = filter_include(output_values, [ "*_proxy.cpp" ])
   deps = [
     ":work_scheduler_interface",
-    "${worksched_frameworks_path}:workschedclient"
+    "${worksched_frameworks_path}:workschedclient",
   ]
   external_deps = [
-    "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_single",
+    "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"

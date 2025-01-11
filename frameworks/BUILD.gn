@@ -27,7 +27,7 @@ config("worksched_private_config") {
 config("worksched_public_config") {
   include_dirs = [
     "${target_gen_dir}",
-    "include"
+    "include",
   ]
 }
 
@@ -52,7 +52,7 @@ ohos_shared_library("workschedclient") {
 
   deps = [
     ":work_sched_service_interface",
-    "${worksched_utils_path}:workschedutils"
+    "${worksched_utils_path}:workschedutils",
   ]
 
   public_external_deps = [ "jsoncpp:jsoncpp" ]
@@ -80,12 +80,12 @@ ohos_source_set("work_sched_service_proxy") {
   sources = filter_include(output_values, [ "*_proxy.cpp" ])
   deps = [
     ":work_sched_service_interface",
-    "${worksched_utils_path}:workschedutils"
+    "${worksched_utils_path}:workschedutils",
   ]
   external_deps = [
-    "ability_base:want",
+    "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_single",
+    "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
@@ -102,12 +102,12 @@ ohos_source_set("work_sched_service_stub") {
   sources = filter_include(output_values, [ "*_stub.cpp" ])
   deps = [
     ":work_sched_service_interface",
-    "${worksched_utils_path}:workschedutils"
+    "${worksched_utils_path}:workschedutils",
   ]
   external_deps = [
-    "ability_base:want",
+    "c_utils:utils",
     "hilog:libhilog",
-    "ipc:ipc_single",
+    "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"

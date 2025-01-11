@@ -33,7 +33,8 @@ namespace WorkScheduler {
 class WorkInfo : public Parcelable {
 public:
     explicit WorkInfo();
-    WorkInfo(const WorkInfo& workInfo) {
+    WorkInfo(const WorkInfo& workInfo)
+    {
         workId_ = workInfo.workId_;
         bundleName_ = workInfo.bundleName_;
         abilityName_ = workInfo.abilityName_;
