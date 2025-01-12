@@ -31,9 +31,9 @@ public:
     /*
     * function: OnAppGroupChanged, bundleGroupChanged callback.
     * parameters: appGroupCallbackInfo
-    * return: void.
+    * return: ErrCode.
     */
-    void OnAppGroupChanged(const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo) override;
+    ErrCode OnAppGroupChanged(const DeviceUsageStats::AppGroupCallbackInfo &appGroupCallbackInfo) override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
 };
