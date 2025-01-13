@@ -43,9 +43,9 @@ ohos_fuzztest("WorkSchedulerStopAndCancelWorkFuzzTest") {
   sources = [ "workschedulerstopandcancelwork_fuzzer.cpp" ]
 
   deps = [
-    "${worksched_frameworks_path}:workschedclient",
     "${worksched_frameworks_path}:work_sched_service_proxy",
     "${worksched_frameworks_path}:work_sched_service_stub",
+    "${worksched_frameworks_path}:workschedclient",
     "${worksched_frameworks_path}/extension:workschedextension",
     "${worksched_service_path}:workschedservice_static",
     "${worksched_utils_path}:workschedutils",

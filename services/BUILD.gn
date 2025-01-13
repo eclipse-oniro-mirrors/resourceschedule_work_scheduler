@@ -71,9 +71,9 @@ ohos_shared_library("workschedservice") {
   public_configs = [ ":worksched_public_config" ]
 
   deps = [
+    "${worksched_frameworks_path}:work_sched_service_stub",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
-    "${worksched_frameworks_path}:work_sched_service_stub",
     "${worksched_zidl_path}:workschedservice_zidl_proxy",
   ]
 
@@ -187,9 +187,9 @@ ohos_static_library("workschedservice_static") {
   public_configs = [ ":worksched_public_config" ]
 
   deps = [
+    "${worksched_frameworks_path}:work_sched_service_stub",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
-    "${worksched_frameworks_path}:work_sched_service_stub",
     "${worksched_zidl_path}:workschedservice_zidl_proxy",
   ]
 
