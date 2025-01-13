@@ -83,8 +83,10 @@ ohos_source_set("work_sched_service_proxy") {
     "${worksched_utils_path}:workschedutils",
   ]
   external_deps = [
+    "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
     "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"
@@ -105,8 +107,10 @@ ohos_source_set("work_sched_service_stub") {
     "${worksched_utils_path}:workschedutils",
   ]
   external_deps = [
+    "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
     "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"

@@ -41,8 +41,10 @@ ohos_source_set("workschedservice_zidl_stub") {
     "${worksched_frameworks_path}:workschedclient",
   ]
   external_deps = [
+    "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
     "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"
@@ -63,8 +65,10 @@ ohos_source_set("workschedservice_zidl_proxy") {
     "${worksched_frameworks_path}:workschedclient",
   ]
   external_deps = [
+    "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
+    "jsoncpp:jsoncpp",
     "ipc:ipc_core",
   ]
   subsystem_name = "resourceschedule"
