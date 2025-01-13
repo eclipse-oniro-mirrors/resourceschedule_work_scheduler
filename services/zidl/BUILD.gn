@@ -22,8 +22,8 @@ idl_gen_interface("work_scheduler_interface") {
 
 config("worksched_public_config") {
   include_dirs = [
-    "${target_gen_dir}",
     "include",
+    "${target_gen_dir}",
   ]
 }
 
@@ -61,8 +61,8 @@ ohos_source_set("workschedservice_zidl_proxy") {
   output_values = get_target_outputs(":work_scheduler_interface")
   sources = filter_include(output_values, [ "*_proxy.cpp" ])
   deps = [
-    "${worksched_frameworks_path}:workschedclient",
     ":work_scheduler_interface",
+    "${worksched_frameworks_path}:workschedclient",
   ]
   external_deps = [
     "ability_base:want",
