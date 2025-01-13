@@ -22,8 +22,8 @@ idl_gen_interface("work_scheduler_interface") {
 
 config("worksched_public_config") {
   include_dirs = [
-    "${target_gen_dir}",
     "include",
+    "${target_gen_dir}",
   ]
 }
 
@@ -44,8 +44,8 @@ ohos_source_set("workschedservice_zidl_stub") {
     "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
-    "jsoncpp:jsoncpp",
     "ipc:ipc_core",
+    "jsoncpp:jsoncpp",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
@@ -68,8 +68,8 @@ ohos_source_set("workschedservice_zidl_proxy") {
     "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
-    "jsoncpp:jsoncpp",
     "ipc:ipc_core",
+    "jsoncpp:jsoncpp",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
