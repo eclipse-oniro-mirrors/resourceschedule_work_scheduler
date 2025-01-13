@@ -37,8 +37,8 @@ ohos_source_set("workschedservice_zidl_stub") {
   output_values = get_target_outputs(":work_scheduler_interface")
   sources = filter_include(output_values, [ "*_stub.cpp" ])
   deps = [
-    "${worksched_frameworks_path}:workschedclient",
     ":work_scheduler_interface",
+    "${worksched_frameworks_path}:workschedclient",
   ]
   external_deps = [
     "ability_base:want",
