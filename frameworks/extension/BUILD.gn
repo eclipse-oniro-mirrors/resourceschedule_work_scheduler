@@ -30,7 +30,6 @@ ohos_shared_library("workschedextension") {
     debug = false
   }
   sources = [
-    "${worksched_service_path}/zidl/src/work_scheduler_stub.cpp",
     "${worksched_service_path}/zidl/src/work_scheduler_stub_imp.cpp",
     "src/js_work_scheduler_extension.cpp",
     "src/js_work_scheduler_extension_context.cpp",
@@ -46,6 +45,7 @@ ohos_shared_library("workschedextension") {
   deps = [
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
+    "${worksched_zidl_path}:workschedservice_zidl_stub",
   ]
 
   external_deps = [

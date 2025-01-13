@@ -19,9 +19,7 @@
 #include "work_status.h"
 #include "work_condition.h"
 #include "work_sched_hilog.h"
-#include "work_sched_utils.h"
 #include "work_info.h"
-#include "work_scheduler_service.h"
 
 using namespace testing::ext;
 

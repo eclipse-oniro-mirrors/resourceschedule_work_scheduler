@@ -35,14 +35,14 @@ public:
      *
      * @param workInfo The info of work.
      */
-    void OnWorkStart(WorkInfo& workInfo) override;
+    ErrCode OnWorkStart(const WorkInfo& workInfo) override;
 
     /**
      * @brief The OnWorkStop callback.
      *
      * @param workInfo The info of work.
      */
-    void OnWorkStop(WorkInfo& workInfo) override;
+    ErrCode OnWorkStop(const WorkInfo& workInfo) override;
 private:
     std::weak_ptr<JsWorkSchedulerExtension> extension_;
 };

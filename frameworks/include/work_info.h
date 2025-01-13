@@ -33,6 +33,23 @@ namespace WorkScheduler {
 class WorkInfo : public Parcelable {
 public:
     explicit WorkInfo();
+    WorkInfo(const WorkInfo& workInfo)
+    {
+        workId_ = workInfo.workId_;
+        bundleName_ = workInfo.bundleName_;
+        abilityName_ = workInfo.abilityName_;
+        persisted_ = workInfo.persisted_;
+        uid_ = workInfo.uid_;
+        callBySystemApp_ = workInfo.callBySystemApp_;
+        preinstalled_ = workInfo.preinstalled_;
+        uriKey_ = workInfo.uriKey_;
+        appIndex_ = workInfo.appIndex_;
+        extension_ = workInfo.extension_;
+        saId_ = workInfo.saId_;
+        residentSa_ = workInfo.residentSa_;
+        extras_ = workInfo.extras_;
+        conditionMap_ = workInfo.conditionMap_;
+    }
     ~WorkInfo() override;
     /**
      * @brief Set the id of workId.
@@ -258,7 +275,7 @@ public:
      * @param parcel The parcel.
      * @return Read.
      */
-    static sptr<WorkInfo> Unmarshalling(Parcel &parcel);
+    static WorkInfo* Unmarshalling(Parcel &parcel);
     /**
      * @brief Dump.
      *
@@ -350,7 +367,7 @@ private:
     int32_t saId_;
     bool residentSa_;
 private:
-    static bool UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize);
+    static bool UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);
     void ParseConditionFromJsonStr(const Json::Value &value);
     void ParseParametersFromJsonStr(const Json::Value &value);

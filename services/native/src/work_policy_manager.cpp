@@ -565,16 +565,16 @@ std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkFromWatchdog(uint32_t id)
     return watchdogIdMap_.count(id) > 0 ? watchdogIdMap_.at(id) : nullptr;
 }
 
-list<shared_ptr<WorkInfo>> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
+vector<WorkInfo> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
 {
     WS_HILOGD("Wenter");
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
-    list<shared_ptr<WorkInfo>> allWorks;
+    vector<WorkInfo> allWorks;
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         auto allWorkStatus = queue->GetWorkList();
         std::transform(allWorkStatus.begin(), allWorkStatus.end(), std::back_inserter(allWorks),
-            [](std::shared_ptr<WorkStatus> it) { return it->workInfo_; });
+            [](std::shared_ptr<WorkStatus> it) { return *(it->workInfo_); });
     }
     return allWorks;
 }
@@ -604,14 +604,14 @@ list<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllWorkStatus(int32_t &u
     return allWorks;
 }
 
-std::list<std::shared_ptr<WorkInfo>> WorkPolicyManager::GetAllRunningWorks()
+std::vector<WorkInfo> WorkPolicyManager::GetAllRunningWorks()
 {
     WS_HILOGD("enter");
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
-    list<shared_ptr<WorkInfo>> allWorks;
+    vector<WorkInfo> allWorks;
     auto it = uidQueueMap_.begin();
     while (it != uidQueueMap_.end()) {
-        std::list<std::shared_ptr<WorkInfo>> workList = it->second->GetRunningWorks();
+        std::vector<WorkInfo> workList = it->second->GetRunningWorks();
         allWorks.insert(allWorks.end(), workList.begin(), workList.end());
         it++;
     }

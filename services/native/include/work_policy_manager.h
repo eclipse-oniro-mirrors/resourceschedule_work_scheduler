@@ -132,7 +132,7 @@ public:
      * @param uid The uid.
      * @return All works.
      */
-    std::list<std::shared_ptr<WorkInfo>> ObtainAllWorks(int32_t &uid);
+    std::vector<WorkInfo> ObtainAllWorks(int32_t &uid);
     /**
      * @brief Get the status of work.
      *
@@ -154,7 +154,7 @@ public:
      *
      * @return All running works;
      */
-    std::list<std::shared_ptr<WorkInfo>> GetAllRunningWorks();
+    std::vector<WorkInfo> GetAllRunningWorks();
 
     /**
      * @brief The Dump.

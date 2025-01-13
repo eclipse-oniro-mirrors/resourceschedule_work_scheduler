@@ -44,6 +44,7 @@
           "netmanager_base",
           "time_service",
           "init",
+          "idl_tool",
           "data_share",
           "config_policy",
           "hiview",
@@ -69,7 +70,6 @@
             "header": {
                 "header_base": "//foundation/resourceschedule/work_scheduler/frameworks/include",
                 "header_files": [
-                    "iwork_sched_service.h",
                     "work_condition.h",
                     "work_info.h",
                     "workscheduler_srv_client.h"

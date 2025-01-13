@@ -234,15 +234,15 @@ int32_t WorkQueue::GetRunningCount()
     return count;
 }
 
-std::list<std::shared_ptr<WorkInfo>> WorkQueue::GetRunningWorks()
+std::vector<WorkInfo> WorkQueue::GetRunningWorks()
 {
-    std::list<std::shared_ptr<WorkInfo>> workInfo;
+    std::vector<WorkInfo> workInfo;
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
     for (shared_ptr<WorkStatus> work : workList_) {
         if (work->IsRunning()) {
-            auto info = std::make_shared<WorkInfo>();
-            info->SetElement(work->bundleName_, work->abilityName_);
-            info->RefreshUid(work->uid_);
+            auto info = WorkInfo();
+            info.SetElement(work->bundleName_, work->abilityName_);
+            info.RefreshUid(work->uid_);
             workInfo.emplace_back(info);
         }
     }

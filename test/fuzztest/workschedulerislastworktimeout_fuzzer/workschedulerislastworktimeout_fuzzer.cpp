@@ -15,7 +15,7 @@
 
 #include "workschedulerislastworktimeout_fuzzer.h"
 
-#include "iwork_sched_service_ipc_interface_code.h"
+#include "iwork_sched_service.h"
 #include "work_scheduler_service.h"
 
 
@@ -40,7 +40,7 @@ namespace WorkScheduler {
         MessageParcel reply;
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        uint32_t code = static_cast<int32_t>(IWorkSchedServiceInterfaceCode::IS_LAST_WORK_TIMEOUT);
+        uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_IS_LAST_WORK_TIMEOUT);
         workSchedulerService_->OnStart();
         workSchedulerService_->InitBgTaskSubscriber();
         if (!workSchedulerService_->ready_) {

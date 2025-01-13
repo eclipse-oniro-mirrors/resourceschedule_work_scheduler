@@ -363,9 +363,9 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
     return ret;
 }
 
-sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
+WorkInfo* WorkInfo::Unmarshalling(Parcel &parcel)
 {
-    sptr<WorkInfo> read = new (std::nothrow) WorkInfo();
+    auto read = new (std::nothrow) WorkInfo();
     if (read == nullptr) {
         WS_HILOGE("read is nullptr.");
         return nullptr;
@@ -407,7 +407,7 @@ sptr<WorkInfo> WorkInfo::Unmarshalling(Parcel &parcel)
     return read;
 }
 
-bool WorkInfo::UnmarshallCondition(Parcel &parcel, sptr<WorkInfo> &read, uint32_t mapsize)
+bool WorkInfo::UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t mapsize)
 {
     read->conditionMap_ = std::map<WorkCondition::Type, std::shared_ptr<Condition>>();
     for (uint32_t i = 0; i < mapsize; i++) {

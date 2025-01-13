@@ -19,6 +19,7 @@ module_output_path = "work_scheduler/work_scheduler"
 
 config("worksched_private_config") {
   include_dirs = [
+    "${target_gen_dir}",
     "${worksched_service_path}/zidl/include",
     "${worksched_service_path}/native/include",
   ]
@@ -42,10 +43,14 @@ ohos_fuzztest("WorkSchedulerGetWorkStatusFuzzTest") {
   sources = [ "workschedulergetworkstatus_fuzzer.cpp" ]
 
   deps = [
+    "${worksched_frameworks_path}:work_sched_service_proxy",
+    "${worksched_frameworks_path}:work_sched_service_stub",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_frameworks_path}/extension:workschedextension",
     "${worksched_service_path}:workschedservice_static",
     "${worksched_utils_path}:workschedutils",
+    "${worksched_zidl_path}:workschedservice_zidl_proxy",
+    "${worksched_zidl_path}:workschedservice_zidl_stub",
   ]
 
   external_deps = [

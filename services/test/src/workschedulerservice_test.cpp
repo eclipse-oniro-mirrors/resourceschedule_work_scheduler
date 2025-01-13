@@ -106,14 +106,14 @@ std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerSer
     DelayedSingleton<WorkSchedulerService>::GetInstance();
 
 class MyWorkSchedulerService : public WorkSchedServiceStub {
-    int32_t StartWork(WorkInfo& workInfo) { return 0; }
-    int32_t StopWork(WorkInfo& workInfo) { return 0; };
-    int32_t StopAndCancelWork(WorkInfo& workInfo)  { return 0; }
+    int32_t StartWork(const WorkInfo& workInfo) { return 0; }
+    int32_t StopWork(const WorkInfo& workInfo) { return 0; };
+    int32_t StopAndCancelWork(const WorkInfo& workInfo)  { return 0; }
     int32_t StopAndClearWorks() { return 0; }
     int32_t IsLastWorkTimeout(int32_t workId, bool &result) { return 0; }
-    int32_t ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
-    int32_t GetWorkStatus(int32_t &workId, std::shared_ptr<WorkInfo>& workInfo) { return 0; }
-    int32_t GetAllRunningWorks(std::list<std::shared_ptr<WorkInfo>>& workInfos) { return 0; }
+    int32_t ObtainAllWorks(std::vector<WorkInfo>& workInfos) { return 0; }
+    int32_t GetWorkStatus(int32_t workId, WorkInfo& workInfo) { return 0; }
+    int32_t GetAllRunningWorks(std::vector<WorkInfo>& workInfos) { return 0; }
     int32_t PauseRunningWorks(int32_t uid) {return 0; }
     int32_t ResumePausedWorks(int32_t uid) {return 0; }
     int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) { return 0; }
@@ -258,7 +258,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
 {
-    std::list<std::shared_ptr<WorkInfo>> workInfos;
+    std::vector<WorkInfo> workInfos;
     auto ret = workSchedulerService_->ObtainAllWorks(workInfos);
     EXPECT_EQ(ret, 0);
 }
@@ -271,10 +271,10 @@ HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
 {
-    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
-    int32_t workId;
+    WorkInfo workInfo;
+    int32_t workId = 0;
     auto ret = workSchedulerService_->GetWorkStatus(workId, workInfo);
-    EXPECT_EQ(ret, 0);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
 
 /**
@@ -285,7 +285,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_001, TestSize.Level1)
 {
-    std::list<std::shared_ptr<WorkInfo>> workInfos;
+    std::vector<WorkInfo> workInfos;
 
     auto ret = workSchedulerService_->GetAllRunningWorks(workInfos);
     EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
@@ -792,10 +792,10 @@ HWTEST_F(WorkSchedulerServiceTest, WorkSchedServiceStub_001, TestSize.Level1)
     MessageOption option;
     const int size = 11;
     for (int i = 0; i < size; i++) {
-        s.HandleRequest(i, data, reply, option);
+        s.OnRemoteRequest(i, data, reply, option);
         WorkInfo info;
         info.Marshalling(data);
-        s.HandleRequest(i, data, reply, option);
+        s.OnRemoteRequest(i, data, reply, option);
     }
     s.OnRemoteRequest(0, data, reply, option);
 }
