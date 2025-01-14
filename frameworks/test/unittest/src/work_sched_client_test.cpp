@@ -160,6 +160,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ = sptr<IRemoteObject::DeathRecipient>
         (new WorkSchedulerSrvClient::WorkSchedulerDeathRecipient(WorkSchedulerSrvClient::GetInstance()));
     deathRecipient_->OnRemoteDied(nullptr);
+    EXPECT_NE(remoteObject_, nullptr);
 }
 
 /**
