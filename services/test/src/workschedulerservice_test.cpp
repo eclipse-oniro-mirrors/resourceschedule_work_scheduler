@@ -657,6 +657,7 @@ HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level
     subscriber.OnProcEfficiencyResourcesReset(resourceInfo);
     subscriber.OnAppEfficiencyResourcesApply(resourceInfo);
     subscriber.OnAppEfficiencyResourcesReset(resourceInfo);
+    EXPECT_EQ(resourceInfo->GetBundleName(), "name");
     WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 end ====== ");
 }
 
@@ -670,6 +671,7 @@ HWTEST_F(WorkSchedulerServiceTest, WorkQueueEventHandler_001, TestSize.Level1)
     handler.ProcessEvent(event);
     event = AppExecFwk::InnerEvent::Get(2);
     handler.ProcessEvent(event);
+    EXPECT_TRUE(handler.manager_ == nullptr);
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 end ====== ");
 }
 
@@ -782,6 +784,8 @@ HWTEST_F(WorkSchedulerServiceTest, ListenerStop_001, TestSize.Level1)
     {
         pair.second->Stop();
     }
+    workSchedulerService_->workQueueManager_->listenerMap_.clear();
+    EXPECT_TRUE(workSchedulerService_->workQueueManager_->listenerMap_.size() == 0);
     WS_HILOGI("====== ListenerStop_001 end ====== ");
 }
 
@@ -797,7 +801,8 @@ HWTEST_F(WorkSchedulerServiceTest, WorkSchedServiceStub_001, TestSize.Level1)
         info.Marshalling(data);
         s.OnRemoteRequest(i, data, reply, option);
     }
-    s.OnRemoteRequest(0, data, reply, option);
+    int32_t ret = s.OnRemoteRequest(0, data, reply, option);
+    EXPECT_TRUE(ret != ERR_OK);
 }
 
 /**
@@ -966,8 +971,10 @@ HWTEST_F(WorkSchedulerServiceTest, CheckEffiResApplyInfo_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_001, TestSize.Level1)
 {
     workSchedulerService_->TriggerWorkIfConditionReady();
-    workSchedulerService_->PauseRunningWorks(1);
-    workSchedulerService_->ResumePausedWorks(1);
+    int32_t ret = workSchedulerService_->PauseRunningWorks(1);
+    EXPECT_TRUE(ret == E_INVALID_PROCESS_NAME);
+    ret = workSchedulerService_->ResumePausedWorks(1);
+    EXPECT_TRUE(ret == E_INVALID_PROCESS_NAME);
 }
 
 /**
@@ -981,11 +988,17 @@ HWTEST_F(WorkSchedulerServiceTest, OnAddSystemAbility_001, TestSize.Level1)
     std::string deviceId;
     int32_t DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID = 1914;
     int32_t DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID = 1907;
+    workSchedulerService_->groupObserver_ = nullptr;
     workSchedulerService_->OnAddSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID, deviceId);
+    EXPECT_TRUE(workSchedulerService_->groupObserver_ != nullptr);
     workSchedulerService_->OnRemoveSystemAbility(DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID, deviceId);
+    EXPECT_TRUE(workSchedulerService_->groupObserver_ == nullptr);
 
+    workSchedulerService_->standbyStateObserver_ = nullptr;
     workSchedulerService_->OnAddSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID, deviceId);
+    EXPECT_TRUE(workSchedulerService_->standbyStateObserver_ != nullptr);
     workSchedulerService_->OnRemoveSystemAbility(DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID, deviceId);
+    EXPECT_TRUE(workSchedulerService_->standbyStateObserver_ == nullptr);
 }
 
 /**
