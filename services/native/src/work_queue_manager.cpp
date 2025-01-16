@@ -227,7 +227,7 @@ void WorkQueueManager::Dump(string& result)
     std::lock_guard<ffrt::mutex> lock(mutex_);
     string conditionType[] = {"network", "charger", "battery_status", "battery_level",
         "storage", "timer", "group", "deepIdle", "standby", "unknown"};
-    uint32_t size = sizeof(conditionType);
+    uint32_t size = sizeof(conditionType) / sizeof(conditionType[0]);
     for (auto it : queueMap_) {
         if (it.first < size) {
             result.append(conditionType[it.first]);
