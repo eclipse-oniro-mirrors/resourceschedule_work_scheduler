@@ -55,6 +55,7 @@ extern "C" {
     FFI_EXPORT int32_t CJ_GetWorkStatus(int32_t workId, RetWorkInfo& result);
     FFI_EXPORT RetArrRetWorkInfo CJ_ObtainAllWorks();
     FFI_EXPORT int32_t CJ_IsLastWorkTimeOut(int32_t workId, bool& result);
+    FFI_EXPORT int32_t CJ_StopAndClearWorks();
 
     int32_t GetWorkInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo);
     int32_t GetNetWorkInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);

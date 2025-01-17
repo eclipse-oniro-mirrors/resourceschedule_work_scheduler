@@ -40,12 +40,17 @@ extern "C" {
     int32_t CJ_StopWork(RetWorkInfo work, bool needCancel)
     {
         WorkInfo workInfo = WorkInfo();
+        ErrCode errCode;
         auto paraCode = GetWorkInfo(work, workInfo);
         if (paraCode != SUCCESS_CODE) {
             LOGE("WorkScheduler: CJ_StopWork parse parameter failed %{public}d", paraCode);
             return paraCode;
         }
-        ErrCode errCode = WorkSchedulerSrvClient::GetInstance().StopWork(workInfo);
+        if (needCancel) {
+            errCode = WorkSchedulerSrvClient::GetInstance().StopAndCancelWork(workInfo);
+        } else {
+            errCode = WorkSchedulerSrvClient::GetInstance().StopWork(workInfo);
+        }
         return errCode;
     }
 
@@ -93,6 +98,11 @@ extern "C" {
     int32_t CJ_IsLastWorkTimeOut(int32_t workId, bool& result)
     {
         return WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(workId, result);
+    }
+
+    int32_t CJ_StopAndClearWorks()
+    {
+        return WorkSchedulerSrvClient::GetInstance().StopAndClearWorks();
     }
 
     // extra is not set

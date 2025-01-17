@@ -21,6 +21,7 @@ FFI_EXPORT int CJ_StopWork = 0;
 FFI_EXPORT int CJ_GetWorkStatus = 0;
 FFI_EXPORT int CJ_ObtainAllWorks = 0;
 FFI_EXPORT int CJ_IsLastWorkTimeOut = 0;
+FFI_EXPORT int CJ_StopAndClearWorks = 0;
 FFI_EXPORT int GetWorkInfo = 0;
 FFI_EXPORT int GetNetWorkInfo = 0;
 FFI_EXPORT int GetChargeInfo = 0;
