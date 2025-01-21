@@ -316,6 +316,7 @@ private:
     void DumpAllInfo(std::string& result);
     bool CheckWorkInfo(WorkInfo& workInfo, int32_t& uid);
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
+    int32_t StartWorkInner(const WorkInfo& workInfo);
     bool CheckCondition(WorkInfo& workInfo);
     bool IsBaseAbilityReady();
     void DumpUsage(std::string& result);

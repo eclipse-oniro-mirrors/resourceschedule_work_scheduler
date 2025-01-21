@@ -702,6 +702,13 @@ int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
     int32_t timerId = SetTimer();
+    int32_t ret = StartWorkInner(workInfo);
+    CancelTimer(timerId);
+    return ret;
+}
+
+int32_t WorkSchedulerService::StartWorkInner(const WorkInfo& workInfo)
+{
     WorkInfo workInfo_ = workInfo;
     if (!ready_) {
         WS_HILOGE("service is not ready.");
@@ -734,7 +741,6 @@ int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::CHECK_CONDITION_MSG, 0),
             CHECK_CONDITION_DELAY);
     }
-    CancelTimer(timerId);
     return ret;
 }
 
@@ -1543,7 +1549,7 @@ int32_t WorkSchedulerService::SetTimer()
     };
     idTimer = HiviewDFX::XCollie::GetInstance().SetTimer(
         collieName, XCOLLIE_TIMEOUT_SECONDS, TimerCallback, nullptr, flag);
-    WS_HILOGD("SetTimer id: %{public}d, name: %{public}s.", idTimer, collieName.c_str());
+    WS_HILOGI("SetTimer id: %{public}d, name: %{public}s.", idTimer, collieName.c_str());
     return idTimer;
 #else
     WS_HILOGD("No HICOLLIE_ENABLE");
@@ -1557,7 +1563,7 @@ void WorkSchedulerService::CancelTimer(int32_t id)
     if (id == HiviewDFX::INVALID_ID) {
         return;
     }
-    WS_HILOGD("CancelTimer id: %{public}d.", id);
+    WS_HILOGI("CancelTimer id: %{public}d.", id);
     HiviewDFX::XCollie::GetInstance().CancelTimer(id);
 #else
     return;
