@@ -17,13 +17,46 @@
 #include "workscheduler_srv_client.h"
 #include "work_sched_errors.h"
 #include "work_scheduler_log.h"
+#include "want_params_wrapper.h"
+#include "bool_wrapper.h"
+#include "double_wrapper.h"
+#include "int_wrapper.h"
+#include "string_wrapper.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 
+template <class T, class IT, class NativeT>
+int32_t InnerWrapWantParamsT(const sptr<AAFwk::IInterface> iIt, CParameters *p)
+{
+    NativeT natValue = T::Unbox(IT::Query(iIt));
+    NativeT *ptr = static_cast<NativeT *>(malloc(sizeof(NativeT)));
+    if (ptr == nullptr) {
+        LOGE("natValue ptr is nullptr, no memory.");
+        return ERR_NO_MEMORY;
+    }
+    *ptr = natValue;
+    p->value = static_cast<void*>(ptr);
+    p->size = sizeof(NativeT);
+    return 0;
+}
+
 extern "C" {
     const int32_t BATTERY_LEVEL_MIN = 0;
     const int32_t BATTERY_LEVEL_MAX = 100;
+
+    const int8_t INT_TYPE = 0;
+    const int8_t F64_TYPE = 1;
+    const int8_t STRING_TYPE = 2;
+    const int8_t BOOL_TYPE = 3;
+    // need to be same as WantParams
+    enum {
+        VALUE_TYPE_NULL = -1,
+        VALUE_TYPE_BOOLEAN = 1,
+        VALUE_TYPE_INT = 5,
+        VALUE_TYPE_DOUBLE = 8,
+        VALUE_TYPE_STRING = 9,
+    };
 
     int32_t CJ_StartWork(RetWorkInfo work)
     {
@@ -132,6 +165,10 @@ extern "C" {
         if (ret != 0) {
             return ret;
         }
+        ret = GetExtrasInfo(cwork, workInfo, hasConditions);
+        if (ret != 0) {
+            return ret;
+        }
 
         if (!hasConditions) {
             LOGE("Set none conditions, so fail to init WorkInfo.");
@@ -140,6 +177,48 @@ extern "C" {
         return 0;
     }
 
+    int32_t GetExtrasInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition)
+    {
+        int32_t code = 0;
+        CArrParameters cArrP = cwork.parameters;
+        AAFwk::WantParams wants;
+        if (cArrP.size == 0) {
+            return code;
+        }
+        for (auto i = 0; i < cArrP.size; ++i) {
+            std::string key = std::string(cArrP.head[i].key);
+            switch (cArrP.head[i].valueType) {
+                case INT_TYPE: {
+                    int32_t *intVal = static_cast<int32_t *>(cArrP.head[i].value);
+                    wants.SetParam(key, AAFwk::Integer::Box(*intVal));
+                    break;
+                }
+                case F64_TYPE: {
+                    double *doubleVal = static_cast<double *>(cArrP.head[i].value);
+                    wants.SetParam(key, AAFwk::Double::Box(*doubleVal));
+                    break;
+                }
+                case STRING_TYPE: {
+                    std::string strVal(static_cast<char *>(cArrP.head[i].value));
+                    wants.SetParam(key, AAFwk::String::Box(strVal));
+                    break;
+                }
+                case BOOL_TYPE: {
+                    bool *boolVal = static_cast<bool *>(cArrP.head[i].value);
+                    wants.SetParam(key, AAFwk::Boolean::Box(*boolVal));
+                    break;
+                }
+                default: {
+                    LOGE("parameters type error.");
+                    code = E_PARAMETERS_TYPE_ERR;
+                    return code;
+                }
+            }
+        }
+        workInfo.RequestExtras(wants);
+        return code;
+    }
+    
     int32_t GetNetWorkInfo(RetWorkInfo cwork, WorkInfo& workInfo, bool& hasCondition)
     {
         int32_t code = 0;
@@ -269,6 +348,60 @@ extern "C" {
         cwork.repeatCount = workInfo->GetCycleCount();
         cwork.isDeepIdle = -1;
         cwork.idleWaitTime = -1;
+        ParseExtrasInfo(workInfo, cwork.parameters);
+    }
+
+    void ParseExtrasInfo(std::shared_ptr<WorkInfo> workInfo, CArrParameters &arrParam)
+    {
+        // init arrParam
+        arrParam.size = 0;
+        arrParam.head = nullptr;
+        std::shared_ptr<AAFwk::WantParams> extras = workInfo->GetExtras();
+        if (extras.get() == nullptr) {
+            LOGI("extras map is not initialized.");
+            return;
+        }
+        auto extrasMap = extras->GetParams();
+        arrParam.size = extrasMap.size();
+        if (extrasMap.size() == 0) {
+            LOGI("extras parameters is 0.");
+            return;
+        }
+        int typeId = VALUE_TYPE_NULL;
+        int i = 0;
+        int32_t mallocSize = static_cast<int32_t>(sizeof(CParameters) * arrParam.size);
+        arrParam.head = static_cast<CParameters *>(malloc(mallocSize));
+        for (auto it : extrasMap) {
+            typeId = AAFwk::WantParams::GetDataType(it.second);
+            arrParam.head[i].key = MallocCString(it.first);
+            switch (typeId) {
+                case VALUE_TYPE_INT: {
+                    arrParam.head[i].valueType = INT_TYPE;
+                    InnerWrapWantParamsT<AAFwk::Integer, AAFwk::IInteger, int>(it.second, &arrParam.head[i]);
+                    break;
+                }
+                case VALUE_TYPE_DOUBLE: {
+                    arrParam.head[i].valueType = F64_TYPE;
+                    InnerWrapWantParamsT<AAFwk::Double, AAFwk::IDouble, double>(it.second, &arrParam.head[i]);
+                    break;
+                }
+                case VALUE_TYPE_BOOLEAN: {
+                    arrParam.head[i].valueType = BOOL_TYPE;
+                    InnerWrapWantParamsT<AAFwk::Boolean, AAFwk::IBoolean, bool>(it.second, &arrParam.head[i]);
+                    break;
+                }
+                case VALUE_TYPE_STRING: {
+                    arrParam.head[i].valueType = STRING_TYPE;
+                    InnerWrapWantParamsT<AAFwk::String, AAFwk::IString, std::string>(it.second, &arrParam.head[i]);
+                    break;
+                }
+                default: {
+                    LOGE("parameters type not supported.");
+                    break;
+                }
+            }
+            ++i;
+        }
     }
 
     char* MallocCString(const std::string& origin)
