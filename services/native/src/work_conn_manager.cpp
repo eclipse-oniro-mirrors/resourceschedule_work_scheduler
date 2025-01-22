@@ -55,7 +55,7 @@ sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
 {
     std::lock_guard<ffrt::mutex> lock(connMapMutex_);
     if (connMap_.count(workId) > 0) {
-        return connMap_.at(workId);
+        return connMap_[workId];
     }
     return nullptr;
 }
