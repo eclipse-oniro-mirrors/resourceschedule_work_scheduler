@@ -279,7 +279,7 @@ int32_t WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid, bool &
         auto queue = uidQueueMap_.at(uid);
         if (!queue) {
             WS_HILOGE("IsLastWorkTimeout failed, queue is nullptr");
-            return false;
+            return E_WORK_NOT_EXIST_FAILED;
         }
         shared_ptr<WorkStatus> workStatus = queue->Find(workIdStr);
         if (workStatus != nullptr) {
