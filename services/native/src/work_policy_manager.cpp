@@ -256,7 +256,7 @@ bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         if (!queue) {
-            WS_HILOGD("StopAndClearWorks failed, queue is nullptr");
+            WS_HILOGE("StopAndClearWorks failed, queue is nullptr");
             return false;
         }
         for (auto it : queue->GetWorkList()) {
@@ -278,7 +278,7 @@ int32_t WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid, bool &
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         if (!queue) {
-            WS_HILOGD("IsLastWorkTimeout failed, queue is nullptr");
+            WS_HILOGE("IsLastWorkTimeout failed, queue is nullptr");
             return false;
         }
         shared_ptr<WorkStatus> workStatus = queue->Find(workIdStr);
@@ -582,7 +582,7 @@ vector<WorkInfo> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         if (!queue) {
-            WS_HILOGD("ObtainAllWorks failed, queue is nullptr");
+            WS_HILOGE("ObtainAllWorks failed, queue is nullptr");
             return allWorks;
         }
         auto allWorkStatus = queue->GetWorkList();
@@ -599,7 +599,7 @@ shared_ptr<WorkInfo> WorkPolicyManager::GetWorkStatus(int32_t &uid, int32_t &wor
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
         if (!queue) {
-            WS_HILOGD("GetWorkStatus failed, queue is nullptr");
+            WS_HILOGE("GetWorkStatus failed, queue is nullptr");
             return nullptr;
         }
         auto workStatus = queue->Find(string("u") + to_string(uid) + "_" + to_string(workId));
