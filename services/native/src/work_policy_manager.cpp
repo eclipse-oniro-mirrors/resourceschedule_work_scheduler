@@ -255,6 +255,10 @@ bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
+        if (!queue) {
+            WS_HILOGD("StopAndClearWorks failed, queue is nullptr");
+            return false;
+        }
         for (auto it : queue->GetWorkList()) {
             workConnManager_->StopWork(it, false);
             it->MarkStatus(WorkStatus::Status::REMOVED);
@@ -272,7 +276,12 @@ int32_t WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid, bool &
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
     string workIdStr = WorkStatus::MakeWorkId(workId, uid);
     if (uidQueueMap_.count(uid) > 0) {
-        shared_ptr<WorkStatus> workStatus = uidQueueMap_.at(uid)->Find(workIdStr);
+        auto queue = uidQueueMap_.at(uid);
+        if (!queue) {
+            WS_HILOGD("IsLastWorkTimeout failed, queue is nullptr");
+            return false;
+        }
+        shared_ptr<WorkStatus> workStatus = queue->Find(workIdStr);
         if (workStatus != nullptr) {
             return workStatus->IsLastWorkTimeout();
         }
@@ -572,6 +581,10 @@ vector<WorkInfo> WorkPolicyManager::ObtainAllWorks(int32_t &uid)
     vector<WorkInfo> allWorks;
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
+        if (!queue) {
+            WS_HILOGD("ObtainAllWorks failed, queue is nullptr");
+            return allWorks;
+        }
         auto allWorkStatus = queue->GetWorkList();
         std::transform(allWorkStatus.begin(), allWorkStatus.end(), std::back_inserter(allWorks),
             [](std::shared_ptr<WorkStatus> it) { return *(it->workInfo_); });
@@ -585,6 +598,10 @@ shared_ptr<WorkInfo> WorkPolicyManager::GetWorkStatus(int32_t &uid, int32_t &wor
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
     if (uidQueueMap_.count(uid) > 0) {
         auto queue = uidQueueMap_.at(uid);
+        if (!queue) {
+            WS_HILOGD("GetWorkStatus failed, queue is nullptr");
+            return nullptr;
+        }
         auto workStatus = queue->Find(string("u") + to_string(uid) + "_" + to_string(workId));
         if (workStatus != nullptr) {
             return workStatus->workInfo_;
