@@ -24,6 +24,18 @@
 #include <string>
 
 extern "C" {
+    typedef struct {
+        int8_t valueType;
+        char *key;
+        void *value;
+        int64_t size;
+    } CParameters;
+
+    typedef struct {
+        CParameters *head;
+        int64_t size;
+    } CArrParameters;
+
     struct RetWorkInfo {
         int32_t workId;
         char* bundleName;
@@ -40,6 +52,7 @@ extern "C" {
         bool isPersisted;
         int32_t isDeepIdle;
         int32_t idleWaitTime;
+        CArrParameters parameters;
     };
 
     struct RetArrRetWorkInfo {
@@ -63,6 +76,8 @@ extern "C" {
     int32_t GetBatteryInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
     int32_t GetStorageInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
     int32_t GetRepeatInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
+    int32_t GetExtrasInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
+    void ParseExtrasInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workInfo, CArrParameters &parameters);
     void ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workInfo, RetWorkInfo& cwork);
     char* MallocCString(const std::string& origin);
 }
