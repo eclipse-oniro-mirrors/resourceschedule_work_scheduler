@@ -121,22 +121,26 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
             PushWork(works, result);
         }
     }
+    bool hasStop = false;
     auto it = result.begin();
     while (it != result.end()) {
-        if ((*it)->needRetrigger_) {
-            if (conditionType != WorkCondition::Type::TIMER
-                    && conditionType != WorkCondition::Type::GROUP) {
-                WS_HILOGI("Need retrigger, start group listener, bundleName:%{public}s, workId:%{public}s",
-                    (*it)->bundleName_.c_str(), (*it)->workId_.c_str());
-                SetTimeRetrigger((*it)->timeRetrigger_);
-                listenerMap_.at(WorkCondition::Type::GROUP)->Start();
-            }
-            (*it)->needRetrigger_ = false;
-            (*it)->timeRetrigger_ = INT32_MAX;
-            it = result.erase(it);
-        } else {
+        if (!(*it)->needRetrigger_) {
             ++it;
+            continue;
         }
+        if (conditionType != WorkCondition::Type::TIMER
+                && conditionType != WorkCondition::Type::GROUP) {
+            WS_HILOGI("Need retrigger, start group listener, bundleName:%{public}s, workId:%{public}s",
+                (*it)->bundleName_.c_str(), (*it)->workId_.c_str());
+            SetTimeRetrigger((*it)->timeRetrigger_);
+            if (!hasStop) {
+                listenerMap_.at(WorkCondition::Type::GROUP)->Stop();
+            }
+            listenerMap_.at(WorkCondition::Type::GROUP)->Start();
+        }
+        (*it)->needRetrigger_ = false;
+        (*it)->timeRetrigger_ = INT32_MAX;
+        it = result.erase(it);
     }
     PrintWorkStatus(conditionType);
     return result;
