@@ -135,6 +135,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
             SetTimeRetrigger((*it)->timeRetrigger_);
             if (!hasStop) {
                 listenerMap_.at(WorkCondition::Type::GROUP)->Stop();
+                hasStop = true;
             }
             listenerMap_.at(WorkCondition::Type::GROUP)->Start();
         }
