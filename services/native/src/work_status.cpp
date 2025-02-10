@@ -104,7 +104,7 @@ WorkStatus::~WorkStatus() {}
 
 int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Condition> value)
 {
-    WS_HILOGD("Work status condition changed.");
+    conditionStatus_.clear();
     if (workInfo_->GetConditionMap()->count(type) > 0
         && type != WorkCondition::Type::TIMER
         && type != WorkCondition::Type::GROUP) {
@@ -355,12 +355,7 @@ bool WorkStatus::IsStandbyExemption()
 {
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->GetDeviceSleep()) {
-        if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
-            conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
-            return true;
-        }
-        conditionStatus_ += "|" + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
-        return false;
+        return dataManager->IsInDeviceStandyWhitelist(bundleName_);
     }
     return true;
 }
@@ -582,12 +577,24 @@ void WorkStatus::Dump(string& result)
 
 void WorkStatus::ToString(WorkCondition::Type type)
 {
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    if (dataManager->GetDeviceSleep()) {
+        if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
+        }
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
+    }
     if (conditionStatus_.empty()) {
+        WS_HILOGE("eventType:%{public}s, conditionStatus is empty", COND_TYPE_STRING_MAP[type].c_str());
         return;
     }
-    IsStandbyExemption();
-    WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
-        bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
+    if (workInfo_->IsSA()) {
+        WS_HILOGI("eventType:%{public}s,SAStatus:%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+            workId_.c_str(), conditionStatus_.c_str());
+    } else {
+        WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+            bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS
