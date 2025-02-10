@@ -373,28 +373,34 @@ WorkInfo* WorkInfo::Unmarshalling(Parcel &parcel)
     if (!parcel.ReadInt32(read->workId_) || !parcel.ReadString(read->bundleName_) ||
         !parcel.ReadString(read->abilityName_)) {
         WS_HILOGE("Failed to read the workId or bundleName or abilityName.");
+        delete read;
         return nullptr;
     }
     if (!parcel.ReadBool(read->persisted_)) {
         WS_HILOGE("Failed to read the persisted.");
+        delete read;
         return nullptr;
     }
     if (!parcel.ReadInt32(read->uid_)) {
         WS_HILOGE("Failed to read the uid.");
+        delete read;
         return nullptr;
     }
     uint32_t mapsize;
     if (!parcel.ReadUint32(mapsize) || mapsize >= MAX_SIZE) {
         WS_HILOGE("Failed to read the mapsize or mapsize is too big.");
+        delete read;
         return nullptr;
     }
     if (!UnmarshallCondition(parcel, read, mapsize)) {
         WS_HILOGE("Failed to read the work condition map.");
+        delete read;
         return nullptr;
     }
     bool hasExtras;
     if (!parcel.ReadBool(hasExtras)) {
         WS_HILOGE("Failed to read the extras existence.");
+        delete read;
         return nullptr;
     }
     if (!hasExtras) {
