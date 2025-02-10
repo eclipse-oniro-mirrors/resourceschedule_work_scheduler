@@ -589,7 +589,7 @@ void WorkStatus::ToString(WorkCondition::Type type)
         return;
     }
     WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
-            bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
+        bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
 }
 } // namespace WorkScheduler
 } // namespace OHOS
