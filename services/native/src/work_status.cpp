@@ -588,13 +588,8 @@ void WorkStatus::ToString(WorkCondition::Type type)
         WS_HILOGE("eventType:%{public}s, conditionStatus is empty", COND_TYPE_STRING_MAP[type].c_str());
         return;
     }
-    if (workInfo_->IsSA()) {
-        WS_HILOGI("eventType:%{public}s,SAStatus:%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
-            workId_.c_str(), conditionStatus_.c_str());
-    } else {
-        WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
-            bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
-    }
+    WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+        bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
 }
 } // namespace WorkScheduler
 } // namespace OHOS
