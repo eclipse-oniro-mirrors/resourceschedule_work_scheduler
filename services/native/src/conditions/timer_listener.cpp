@@ -65,6 +65,7 @@ bool TimerListener::Start()
 
 bool TimerListener::Stop()
 {
+    WS_HILOGI("TimerListener stop");
     if (timerId_ > 0) {
         MiscServices::TimeServiceClient::GetInstance()->StopTimer(timerId_);
         MiscServices::TimeServiceClient::GetInstance()->DestroyTimer(timerId_);
