@@ -44,6 +44,7 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
     "c_utils:utils",
     "googletest:gtest_main",
     "hilog:libhilog",
+    "ipc:ipc_core",
     "jsoncpp:jsoncpp",
   ]
 }

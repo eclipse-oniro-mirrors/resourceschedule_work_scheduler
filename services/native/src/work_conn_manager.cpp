@@ -62,10 +62,15 @@ sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
 
 bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 {
-    if (GetConnInfo(workStatus->workId_)) {
+    sptr<WorkSchedulerConnection> conn = GetConnInfo(workStatus->workId_);
+    if (conn) {
         WS_HILOGE("Work has started with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
             workStatus->workId_.c_str(), workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str());
-        return false;
+        RemoveConnInfo(workStatus->workId_);
+        if (conn->IsConnected()) {
+            conn->StopWork();
+            DisConnect(conn);
+        }
     }
 
     if (!workStatus->workInfo_->GetExtension()) {
@@ -74,8 +79,8 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
         return false;
     }
 
-    WS_HILOGD("Start Work with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
-        workStatus->workId_.c_str(), workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str());
+    WS_HILOGI("Begin to connect bundle:%{public}s, abilityName:%{public}s, workId:%{public}s",
+        workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str(), workStatus->workId_.c_str());
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
@@ -93,8 +98,6 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
         return false;
     }
 
-    WS_HILOGI("Begin to connect bundle:%{public}s, abilityName:%{public}s, userId:%{public}d",
-        workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str(), workStatus->userId_);
     sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
     if (connection == nullptr) {
         WS_HILOGE("Failed to new connection.");
