@@ -359,6 +359,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     }
     WS_HILOGD("Read from %{private}s", realPath.c_str());
     fin.open(realPath, ios::in);
+    WS_HILOGI("file open success");
     if (!fin.is_open()) {
         WS_HILOGE("cannot open file %{private}s", realPath.c_str());
         return false;
@@ -369,6 +370,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
         os << buffer;
     }
     string data = os.str();
+    WS_HILOGI("data read success");
     JSONCPP_STRING errs;
     Json::CharReaderBuilder readerBuilder;
     const unique_ptr<Json::CharReader> jsonReader(readerBuilder.newCharReader());
@@ -378,6 +380,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
         WS_HILOGE("parse %{private}s json error", realPath.c_str());
         return false;
     }
+    WS_HILOGI("json parse success");
     return true;
 }
 
