@@ -50,6 +50,7 @@ ohos_shared_library("workscheduler") {
     "ability_base:base",
     "ability_base:want",
     "hilog:libhilog",
+    "ipc:ipc_core",
     "napi:ace_napi",
   ]
 

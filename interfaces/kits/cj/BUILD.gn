@@ -41,7 +41,9 @@ ohos_shared_library("cj_work_scheduler_ffi") {
     external_deps = [
       "ability_base:base",
       "ability_base:want",
+      "c_utils:utils",
       "hilog:libhilog",
+      "ipc:ipc_core",
       "napi:ace_napi",
       "napi:cj_bind_ffi",
     ]
