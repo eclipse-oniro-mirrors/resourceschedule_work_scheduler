@@ -81,12 +81,10 @@ void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
                     break;
             }
         } else {
-            if (IsNetworkOK()) {
-                WS_HILOGI("The network status is normal, ignore");
-                return;
+            if (!IsNetworkOK()) {
+                listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                    std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
             }
-            listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
-                std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
         }
 #else
         listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
