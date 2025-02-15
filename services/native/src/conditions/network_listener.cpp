@@ -108,7 +108,7 @@ bool NetworkEventSubscriber::IsNetworkOK()
         WS_HILOGE("GetNetCapbilities failed, ret = %{public}d", ret);
         return false;
     }
-    return netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET));
+    return netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET);
 #endif
     return false;
 }
