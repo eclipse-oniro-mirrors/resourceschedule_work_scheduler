@@ -370,6 +370,9 @@ bool WorkStatus::IsStorageReady(WorkCondition::Type type)
 bool WorkStatus::IsStandbyExemption()
 {
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    if (dataManager->IsInDeviceStandyRestrictlist(bundleName_)) {
+        return false;
+    }
     if (dataManager->GetDeviceSleep()) {
         return dataManager->IsInDeviceStandyWhitelist(bundleName_);
     }

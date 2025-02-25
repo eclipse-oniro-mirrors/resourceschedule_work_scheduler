@@ -43,6 +43,16 @@ public:
     * @param added true mean starting allow, false mean ending allow.
     */
     void OnAllowListChanged(int32_t uid, const std::string& name, uint32_t allowType, bool added) override;
+
+    /*
+    * @brief callback when device_standby restrictList change.
+    *
+    * @param uid of application who apply restrictList.
+    * @param name bundleName of application who apply restrictList.
+    * @param allowType allowType mean strategy type, such as WORK_SCHEDULER.
+    * @param added true mean starting restrict, false mean ending restrict.
+    */
+    void OnRestrictListChanged(int32_t uid, const std::string& name, uint32_t allowType, bool added) override;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
 };

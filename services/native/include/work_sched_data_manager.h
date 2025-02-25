@@ -36,6 +36,11 @@ public:
     void AddDeviceStandyWhitelist(const std::list<std::string>& bundleNames);
     void ClearDeviceStandyWhitelist();
     bool IsDeviceStandyWhitelistEmpty();
+
+    bool IsInDeviceStandyRestrictlist(const std::string& bundleName);
+    void OnDeviceStandyRestrictlistChanged(const std::string& bundleName, const bool add);
+    void AddDeviceStandyRestrictlist(const std::list<std::string>& bundleNames);
+    void ClearDeviceStandyRestrictlist();
     // group
     void AddGroup(const std::string& bundleName, const int32_t userId, const int32_t appGroup);
     bool FindGroup(const std::string& bundleName, const int32_t userId, int32_t& appGroup);
@@ -46,6 +51,9 @@ private:
     ffrt::mutex deviceStandySetMutex_;
     // <bundle>
     std::set<std::string> deviceStandySet {};
+    ffrt::mutex deviceRestrictSetMutex_;
+    // <bundle>
+    std::set<std::string> deviceRestrictSet {};
     ffrt::mutex activeGroupMapMutex_;
     // <bundle_userId, group>
     std::unordered_map<std::string, int32_t> activeGroupMap_;

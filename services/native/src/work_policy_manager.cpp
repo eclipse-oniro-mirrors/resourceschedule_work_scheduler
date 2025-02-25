@@ -368,6 +368,9 @@ bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int3
         wss_.lock()->IsExemptionBundle(topWork->bundleName_)) {
         return true;
     }
+    if (DelayedSingleton<DataManager>::GetInstance()->IsInDeviceStandyRestrictlist(topWork->bundleName_)) {
+        return false;
+    }
     if (DelayedSingleton<DataManager>::GetInstance()->GetDeviceSleep() &&
         runningCount < STANDBY_MAX_RUNNING_COUNT &&
         DelayedSingleton<DataManager>::GetInstance()->IsInDeviceStandyWhitelist(topWork->bundleName_)) {
