@@ -94,8 +94,6 @@ void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::
     workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
         std::make_shared<DetectorValue>(0, 0, dataManager->GetDeviceSleep(), std::string()));
 }
-
-
 }  // namespace WorkScheduler
 }  // namespace OHOS
 #endif
