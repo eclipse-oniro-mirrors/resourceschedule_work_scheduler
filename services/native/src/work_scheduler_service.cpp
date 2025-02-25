@@ -1287,7 +1287,7 @@ void WorkSchedulerService::InitDeviceStandyRestrictlist()
 #ifdef DEVICE_STANDBY_ENABLE
     std::vector<DevStandbyMgr::AllowInfo> allowInfoArray;
     auto res = DevStandbyMgr::StandbyServiceClient::GetInstance().GetRestrictlist(
-        DevStandbyMgr::AllowType::WORK_SCHEDULER,allowInfoArray, DevStandbyMgr::ReasonCodeEnum::REASON_APP_API);
+        DevStandbyMgr::AllowType::WORK_SCHEDULER, allowInfoArray, DevStandbyMgr::ReasonCodeEnum::REASON_APP_API);
     if (res != ERR_OK) {
         WS_HILOGE("GetRestrictlist fail");
         return;
