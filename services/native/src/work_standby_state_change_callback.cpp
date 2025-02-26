@@ -48,9 +48,9 @@ void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping
 }
 
 void WorkStandbyStateChangeCallback::OnRestrictListChanged(int32_t uid, const std::string& name,
-    uint32_t allowType, bool added)
+    uint32_t resourceType, bool added)
 {
-    if (allowType != DevStandbyMgr::AllowType::WORK_SCHEDULER) {
+    if (resourceType != DevStandbyMgr::AllowType::WORK_SCHEDULER) {
         WS_HILOGE("Standby restrict list changed, restrictType is not WORK_SCHEDULER");
         return;
     }
