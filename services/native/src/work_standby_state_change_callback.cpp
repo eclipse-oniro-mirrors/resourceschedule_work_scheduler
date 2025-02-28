@@ -47,6 +47,27 @@ void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping
         std::make_shared<DetectorValue>(0, 0, sleeping, std::string()));
 }
 
+void WorkStandbyStateChangeCallback::OnRestrictListChanged(int32_t uid, const std::string& name,
+    uint32_t resourceType, bool added)
+{
+    if (resourceType != DevStandbyMgr::AllowType::WORK_SCHEDULER) {
+        WS_HILOGE("Standby restrict list changed, restrictType is not WORK_SCHEDULER");
+        return;
+    }
+    WS_HILOGD("%{public}s apply restrict, added %{public}d", name.c_str(), added);
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->OnDeviceStandyRestrictlistChanged(name, added);
+    auto policy = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetWorkPolicyManager();
+    if (!policy) {
+        return;
+    }
+    if (!policy->FindWork(uid)) {
+        return;
+    }
+    workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
+        std::make_shared<DetectorValue>(0, 0, dataManager->GetDeviceSleep(), std::string()));
+}
+
 void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::string& name,
     uint32_t allowType, bool added)
 {

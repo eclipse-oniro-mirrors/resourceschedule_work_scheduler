@@ -69,6 +69,36 @@ bool DataManager::IsDeviceStandyWhitelistEmpty()
     return deviceStandySet.empty();
 }
 
+bool DataManager::IsInDeviceStandyRestrictlist(const std::string& bundleName)
+{
+    std::lock_guard<ffrt::mutex> lock(deviceRestrictSetMutex_);
+    return deviceRestrictSet.count(bundleName) > 0;
+}
+
+void DataManager::OnDeviceStandyRestrictlistChanged(const std::string& bundleName, const bool add)
+{
+    std::lock_guard<ffrt::mutex> lock(deviceRestrictSetMutex_);
+    if (add) {
+        deviceRestrictSet.insert(bundleName);
+    } else {
+        deviceRestrictSet.erase(bundleName);
+    }
+}
+
+void DataManager::AddDeviceStandyRestrictlist(const std::list<std::string>& bundleNames)
+{
+    std::lock_guard<ffrt::mutex> lock(deviceRestrictSetMutex_);
+    for (const auto& item : bundleNames) {
+        deviceRestrictSet.insert(item);
+    }
+}
+
+void DataManager::ClearDeviceStandyRestrictlist()
+{
+    std::lock_guard<ffrt::mutex> lock(deviceRestrictSetMutex_);
+    deviceRestrictSet.clear();
+}
+
 bool DataManager::FindGroup(const std::string& bundleName, const int32_t userId, int32_t& appGroup)
 {
     std::lock_guard<ffrt::mutex> lock(activeGroupMapMutex_);

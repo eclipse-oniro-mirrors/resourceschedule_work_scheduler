@@ -295,6 +295,7 @@ public:
      */
     int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) override;
     void InitDeviceStandyWhitelist();
+    void InitDeviceStandyRestrictlist();
     bool IsPreinstalledBundle(const std::string& checkBundleName);
     /**
      * @brief Stop SA.

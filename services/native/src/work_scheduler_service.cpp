@@ -1291,6 +1291,26 @@ void WorkSchedulerService::InitDeviceStandyWhitelist()
 #endif
 }
 
+void WorkSchedulerService::InitDeviceStandyRestrictlist()
+{
+#ifdef DEVICE_STANDBY_ENABLE
+    std::vector<DevStandbyMgr::AllowInfo> allowInfoArray;
+    auto res = DevStandbyMgr::StandbyServiceClient::GetInstance().GetRestrictList(
+        DevStandbyMgr::AllowType::WORK_SCHEDULER, allowInfoArray, DevStandbyMgr::ReasonCodeEnum::REASON_APP_API);
+    if (res != ERR_OK) {
+        WS_HILOGE("GetRestrictlist fail");
+        return;
+    }
+    WS_HILOGI("restrictInfoArray size is %{public}d", static_cast<int32_t>(allowInfoArray.size()));
+    std::list<std::string> tempList = {};
+    for (const auto& item : allowInfoArray) {
+        WS_HILOGI("Restrict bundleName %{public}s", item.GetName().c_str());
+        tempList.push_back(item.GetName());
+    }
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(tempList);
+#endif
+}
+
 void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId)
 {
     if (systemAbilityId == DEVICE_USAGE_STATISTICS_SYS_ABILITY_ID) {
@@ -1300,6 +1320,7 @@ void WorkSchedulerService::OnAddSystemAbility(int32_t systemAbilityId, const std
     }
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
         InitDeviceStandyWhitelist();
+        InitDeviceStandyRestrictlist();
         RegisterStandbyStateObserver();
     }
 }
@@ -1308,6 +1329,7 @@ void WorkSchedulerService::OnRemoveSystemAbility(int32_t systemAbilityId, const 
 {
     if (systemAbilityId == DEVICE_STANDBY_SERVICE_SYSTEM_ABILITY_ID) {
         DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyWhitelist();
+        DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
         if (!workQueueManager_) {
             return;
         }
