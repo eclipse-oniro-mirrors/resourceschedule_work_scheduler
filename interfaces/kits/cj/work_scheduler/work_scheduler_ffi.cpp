@@ -351,26 +351,16 @@ extern "C" {
         ParseExtrasInfo(workInfo, cwork.parameters);
     }
 
-    void ParseExtrasInfo(std::shared_ptr<WorkInfo> workInfo, CArrParameters &arrParam)
+    void ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
     {
-        // init arrParam
-        arrParam.size = 0;
-        arrParam.head = nullptr;
-        std::shared_ptr<AAFwk::WantParams> extras = workInfo->GetExtras();
-        if (extras.get() == nullptr) {
-            LOGI("extras map is not initialized.");
-            return;
-        }
-        auto extrasMap = extras->GetParams();
-        arrParam.size = extrasMap.size();
-        if (extrasMap.size() == 0) {
-            LOGI("extras parameters is 0.");
-            return;
-        }
         int typeId = VALUE_TYPE_NULL;
         int i = 0;
         int32_t mallocSize = static_cast<int32_t>(sizeof(CParameters) * arrParam.size);
         arrParam.head = static_cast<CParameters *>(malloc(mallocSize));
+        if (!arrParam.head) {
+            arrParam.size = 0;
+            return;
+        }
         for (auto it : extrasMap) {
             typeId = AAFwk::WantParams::GetDataType(it.second);
             arrParam.head[i].key = MallocCString(it.first);
@@ -402,6 +392,25 @@ extern "C" {
             }
             ++i;
         }
+    }
+
+    void ParseExtrasInfo(std::shared_ptr<WorkInfo> workInfo, CArrParameters &arrParam)
+    {
+        // init arrParam
+        arrParam.size = 0;
+        arrParam.head = nullptr;
+        std::shared_ptr<AAFwk::WantParams> extras = workInfo->GetExtras();
+        if (extras.get() == nullptr) {
+            LOGI("extras map is not initialized.");
+            return;
+        }
+        auto extrasMap = extras->GetParams();
+        arrParam.size = static_cast<int64_t>(extrasMap.size());
+        if (extrasMap.size() == 0) {
+            LOGI("extras parameters is 0.");
+            return;
+        }
+        ConvertToCArrParameters(extrasMap, arrParam);
     }
 
     char* MallocCString(const std::string& origin)
