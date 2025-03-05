@@ -1026,7 +1026,7 @@ void WorkSchedulerService::DumpProcessForUserMode(std::vector<std::string> &args
 {
     if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-t") {
         DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
-    } else if (argsInStr[DUMP_OPTION] == "-s") {
+    } else if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-s") {
         DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     }
 }
