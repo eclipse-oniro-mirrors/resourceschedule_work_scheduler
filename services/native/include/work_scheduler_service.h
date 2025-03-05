@@ -273,7 +273,7 @@ public:
      * @brief load SA.
      * @return success or fail.
      */
-    bool LoadSa(std::shared_ptr<WorkStatus> workStatus);
+    bool LoadSa(std::shared_ptr<WorkStatus> workStatus, const std::string& action);
     /**
      * @brief Handle DeepIdle callback Msg.
      */

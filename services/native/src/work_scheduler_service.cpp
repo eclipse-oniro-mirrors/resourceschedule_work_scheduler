@@ -1026,6 +1026,8 @@ void WorkSchedulerService::DumpProcessForUserMode(std::vector<std::string> &args
 {
     if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-t") {
         DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-s") {
+        DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     }
 }
 
@@ -1479,7 +1481,7 @@ bool WorkSchedulerService::IsExemptionBundle(const std::string& checkBundleName)
     return iter != exemptionBundles_.end();
 }
 
-bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus)
+bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const std::string& action)
 {
     if (!ready_) {
         WS_HILOGE("service is not ready.");
@@ -1504,7 +1506,6 @@ bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus)
         }
         WS_HILOGI("load SA: %{public}d residentSA:%{public}d successed.", saId, isResidentSa);
     }
-    std::string action = "";
     std::unordered_map<std::string, std::string> payload;
     payload["action"] = action;
     payload["saId"] = std::to_string(saId);
@@ -1531,7 +1532,7 @@ void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std
         result.append("the sa does not exist.");
         return;
     }
-    if (LoadSa(sa)) {
+    if (LoadSa(sa, "hidumper")) {
         result.append("load sa success.");
         return;
     }

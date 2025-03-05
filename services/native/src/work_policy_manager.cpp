@@ -456,7 +456,7 @@ void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
     }
     wss_.lock()->UpdateWorkBeforeRealStart(topWork);
     RemoveFromReadyQueue(topWork);
-    bool ret = wss_.lock()->LoadSa(topWork);
+    bool ret = wss_.lock()->LoadSa(topWork, "");
     if (ret) {
         WS_HILOGI("startSA %{public}d workId:%{public}s success",
             topWork->workInfo_->GetSaId(), topWork->workId_.c_str());

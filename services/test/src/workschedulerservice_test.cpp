@@ -868,22 +868,22 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
     std::shared_ptr<WorkStatus> workStatus_ = std::make_shared<WorkStatus>(*(workInfo_.get()), -1);
 
     workSchedulerService_->ready_ = false;
-    workSchedulerService_->LoadSa(workStatus_);
+    workSchedulerService_->LoadSa(workStatus_, "");
 
     workSchedulerService_->ready_ = true;
-    workSchedulerService_->LoadSa(workStatus_);
+    workSchedulerService_->LoadSa(workStatus_, "");
 
     workInfo_->saId_ = 401;
-    workSchedulerService_->LoadSa(workStatus_);
+    workSchedulerService_->LoadSa(workStatus_, "");
 
     workInfo_->residentSa_ = true;
-    workSchedulerService_->LoadSa(workStatus_);
+    workSchedulerService_->LoadSa(workStatus_, "");
 
     workInfo_->saId_ = 5300;
-    workSchedulerService_->LoadSa(workStatus_);
+    workSchedulerService_->LoadSa(workStatus_, "");
 
     workInfo_->residentSa_ = false;
-    bool ret = workSchedulerService_->LoadSa(workStatus_);
+    bool ret = workSchedulerService_->LoadSa(workStatus_, "");
     EXPECT_FALSE(ret);
 }
 
