@@ -73,7 +73,7 @@ bool WorkSchedUtils::IsIdActive(int32_t id)
     if (iter != osAccountIds.end()) {
         return true;
     }
-    WS_HILOGE("IsIdActive failed, osAccountIds now.");
+    WS_HILOGD("IsIdActive failed, osAccountIds now.");
     return false;
 }
 
