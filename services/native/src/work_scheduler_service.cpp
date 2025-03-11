@@ -85,7 +85,6 @@ namespace WorkScheduler {
 namespace {
 const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
-const std::string MIN_REPEAT_TIME_KEY = "work_scheduler_min_repeat_time";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
@@ -97,7 +96,7 @@ const int32_t DUMP_OPTION = 0;
 const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const int32_t TIME_OUT = 4;
-const uint32_t SYS_APP_MIN_REPEAT_TIME = 5 * 60 * 1000;
+const uint32_t MIN_TIME_CYCLE = 20 * 60 * 1000;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
@@ -209,9 +208,6 @@ void WorkSchedulerService::InitPreinstalledWork()
     if (needRefresh) {
         RefreshPersistedWorks();
     }
-    if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
-        workQueueManager_->SetTimeCycle(minCheckTime_);
-    }
 }
 
 void WorkSchedulerService::InitWorkInner()
@@ -281,57 +277,6 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
     }
 }
 
-void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
-{
-    if (!path) {
-        return;
-    }
-    Json::Value root;
-    if (!GetJsonFromFile(path, root) || root.empty()) {
-        WS_HILOGE("file is empty %{private}s", path);
-        return;
-    }
-    if (!root.isMember(MIN_REPEAT_TIME_KEY)) {
-        WS_HILOGE("no work_scheduler_min_repeat_time key");
-        return;
-    }
-    Json::Value minRepeatTimeRoot = root[MIN_REPEAT_TIME_KEY];
-    if (minRepeatTimeRoot.empty() || !minRepeatTimeRoot.isObject()) {
-        WS_HILOGE("work_scheduler_min_repeat_time content is empty");
-        return;
-    }
-    if (minRepeatTimeRoot.isMember("default") && minRepeatTimeRoot["default"].isInt()) {
-        minTimeCycle_ = static_cast<uint32_t>(minRepeatTimeRoot["default"].asInt());
-    }
-    if (!minRepeatTimeRoot.isMember("special")) {
-        WS_HILOGE("no special key");
-        return;
-    }
-    Json::Value specialRoot = minRepeatTimeRoot["special"];
-    if (specialRoot.empty() || !specialRoot.isArray()) {
-        WS_HILOGE("special content is empty");
-        return;
-    }
-    minCheckTime_ = workQueueManager_->GetTimeCycle();
-    for (const auto &it : specialRoot) {
-        if (!it.isMember("bundleName") || !it["bundleName"].isString() ||
-            !it.isMember("time") || !it["time"].isInt()) {
-            WS_HILOGE("special content is error");
-            continue;
-        }
-        uint32_t time = static_cast<uint32_t>(it["time"].asInt());
-        if (time < SYS_APP_MIN_REPEAT_TIME) {
-            WS_HILOGE("bundleName: %{public}s set time: %{public}d not available, must more than %{public}d",
-                it["bundleName"].asString().c_str(), time, SYS_APP_MIN_REPEAT_TIME);
-            continue;
-        }
-        if (minCheckTime_ > time) {
-            minCheckTime_ = time;
-        }
-        specialMap_.emplace(it["bundleName"].asString(), time);
-    }
-}
-
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
@@ -343,7 +288,6 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
     // china->base
     for (int i = MAX_CFG_POLICY_DIRS_CNT - 1; i >= 0; i--) {
         LoadWorksFromFile(files->paths[i], workInfos);
-        LoadMinRepeatTimeFromFile(files->paths[i]);
     }
     FreeCfgFiles(files);
     return workInfos;
@@ -359,6 +303,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     }
     WS_HILOGD("Read from %{private}s", realPath.c_str());
     fin.open(realPath, ios::in);
+    WS_HILOGI("file open success");
     if (!fin.is_open()) {
         WS_HILOGE("cannot open file %{private}s", realPath.c_str());
         return false;
@@ -369,6 +314,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
         os << buffer;
     }
     string data = os.str();
+    WS_HILOGI("data read success");
     JSONCPP_STRING errs;
     Json::CharReaderBuilder readerBuilder;
     const unique_ptr<Json::CharReader> jsonReader(readerBuilder.newCharReader());
@@ -378,6 +324,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
         WS_HILOGE("parse %{private}s json error", realPath.c_str());
         return false;
     }
+    WS_HILOGI("json parse success");
     return true;
 }
 
@@ -649,17 +596,8 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     }
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         uint32_t time = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER)->uintVal;
-        string bundleName = workInfo.GetBundleName();
-        std::lock_guard<ffrt::mutex> lock(specialMutex_);
-        if (specialMap_.count(bundleName) > 0) {
-            if (time < specialMap_.at(bundleName)) {
-                WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, specialMap_.at(bundleName));
-                return false;
-            }
-            return true;
-        }
-        if (time < minTimeCycle_) {
-            WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, minTimeCycle_);
+        if (time < MIN_TIME_CYCLE) {
+            WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, MIN_TIME_CYCLE);
             return false;
         }
     }
