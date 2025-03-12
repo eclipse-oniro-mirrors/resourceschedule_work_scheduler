@@ -313,10 +313,6 @@ private:
 #ifdef  DEVICE_STANDBY_ENABLE
     sptr<WorkStandbyStateChangeCallback> standbyStateObserver_;
 #endif
-    uint32_t minTimeCycle_ = 20 * 60 * 1000;
-    uint32_t minCheckTime_ = 0;
-    ffrt::mutex specialMutex_;
-    std::map<std::string, uint32_t> specialMap_;
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -350,7 +346,6 @@ private:
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
     bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &residentSaStr, std::string &result);
-    void LoadMinRepeatTimeFromFile(const char *path);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -20,8 +20,11 @@
 #include "want.h"
 #ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
 #include "net_supplier_info.h"
+#include "net_conn_client.h"
 #endif
 #include "work_sched_hilog.h"
+
+using namespace OHOS::NetManagerStandard;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -78,14 +81,36 @@ void NetworkEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &dat
                     break;
             }
         } else {
-            listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
-                std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
+            if (!IsNetworkOK()) {
+                listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
+                    std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
+            }
         }
 #else
         listener_.OnConditionChanged(WorkCondition::Type::NETWORK,
             std::make_shared<DetectorValue>(WorkCondition::NETWORK_UNKNOWN, 0, 0, std::string()));
 #endif
     }
+}
+
+bool NetworkEventSubscriber::IsNetworkOK()
+{
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
+    NetHandle netHandle;
+    int ret = NetConnClient::GetInstance().GetDefaultNet(netHandle);
+    if (ret != NETMANAGER_SUCCESS) {
+        WS_HILOGE("GetDefaultNet failed %{public}d", ret);
+        return false;
+    }
+    NetAllCapabilities netAllCap;
+    ret = NetConnClient::GetInstance().GetNetCapabilities(netHandle, netAllCap);
+    if (ret != NETMANAGER_SUCCESS) {
+        WS_HILOGE("GetNetCapbilities failed, ret = %{public}d", ret);
+        return false;
+    }
+    return netAllCap.netCaps_.count(NetCap::NET_CAPABILITY_INTERNET);
+#endif
+    return false;
 }
 
 std::shared_ptr<EventFwk::CommonEventSubscriber> CreateNetworkEventSubscriber(NetworkListener &listener)

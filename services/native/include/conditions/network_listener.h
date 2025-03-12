@@ -62,6 +62,10 @@ public:
      * @param data The data.
      */
     void OnReceiveEvent(const EventFwk::CommonEventData &data) override;
+    /**
+     * @brief Check network status.
+     */
+    bool IsNetworkOK();
 private:
     NetworkListener &listener_;
 };
