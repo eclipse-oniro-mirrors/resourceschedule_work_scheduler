@@ -48,7 +48,7 @@ void WorkInfoTest::TearDown()
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest001, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest001, Function | MediumTest | Level2)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.SetWorkId(1);
@@ -61,7 +61,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest001, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest002, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest002, Function | MediumTest | Level2)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.SetElement("bundle_name", "ability_name");
@@ -75,7 +75,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest002, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest003, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest003, Function | MediumTest | Level2)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestPersisted(true);
@@ -90,7 +90,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest003, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest004, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest004, Function | MediumTest | Level3)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetChargerType(), WorkCondition::Charger::CHARGING_UNKNOWN);
@@ -104,7 +104,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest004, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest005, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest005, Function | MediumTest | Level3)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestChargerType(false, WorkCondition::Charger::CHARGING_UNPLUGGED);
@@ -117,7 +117,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest005, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest006, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest006, Function | MediumTest | Level3)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
@@ -130,7 +130,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest006, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest007, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest007, Function | MediumTest | Level4)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
@@ -143,7 +143,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest007, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest008, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest008, Function | MediumTest | Level4)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetBatteryStatus(), WorkCondition::BatteryStatus::BATTERY_UNKNOWN);
@@ -157,7 +157,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest008, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN9 AR000GH89M
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest009, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest009, Function | MediumTest | Level4)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetStorageLevel(), WorkCondition::Storage::STORAGE_UNKNOWN);
@@ -171,7 +171,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest009, Function | MediumTest | Level0)
  * @tc.type FUNC
  * @tc.require: SR000GGTN8 AR000GH89J AR000GH89K AR000GH89L
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest010, Function | MediumTest | Level0)
+HWTEST_F (WorkInfoTest, WorkInfoTest010, Function | MediumTest | Level)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW);
