@@ -171,7 +171,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest009, Function | MediumTest | Level4)
  * @tc.type FUNC
  * @tc.require: SR000GGTN8 AR000GH89J AR000GH89K AR000GH89L
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest010, Function | MediumTest | Level)
+HWTEST_F (WorkInfoTest, WorkInfoTest010, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW);
