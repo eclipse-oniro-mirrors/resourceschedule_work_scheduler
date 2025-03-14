@@ -45,7 +45,7 @@ void SchedulerBgTaskSubscriberTest::SetUpTestCase()
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(SchedulerBgTaskSubscriberTest, OnRemoteDied_001, TestSize.Level1)
+HWTEST_F(SchedulerBgTaskSubscriberTest, OnRemoteDied_001, TestSize.Level3)
 {
     schedulerBgTaskSubscriber_->OnRemoteDied(nullptr);
     EXPECT_TRUE(schedulerBgTaskSubscriber_ != nullptr);

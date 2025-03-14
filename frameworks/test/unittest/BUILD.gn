@@ -14,7 +14,7 @@
 import("//build/test.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
-module_output_path = "work_scheduler/work_info_unittest"
+module_output_path = "work_scheduler/work_scheduler"
 ohos_systemtest("WorkSchedulerWorkInfoTest") {
   module_out_path = module_output_path
 

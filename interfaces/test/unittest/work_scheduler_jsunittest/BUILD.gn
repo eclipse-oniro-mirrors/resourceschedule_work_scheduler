@@ -12,7 +12,7 @@
 # limitations under the License.
 
 import("//build/test.gni")
-module_output_path = "work_scheduler/interfaces"
+module_output_path = "work_scheduler/work_scheduler"
 
 ohos_js_unittest("WorkSchedulerJsTest") {
   module_out_path = module_output_path

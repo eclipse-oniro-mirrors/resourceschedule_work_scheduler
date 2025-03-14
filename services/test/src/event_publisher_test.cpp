@@ -46,7 +46,7 @@ void EventPublisherTest::SetUpTestCase()
  * @tc.type: FUNC
  * @tc.require: I8GHCL
  */
-HWTEST_F(EventPublisherTest, publishEvent_001, TestSize.Level1)
+HWTEST_F(EventPublisherTest, publishEvent_001, TestSize.Level3)
 {
     std::string result;
     std::string eventType;
@@ -55,7 +55,7 @@ HWTEST_F(EventPublisherTest, publishEvent_001, TestSize.Level1)
     EXPECT_EQ(result, std::string("dump -d need right params."));
 }
 
-HWTEST_F(EventPublisherTest, Dump_001, TestSize.Level1)
+HWTEST_F(EventPublisherTest, Dump_001, TestSize.Level3)
 {
     std::vector<std::pair<string, string>> infos = {
         {"event", "info"},
