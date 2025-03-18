@@ -41,6 +41,21 @@ int32_t InnerWrapWantParamsT(const sptr<AAFwk::IInterface> iIt, CParameters *p)
     return 0;
 }
 
+int32_t GetWorkInfoV2(RetWorkInfoV2 cwork, WorkInfo& workInfo)
+{
+    auto ret = GetWorkInfo(cwork.v1, workInfo);
+    if (ret != 0) {
+        return ret;
+    }
+    return GetExtrasInfo(cwork, workInfo);
+}
+
+void ParseWorkInfoV2(std::shared_ptr<WorkInfo> workInfo, RetWorkInfoV2& cwork)
+{
+    ParseWorkInfo(workInfo, cwork.v1);
+    ParseExtrasInfo(workInfo, cwork.parameters);
+}
+
 extern "C" {
     const int32_t BATTERY_LEVEL_MIN = 0;
     const int32_t BATTERY_LEVEL_MAX = 100;
@@ -138,6 +153,76 @@ extern "C" {
         return WorkSchedulerSrvClient::GetInstance().StopAndClearWorks();
     }
 
+    int32_t CJ_StartWorkV2(RetWorkInfoV2 work)
+    {
+        WorkInfo workInfo = WorkInfo();
+        auto paraCode = GetWorkInfoV2(work, workInfo);
+        if (paraCode != SUCCESS_CODE) {
+            LOGE("WorkScheduler: CJ_StartWork parse parameter failed %{public}d", paraCode);
+            return paraCode;
+        }
+        ErrCode errCode = WorkSchedulerSrvClient::GetInstance().StartWork(workInfo);
+        return errCode;
+    }
+
+    int32_t CJ_StopWorkV2(RetWorkInfoV2 work, bool needCancel)
+    {
+        WorkInfo workInfo = WorkInfo();
+        ErrCode errCode;
+        auto paraCode = GetWorkInfoV2(work, workInfo);
+        if (paraCode != SUCCESS_CODE) {
+            LOGE("WorkScheduler: CJ_StopWork parse parameter failed %{public}d", paraCode);
+            return paraCode;
+        }
+        if (needCancel) {
+            errCode = WorkSchedulerSrvClient::GetInstance().StopAndCancelWork(workInfo);
+        } else {
+            errCode = WorkSchedulerSrvClient::GetInstance().StopWork(workInfo);
+        }
+        return errCode;
+    }
+
+    int32_t CJ_GetWorkStatusV2(int32_t workId, RetWorkInfoV2& result)
+    {
+        std::shared_ptr<WorkInfo> workInfo {nullptr};
+        ErrCode errCode = WorkSchedulerSrvClient::GetInstance().GetWorkStatus(workId, workInfo);
+        if (errCode != ERR_OK) {
+            LOGE("WorkScheduler: CJ_GetWorkStatus failed %{public}d", errCode);
+            return errCode;
+        }
+        ParseWorkInfoV2(workInfo, result);
+        LOGI("WorkScheduler: CJ_GetWorkStatus success");
+        return errCode;
+    }
+
+    RetArrRetWorkInfoV2 CJ_ObtainAllWorksV2()
+    {
+        std::list<std::shared_ptr<WorkInfo>> workInfoList;
+        ErrCode errCode = WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(workInfoList);
+        RetArrRetWorkInfoV2 ret = { .code = errCode, .size = 0, .data = nullptr};
+        if (errCode != ERR_OK) {
+            LOGE("WorkScheduler: CJ_ObtainAllWorks failed ");
+            return ret;
+        }
+        int64_t listSize = static_cast<int64_t>(workInfoList.size());
+        if (listSize < 0 || listSize > UINT_MAX) {
+            LOGE("Illegal listSize parameter");
+            return ret;
+        }
+        auto data = static_cast<RetWorkInfoV2*>(malloc(sizeof(RetWorkInfoV2) * listSize));
+        if (data == nullptr) {
+            return ret;
+        }
+        ret.size = listSize;
+        int index = 0;
+        for (auto workInfo: workInfoList) {
+            ParseWorkInfoV2(workInfo, data[index]);
+            index++;
+        }
+        ret.data = data;
+        return ret;
+    }
+
     // extra is not set
     int32_t GetWorkInfo(RetWorkInfo cwork, WorkInfo& workInfo)
     {
@@ -165,10 +250,6 @@ extern "C" {
         if (ret != 0) {
             return ret;
         }
-        ret = GetExtrasInfo(cwork, workInfo, hasConditions);
-        if (ret != 0) {
-            return ret;
-        }
 
         if (!hasConditions) {
             LOGE("Set none conditions, so fail to init WorkInfo.");
@@ -177,7 +258,7 @@ extern "C" {
         return 0;
     }
 
-    int32_t GetExtrasInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition)
+    int32_t GetExtrasInfo(RetWorkInfoV2 cwork, OHOS::WorkScheduler::WorkInfo& workInfo)
     {
         int32_t code = 0;
         CArrParameters cArrP = cwork.parameters;
@@ -348,7 +429,6 @@ extern "C" {
         cwork.repeatCount = workInfo->GetCycleCount();
         cwork.isDeepIdle = -1;
         cwork.idleWaitTime = -1;
-        ParseExtrasInfo(workInfo, cwork.parameters);
     }
 
     void ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
