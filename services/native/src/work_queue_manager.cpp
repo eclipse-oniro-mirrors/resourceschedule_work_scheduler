@@ -150,21 +150,7 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
 void WorkQueueManager::PrintWorkStatus(WorkCondition::Type conditionType)
 {
     if (conditionType == WorkCondition::Type::GROUP || conditionType == WorkCondition::Type::STANDBY) {
-        PrintAllWorkStatus(conditionType);
-        return;
-    }
-    if (queueMap_.count(conditionType) > 0) {
-        shared_ptr<WorkQueue> workQueue = queueMap_.at(conditionType);
-        auto workList = workQueue->GetWorkList();
-        for (auto work : workList) {
-            work->ToString(conditionType);
-        }
-    }
-}
-
-void WorkQueueManager::PrintAllWorkStatus(WorkCondition::Type conditionType)
-{
-    std::set<std::string> allWorkIds;
+        std::set<std::string> allWorkIds;
         for (auto it : queueMap_) {
             shared_ptr<WorkQueue> workQueue = it.second;
             auto workList = workQueue->GetWorkList();
@@ -176,6 +162,14 @@ void WorkQueueManager::PrintAllWorkStatus(WorkCondition::Type conditionType)
                 work->ToString(conditionType);
             }
         }
+    }
+    if (queueMap_.count(conditionType) > 0) {
+        shared_ptr<WorkQueue> workQueue = queueMap_.at(conditionType);
+        auto workList = workQueue->GetWorkList();
+        for (auto work : workList) {
+            work->ToString(conditionType);
+        }
+    }
 }
 
 void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus>> &works, vector<shared_ptr<WorkStatus>> &result)
