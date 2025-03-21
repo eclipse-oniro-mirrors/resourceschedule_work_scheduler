@@ -177,6 +177,7 @@ WEAK_FUNC bool WorkSchedulerService::IsBaseAbilityReady()
 void WorkSchedulerService::InitPersistedWork()
 {
     WS_HILOGD("init persisted work");
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     list<shared_ptr<WorkInfo>> persistedWorks = ReadPersistedWorks();
     for (auto it : persistedWorks) {
         WS_HILOGI("get persisted work, id: %{public}d, isSa:%{public}d", it->GetWorkId(), it->IsSA());
@@ -189,6 +190,7 @@ void WorkSchedulerService::InitPreinstalledWork()
 {
     WS_HILOGD("init preinstalled work");
     list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     for (auto work : preinstalledWorks) {
         WS_HILOGI("preinstalled workinfo id %{public}s, isSa:%{public}d", work->GetBriefInfo().c_str(), work->IsSA());
         time_t baseTime;
