@@ -176,7 +176,6 @@ void WorkQueueManager::PrintAllWorkStatus(WorkCondition::Type conditionType)
             work->ToString(conditionType);
         }
     }
-
 }
 
 void WorkQueueManager::PushWork(vector<shared_ptr<WorkStatus>> &works, vector<shared_ptr<WorkStatus>> &result)
