@@ -76,6 +76,16 @@
                 ]
             },
             "name": "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient"
+          },
+          {
+            "type": "so",
+            "name": "//foundation/resourceschedule/work_scheduler/interfaces/kits/cj:cj_work_scheduler_ffi",
+            "header": {
+                "header_base":"//foundation/resourceschedule/work_scheduler/interfaces/kits/cj/work_scheduler",
+                "header_files":[
+                    "work_scheduler_ffi.h"
+                ]
+            }
           }
         ],
         "test": [
