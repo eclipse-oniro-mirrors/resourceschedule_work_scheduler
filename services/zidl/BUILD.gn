@@ -28,6 +28,7 @@ config("worksched_public_config") {
 }
 
 ohos_source_set("workschedservice_zidl_stub") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -52,6 +53,7 @@ ohos_source_set("workschedservice_zidl_stub") {
 }
 
 ohos_source_set("workschedservice_zidl_proxy") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
