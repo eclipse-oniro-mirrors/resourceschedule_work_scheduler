@@ -50,7 +50,7 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
 }
 
 ohos_unittest("WorkSchedulerClientTest") {
-  module_out_path = "work_scheduler/client_unittest"
+  module_out_path = module_output_path
 
   cflags_cc = [
     "-Dprivate=public",
