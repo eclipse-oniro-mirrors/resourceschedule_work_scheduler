@@ -70,6 +70,7 @@ ohos_shared_library("workschedclient") {
 }
 
 ohos_source_set("work_sched_service_proxy") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
@@ -94,6 +95,7 @@ ohos_source_set("work_sched_service_proxy") {
 }
 
 ohos_source_set("work_sched_service_stub") {
+  branch_protector_ret = "pac_ret"
   sanitize = {
     cfi = true
     cfi_cross_dso = true
