@@ -125,7 +125,7 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
  * @tc.type: FUNC
  * @tc.require: I8ZDJI
  */
-HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level0)
 {
     workSchedulerService_->OnStart();
     EXPECT_NE(workSchedulerService_, nullptr);
@@ -137,7 +137,7 @@ HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8F08T
  */
-HWTEST_F(WorkSchedulerServiceTest, startWork_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, startWork_001, TestSize.Level0)
 {
     int32_t ret;
 
@@ -167,7 +167,7 @@ HWTEST_F(WorkSchedulerServiceTest, startWork_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8F08T
  */
-HWTEST_F(WorkSchedulerServiceTest, stopWork_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, stopWork_001, TestSize.Level0)
 {
     int32_t ret;
 
@@ -194,7 +194,7 @@ HWTEST_F(WorkSchedulerServiceTest, stopWork_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8F08T
  */
-HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_001, TestSize.Level0)
 {
     int32_t ret;
 
@@ -221,7 +221,7 @@ HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8F08T
  */
-HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorks_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorks_001, TestSize.Level0)
 {
     int32_t ret;
 
@@ -243,7 +243,7 @@ HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorks_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8F08T
  */
-HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_001, TestSize.Level0)
 {
     bool result;
     auto ret = workSchedulerService_->IsLastWorkTimeout(1, result);
@@ -256,7 +256,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: IA4HTC
  */
-HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level0)
 {
     std::vector<WorkInfo> workInfos;
     auto ret = workSchedulerService_->ObtainAllWorks(workInfos);
@@ -269,7 +269,7 @@ HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: IA4HTC
  */
-HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level0)
 {
     WorkInfo workInfo;
     int32_t workId = 0;
@@ -283,7 +283,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8F08T
  */
-HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_001, TestSize.Level0)
 {
     std::vector<WorkInfo> workInfos;
 
