@@ -1253,7 +1253,7 @@ int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
         WS_HILOGI("Open file success.");
         int closeResult = fclose(file);
         if (closeResult < 0) {
-            BGTASK_LOGE("Fail to close file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
+            WS_HILOGE("Fail to close file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
             return errno;
         }
     } else {
