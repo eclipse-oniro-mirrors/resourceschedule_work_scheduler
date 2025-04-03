@@ -1245,13 +1245,16 @@ int32_t WorkSchedulerService::CreateNodeDir(std::string dir)
 int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 {
     if (access(filePath.c_str(), 0) != 0) {
-        int32_t fd = open(filePath.c_str(), O_CREAT|O_RDWR, S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH);
-        if (fd < ERR_OK) {
-            WS_HILOGE("Open file fail.");
-            return fd;
-        } else {
-            WS_HILOGI("Open file success.");
-            close(fd);
+        FILE *file = fopen(filePath.c_str(), "w+");
+        if (file == nullptr) {
+            WS_HILOGE("Fail to open file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
+            return errno;
+        }
+        WS_HILOGI("Open file success.");
+        int closeResult = fclose(file);
+        if (closeResult < 0) {
+            WS_HILOGE("Fail to close file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
+            return errno;
         }
     } else {
         WS_HILOGD("The file already exists.");
