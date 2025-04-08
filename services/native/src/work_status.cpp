@@ -109,7 +109,9 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
         && type != WorkCondition::Type::TIMER
         && type != WorkCondition::Type::GROUP) {
         std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
-        if (conditionMap_.count(type) > 0) {
+        if (conditionMap_.count(type) > 0
+            && type >= WorkCondition::Type::NETWORK
+            && type <= WorkCondition::Type::UNKNOWN) {
             conditionMap_.at(type) = value;
         } else {
             conditionMap_.emplace(type, value);
