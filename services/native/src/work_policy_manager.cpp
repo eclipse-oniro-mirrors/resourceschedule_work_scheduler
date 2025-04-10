@@ -30,6 +30,7 @@
 #include "work_sched_utils.h"
 #include "watchdog.h"
 #include "work_sched_data_manager.h"
+#include <cinttypes>
 
 using namespace std;
 using namespace OHOS::AppExecFwk;
