@@ -17,7 +17,6 @@
 #include "work_queue_event_handler.h"
 #include "work_sched_hilog.h"
 #include "conditions/timer_info.h"
-#include <cinttypes>
 
 namespace OHOS {
 namespace WorkScheduler {
