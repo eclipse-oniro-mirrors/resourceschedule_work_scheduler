@@ -76,14 +76,18 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
     // Get params.
     GetWorkStatusParamsInfo params;
     if (ParseParameters(env, info, params) == nullptr) {
-        return Common::JSParaError(env, params.callback);
+        napi_value ret = Common::JSParaError(env, params.callback);
+        napi_delete_reference(env, params.callback);
+        return ret;
     }
 
     napi_value promise = nullptr;
     AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo =
         new (std::nothrow) AsyncCallbackInfoGetWorkStatus(env);
     if (!asyncCallbackInfo) {
-        return Common::JSParaError(env, params.callback);
+        napi_value ret = Common::JSParaError(env, params.callback);
+        napi_delete_reference(env, params.callback);
+        return ret;
     }
     std::unique_ptr<AsyncCallbackInfoGetWorkStatus> callbackPtr {asyncCallbackInfo};
     asyncCallbackInfo->workId = params.workId;
@@ -93,9 +97,7 @@ napi_value GetWorkStatus(napi_env env, napi_callback_info info)
     napi_value resourceName = nullptr;
     NAPI_CALL(env, napi_create_string_latin1(env, "GetWorkStatus", NAPI_AUTO_LENGTH, &resourceName));
 
-    NAPI_CALL(env, napi_create_async_work(env,
-        nullptr,
-        resourceName,
+    NAPI_CALL(env, napi_create_async_work(env, nullptr, resourceName,
         [](napi_env env, void *data) {
             AsyncCallbackInfoGetWorkStatus *asyncCallbackInfo = static_cast<AsyncCallbackInfoGetWorkStatus *>(data);
             asyncCallbackInfo->errorCode =
