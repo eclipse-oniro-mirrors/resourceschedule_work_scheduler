@@ -1522,8 +1522,8 @@ bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const 
 
 void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result)
 {
-    if (!std::all_of(saIdStr.begin(), saIdStr.end(), ::isdigit)
-        || !std::all_of(uidStr.begin(), uidStr.end(), ::isdigit)) {
+    if (!std::all_of(saIdStr.begin(), saIdStr.end(), ::isdigit) ||
+        !std::all_of(uidStr.begin(), uidStr.end(), ::isdigit)) {
         result.append("param error.");
         return;
     }
