@@ -84,7 +84,9 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
     napi_value promise = nullptr;
     AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = new (std::nothrow) AsyncCallbackIsLastWorkTimeOut(env);
     if (!asyncCallbackInfo) {
-        return Common::JSParaError(env, params.callback);
+        napi_value ret = Common::JSParaError(env, params.callback);
+        napi_delete_reference(env, params.callback);
+        return ret;
     }
     std::unique_ptr<AsyncCallbackIsLastWorkTimeOut> callbackPtr {asyncCallbackInfo};
     asyncCallbackInfo->workId = params.workId;
