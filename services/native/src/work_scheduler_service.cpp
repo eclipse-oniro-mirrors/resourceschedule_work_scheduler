@@ -1107,12 +1107,16 @@ void WorkSchedulerService::DumpProcessWorks(const std::string &bundleName, const
 
 void WorkSchedulerService::DumpRunningWorks(const std::string &uidStr, const std::string &option, std::string &result)
 {
-    if (uidStr.empty() || option.empty()) {
+    if (!std::all_of(uidStr.begin(), uidStr.end(), ::isdigit) || option.empty()) {
         result.append("param error");
         return;
     }
 
-    int32_t uid = std::stoi(uidStr);
+    int32_t uid = std::atoi(uidStr.c_str());
+    if (uid == 0) {
+        result.append("uidStr param error, uidStr:" + uidStr);
+        return;
+    }
     int32_t ret = ERR_OK;
     if (option == "p") {
         ret = workPolicyManager_->PauseRunningWorks(uid);
@@ -1519,13 +1523,14 @@ bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const 
 
 void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result)
 {
-    if (saIdStr.empty() || uidStr.empty()) {
+    if (!std::all_of(saIdStr.begin(), saIdStr.end(), ::isdigit) ||
+        !std::all_of(uidStr.begin(), uidStr.end(), ::isdigit)) {
         result.append("param error.");
         return;
     }
-    int32_t saId = std::stoi(saIdStr);
-    int32_t uid = std::stoi(uidStr);
-    if (saId < 0 || uid < 0) {
+    int32_t saId = std::atoi(saIdStr.c_str());
+    int32_t uid = std::atoi(uidStr.c_str());
+    if (saId <= 0 || uid <= 0) {
         result.append("the parameter is invalid.");
         return;
     }

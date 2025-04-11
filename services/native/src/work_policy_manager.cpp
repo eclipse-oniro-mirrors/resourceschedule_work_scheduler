@@ -253,8 +253,9 @@ bool WorkPolicyManager::StopAndClearWorks(int32_t uid)
 {
     WS_HILOGD("enter");
     std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
-    if (uidQueueMap_.count(uid) > 0) {
-        auto queue = uidQueueMap_.at(uid);
+    auto iter = uidQueueMap_.find(uid);
+    if (iter != uidQueueMap_.end()) {
+        auto queue = iter->second;
         if (!queue) {
             WS_HILOGE("StopAndClearWorks failed, queue is nullptr");
             return false;

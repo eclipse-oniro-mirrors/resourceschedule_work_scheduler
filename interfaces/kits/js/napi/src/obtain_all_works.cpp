@@ -57,13 +57,17 @@ napi_value ObtainAllWorks(napi_env env, napi_callback_info info)
     // Get params.
     napi_ref callback = nullptr;
     if (ParseParameters(env, info, callback) == nullptr) {
-        return Common::JSParaError(env, callback);
+        napi_value ret = Common::JSParaError(env, callback);
+        napi_delete_reference(env, callback);
+        return ret;
     }
 
     napi_value promise = nullptr;
     AsyncCallbackInfoObtainAllWorks *asyncCallbackInfo = new (std::nothrow) AsyncCallbackInfoObtainAllWorks(env);
     if (!asyncCallbackInfo) {
-        return Common::JSParaError(env, callback);
+        napi_value ret = Common::JSParaError(env, callback);
+        napi_delete_reference(env, callback);
+        return ret;
     }
     std::unique_ptr<AsyncCallbackInfoObtainAllWorks> callbackPtr {asyncCallbackInfo};
     Common::PaddingAsyncWorkData(env, callback, *asyncCallbackInfo, promise);
