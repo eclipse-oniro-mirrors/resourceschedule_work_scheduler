@@ -1249,11 +1249,6 @@ int32_t WorkSchedulerService::CreateNodeDir(std::string dir)
 int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
 {
     if (access(filePath.c_str(), 0) != 0) {
-        char resolvedPath[PATH_MAX] = {0};
-        if (realpath(filePath.c_str(), resolvedPath) == nullptr) {
-            WS_HILOGE("Fail to resolved file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
-            return errno;
-        }
         FILE *file = fopen(filePath.c_str(), "w+");
         if (file == nullptr) {
             WS_HILOGE("Fail to open file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
