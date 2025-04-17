@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -145,6 +145,27 @@ ErrCode WorkSchedulerSrvClient::ObtainAllWorks(std::list<std::shared_ptr<WorkInf
     }
     std::vector<WorkInfo> vectorWorkInfos;
     ErrCode ret = iWorkSchedService_->ObtainAllWorks(vectorWorkInfos);
+    for (const auto& workInfo : vectorWorkInfos) {
+        workInfos.push_back(std::make_shared<WorkInfo>(workInfo));
+    }
+    return ret;
+}
+
+ErrCode WorkSchedulerSrvClient::ObtainWorksByUidAndWorkIdForInner(int32_t uid,
+    std::list<std::shared_ptr<WorkInfo>> &workInfos, int32_t workId)
+{
+    WS_HILOGD("Obtain Works By uid and workId for inner");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode errCode = Connect();
+    if (errCode != ERR_OK) {
+        return errCode;
+    }
+    if (uid < 0) {
+        WS_HILOGE("param uid: %{public}d invaild.", uid);
+        return E_PARAM_INVAILD_UID;
+    }
+    std::vector<WorkInfo> vectorWorkInfos;
+    ErrCode ret = iWorkSchedService_->ObtainWorksByUidAndWorkIdForInner(uid, vectorWorkInfos, workId);
     for (const auto& workInfo : vectorWorkInfos) {
         workInfos.push_back(std::make_shared<WorkInfo>(workInfo));
     }
