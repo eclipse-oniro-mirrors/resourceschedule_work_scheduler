@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -35,6 +35,7 @@ enum {
     E_WORK_EXCEED_UPPER_LIMIT,
     E_REPEAT_CYCLE_TIME_ERR,
     E_INVALID_PROCESS_NAME,
+    E_PARAM_INVAILD_UID,
     // inner error code
     E_INNER_ERR,
     E_GROUP_CHANGE_NOT_MATCH_HAP,
@@ -73,6 +74,7 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_REPEAT_CYCLE_TIME_ERR, "StartWork failed. The repeatTime must be greater than or equal to 20 minutes."},
     {E_WORK_EXCEED_UPPER_LIMIT, "StartWork failed. Each uid can add up to 10 works."},
     {E_INVALID_PROCESS_NAME, "Pause or resume verify failed. caller process name invaild."},
+    {E_PARAM_INVAILD_UID, "GetWork failed. The param uid invaild."},
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
 };
 
