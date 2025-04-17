@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -100,6 +100,14 @@ public:
      * @return error code, ERR_OK if success.
      */
     int32_t ObtainAllWorks(std::vector<WorkInfo>& workInfos) override;
+    /**
+     * @brief Obtain works by uid and workId for inner.
+     * @param uid The uid.
+     * @param workInfos The infos of work.
+     * @param workId The id of work.
+     * @return error code, ERR_OK if success.
+     */
+    int32_t ObtainWorksByUidAndWorkIdForInner(int32_t uid, std::vector<WorkInfo>& workInfos, int32_t workId) override;
     /**
      * @brief Get the status of work.
      *
@@ -340,10 +348,12 @@ private:
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
     bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result);
+    void DumpGetWorks(const std::string &uidStr, const std::string &workIdStr, std::string &result);
     std::string DumpExemptionBundles();
     void LoadMinRepeatTimeFromFile(const char *path);
     int32_t SetTimer();
     void CancelTimer(int32_t id);
+    bool CheckCallingToken();
 
 private:
     std::set<int32_t> whitelist_;
