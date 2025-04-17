@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -112,6 +112,8 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t StopAndClearWorks() { return 0; }
     int32_t IsLastWorkTimeout(int32_t workId, bool &result) { return 0; }
     int32_t ObtainAllWorks(std::vector<WorkInfo>& workInfos) { return 0; }
+    int32_t ObtainWorksByUidAndWorkIdForInner(int32_t uid, std::vector<WorkInfo>& workInfos,
+        int32_t workId) { return 0; }
     int32_t GetWorkStatus(int32_t workId, WorkInfo& workInfo) { return 0; }
     int32_t GetAllRunningWorks(std::vector<WorkInfo>& workInfos) { return 0; }
     int32_t PauseRunningWorks(int32_t uid) {return 0; }
@@ -275,6 +277,31 @@ HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_001, TestSize.Level0)
     int32_t workId = 0;
     auto ret = workSchedulerService_->GetWorkStatus(workId, workInfo);
     EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
+}
+
+/**
+ * @tc.name: ObtainWorksByUidAndWorkIdForInner_001
+ * @tc.desc: Test WorkSchedulerService ObtainWorksByUidAndWorkIdForInner.
+ * @tc.type: FUNC
+ * @tc.require: IA4HTC
+ */
+HWTEST_F(WorkSchedulerServiceTest, ObtainWorksByUidAndWorkIdForInner_001, TestSize.Level0)
+{
+    std::vector<WorkInfo> workInfos;
+    int32_t uid = 1;
+    int32_t workId = 1;
+    workSchedulerService_->ready_ = false;
+    int32_t ret = -1;
+    ret = workSchedulerService_->ObtainWorksByUidAndWorkIdForInner(uid, workInfos, workId);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+
+    workSchedulerService_->ready_ = true;
+    ret = workSchedulerService_->ObtainWorksByUidAndWorkIdForInner(uid, workInfos, workId);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
+
+    workId = -1;
+    ret = workSchedulerService_->ObtainWorksByUidAndWorkIdForInner(uid, workInfos, workId);
+    EXPECT_EQ(ret, ERR_OK);
 }
 
 /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -240,6 +240,25 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_015, TestSize.Level0)
     std::string configData = "";
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().SetWorkSchedulerConfig(configData, sourceType);
     EXPECT_NE(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: ObtainWorksByUidAndWorkIdForInner_016
+ * @tc.desc: Test ObtainWorksByUidAndWorkIdForInner
+ * @tc.type: FUNC
+ * @tc.require: issueIC1RS6
+ */
+HWTEST_F(WorkSchedClientTest, ObtainWorksByUidAndWorkIdForInner_016, TestSize.Level0)
+{
+    std::list<std::shared_ptr<WorkInfo>> workInfos;
+    int32_t uid = -1;
+    ErrCode ret = ERR_OK;
+    ret = WorkSchedulerSrvClient::GetInstance().ObtainWorksByUidAndWorkIdForInner(uid, workInfos);
+    EXPECT_EQ(ret, E_PARAM_INVAILD_UID);
+
+    uid = 1;
+    ret = WorkSchedulerSrvClient::GetInstance().ObtainWorksByUidAndWorkIdForInner(uid, workInfos);
+    EXPECT_EQ(ret, ERR_OK);
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS

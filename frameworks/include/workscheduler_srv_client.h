@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -79,6 +79,16 @@ public:
      * @return ERR_OK on success, others on failure.
      */
     ErrCode ObtainAllWorks(std::list<std::shared_ptr<WorkInfo>> &workInfos);
+
+    /**
+     * @brief Obtain works by uid and workId for inner.
+     * @param uid The uid.
+     * @param workInfos The infos of work.
+     * @param workId The id of work.
+     * @return error code, ERR_OK if success.
+     */
+    ErrCode ObtainWorksByUidAndWorkIdForInner(int32_t uid,
+        std::list<std::shared_ptr<WorkInfo>> &workInfos, int32_t workId = -1);
 
     /**
      * @brief Get the Running Work Scheduler Work object

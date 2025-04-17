@@ -21,6 +21,7 @@ interface OHOS.WorkScheduler.IWorkSchedService {
     void StopAndClearWorks();
     void IsLastWorkTimeout([in] int workId, [out] boolean isTimeout);
     void ObtainAllWorks([out] List<WorkInfo> workInfos);
+    void ObtainWorksByUidAndWorkIdForInner([in] int uid, [out] List<WorkInfo> workInfos, [in] int workId);
     void GetWorkStatus([in] int workId, [out] WorkInfo workInfo);
     void GetAllRunningWorks([out] List<WorkInfo> workInfos);
     void PauseRunningWorks([in] int uid);

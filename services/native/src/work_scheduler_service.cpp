@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -887,6 +887,31 @@ int32_t WorkSchedulerService::ObtainAllWorks(std::vector<WorkInfo>& workInfos)
     return ERR_OK;
 }
 
+int32_t WorkSchedulerService::ObtainWorksByUidAndWorkIdForInner(int32_t uid,
+    std::vector<WorkInfo>& workInfos, int32_t workId)
+{
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::ObtainWorksByUidAndWorkIdForInner");
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!CheckCallingToken()) {
+        WS_HILOGE("ObtainWorksByUidAndWorkIdForInner not allowed.");
+        return E_PERMISSION_DENIED;
+    }
+    if (workId != -1) {
+        std::shared_ptr<WorkInfo> workInfoPtr = workPolicyManager_->GetWorkStatus(uid, workId);
+        if (workInfoPtr != nullptr) {
+            workInfos.push_back(*workInfoPtr);
+            return ERR_OK;
+        } else {
+            return E_WORK_NOT_EXIST_FAILED;
+        }
+    }
+    workInfos = workPolicyManager_->ObtainAllWorks(uid);
+    return ERR_OK;
+}
+
 int32_t WorkSchedulerService::GetWorkStatus(int32_t workId, WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::GetWorkStatus");
@@ -980,6 +1005,8 @@ void WorkSchedulerService::DumpProcessForEngMode(std::vector<std::string> &argsI
                 DumpRunningWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else if (argsInStr[DUMP_OPTION] == "-s") {
                 DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+            } else if (argsInStr[DUMP_OPTION] == "-g") {
+                DumpGetWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else {
                 result.append("Error params.");
             }
@@ -1549,6 +1576,33 @@ void WorkSchedulerService::DumpLoadSaWorks(const std::string &saIdStr, const std
     result.append("load sa failed.");
 }
 
+void WorkSchedulerService::DumpGetWorks(const std::string &uidStr, const std::string &workIdStr, std::string &result)
+{
+    if (workIdStr.empty() || uidStr.empty()) {
+        result.append("param error.");
+        return;
+    }
+    int32_t workId = std::stoi(workIdStr);
+    int32_t uid = std::stoi(uidStr);
+    if (uid < 0) {
+        result.append("the parameter is invalid.");
+        return;
+    }
+    std::vector<WorkInfo> workInfos;
+    int32_t ret = ObtainWorksByUidAndWorkIdForInner(uid, workInfos, workId);
+    if (ret != ERR_OK) {
+        result.append("get work fail.");
+        return;
+    }
+    if (workInfos.size() == 0) {
+        result.append("no have workscheduler task.");
+        return;
+    }
+    for (auto &info : workInfos) {
+        info.Dump(result);
+    }
+}
+
 void WorkSchedulerService::HandleDeepIdleMsg()
 {
     if (!ready_) {
@@ -1604,6 +1658,17 @@ void WorkSchedulerService::CancelTimer(int32_t id)
 #else
     return;
 #endif
+}
+
+bool WorkSchedulerService::CheckCallingToken()
+{
+    Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetCallingTokenID();
+    auto tokenFlag = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenId);
+    if (tokenFlag == Security::AccessToken::ATokenTypeEnum::TOKEN_NATIVE ||
+        tokenFlag == Security::AccessToken::ATokenTypeEnum::TOKEN_SHELL) {
+        return true;
+    }
+    return false;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
