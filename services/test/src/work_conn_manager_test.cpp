@@ -54,7 +54,7 @@ void WorkConnManagerTest::SetUpTestCase()
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, AddConnInfo_001, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, AddConnInfo_001, TestSize.Level1)
 {
     string workId = "u1000_123";
     sptr<WorkSchedulerConnection> connection;
@@ -68,7 +68,7 @@ HWTEST_F(WorkConnManagerTest, AddConnInfo_001, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, RemoveConnInfo_001, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, RemoveConnInfo_001, TestSize.Level1)
 {
     string workId = "u1000_123";
     sptr<WorkSchedulerConnection> connection;
@@ -83,7 +83,7 @@ HWTEST_F(WorkConnManagerTest, RemoveConnInfo_001, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level1)
 {
     string workId = "u1000_123";
     sptr<WorkSchedulerConnection> connection;
@@ -98,7 +98,7 @@ HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, GetConnInfo_002, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, GetConnInfo_002, TestSize.Level1)
 {
     workConnManager_->connMap_.clear();
     string workId = "u1000_123";
@@ -112,7 +112,7 @@ HWTEST_F(WorkConnManagerTest, GetConnInfo_002, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, StartWork_001, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, StartWork_001, TestSize.Level1)
 {
     string workId = "u1000_123";
     sptr<WorkSchedulerConnection> connection;
@@ -134,7 +134,7 @@ HWTEST_F(WorkConnManagerTest, StartWork_001, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, StartWork_002, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, StartWork_002, TestSize.Level1)
 {
     WorkInfo workInfo;
     workInfo.workId_ = 123;
@@ -152,7 +152,7 @@ HWTEST_F(WorkConnManagerTest, StartWork_002, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, DisConnect_001, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, DisConnect_001, TestSize.Level1)
 {
     sptr<WorkSchedulerConnection> connection;
     bool ret = workConnManager_->DisConnect(connection);
@@ -165,7 +165,7 @@ HWTEST_F(WorkConnManagerTest, DisConnect_001, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, StopWork_001, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, StopWork_001, TestSize.Level1)
 {
     workConnManager_->connMap_.clear();
     WorkInfo workInfo;
@@ -184,7 +184,7 @@ HWTEST_F(WorkConnManagerTest, StopWork_001, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, StopWork_002, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, StopWork_002, TestSize.Level1)
 {
     string workId = "u1000_123";
     sptr<WorkSchedulerConnection> connection;
@@ -206,7 +206,7 @@ HWTEST_F(WorkConnManagerTest, StopWork_002, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, StopWork_003, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, StopWork_003, TestSize.Level1)
 {
     MyWorkConnManager myWorkConnManager;
 
@@ -231,7 +231,7 @@ HWTEST_F(WorkConnManagerTest, StopWork_003, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, StopWork_004, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, StopWork_004, TestSize.Level1)
 {
     MyWorkConnManager myWorkConnManager;
     
@@ -256,7 +256,7 @@ HWTEST_F(WorkConnManagerTest, StopWork_004, TestSize.Level2)
  * @tc.type: FUNC
  * @tc.require: #I9HYBW
  */
-HWTEST_F(WorkConnManagerTest, WriteStartWorkEvent_001, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, WriteStartWorkEvent_001, TestSize.Level1)
 {
     WorkInfo workInfo;
     workInfo.workId_ = 123;

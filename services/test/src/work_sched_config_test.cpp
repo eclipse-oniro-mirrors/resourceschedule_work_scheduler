@@ -45,7 +45,7 @@ public:
  * @tc.type: FUNC
  * @tc.require: I8GHCL
  */
-HWTEST_F(WorkSchedConfigTest, InitActiveGroupWhitelist_001, TestSize.Level3)
+HWTEST_F(WorkSchedConfigTest, InitActiveGroupWhitelist_001, TestSize.Level1)
 {
     std::string configData = "";
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->InitActiveGroupWhitelist(configData);
