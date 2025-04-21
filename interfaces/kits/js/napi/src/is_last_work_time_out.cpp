@@ -69,30 +69,8 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
     return Common::NapiGetNull(env);
 }
 
-napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
+napi_value CreatAndQueueAsyncWork(napi_env env, AsyncCallbackIsLastWorkTimeOut* asyncCallbackInfo)
 {
-    WS_HILOGD("Is LastWork TimeOut napi begin.");
-
-    // Get params.
-    IsLastWorkTimeOutParamsInfo params;
-    if (ParseParameters(env, info, params) == nullptr) {
-        napi_value ret = Common::JSParaError(env, params.callback);
-        napi_delete_reference(env, params.callback);
-        return ret;
-    }
-
-    napi_value promise = nullptr;
-    AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = new (std::nothrow) AsyncCallbackIsLastWorkTimeOut(env);
-    if (!asyncCallbackInfo) {
-        napi_value ret = Common::JSParaError(env, params.callback);
-        napi_delete_reference(env, params.callback);
-        return ret;
-    }
-    std::unique_ptr<AsyncCallbackIsLastWorkTimeOut> callbackPtr {asyncCallbackInfo};
-    asyncCallbackInfo->workId = params.workId;
-    WS_HILOGD("asyncCallbackInfo->workId: %{public}d", asyncCallbackInfo->workId);
-    Common::PaddingAsyncWorkData(env, params.callback, *asyncCallbackInfo, promise);
-
     napi_value resourceName = nullptr;
     NAPI_CALL(env, napi_create_string_latin1(env, "IsLastWorkTimeOut", NAPI_AUTO_LENGTH, &resourceName));
 
@@ -121,6 +99,34 @@ napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
         &asyncCallbackInfo->asyncWork));
 
     NAPI_CALL(env, napi_queue_async_work(env, asyncCallbackInfo->asyncWork));
+    return nullptr;
+}
+
+napi_value IsLastWorkTimeOut(napi_env env, napi_callback_info info)
+{
+    WS_HILOGD("Is LastWork TimeOut napi begin.");
+
+    // Get params.
+    IsLastWorkTimeOutParamsInfo params;
+    if (ParseParameters(env, info, params) == nullptr) {
+        napi_value ret = Common::JSParaError(env, params.callback);
+        napi_delete_reference(env, params.callback);
+        return ret;
+    }
+
+    napi_value promise = nullptr;
+    AsyncCallbackIsLastWorkTimeOut *asyncCallbackInfo = new (std::nothrow) AsyncCallbackIsLastWorkTimeOut(env);
+    if (!asyncCallbackInfo) {
+        napi_value ret = Common::JSParaError(env, params.callback);
+        napi_delete_reference(env, params.callback);
+        return ret;
+    }
+    std::unique_ptr<AsyncCallbackIsLastWorkTimeOut> callbackPtr {asyncCallbackInfo};
+    asyncCallbackInfo->workId = params.workId;
+    WS_HILOGD("asyncCallbackInfo->workId: %{public}d", asyncCallbackInfo->workId);
+    Common::PaddingAsyncWorkData(env, params.callback, *asyncCallbackInfo, promise);
+
+    CreatAndQueueAsyncWork(env, asyncCallbackInfo);
     callbackPtr.release();
 
     WS_HILOGD("Is LastWork TimeOut napi end.");
