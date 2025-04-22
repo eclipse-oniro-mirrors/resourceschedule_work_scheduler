@@ -30,6 +30,7 @@
 #include "work_sched_data_manager.h"
 #include "work_sched_config.h"
 #include <unordered_map>
+#include <cinttypes>
 
 using namespace std;
 

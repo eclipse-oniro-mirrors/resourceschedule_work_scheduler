@@ -26,6 +26,7 @@
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
 #include "errors.h"
+#include <cinttypes>
 
 #ifdef DEVICE_STANDBY_ENABLE
 #include "standby_service_client.h"
