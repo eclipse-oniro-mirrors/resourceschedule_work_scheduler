@@ -52,6 +52,10 @@ extern "C" {
         bool isPersisted;
         int32_t isDeepIdle;
         int32_t idleWaitTime;
+    };
+
+    struct RetWorkInfoV2 {
+        RetWorkInfo v1;
         CArrParameters parameters;
     };
 
@@ -59,6 +63,12 @@ extern "C" {
         int32_t code;
         int64_t size;
         RetWorkInfo* data;
+    };
+
+    struct RetArrRetWorkInfoV2 {
+        int32_t code;
+        int64_t size;
+        RetWorkInfoV2* data;
     };
 
     const int32_t UNSET_INT_PARAM = -1;
@@ -69,6 +79,10 @@ extern "C" {
     FFI_EXPORT RetArrRetWorkInfo CJ_ObtainAllWorks();
     FFI_EXPORT int32_t CJ_IsLastWorkTimeOut(int32_t workId, bool& result);
     FFI_EXPORT int32_t CJ_StopAndClearWorks();
+    FFI_EXPORT int32_t CJ_StartWorkV2(RetWorkInfoV2 work);
+    FFI_EXPORT int32_t CJ_StopWorkV2(RetWorkInfoV2 work, bool needCancel);
+    FFI_EXPORT int32_t CJ_GetWorkStatusV2(int32_t workId, RetWorkInfoV2& result);
+    FFI_EXPORT RetArrRetWorkInfoV2 CJ_ObtainAllWorksV2();
 
     int32_t GetWorkInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo);
     int32_t GetNetWorkInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
@@ -76,7 +90,7 @@ extern "C" {
     int32_t GetBatteryInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
     int32_t GetStorageInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
     int32_t GetRepeatInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
-    int32_t GetExtrasInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
+    int32_t GetExtrasInfo(RetWorkInfoV2 cwork, OHOS::WorkScheduler::WorkInfo& workInfo);
     void ParseExtrasInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workInfo, CArrParameters& arrParam);
     void ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workInfo, RetWorkInfo& cwork);
     char* MallocCString(const std::string& origin);
