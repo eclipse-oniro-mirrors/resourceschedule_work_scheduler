@@ -15,7 +15,7 @@ import("//build/config/features.gni")
 import("//build/test.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
-module_output_path = "work_scheduler/work_scheduler"
+module_output_path = "work_scheduler/unittest"
 config("worksched_private_config") {
   include_dirs = [
     "${worksched_service_path}/zidl/include",

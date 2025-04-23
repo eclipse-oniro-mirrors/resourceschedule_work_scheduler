@@ -48,7 +48,7 @@ void WorkInfoTest::TearDown()
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest001, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest001, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.SetWorkId(1);
@@ -61,7 +61,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest001, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest002, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest002, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.SetElement("bundle_name", "ability_name");
@@ -75,7 +75,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest002, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest003, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest003, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestPersisted(true);
@@ -90,7 +90,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest003, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest004, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest004, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetChargerType(), WorkCondition::Charger::CHARGING_UNKNOWN);
@@ -104,7 +104,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest004, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest005, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest005, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestChargerType(false, WorkCondition::Charger::CHARGING_UNPLUGGED);
@@ -117,7 +117,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest005, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest006, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest006, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
@@ -130,7 +130,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest006, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest007, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest007, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
@@ -143,7 +143,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest007, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN6 AR000GH896 AR000GH897 AR000GH898
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest008, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest008, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetBatteryStatus(), WorkCondition::BatteryStatus::BATTERY_UNKNOWN);
@@ -157,7 +157,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest008, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN9 AR000GH89M
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest009, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest009, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetStorageLevel(), WorkCondition::Storage::STORAGE_UNKNOWN);
@@ -171,7 +171,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest009, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTN8 AR000GH89J AR000GH89K AR000GH89L
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest010, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest010, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW);
@@ -184,7 +184,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest010, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTNB AR000GH89Q
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest011, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest011, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_OKAY);
@@ -197,7 +197,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest011, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTNA AR000GH89P AR000GH89N AR000GH89O
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest012, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest012, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetNetworkType(), WorkCondition::Network::NETWORK_UNKNOWN);
@@ -211,7 +211,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest012, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTNA AR000GH89P AR000GH89N AR000GH89O
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest013, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest013, Function | MediumTest | Level0)
 {
     uint32_t timeInterval = 120;
     WorkInfo workInfo = WorkInfo();
@@ -229,7 +229,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest013, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: SR000GGTNA AR000GH89P AR000GH89N AR000GH89O
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest014, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest014, Function | MediumTest | Level0)
 {
     uint32_t timeInterval = 120;
     WorkInfo workInfo = WorkInfo();
@@ -246,7 +246,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest014, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest015, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest015, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     EXPECT_EQ(workInfo.GetBatteryLevel(), INVALID_VALUE);
@@ -260,7 +260,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest015, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest016, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest016, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.RefreshUid(0);
@@ -273,7 +273,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest016, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest017, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest017, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     AAFwk::WantParams extras;
@@ -292,7 +292,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest017, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest018, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest018, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.GetConditionMap();
@@ -307,7 +307,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest018, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     std::string res = workInfo.ParseToJsonStr();
@@ -345,7 +345,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level0)
 {
     using namespace OHOS::WorkScheduler;
     WorkInfo workInfo = WorkInfo();
@@ -402,7 +402,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTestJson003, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTestJson003, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     Json::Value root;
@@ -459,7 +459,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson003, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTestJson004, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTestJson004, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     Json::Value root;
@@ -485,7 +485,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson004, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTestJson005, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTestJson005, Function | MediumTest | Level0)
 {
     using namespace OHOS::WorkScheduler;
     WorkInfo workInfo = WorkInfo();
@@ -512,7 +512,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson005, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level0)
 {
     using namespace OHOS::WorkScheduler;
     WorkInfo workInfo = WorkInfo();
@@ -551,7 +551,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest019, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest019, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.SetElement("bundle_name", "ability_name");
@@ -599,7 +599,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest019, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.SetElement("bundle_name", "ability_name");
@@ -632,7 +632,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest020, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest021, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest021, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     workInfo.SetCallBySystemApp(true);
@@ -645,7 +645,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest021, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkInfoTest022, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkInfoTest022, Function | MediumTest | Level0)
 {
     WorkInfo workInfo = WorkInfo();
     time_t result;
@@ -661,7 +661,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest022, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkSchedUtils001, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkSchedUtils001, Function | MediumTest | Level0)
 {
     int32_t res = WorkSchedUtils::GetCurrentAccountId();
     EXPECT_NE(res, -1000);
@@ -673,7 +673,7 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils001, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkSchedUtils002, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkSchedUtils002, Function | MediumTest | Level0)
 {
     bool res = WorkSchedUtils::IsIdActive(0);
     EXPECT_FALSE(res);
@@ -685,7 +685,7 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils002, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkSchedUtils003, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkSchedUtils003, Function | MediumTest | Level0)
 {
     int32_t res = WorkSchedUtils::GetUserIdByUid(1);
     EXPECT_EQ(res, 0);
@@ -699,7 +699,7 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils003, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkSchedUtils004, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkSchedUtils004, Function | MediumTest | Level0)
 {
     std::string partialPath;
     std::string fullPath;
@@ -725,7 +725,7 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils004, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F (WorkInfoTest, WorkSchedUtils006, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, WorkSchedUtils006, Function | MediumTest | Level0)
 {
     bool res = WorkSchedUtils::IsSystemApp();
     EXPECT_EQ(res, false);
@@ -737,7 +737,7 @@ HWTEST_F (WorkInfoTest, WorkSchedUtils006, Function | MediumTest | Level2)
  * @tc.type FUNC
  * @tc.require: issueIAHY0B
  */
-HWTEST_F (WorkInfoTest, GetSaId001, Function | MediumTest | Level2)
+HWTEST_F (WorkInfoTest, GetSaId001, Function | MediumTest | Level0)
 {
     int32_t saId = 5300;
     WorkInfo workInfo = WorkInfo();

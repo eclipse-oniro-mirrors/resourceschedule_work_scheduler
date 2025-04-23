@@ -14,7 +14,7 @@
 import("//build/test.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
-module_output_path = "work_scheduler/work_scheduler"
+module_output_path = "work_scheduler/work_info_unittest"
 ohos_systemtest("WorkSchedulerWorkInfoTest") {
   module_out_path = module_output_path
 
@@ -50,7 +50,7 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
 }
 
 ohos_unittest("WorkSchedulerClientTest") {
-  module_out_path = module_output_path
+  module_out_path = "work_scheduler/client_unittest"
 
   cflags_cc = [
     "-Dprivate=public",

@@ -40,7 +40,7 @@ public:
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_001, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_001, TestSize.Level1)
 {
     WorkInfo workInfo = WorkInfo();
     auto ret = WorkSchedulerSrvClient::GetInstance().StartWork(workInfo);
@@ -53,7 +53,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_001, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_002, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_002, TestSize.Level1)
 {
     WorkInfo workInfo = WorkInfo();
     auto ret = WorkSchedulerSrvClient::GetInstance().StopWork(workInfo);
@@ -66,7 +66,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_002, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_003, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_003, TestSize.Level1)
 {
     WorkInfo workInfo = WorkInfo();
     auto ret = WorkSchedulerSrvClient::GetInstance().StopAndCancelWork(workInfo);
@@ -79,7 +79,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_003, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_004, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_004, TestSize.Level1)
 {
     auto ret = WorkSchedulerSrvClient::GetInstance().StopAndClearWorks();
     EXPECT_EQ(ret, ERR_OK);
@@ -91,7 +91,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_004, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_005, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_005, TestSize.Level1)
 {
     int32_t workId = 1;
     bool result;
@@ -105,7 +105,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_005, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_006, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_006, TestSize.Level1)
 {
     int32_t workId = 1;
     std::shared_ptr<WorkInfo> work;
@@ -122,7 +122,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_006, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_007, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_007, TestSize.Level1)
 {
     std::list<std::shared_ptr<WorkInfo>> workInfos;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(workInfos);
@@ -135,7 +135,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_007, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_008, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_008, TestSize.Level1)
 {
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
@@ -153,7 +153,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_008, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issueI5Y6YK
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level1)
 {
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
@@ -169,7 +169,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_009, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issue:#I992IA
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level1)
 {
     int32_t uid = -1;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
@@ -182,7 +182,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_010, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issue:#I992IA
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level1)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().PauseRunningWorks(uid);
@@ -195,7 +195,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_011, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issue:#I992IA
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_012, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_012, TestSize.Level1)
 {
     int32_t uid = -1;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
@@ -208,7 +208,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_012, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issue:#I992IA
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level1)
 {
     int32_t uid = IPCSkeleton::GetCallingUid();
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().ResumePausedWorks(uid);
@@ -221,7 +221,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_013, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issue:#I9EKGI
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level1)
 {
     std::list<std::shared_ptr<WorkInfo>> workInfos;
     ErrCode ret = WorkSchedulerSrvClient::GetInstance().GetAllRunningWorks(workInfos);
@@ -234,7 +234,7 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_014, TestSize.Level0)
  * @tc.type: FUNC
  * @tc.require: issue:#I9EKGI
  */
-HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_015, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_015, TestSize.Level1)
 {
     int32_t sourceType = 1;
     std::string configData = "";

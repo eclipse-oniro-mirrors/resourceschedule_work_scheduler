@@ -49,7 +49,7 @@ void WatchdogTest::SetUpTestCase()
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WatchdogTest, watchdog_001, TestSize.Level3)
+HWTEST_F(WatchdogTest, watchdog_001, TestSize.Level1)
 {
     bool result = watchdog_->AddWatchdog(1, 1);
     EXPECT_EQ(result, false);
@@ -61,7 +61,7 @@ HWTEST_F(WatchdogTest, watchdog_001, TestSize.Level3)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WatchdogTest, watchdog_002, TestSize.Level3)
+HWTEST_F(WatchdogTest, watchdog_002, TestSize.Level1)
 {
     bool result = watchdog_->AddWatchdog(1, 1);
     EXPECT_EQ(result, false);
@@ -74,7 +74,7 @@ HWTEST_F(WatchdogTest, watchdog_002, TestSize.Level3)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WatchdogTest, watchdog_003, TestSize.Level3)
+HWTEST_F(WatchdogTest, watchdog_003, TestSize.Level1)
 {
     AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
     event = nullptr;
@@ -88,7 +88,7 @@ HWTEST_F(WatchdogTest, watchdog_003, TestSize.Level3)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WatchdogTest, watchdog_004, TestSize.Level3)
+HWTEST_F(WatchdogTest, watchdog_004, TestSize.Level1)
 {
     AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
     watchdog_->ProcessEvent(event);
@@ -101,7 +101,7 @@ HWTEST_F(WatchdogTest, watchdog_004, TestSize.Level3)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WatchdogTest, watchdog_005, TestSize.Level3)
+HWTEST_F(WatchdogTest, watchdog_005, TestSize.Level1)
 {
     AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
     watchdog_->service_ = nullptr;

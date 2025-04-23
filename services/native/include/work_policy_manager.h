@@ -306,7 +306,6 @@ private:
     bool IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int32_t runningCount);
     std::string GetConditionString(const std::shared_ptr<WorkStatus> workStatus);
 
-private:
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
     std::shared_ptr<WorkEventHandler> handler_;
