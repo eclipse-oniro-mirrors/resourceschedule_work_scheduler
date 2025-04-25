@@ -23,6 +23,13 @@ ohos_shared_library("cj_work_scheduler_ffi") {
     cfi_cross_dso = true
     debug = false
   }
+  cflags_cc = [
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fvisibility=hidden",
+    "-fstack-protector-strong",
+    "-Os",
+  ]
 
   include_dirs = [
     "${worksched_root_path}/utils/native/include",

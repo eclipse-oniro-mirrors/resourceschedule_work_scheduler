@@ -45,6 +45,13 @@ ohos_shared_library("workschedulerextensioncontext_napi") {
     cfi_cross_dso = true
     debug = false
   }
+  cflags_cc = [
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fvisibility=hidden",
+    "-fstack-protector-strong",
+    "-Os",
+  ]
   sources = [ "work_scheduler_extension_context_module.cpp" ]
 
   deps = [
