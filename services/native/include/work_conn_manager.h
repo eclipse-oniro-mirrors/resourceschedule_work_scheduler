@@ -44,13 +44,18 @@ public:
      * @return True if success,else false.
      */
     bool StopWork(std::shared_ptr<WorkStatus> workStatus, bool isTimeOut);
+    /**
+     * @brief Write start work event.
+     *
+     * @param workStatus The status of work.
+     */
+    void WriteStartWorkEvent(std::shared_ptr<WorkStatus> workStatus);
 
 private:
     void RemoveConnInfo(std::string &workId);
     void AddConnInfo(std::string &workId, sptr<WorkSchedulerConnection> &connection);
     sptr<WorkSchedulerConnection> GetConnInfo(std::string &workId);
     bool DisConnect(sptr<WorkSchedulerConnection> connect);
-    void WriteStartWorkEvent(std::shared_ptr<WorkStatus> workStatus);
 
 private:
     ffrt::mutex connMapMutex_;

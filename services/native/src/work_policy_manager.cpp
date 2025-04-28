@@ -429,9 +429,9 @@ void WorkPolicyManager::CheckWorkToRun()
 
         if (!policyName.empty()) {
             topWork->delayReason_= policyName;
-            WS_HILOGI("trigger delay, reason: %{public}s, bundleName: %{public}s, runningCount:%{public}d,"
-                " allowRunningCount:%{public}d",
-                policyName.c_str(), topWork->bundleName_.c_str(), runningCount, allowRunningCount);
+            WS_HILOGI("trigger delay, reason:%{public}s, runningCount:%{public}d allowRunningCount:%{public}d,"
+                "bundleName:%{public}s, workId:%{public}s", policyName.c_str(), runningCount, allowRunningCount,
+                topWork->bundleName_.c_str(), topWork->workId_.c_str());
         }
         SendRetrigger(DELAY_TIME_LONG);
     }
@@ -469,6 +469,7 @@ void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
         } else {
             topWork->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
         }
+        workConnManager_->WriteStartWorkEvent(topWork);
         return;
     }
     WS_HILOGE("startSA %{public}d workId:%{public}s failed",

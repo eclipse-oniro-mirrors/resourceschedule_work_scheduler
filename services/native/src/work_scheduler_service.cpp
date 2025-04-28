@@ -768,6 +768,7 @@ int32_t WorkSchedulerService::StopWork(const WorkInfo& workInfo)
         WS_HILOGE("workStatus is nullptr");
         return E_WORK_NOT_EXIST_FAILED;
     }
+    WS_HILOGI("StopWork %{public}s workId:%{public}d", workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
     StopWorkInner(workStatus, uid, false, false);
     return ERR_OK;
 }

@@ -15,6 +15,7 @@
 
 #include <functional>
 #include <gtest/gtest.h>
+#include "gmock/gmock.h"
 
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
@@ -25,6 +26,7 @@
 
 
 using namespace testing::ext;
+using ::testing::Return;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -35,6 +37,15 @@ public:
     void SetUp() {}
     void TearDown() {}
     static std::shared_ptr<WorkPolicyManager> workPolicyManager_;
+};
+
+class MockPolicyFilter : public IPolicyFilter {
+public:
+    explicit MockPolicyFilter(std::shared_ptr<WorkPolicyManager> workPolicyManager){};
+    ~MockPolicyFilter(){};
+
+    MOCK_METHOD(int32_t, GetPolicyMaxRunning, (), (override));
+    MOCK_METHOD(std::string, GetPolicyName, (), (override));
 };
 
 std::shared_ptr<WorkPolicyManager> WorkPolicyManagerTest::workPolicyManager_ = nullptr;
@@ -723,6 +734,19 @@ HWTEST_F(WorkPolicyManagerTest, OnConditionReady_002, TestSize.Level1)
 }
 
 /**
+ * @tc.name: OnConditionReady_003
+ * @tc.desc: Test WorkPolicyManagerTest OnConditionReady.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, OnConditionReady_003, TestSize.Level1)
+{
+    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork = nullptr;
+    workPolicyManager_->OnConditionReady(readyWork);
+    EXPECT_TRUE(readyWork == nullptr);
+}
+
+/**
  * @tc.name: AddToReadyQueue_001
  * @tc.desc: Test WorkPolicyManagerTest AddToReadyQueue.
  * @tc.type: FUNC
@@ -772,6 +796,143 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_002, TestSize.Level1)
     std::string policyName;
     int32_t ret = workPolicyManager_->GetMaxRunningCount(policyName);
     EXPECT_TRUE(ret >= workPolicyManager_->dumpSetMaxRunningCount_);
+}
+
+/**
+ * @tc.name: GetMaxRunningCount_003
+ * @tc.desc: Test WorkPolicyManagerTest GetMaxRunningCount.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_003, TestSize.Level1)
+{
+    workPolicyManager_->policyFilters_.clear();
+    std::string policyName;
+    workPolicyManager_->SetMaxRunningCountByDump(5);
+    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+
+    EXPECT_EQ(5, result);
+    EXPECT_TRUE(policyName.empty());
+}
+
+/**
+ * @tc.name: GetMaxRunningCount_004
+ * @tc.desc: Test WorkPolicyManagerTest GetMaxRunningCount.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_004, TestSize.Level1)
+{
+    workPolicyManager_->policyFilters_.clear();
+    std::string policyName;
+    workPolicyManager_->SetMaxRunningCountByDump(0);
+
+    auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter1, GetPolicyMaxRunning()).WillRepeatedly(Return(2));
+    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("policyA"));
+
+    auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter2, GetPolicyMaxRunning()).WillRepeatedly(Return(4));
+    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("policyB"));
+
+    workPolicyManager_->AddPolicyFilter(filter1);
+    workPolicyManager_->AddPolicyFilter(filter2);
+
+    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+
+    EXPECT_EQ(2, result);
+    EXPECT_EQ("policyA", policyName);
+}
+
+/**
+ * @tc.name: GetMaxRunningCount_005
+ * @tc.desc: Test WorkPolicyManagerTest GetMaxRunningCount.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_005, TestSize.Level1)
+{
+    workPolicyManager_->policyFilters_.clear();
+    std::string policyName;
+    workPolicyManager_->SetMaxRunningCountByDump(0);
+
+    auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter1, GetPolicyMaxRunning()).WillRepeatedly(Return(5));
+    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("policyX"));
+
+    auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter2, GetPolicyMaxRunning()).WillRepeatedly(Return(3));
+    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("policyY"));
+
+    auto filter3 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter3, GetPolicyMaxRunning()).WillRepeatedly(Return(7));
+    EXPECT_CALL(*filter3, GetPolicyName()).WillRepeatedly(Return("policyZ"));
+
+    workPolicyManager_->AddPolicyFilter(filter1);
+    workPolicyManager_->AddPolicyFilter(filter2);
+    workPolicyManager_->AddPolicyFilter(filter3);
+
+    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+
+    EXPECT_EQ(3, result);
+    EXPECT_TRUE(policyName.empty());
+}
+
+/**
+ * @tc.name: GetMaxRunningCount_006
+ * @tc.desc: Test WorkPolicyManagerTest GetMaxRunningCount.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_006, TestSize.Level1)
+{
+    workPolicyManager_->policyFilters_.clear();
+    std::string policyName;
+    workPolicyManager_->SetMaxRunningCountByDump(0);
+
+    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+
+    EXPECT_EQ(3, result);
+    EXPECT_TRUE(policyName.empty());
+}
+
+/**
+ * @tc.name: GetMaxRunningCount_007
+ * @tc.desc: Test WorkPolicyManagerTest GetMaxRunningCount.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_007, TestSize.Level1)
+{
+    workPolicyManager_->policyFilters_.clear();
+    std::string policyName;
+    workPolicyManager_->SetMaxRunningCountByDump(0);
+
+    auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter1, GetPolicyMaxRunning()).WillRepeatedly(Return(10));
+    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("policy1"));
+
+    auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter2, GetPolicyMaxRunning()).WillRepeatedly(Return(5));
+    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("policy2"));
+
+    auto filter3 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter3, GetPolicyMaxRunning()).WillRepeatedly(Return(8));
+    EXPECT_CALL(*filter3, GetPolicyName()).WillRepeatedly(Return("policy3"));
+
+    auto filter4 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
+    EXPECT_CALL(*filter4, GetPolicyMaxRunning()).WillRepeatedly(Return(3));
+    EXPECT_CALL(*filter4, GetPolicyName()).WillRepeatedly(Return("policy4"));
+
+    workPolicyManager_->AddPolicyFilter(filter1);
+    workPolicyManager_->AddPolicyFilter(filter2);
+    workPolicyManager_->AddPolicyFilter(filter3);
+    workPolicyManager_->AddPolicyFilter(filter4);
+
+    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+
+    EXPECT_EQ(3, result);
+    EXPECT_TRUE(policyName.empty());
 }
 
 /**
