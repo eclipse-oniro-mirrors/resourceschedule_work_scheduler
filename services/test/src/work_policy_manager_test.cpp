@@ -829,11 +829,11 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_004, TestSize.Level1)
 
     auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter1, GetPolicyMaxRunning()).WillRepeatedly(Return(2));
-    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("策略A"));
+    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("policyA"));
 
     auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter2, GetPolicyMaxRunning()).WillRepeatedly(Return(4));
-    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("策略B"));
+    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("policyB"));
 
     workPolicyManager_->AddPolicyFilter(filter1);
     workPolicyManager_->AddPolicyFilter(filter2);
@@ -841,7 +841,7 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_004, TestSize.Level1)
     int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
 
     EXPECT_EQ(2, result);
-    EXPECT_EQ("策略A", policyName);
+    EXPECT_EQ("policyA", policyName);
 }
 
 /**
@@ -858,15 +858,15 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_005, TestSize.Level1)
 
     auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter1, GetPolicyMaxRunning()).WillRepeatedly(Return(5));
-    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("策略X"));
+    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("policyX"));
 
     auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter2, GetPolicyMaxRunning()).WillRepeatedly(Return(3));
-    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("策略Y"));
+    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("policyY"));
 
     auto filter3 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter3, GetPolicyMaxRunning()).WillRepeatedly(Return(7));
-    EXPECT_CALL(*filter3, GetPolicyName()).WillRepeatedly(Return("策略Z"));
+    EXPECT_CALL(*filter3, GetPolicyName()).WillRepeatedly(Return("policyZ"));
 
     workPolicyManager_->AddPolicyFilter(filter1);
     workPolicyManager_->AddPolicyFilter(filter2);
@@ -910,19 +910,19 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_007, TestSize.Level1)
 
     auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter1, GetPolicyMaxRunning()).WillRepeatedly(Return(10));
-    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("策略1"));
+    EXPECT_CALL(*filter1, GetPolicyName()).WillRepeatedly(Return("policy1"));
 
     auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter2, GetPolicyMaxRunning()).WillRepeatedly(Return(5));
-    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("策略2"));
+    EXPECT_CALL(*filter2, GetPolicyName()).WillRepeatedly(Return("policy2"));
 
     auto filter3 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter3, GetPolicyMaxRunning()).WillRepeatedly(Return(8));
-    EXPECT_CALL(*filter3, GetPolicyName()).WillRepeatedly(Return("策略3"));
+    EXPECT_CALL(*filter3, GetPolicyName()).WillRepeatedly(Return("policy3"));
 
     auto filter4 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     EXPECT_CALL(*filter4, GetPolicyMaxRunning()).WillRepeatedly(Return(3));
-    EXPECT_CALL(*filter4, GetPolicyName()).WillRepeatedly(Return("策略4"));
+    EXPECT_CALL(*filter4, GetPolicyName()).WillRepeatedly(Return("policy4"));
 
     workPolicyManager_->AddPolicyFilter(filter1);
     workPolicyManager_->AddPolicyFilter(filter2);
