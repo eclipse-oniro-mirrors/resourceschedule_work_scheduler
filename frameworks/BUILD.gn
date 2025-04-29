@@ -38,7 +38,12 @@ ohos_shared_library("workschedclient") {
     cfi_cross_dso = true
     debug = false
   }
-
+  cflags_cc = [
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fstack-protector-strong",
+    "-Os",
+  ]
   output_values = get_target_outputs(":work_sched_service_interface")
   sources = [
     "${worksched_frameworks_path}/src/work_info.cpp",

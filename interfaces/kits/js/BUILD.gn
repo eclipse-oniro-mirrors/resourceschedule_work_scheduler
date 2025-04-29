@@ -27,6 +27,13 @@ ohos_shared_library("workscheduler") {
     cfi_cross_dso = true
     debug = false
   }
+  cflags_cc = [
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fvisibility=hidden",
+    "-fstack-protector-strong",
+    "-Os",
+  ]
   public_configs = [ ":worksched_public_config" ]
 
   sources = [
