@@ -398,7 +398,6 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     Json::CharReaderBuilder readerBuilder;
     const unique_ptr<Json::CharReader> jsonReader(readerBuilder.newCharReader());
     bool res = jsonReader->parse(data.c_str(), data.c_str() + data.length(), &root, &errs);
-    fin.close();
     if (!res || !errs.empty()) {
         WS_HILOGE("parse %{private}s json error", realPath.c_str());
         return false;
