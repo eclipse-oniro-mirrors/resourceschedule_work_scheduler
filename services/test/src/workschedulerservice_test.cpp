@@ -1209,5 +1209,65 @@ HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_002, TestSize.Level
     workSchedulerService_->LoadMinRepeatTimeFromFile(path);
     EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
 }
+
+/**
+ * @tc.name: DumpTriggerWork_001
+ * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
+ * @tc.type: FUNC
+ * @tc.require: IBB60P
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_001, TestSize.Level1)
+{
+    std::string uIdStr = "";
+    std::string workIdStr = "123";
+    std::string result;
+    workSchedulerService_->DumpTriggerWork(uIdStr, workIdStr, result);
+    EXPECT_EQ(result, "param invalid\n");
+}
+
+/**
+ * @tc.name: DumpTriggerWork_002
+ * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
+ * @tc.type: FUNC
+ * @tc.require: IBB60P
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_002, TestSize.Level1)
+{
+    std::string uIdStr = "0";
+    std::string workIdStr = "123";
+    std::string result;
+    workSchedulerService_->DumpTriggerWork(uIdStr, workIdStr, result);
+    EXPECT_EQ(result, "uIdStr param invalid, uIdStr:0\n");
+}
+
+/**
+ * @tc.name: DumpTriggerWork_003
+ * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
+ * @tc.type: FUNC
+ * @tc.require: IBB60P
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_003, TestSize.Level1)
+{
+    std::string uIdStr = "123";
+    std::string workIdStr = "0";
+    std::string result;
+    workSchedulerService_->DumpTriggerWork(uIdStr, workIdStr, result);
+    EXPECT_EQ(result, "workIdStr param invalid, workIdStr:0\n");
+}
+
+/**
+ * @tc.name: DumpTriggerWork_004
+ * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
+ * @tc.type: FUNC
+ * @tc.require: IBB60P
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_004, TestSize.Level1)
+{
+    std::string uIdStr = "123";
+    std::string workIdStr = "456";
+    std::string result;
+    workSchedulerService_->DumpTriggerWork(uIdStr, workIdStr, result);
+    EXPECT_EQ(result, "the work is not exist\n");
+}
 }
 }

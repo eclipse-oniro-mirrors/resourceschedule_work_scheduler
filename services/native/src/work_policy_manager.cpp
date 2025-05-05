@@ -189,6 +189,16 @@ shared_ptr<WorkStatus> WorkPolicyManager::FindWorkStatus(WorkInfo& workInfo, int
     return nullptr;
 }
 
+shared_ptr<WorkStatus> WorkPolicyManager::FindWorkStatus(int32_t uId, int32_t workId)
+{
+    WS_HILOGD("Find work status start.");
+    std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
+    if (uidQueueMap_.count(uId) > 0) {
+        return uidQueueMap_.at(uId)->Find(WorkStatus::MakeWorkId(workId, uId));
+    }
+    return nullptr;
+}
+
 shared_ptr<WorkStatus> WorkPolicyManager::FindSA(int32_t saId, int32_t uid)
 {
     WS_HILOGD("Find SA, saId:%{public}d, uid:%{public}d", saId, uid);
@@ -735,6 +745,29 @@ void WorkPolicyManager::DumpCheckIdeWorkToRun(const std::string &bundleName, con
         return;
     }
     SendIdeWorkRetriggerEvent(0);
+}
+
+void WorkPolicyManager::DumpTriggerWork(int32_t uId, int32_t workId, std::string& result)
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(ideDebugListMutex_);
+    std::shared_ptr<WorkStatus> workStatus = FindWorkStatus(uId, workId);
+    if (workStatus == nullptr) {
+        result.append("the work is not exist\n");
+        return;
+    }
+    if (workStatus->IsRunning()) {
+        result.append("the work is running\n");
+        return;
+    }
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    bool ret = workConnManager_->StartWork(workStatus);
+    if (ret) {
+        result.append("the work trigger ok\n");
+        AddWatchdogForWork(workStatus);
+    } else {
+        result.append("the work trigger error\n");
+        workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    }
 }
 
 void WorkPolicyManager::TriggerIdeWork()

@@ -106,6 +106,14 @@ public:
      */
     std::shared_ptr<WorkStatus> FindWorkStatus(WorkInfo& workInfo, int32_t uid);
     /**
+     * @brief Find work status.
+     *
+     * @param uId The uId.
+     * @param workId The workId.
+     * @return The workStatus of workId.
+     */
+    std::shared_ptr<WorkStatus> FindWorkStatus(int32_t uId, int32_t workId);
+    /**
      * @brief Find SA.
      *
      * @param saId The id of sa.
@@ -225,6 +233,13 @@ public:
      * @param abilityName The abilityName.
      */
     void DumpCheckIdeWorkToRun(const std::string &bundleName, const std::string &abilityName);
+    /**
+     * @brief Provide a command to exec onStart and onStop of the matched service extension.
+     * @param uId The uId.
+     * @param workId The workId.
+     * @param result The result.
+     */
+    void DumpTriggerWork(int32_t uId, int32_t workId, std::string& result);
     /**
      * @brief Set cpu by dump.
      *

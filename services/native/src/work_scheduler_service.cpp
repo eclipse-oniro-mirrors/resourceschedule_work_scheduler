@@ -996,6 +996,8 @@ void WorkSchedulerService::DumpProcessForEngMode(std::vector<std::string> &argsI
                 DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else if (argsInStr[DUMP_OPTION] == "-g") {
                 DumpGetWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+            } else if (argsInStr[DUMP_OPTION] == "-f") {
+                DumpTriggerWork(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
             } else {
                 result.append("Error params.");
             }
@@ -1056,7 +1058,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -a: show all info.\n")
         .append("    -d event info: show the event info.\n")
         .append("    -d (eventType) (TypeValue): publish the event.\n")
-        .append("    -t (bundleName) (abilityName): trigger the work.\n")
+        .append("    -t (bundleName) (abilityName): trigger the bundleName all works.\n")
+        .append("    -f (uId) (workId): trigger the work.\n")
         .append("    -x (uid) (option): pause or resume the work.\n")
         .append("    -memory (number): set the available memory.\n")
         .append("    -watchdog_time (number): set watch dog time, default 120000.\n")
@@ -1064,7 +1067,7 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
-        .append("    -s (number) (number): load or report sa.\n");
+        .append("    -s (saId) (uId): load or report sa.\n");
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -1119,6 +1122,26 @@ void WorkSchedulerService::DumpProcessWorks(const std::string &bundleName, const
         return;
     }
     workPolicyManager_->DumpCheckIdeWorkToRun(bundleName, abilityName);
+}
+
+void WorkSchedulerService::DumpTriggerWork(const std::string& uIdStr, const std::string& workIdStr, std::string& result)
+{
+    if (uIdStr.empty() || workIdStr.empty() || !std::all_of(uIdStr.begin(), uIdStr.end(), ::isdigit)
+        || !std::all_of(workIdStr.begin(), workIdStr.end(), ::isdigit)) {
+        result.append("param invalid\n");
+        return;
+    }
+    int32_t uId = std::atoi(uIdStr.c_str());
+    if (uId <= 0) {
+        result.append("uIdStr param invalid, uIdStr:" + uIdStr + "\n");
+        return;
+    }
+    int32_t workId = std::atoi(workIdStr.c_str());
+    if (workId <= 0) {
+        result.append("workIdStr param invalid, workIdStr:" + workIdStr + "\n");
+        return;
+    }
+    workPolicyManager_->DumpTriggerWork(uId, workId, result);
 }
 
 void WorkSchedulerService::DumpRunningWorks(const std::string &uidStr, const std::string &option, std::string &result)

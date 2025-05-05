@@ -1049,5 +1049,66 @@ HWTEST_F(WorkPolicyManagerTest, GetDeepIdleWorks_001, TestSize.Level1)
     std::list<std::shared_ptr<WorkStatus>> ret = workPolicyManager_->GetDeepIdleWorks();
     EXPECT_TRUE(ret.size() > 0);
 }
+
+/**
+ * @tc.name: DumpTriggerWork_001
+ * @tc.desc: Test WorkPolicyManagerTest DumpTriggerWork.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, DumpTriggerWork_001, TestSize.Level1)
+{
+    int32_t uId = 1;
+    int32_t workId = 1;
+    std::string result;
+    workPolicyManager_->DumpTriggerWork(uId, workId, result);
+    EXPECT_EQ(result, "the work is not exist\n");
+}
+
+/**
+ * @tc.name: DumpTriggerWork_002
+ * @tc.desc: Test WorkPolicyManagerTest DumpTriggerWork.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, DumpTriggerWork_002, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    int32_t uId = 1;
+    int32_t workId = 1;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(workId);
+    workinfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
+    workinfo.RequestBatteryLevel(80);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uId);
+    workStatus->MarkStatus(WorkStatus::RUNNING);
+    int32_t ret = workPolicyManager_->AddWork(workStatus, uId);
+    std::string result;
+    workPolicyManager_->DumpTriggerWork(uId, workId, result);
+    EXPECT_EQ(result, "the work is running\n");
+}
+
+/**
+ * @tc.name: DumpTriggerWork_003
+ * @tc.desc: Test WorkPolicyManagerTest DumpTriggerWork.
+ * @tc.type: FUNC
+ * @tc.require: I9J0A7
+ */
+HWTEST_F(WorkPolicyManagerTest, DumpTriggerWork_003, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    int32_t uId = 1;
+    int32_t workId = 1;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(workId);
+    workinfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
+    workinfo.RequestBatteryLevel(80);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uId);
+    workStatus->MarkStatus(WorkStatus::WAIT_CONDITION);
+    int32_t ret = workPolicyManager_->AddWork(workStatus, uId);
+    std::string result;
+    workPolicyManager_->DumpTriggerWork(uId, workId, result);
+    EXPECT_EQ(result, "the work trigger error\n");
+}
 }
 }
