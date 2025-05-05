@@ -354,6 +354,7 @@ private:
     int32_t SetTimer();
     void CancelTimer(int32_t id);
     bool CheckCallingToken();
+    void DumpTriggerWork(const std::string& uIdStr, const std::string& workIdStr, std::string& result);
 
 private:
     std::set<int32_t> whitelist_;
