@@ -29,6 +29,13 @@ ohos_shared_library("workschedextension") {
     cfi_cross_dso = true
     debug = false
   }
+  cflags_cc = [
+    "-fdata-sections",
+    "-ffunction-sections",
+    "-fvisibility=hidden",
+    "-fstack-protector-strong",
+    "-Os",
+  ]
   sources = [
     "${worksched_service_path}/zidl/src/work_scheduler_stub_imp.cpp",
     "src/js_work_scheduler_extension.cpp",
