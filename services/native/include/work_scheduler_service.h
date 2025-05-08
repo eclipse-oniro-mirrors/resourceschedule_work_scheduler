@@ -169,10 +169,9 @@ public:
     /**
      * @brief Create node file.
      *
-     * @param filePath The file path.
      * @return ERR_OK.
      */
-    int32_t CreateNodeFile(std::string filePath);
+    int32_t CreateNodeFile();
     /**
      * @brief Update work before real start.
      *
