@@ -1254,7 +1254,7 @@ void WorkSchedulerService::RefreshPersistedWorks()
     jsonWriter->write(root, &os);
     string result = os.str();
     CreateNodeDir(PERSISTED_PATH);
-    CreateNodeFile(PERSISTED_FILE_PATH);
+    CreateNodeFile();
     ofstream fout;
     std::string realPath;
     if (!WorkSchedUtils::ConvertFullPath(PERSISTED_FILE_PATH, realPath)) {
@@ -1285,18 +1285,18 @@ int32_t WorkSchedulerService::CreateNodeDir(std::string dir)
     return ERR_OK;
 }
 
-int32_t WorkSchedulerService::CreateNodeFile(std::string filePath)
+int32_t WorkSchedulerService::CreateNodeFile()
 {
-    if (access(filePath.c_str(), 0) != 0) {
-        FILE *file = fopen(filePath.c_str(), "w+");
+    if (access(PERSISTED_FILE_PATH, 0) != 0) {
+        FILE *file = fopen(PERSISTED_FILE_PATH, "w+");
         if (file == nullptr) {
-            WS_HILOGE("Fail to open file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
+            WS_HILOGE("Fail to open file: %{private}s, errno: %{public}s", PERSISTED_FILE_PATH, strerror(errno));
             return errno;
         }
         WS_HILOGI("Open file success.");
         int closeResult = fclose(file);
         if (closeResult < 0) {
-            WS_HILOGE("Fail to close file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
+            WS_HILOGE("Fail to close file: %{private}s, errno: %{public}s", PERSISTED_FILE_PATH, strerror(errno));
             return errno;
         }
     } else {
