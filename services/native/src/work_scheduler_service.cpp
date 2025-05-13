@@ -894,7 +894,7 @@ int32_t WorkSchedulerService::ObtainWorksByUidAndWorkIdForInner(int32_t uid,
             workInfos.push_back(*workInfoPtr);
             return ERR_OK;
         } else {
-            WS_HILOGE("uid: %{public}d, workId: %{public}d no have task.");
+            WS_HILOGE("uid: %{public}d, workId: %{public}d no have task.", uid, workId);
             return E_WORK_NOT_EXIST_FAILED;
         }
     }
