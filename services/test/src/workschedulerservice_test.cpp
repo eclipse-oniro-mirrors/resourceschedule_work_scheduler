@@ -1214,7 +1214,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_002, TestSize.Level
  * @tc.name: DumpTriggerWork_001
  * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
  * @tc.type: FUNC
- * @tc.require: IBB60P
+ * @tc.require: I9J0A7
  */
 HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_001, TestSize.Level1)
 {
@@ -1229,7 +1229,7 @@ HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_001, TestSize.Level1)
  * @tc.name: DumpTriggerWork_002
  * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
  * @tc.type: FUNC
- * @tc.require: IBB60P
+ * @tc.require: IC5H77
  */
 HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_002, TestSize.Level1)
 {
@@ -1244,7 +1244,7 @@ HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_002, TestSize.Level1)
  * @tc.name: DumpTriggerWork_003
  * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
  * @tc.type: FUNC
- * @tc.require: IBB60P
+ * @tc.require: IC5H77
  */
 HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_003, TestSize.Level1)
 {
@@ -1259,7 +1259,7 @@ HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_003, TestSize.Level1)
  * @tc.name: DumpTriggerWork_004
  * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
  * @tc.type: FUNC
- * @tc.require: IBB60P
+ * @tc.require: IC5H77
  */
 HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_004, TestSize.Level1)
 {
