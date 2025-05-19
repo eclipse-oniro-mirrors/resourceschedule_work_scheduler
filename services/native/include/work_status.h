@@ -182,6 +182,9 @@ public:
     int64_t GetMinInterval();
     bool IsUriKeySwitchOn();
     void ToString(WorkCondition::Type conditionType);
+    void HasTimeout();
+    bool IsTimeout();
+    void SetTimeout(bool timeout);
 private:
     Status currentStatus_;
     time_t baseTime_;
@@ -191,6 +194,7 @@ private:
     static ffrt::mutex s_uid_last_time_mutex;
     static std::map<int32_t, time_t> s_uid_last_time_map;
     std::string conditionStatus_;
+    std::atomic<bool> timeout_ {false};
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();

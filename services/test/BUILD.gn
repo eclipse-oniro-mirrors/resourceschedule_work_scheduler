@@ -57,6 +57,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/watchdog_test.cpp",
     "src/work_conn_manager_test.cpp",
     "src/work_policy_manager_test.cpp",
+    "src/work_queue_manager_test.cpp",
     "src/work_queue_test.cpp",
     "src/work_sched_config_test.cpp",
     "src/work_sched_data_manager_test.cpp",

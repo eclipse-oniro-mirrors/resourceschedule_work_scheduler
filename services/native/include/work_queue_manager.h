@@ -123,6 +123,7 @@ private:
     void PushWork(std::vector<std::shared_ptr<WorkStatus>> &works, std::vector<std::shared_ptr<WorkStatus>> &result);
     void PrintWorkStatus(WorkCondition::Type conditionType);
     void PrintAllWorkStatus(WorkCondition::Type conditionType);
+    void ClearTimeOutWorkStatus();
 
 private:
     ffrt::mutex mutex_;
