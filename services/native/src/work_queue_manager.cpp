@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -164,6 +164,10 @@ void WorkQueueManager::ClearTimeOutWorkStatus()
             allWorkIds.insert(work->workId_);
             WS_HILOGE("work timed out and will be ended, bundleName:%{public}s, workId:%{public}s",
                 work->bundleName_.c_str(), work->workId_.c_str());
+            if (wss_.expired()) {
+                WS_HILOGE("wss_ expired");
+                return;
+            }
             wss_.lock()->StopWorkInner(work, work->uid_, false, false);
             work->SetTimeout(false);
         }
