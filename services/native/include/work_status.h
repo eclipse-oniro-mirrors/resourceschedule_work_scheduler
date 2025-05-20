@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -182,6 +182,9 @@ public:
     int64_t GetMinInterval();
     bool IsUriKeySwitchOn();
     void ToString(WorkCondition::Type conditionType);
+    void HasTimeout();
+    bool IsTimeout();
+    void SetTimeout(bool timeout);
 private:
     Status currentStatus_;
     time_t baseTime_;
@@ -191,6 +194,7 @@ private:
     static ffrt::mutex s_uid_last_time_mutex;
     static std::map<int32_t, time_t> s_uid_last_time_map;
     std::string conditionStatus_;
+    std::atomic<bool> timeout_ {false};
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();

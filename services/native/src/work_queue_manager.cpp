@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -144,7 +144,34 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
         it = result.erase(it);
     }
     PrintWorkStatus(conditionType);
+    ClearTimeOutWorkStatus();
     return result;
+}
+
+void WorkQueueManager::ClearTimeOutWorkStatus()
+{
+    std::set<std::string> allWorkIds;
+    for (auto it : queueMap_) {
+        shared_ptr<WorkQueue> workQueue = it.second;
+        auto workList = workQueue->GetWorkList();
+        for (auto work : workList) {
+            if (!work->IsTimeout()) {
+                continue;
+            }
+            if (allWorkIds.count(work->workId_) != 0) {
+                continue;
+            }
+            allWorkIds.insert(work->workId_);
+            WS_HILOGE("work timed out and will be ended, bundleName:%{public}s, workId:%{public}s",
+                work->bundleName_.c_str(), work->workId_.c_str());
+            if (wss_.expired()) {
+                WS_HILOGE("wss_ expired");
+                return;
+            }
+            wss_.lock()->StopWorkInner(work, work->uid_, false, false);
+            work->SetTimeout(false);
+        }
+    }
 }
 
 void WorkQueueManager::PrintWorkStatus(WorkCondition::Type conditionType)

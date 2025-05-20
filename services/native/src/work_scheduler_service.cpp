@@ -796,6 +796,8 @@ int32_t WorkSchedulerService::StopAndCancelWork(const WorkInfo& workInfo)
         persistedMap_.erase(workStatus->workId_);
         RefreshPersistedWorks();
     }
+    WS_HILOGI("StopAndCancelWork %{public}s workId:%{public}d",
+        workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
     return ERR_OK;
 }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -14,6 +14,7 @@
  */
 
 #include "work_policy_manager.h"
+#include "work_sched_constants.h"
 
 #include <string>
 #include <hisysevent.h>
@@ -38,23 +39,6 @@ using namespace OHOS::HiviewDFX;
 
 namespace OHOS {
 namespace WorkScheduler {
-namespace {
-const int32_t MAX_RUNNING_COUNT = 3;
-const int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
-const uint32_t MAX_WORK_COUNT_PER_UID = 10;
-const int32_t DELAY_TIME_LONG = 30000;
-const int32_t DELAY_TIME_SHORT = 5000;
-const uint32_t MAX_WATCHDOG_ID = 1000;
-const uint32_t INIT_WATCHDOG_ID = 1;
-const int32_t INIT_DUMP_SET_MEMORY = -1;
-const int32_t WATCHDOG_TIME = 2 * 60 * 1000;
-const int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
-const int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
-const int32_t INIT_DUMP_SET_CPU = 0;
-const int32_t INVALID_VALUE = -1;
-const int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
-static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
-}
 
 WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>& wss) : wss_(wss)
 {
@@ -749,7 +733,6 @@ void WorkPolicyManager::DumpCheckIdeWorkToRun(const std::string &bundleName, con
 
 void WorkPolicyManager::DumpTriggerWork(int32_t uId, int32_t workId, std::string& result)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(ideDebugListMutex_);
     std::shared_ptr<WorkStatus> workStatus = FindWorkStatus(uId, workId);
     if (workStatus == nullptr) {
         result.append("the work is not exist\n");

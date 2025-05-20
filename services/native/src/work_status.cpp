@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,6 +29,7 @@
 #include "parameters.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_config.h"
+#include "work_sched_constants.h"
 #include <unordered_map>
 #include <cinttypes>
 
@@ -135,6 +136,7 @@ int32_t WorkStatus::OnConditionChanged(WorkCondition::Type &type, shared_ptr<Con
         }
     }
     if (!IsStandbyExemption()) {
+        HasTimeout();
         return E_GROUP_CHANGE_NOT_MATCH_HAP;
     }
     if (IsReady()) {
@@ -227,6 +229,7 @@ bool WorkStatus::IsReady()
         return false;
     }
     if (IsRunning()) {
+        HasTimeout();
         conditionStatus_ += DELIMITER + "running";
         return false;
     }
@@ -252,7 +255,7 @@ bool WorkStatus::IsReady()
     }
     double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
     if (del < minInterval_) {
-        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&unready(" +
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&" + NOT_OK + "(" +
             to_string(static_cast<long>(del)) + ":" + to_string(minInterval_) + ")";
         needRetrigger_ = true;
         timeRetrigger_ = int(minInterval_ - del + ONE_SECOND);
@@ -281,13 +284,13 @@ bool WorkStatus::IsConditionReady()
     bool isReady = true;
     for (auto it : *workConditionMap) {
         if (conditionMap_.count(it.first) <= 0) {
-            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&unready";
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&" + NOT_OK;
             isReady = false;
             break;
         }
         if (!IsBatteryAndNetworkReady(it.first) || !IsStorageReady(it.first) ||
             !IsChargerReady(it.first) || !IsNapReady(it.first)) {
-            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&unready";
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&" + NOT_OK;
             isReady = false;
             break;
         }
@@ -295,7 +298,7 @@ bool WorkStatus::IsConditionReady()
             isReady = false;
             break;
         }
-        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&ready";
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[it.first] + "&" + OK;
     }
     return isReady;
 }
@@ -399,7 +402,7 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
     double oppositedel = difftime(getOppositeTime(), lastTime);
     double del = currentdel > oppositedel ? currentdel : oppositedel;
     if (del < intervalTime) {
-        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[type] + "&unready(" +
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[type] + "&" + NOT_OK + "(" +
             to_string(static_cast<long>(del)) + ":" + to_string(intervalTime) + ")";
         return false;
     }
@@ -613,21 +616,55 @@ void WorkStatus::ToString(WorkCondition::Type type)
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->GetDeviceSleep()) {
         if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
-            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&exemption";
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&" + OK;
         }
-        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&unExemption";
+        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&" + NOT_OK;
     }
     if (conditionStatus_.empty()) {
-        WS_HILOGE("eventType:%{public}s, conditionStatus is empty", COND_TYPE_STRING_MAP[type].c_str());
+        WS_HILOGE("%{public}s, condition is empty", COND_TYPE_STRING_MAP[type].c_str());
         return;
     }
     if (workInfo_->IsSA()) {
-        WS_HILOGI("eventType:%{public}s,SAStatus:%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+        WS_HILOGI("%{public}s,%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
             workId_.c_str(), conditionStatus_.c_str());
     } else {
-        WS_HILOGI("eventType:%{public}s,workStatus:%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
+        WS_HILOGI("%{public}s,%{public}s_%{public}s%{public}s", COND_TYPE_STRING_MAP[type].c_str(),
             bundleName_.c_str(), workId_.c_str(), conditionStatus_.c_str());
     }
+}
+
+void WorkStatus::HasTimeout()
+{
+    if (!IsRunning() || IsPaused()) {
+        return;
+    }
+
+    if (workWatchDogTime_ > LONG_WATCHDOG_TIME) {
+        WS_HILOGE("invalid watchdogtime, bundleName:%{public}s, workId:%{public}s, watchdogtime:%{public}" PRIu64
+            " workStartTime:%{public}" PRIu64, bundleName_.c_str(), workId_.c_str(), workWatchDogTime_, workStartTime_);
+        workWatchDogTime_ = 0;
+        timeout_.store(true);
+        return;
+    }
+
+    uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStartTime_;
+    if (runningTime > workWatchDogTime_) {
+        WS_HILOGE("invalid running time, bundleName:%{public}s, workId:%{public}s, watchdogtime:%{public}" PRIu64
+            " workStartTime:%{public}" PRIu64 " runningTime:%{public}" PRIu64, bundleName_.c_str(), workId_.c_str(),
+            workWatchDogTime_, workStartTime_, runningTime);
+        workWatchDogTime_ = 0;
+        timeout_.store(true);
+    }
+}
+
+void WorkStatus::SetTimeout(bool timeout)
+{
+    timeout_.store(timeout);
+}
+
+bool WorkStatus::IsTimeout()
+{
+    return timeout_.load();
 }
 } // namespace WorkScheduler
 } // namespace OHOS
