@@ -18,7 +18,7 @@
 
 namespace {
 constexpr int32_t MAX_RUNNING_COUNT = 3;
-constexpr int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
+const int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
 constexpr uint32_t MAX_WORK_COUNT_PER_UID = 10;
 constexpr int32_t DELAY_TIME_LONG = 30000;
 constexpr int32_t DELAY_TIME_SHORT = 5000;
@@ -31,7 +31,7 @@ constexpr int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
 constexpr int32_t INIT_DUMP_SET_CPU = 0;
 constexpr int32_t INVALID_VALUE = -1;
 constexpr int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
-constexpr int32_t g_lastWatchdogTime = WATCHDOG_TIME;
+const int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 const std::string OK = "1";
 const std::string NOT_OK = "0";
 }
