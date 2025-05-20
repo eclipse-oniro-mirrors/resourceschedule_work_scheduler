@@ -31,7 +31,7 @@ constexpr int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
 constexpr int32_t INIT_DUMP_SET_CPU = 0;
 constexpr int32_t INVALID_VALUE = -1;
 constexpr int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
-const int32_t g_lastWatchdogTime = WATCHDOG_TIME;
+static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 const std::string OK = "1";
 const std::string NOT_OK = "0";
 }
