@@ -1456,10 +1456,21 @@ bool WorkSchedulerService::CheckProcessName()
     return true;
 }
 
+bool WorkSchedulerService::CheckCallingTokenType()
+{
+    Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetCallingTokenID();
+    auto tokenFlag = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenId);
+    if (tokenFlag == Security::AccessToken::ATokenTypeEnum::TOKEN_NATIVE ||
+        tokenFlag == Security::AccessToken::ATokenTypeEnum::TOKEN_SHELL) {
+        return true;
+    }
+    return false;
+}
+
 int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGD("pause Running Work Scheduler Work, uid:%{public}d", uid);
-    if (!CheckProcessName()) {
+    if (!CheckProcessName() || !CheckCallingTokenType()) {
         return E_INVALID_PROCESS_NAME;
     }
 
@@ -1470,7 +1481,7 @@ int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 {
     WS_HILOGD("resume Paused Work Scheduler Work, uid:%{public}d", uid);
-    if (!CheckProcessName()) {
+    if (!CheckProcessName() || !CheckCallingTokenType()) {
         return E_INVALID_PROCESS_NAME;
     }
 
@@ -1511,7 +1522,7 @@ int32_t WorkSchedulerService::SetWorkSchedulerConfig(const std::string &configDa
         WS_HILOGE("service is not ready");
         return E_SERVICE_NOT_READY;
     }
-    if (!CheckProcessName()) {
+    if (!CheckProcessName() || !CheckCallingTokenType()) {
         return E_INVALID_PROCESS_NAME;
     }
     WS_HILOGD("Set work scheduler configData: %{public}s, sourceType: %{public}d", configData.c_str(), sourceType);
