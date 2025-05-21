@@ -1608,8 +1608,8 @@ void WorkSchedulerService::DumpGetWorks(const std::string &uidStr, const std::st
         result.append("param error.");
         return;
     }
-    int32_t workId = std::stoi(workIdStr);
-    int32_t uid = std::stoi(uidStr);
+    int32_t workId = std::atoi(workIdStr.c_str());
+    int32_t uid = std::atoi(uidStr.c_str());
     if (uid < 0) {
         result.append("the parameter is invalid.");
         return;
