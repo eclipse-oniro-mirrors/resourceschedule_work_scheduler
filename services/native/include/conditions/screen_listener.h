@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -52,8 +52,17 @@ public:
      * @return True if success,else false.
      */
     bool Stop() override;
+    /**
+     * @brief Start timer.
+     */
+    void StartTimer();
+    /**
+     * @brief Stop timer.
+     */
+    void StopTimer();
 public:
     std::shared_ptr<WorkSchedulerService> service_;
+    uint64_t timerId_ = 0;
 private:
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<EventFwk::CommonEventSubscriber> commonEventSubscriber = nullptr;

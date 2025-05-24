@@ -17,6 +17,7 @@
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H
 
 namespace {
+// services\native\src\work_policy_manager.cpp
 constexpr int32_t MAX_RUNNING_COUNT = 3;
 const int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
 constexpr uint32_t MAX_WORK_COUNT_PER_UID = 10;
@@ -32,7 +33,14 @@ constexpr int32_t INIT_DUMP_SET_CPU = 0;
 constexpr int32_t INVALID_VALUE = -1;
 constexpr int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
 static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
+
+// services\native\src\work_status.cpp
 const std::string OK = "1";
 const std::string NOT_OK = "0";
+// watchdog timeout threshold
+constexpr int32_t WATCHDOG_TIMEOUT_THRESHOLD_MS = 500;
+
+// services\native\src\conditions\screen_listener.cpp
+constexpr int MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN = 31 * 60 * 1000;
 }
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H
