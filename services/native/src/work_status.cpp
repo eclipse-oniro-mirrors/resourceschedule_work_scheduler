@@ -648,7 +648,7 @@ void WorkStatus::HasTimeout()
     }
 
     uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStartTime_;
-    if (runningTime > (workWatchDogTime_ + WATCHDOG_TIMEOUT_THRESHOLD)) {
+    if (runningTime > (workWatchDogTime_ + WATCHDOG_TIMEOUT_THRESHOLD_MS)) {
         WS_HILOGE("invalid running time, bundleName:%{public}s, workId:%{public}s, watchdogtime:%{public}" PRIu64
             " workStartTime:%{public}" PRIu64 " runningTime:%{public}" PRIu64, bundleName_.c_str(), workId_.c_str(),
             workWatchDogTime_, workStartTime_, runningTime);
