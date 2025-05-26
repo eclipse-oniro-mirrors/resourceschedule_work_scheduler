@@ -164,12 +164,7 @@ void WorkQueueManager::ClearTimeOutWorkStatus()
             allWorkIds.insert(work->workId_);
             WS_HILOGE("work timed out and will be ended, bundleName:%{public}s, workId:%{public}s",
                 work->bundleName_.c_str(), work->workId_.c_str());
-            if (wss_.expired()) {
-                WS_HILOGE("wss_ expired");
-                return;
-            }
-            wss_.lock()->StopWorkInner(work, work->uid_, false, false);
-            work->SetTimeout(false);
+            AsyncStopWork(work);
         }
     }
 }
@@ -308,6 +303,30 @@ void WorkQueueManager::SetMinIntervalByDump(int64_t interval)
     for (auto it : queueMap_) {
         it.second->SetMinIntervalByDump(interval);
     }
+}
+
+void WorkQueueManager::AsyncStopWork(std::shared_ptr<WorkStatus> workStatus)
+{
+    auto service = wss_.lock();
+    if (!service) {
+        WS_HILOGE("service is null");
+        return;
+    }
+    auto task = [weak = weak_from_this(), service, workStatus]() {
+        auto strong = weak.lock();
+        if (!strong) {
+            WS_HILOGE("strong is null");
+            return;
+        }
+        service->StopWorkInner(workStatus, workStatus->uid_, false, false);
+        workStatus->SetTimeout(false);
+    };
+    auto handler = service->GetHandler();
+    if (!handler) {
+        WS_HILOGE("handler is null");
+        return;
+    }
+    handler->PostTask(task);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -24,14 +24,14 @@ namespace OHOS::WorkScheduler {
 using namespace OHOS::MiscServices;
 class TimerInfo : public ITimerInfo {
 public:
-    TimerInfo();
-    virtual ~TimerInfo();
-    void OnTrigger() override;
-    void SetType(const int &type_) override;
-    void SetRepeat(bool repeat_) override;
-    void SetInterval(const uint64_t &interval_) override;
-    void SetWantAgent(std::shared_ptr<AbilityRuntime::WantAgent::WantAgent> wantAgent_) override;
-    void SetCallbackInfo(const std::function<void()> &callBack);
+    inline TimerInfo();
+    inline ~TimerInfo();
+    inline void OnTrigger() override;
+    inline void SetType(const int &type_) override;
+    inline void SetRepeat(bool repeat_) override;
+    inline void SetInterval(const uint64_t &interval_) override;
+    inline void SetWantAgent(std::shared_ptr<AbilityRuntime::WantAgent::WantAgent> wantAgent_) override;
+    inline void SetCallbackInfo(const std::function<void()> &callBack);
 private:
     std::function<void()> callBack_ = nullptr;
 };
