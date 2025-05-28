@@ -44,16 +44,10 @@ public:
     explicit MockPolicyFilter(std::shared_ptr<WorkPolicyManager> workPolicyManager){};
     ~MockPolicyFilter(){};
     int32_t maxRunningCount;
-    std::string policyName;
 
-    int32_t GetPolicyMaxRunning() override
+    int32_t GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy) override
     {
         return maxRunningCount;
-    }
-
-    std::string GetPolicyName() override
-    {
-        return policyName;
     }
 };
 
@@ -788,8 +782,8 @@ HWTEST_F(WorkPolicyManagerTest, AddToReadyQueue_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_001, TestSize.Level1)
 {
     workPolicyManager_->dumpSetMaxRunningCount_ = 2;
-    std::string policyName;
-    int32_t ret = workPolicyManager_->GetMaxRunningCount(policyName);
+    WorkSchedSystemPolicy systemPolicy;
+    int32_t ret = workPolicyManager_->GetMaxRunningCount(systemPolicy);
     EXPECT_TRUE(ret == workPolicyManager_->dumpSetMaxRunningCount_);
 }
 
@@ -802,8 +796,8 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_002, TestSize.Level1)
 {
     workPolicyManager_->dumpSetMaxRunningCount_ = 0;
-    std::string policyName;
-    int32_t ret = workPolicyManager_->GetMaxRunningCount(policyName);
+    WorkSchedSystemPolicy systemPolicy;
+    int32_t ret = workPolicyManager_->GetMaxRunningCount(systemPolicy);
     EXPECT_TRUE(ret >= workPolicyManager_->dumpSetMaxRunningCount_);
 }
 
@@ -815,12 +809,11 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_002, TestSize.Level1)
  */
 HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_003, TestSize.Level1)
 {
-    std::string policyName;
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetMaxRunningCountByDump(5);
-    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+    int32_t result = workPolicyManager_->GetMaxRunningCount(systemPolicy);
 
     EXPECT_EQ(5, result);
-    EXPECT_TRUE(policyName.empty());
     workPolicyManager_->policyFilters_.clear();
 }
 
@@ -832,24 +825,21 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_003, TestSize.Level1)
  */
 HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_004, TestSize.Level1)
 {
-    std::string policyName;
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetMaxRunningCountByDump(0);
 
     auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter1->maxRunningCount = 2;
-    filter1->policyName = "policyA";
 
     auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter2->maxRunningCount = 4;
-    filter2->policyName = "policyB";
 
     workPolicyManager_->AddPolicyFilter(filter1);
     workPolicyManager_->AddPolicyFilter(filter2);
 
-    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+    int32_t result = workPolicyManager_->GetMaxRunningCount(systemPolicy);
 
     EXPECT_EQ(2, result);
-    EXPECT_EQ("policyA", policyName);
     workPolicyManager_->policyFilters_.clear();
 }
 
@@ -861,29 +851,25 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_004, TestSize.Level1)
  */
 HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_005, TestSize.Level1)
 {
-    std::string policyName;
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetMaxRunningCountByDump(0);
 
     auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter1->maxRunningCount = 5;
-    filter1->policyName = "policyX";
 
     auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter2->maxRunningCount = 3;
-    filter2->policyName = "policyY";
 
     auto filter3 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter3->maxRunningCount = 7;
-    filter3->policyName = "policyZ";
 
     workPolicyManager_->AddPolicyFilter(filter1);
     workPolicyManager_->AddPolicyFilter(filter2);
     workPolicyManager_->AddPolicyFilter(filter3);
 
-    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+    int32_t result = workPolicyManager_->GetMaxRunningCount(systemPolicy);
 
     EXPECT_EQ(3, result);
-    EXPECT_TRUE(policyName.empty());
     workPolicyManager_->policyFilters_.clear();
 }
 
@@ -895,13 +881,12 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_005, TestSize.Level1)
  */
 HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_006, TestSize.Level1)
 {
-    std::string policyName;
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetMaxRunningCountByDump(0);
 
-    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+    int32_t result = workPolicyManager_->GetMaxRunningCount(systemPolicy);
 
     EXPECT_EQ(3, result);
-    EXPECT_TRUE(policyName.empty());
     workPolicyManager_->policyFilters_.clear();
 }
 
@@ -913,34 +898,29 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_006, TestSize.Level1)
  */
 HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_007, TestSize.Level1)
 {
-    std::string policyName;
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetMaxRunningCountByDump(0);
 
     auto filter1 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter1->maxRunningCount = 10;
-    filter1->policyName = "policy1";
 
     auto filter2 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter2->maxRunningCount = 5;
-    filter2->policyName = "policy2";
 
     auto filter3 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter3->maxRunningCount = 8;
-    filter3->policyName = "policy3";
 
     auto filter4 = std::make_shared<MockPolicyFilter>(workPolicyManager_);
     filter4->maxRunningCount = 3;
-    filter4->policyName = "policy4";
 
     workPolicyManager_->AddPolicyFilter(filter1);
     workPolicyManager_->AddPolicyFilter(filter2);
     workPolicyManager_->AddPolicyFilter(filter3);
     workPolicyManager_->AddPolicyFilter(filter4);
 
-    int32_t result = workPolicyManager_->GetMaxRunningCount(policyName);
+    int32_t result = workPolicyManager_->GetMaxRunningCount(systemPolicy);
 
     EXPECT_EQ(3, result);
-    EXPECT_TRUE(policyName.empty());
     workPolicyManager_->policyFilters_.clear();
 }
 

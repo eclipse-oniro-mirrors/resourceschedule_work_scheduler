@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -77,7 +77,7 @@ int32_t MemoryPolicy::GetMemAvailable()
     return memAvailable;
 }
 
-int32_t MemoryPolicy::GetPolicyMaxRunning()
+int32_t MemoryPolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
 {
     int32_t memAvailable = GetMemAvailable();
     WS_HILOGD("mem_available: %{public}d", memAvailable);
@@ -87,13 +87,10 @@ int32_t MemoryPolicy::GetPolicyMaxRunning()
     if (memAvailable <= MEM_LOW) {
         return COUNT_MEMORY_LOW;
     }
+    systemPolicy.memAvailable = memAvailable;
+    systemPolicy.policyName = "MEMORY_POLICY";
     WS_HILOGD("memory left normal");
     return COUNT_MEMORY_NORMAL;
-}
-
-std::string MemoryPolicy::GetPolicyName()
-{
-    return "MEMORY_POLICY";
 }
 } // namespace WorkScheduler
 } // namespace OHOS

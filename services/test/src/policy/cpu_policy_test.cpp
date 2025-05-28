@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -91,8 +91,9 @@ HWTEST_F(CpuPolicyTest, getCpuUsage_003, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_001, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetCpuUsageByDump(15);
-    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(maxRunning, 3);
 }
 
@@ -104,8 +105,9 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_001, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_002, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetCpuUsageByDump(45);
-    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(maxRunning, 2);
 }
 
@@ -117,8 +119,9 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_002, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_003, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetCpuUsageByDump(55);
-    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(maxRunning, 1);
 }
 
@@ -130,8 +133,9 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_003, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_004, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetCpuUsageByDump(65);
-    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(maxRunning, 0);
 }
 
@@ -143,8 +147,9 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_004, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_005, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     workPolicyManager_->SetCpuUsageByDump(120);
-    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_TRUE(maxRunning >= 0 && maxRunning <= 3);
 }
 
@@ -156,20 +161,9 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_005, TestSize.Level1)
  */
 HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_006, TestSize.Level1)
 {
-    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning();
+    WorkSchedSystemPolicy systemPolicy;
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_TRUE(maxRunning >= 0 && maxRunning <= 3);
-}
-
-/**
- * @tc.name: GetPolicyName_001
- * @tc.desc: Test CpuPolicy GetPolicyName.
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(CpuPolicyTest, GetPolicyName_001, TestSize.Level1)
-{
-    std::string policyName = cpuPolicy_->GetPolicyName();
-    EXPECT_TRUE(policyName == "CPU_POLICY");
 }
 }
 }

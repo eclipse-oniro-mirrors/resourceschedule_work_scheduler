@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -18,6 +18,7 @@
 
 #include "work_status.h"
 #include "work_condition.h"
+#include "work_sched_data_manager.h"
 #include "work_sched_hilog.h"
 #include "work_info.h"
 
@@ -1019,6 +1020,8 @@ HWTEST_F(WorkStatusTest, IsSAReady_0014, TestSize.Level1)
 HWTEST_F(WorkStatusTest, ToString_001, TestSize.Level1)
 {
     workStatus_->conditionStatus_.clear();
+    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->SetDeviceSleep(false);
     workStatus_->ToString(WorkCondition::Type::TIMER);
     EXPECT_TRUE(workStatus_->conditionStatus_.empty());
 }
@@ -1032,6 +1035,8 @@ HWTEST_F(WorkStatusTest, ToString_001, TestSize.Level1)
 HWTEST_F(WorkStatusTest, ToString_002, TestSize.Level1)
 {
     workStatus_->conditionStatus_.clear();
+    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->SetDeviceSleep(false);
     workStatus_->conditionStatus_ = "TIMER&ready";
     workStatus_->workInfo_->saId_ = 1000;
     workStatus_->workInfo_->residentSa_ = true;
@@ -1048,6 +1053,8 @@ HWTEST_F(WorkStatusTest, ToString_002, TestSize.Level1)
 HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
 {
     workStatus_->conditionStatus_.clear();
+    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->SetDeviceSleep(false);
     workStatus_->conditionStatus_ = "TIMER&ready";
     workStatus_->ToString(WorkCondition::Type::TIMER);
     EXPECT_FALSE(workStatus_->conditionStatus_.empty());

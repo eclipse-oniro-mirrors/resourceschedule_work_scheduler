@@ -28,6 +28,7 @@
 #include "work_scheduler_service.h"
 #include "work_sched_constants.h"
 #include "conditions/timer_info.h"
+#include "work_sched_hisysevent_report.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -45,6 +46,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
         listener_.StopTimer();
+        WorkSchedUtil::HiSysEventDeepIdleState(false);
         listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
         auto task = [weak = weak_from_this()]() {

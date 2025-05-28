@@ -76,6 +76,8 @@
 #include "res_sched_client.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_config.h"
+#include "work_sched_constants.h"
+#include "work_sched_hisysevent_report.h"
 
 #ifdef HICOLLIE_ENABLE
 #include "xcollie/xcollie.h"
@@ -371,6 +373,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
     CfgFiles *files = GetCfgFiles(PREINSTALLED_FILE_PATH);
     if (!files) {
         WS_HILOGE("GetCfgFiles failed");
+        WorkSchedUtil::HiSysEventException(LOAD_WORK, __func__, "get cfg files failed");
         return workInfos;
     }
     // china->base
@@ -388,6 +391,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     std::string realPath;
     if (!WorkSchedUtils::ConvertFullPath(filePath, realPath)) {
         WS_HILOGE("Get real path failed %{private}s", filePath);
+        WorkSchedUtil::HiSysEventException(LOAD_WORK, __func__, "convert real path failed");
         return false;
     }
     WS_HILOGD("Read from %{private}s", realPath.c_str());
@@ -400,6 +404,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     bool res = jsonReader->parse(data.c_str(), data.c_str() + data.length(), &root, &errs);
     if (!res || !errs.empty()) {
         WS_HILOGE("parse %{private}s json error", realPath.c_str());
+        WorkSchedUtil::HiSysEventException(LOAD_WORK, __func__, "json parse failed");
         return false;
     }
     WS_HILOGI("json parse success");
@@ -410,21 +415,21 @@ void WorkSchedulerService::OnStop()
 {
     WS_HILOGI("stop service.");
     std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     DeviceUsageStats::BundleActiveClient::GetInstance().UnRegisterAppGroupCallBack(groupObserver_);
     groupObserver_ = nullptr;
     g_hasGroupObserver = -1;
-#endif
-#ifdef DEVICE_STANDBY_ENABLE
+    #endif
+    #ifdef DEVICE_STANDBY_ENABLE
     DevStandbyMgr::StandbyServiceClient::GetInstance().UnsubscribeStandbyCallback(standbyStateObserver_);
     standbyStateObserver_ = nullptr;
-#endif
-#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
+    #endif
+    #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::UnsubscribeBackgroundTask(*subscriber_);
     if (ret != ERR_OK) {
         WS_HILOGE("unscribe bgtask failed.");
     }
-#endif
+    #endif
     eventRunner_.reset();
     handler_.reset();
     ready_ = false;
@@ -434,6 +439,7 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
 {
     if (!IsBaseAbilityReady()) {
         WS_HILOGE("request system service is not ready yet!");
+        WorkSchedUtil::HiSysEventException(SERVICE_INIT, __func__, "request system service is not ready");
         GetHandler()->SendEvent(InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), INIT_DELAY);
         return false;
     }
@@ -445,6 +451,7 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
     InitWorkInner();
     if (!Publish(wss)) {
         WS_HILOGE("OnStart register to system ability manager failed!");
+        WorkSchedUtil::HiSysEventException(SERVICE_INIT, __func__, "register to system ability manager failed");
         return false;
     }
     checkBundle_ = true;
@@ -460,11 +467,12 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
 
 bool WorkSchedulerService::InitBgTaskSubscriber()
 {
-#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
+    #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
     subscriber_ = make_shared<SchedulerBgTaskSubscriber>();
     ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
     if (ret != ERR_OK) {
         WS_HILOGE("SubscribeBackgroundTask failed.");
+        WorkSchedUtil::HiSysEventException(SERVICE_INIT, __func__, "subscribe background task failed");
         return false;
     }
     this->QueryResAppliedUid();
@@ -1552,6 +1560,7 @@ bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const 
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (samgr == nullptr) {
         WS_HILOGE("get SA manager failed.");
+        WorkSchedUtil::HiSysEventException(LOAD_SA, __func__, "get system ability manager failed");
         return false;
     }
     int32_t saId = workStatus->workInfo_->GetSaId();
@@ -1559,11 +1568,13 @@ bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const 
     sptr<IRemoteObject> object = samgr->CheckSystemAbility(saId);
     if (isResidentSa && object == nullptr) {
         WS_HILOGE("resident SA: %{public}d residentSA:%{public}d does not exist.", saId, isResidentSa);
+        WorkSchedUtil::HiSysEventException(LOAD_SA, __func__, "sa dose not exist");
         return false;
     } else if (!isResidentSa && object == nullptr) {
         object = samgr->LoadSystemAbility(saId, TIME_OUT);
         if (object == nullptr) {
             WS_HILOGE("load SA: %{public}d residentSA:%{public}d failed.", saId, isResidentSa);
+            WorkSchedUtil::HiSysEventException(LOAD_SA, __func__, "load system ability failed");
             return false;
         }
         WS_HILOGI("load SA: %{public}d residentSA:%{public}d successed.", saId, isResidentSa);
@@ -1637,6 +1648,7 @@ void WorkSchedulerService::HandleDeepIdleMsg()
     }
     workQueueManager_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
         std::make_shared<DetectorValue>(0, 0, true, std::string()));
+    WorkSchedUtil::HiSysEventDeepIdleState(true);
 }
 
 bool WorkSchedulerService::IsPreinstalledBundle(const std::string& checkBundleName)

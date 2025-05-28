@@ -31,6 +31,7 @@
 #include "work_sched_utils.h"
 #include "watchdog.h"
 #include "work_sched_data_manager.h"
+#include "work_sched_hisysevent_report.h"
 #include <cinttypes>
 
 using namespace std;
@@ -300,7 +301,7 @@ void WorkPolicyManager::AddToReadyQueue(shared_ptr<vector<shared_ptr<WorkStatus>
     conditionReadyQueue_->Push(workStatusVector);
 }
 
-int32_t WorkPolicyManager::GetMaxRunningCount(std::string& policyName)
+int32_t WorkPolicyManager::GetMaxRunningCount(WorkSchedSystemPolicy& systemPolicy)
 {
     int32_t currentMaxRunning = GetDumpSetMaxRunningCount();
     if (currentMaxRunning > 0 && currentMaxRunning <= DUMP_SET_MAX_COUNT_LIMIT) {
@@ -308,10 +309,9 @@ int32_t WorkPolicyManager::GetMaxRunningCount(std::string& policyName)
     }
     currentMaxRunning = MAX_RUNNING_COUNT;
     for (auto policyFilter : policyFilters_) {
-        int32_t policyMaxRunning = policyFilter->GetPolicyMaxRunning();
+        int32_t policyMaxRunning = policyFilter->GetPolicyMaxRunning(systemPolicy);
         if (policyMaxRunning < currentMaxRunning) {
             currentMaxRunning = policyMaxRunning;
-            policyName = policyFilter->GetPolicyName();
         }
     }
     return currentMaxRunning;
@@ -404,9 +404,9 @@ void WorkPolicyManager::CheckWorkToRun()
         WS_HILOGD("no condition ready work not running, return.");
         return;
     }
-    std::string policyName;
+    WorkSchedSystemPolicy systemPolicy;
     int32_t runningCount = GetRunningCount();
-    int32_t allowRunningCount = GetMaxRunningCount(policyName);
+    int32_t allowRunningCount = GetMaxRunningCount(systemPolicy);
     if (runningCount < allowRunningCount || IsSpecialScene(topWork, runningCount)) {
         WS_HILOGD("running count < max running count");
         if (topWork->workInfo_->IsSA()) {
@@ -418,14 +418,15 @@ void WorkPolicyManager::CheckWorkToRun()
     } else {
         WS_HILOGD("trigger delay: %{public}d", DELAY_TIME_LONG);
         if (runningCount == MAX_RUNNING_COUNT) {
-            policyName = "OVER_LIMIT";
+            systemPolicy.policyName = "OVER_LIMIT";
         }
 
-        if (!policyName.empty()) {
-            topWork->delayReason_= policyName;
+        if (!systemPolicy.policyName.empty()) {
+            topWork->delayReason_= systemPolicy.policyName;
             WS_HILOGI("trigger delay, reason:%{public}s, runningCount:%{public}d allowRunningCount:%{public}d,"
-                "bundleName:%{public}s, workId:%{public}s", policyName.c_str(), runningCount, allowRunningCount,
-                topWork->bundleName_.c_str(), topWork->workId_.c_str());
+                "bundleName:%{public}s, workId:%{public}s", systemPolicy.GetInfo().c_str(), runningCount,
+                allowRunningCount, topWork->bundleName_.c_str(), topWork->workId_.c_str());
+            WorkSchedUtil::HiSysEventSystemPolicyLimit(systemPolicy);
         }
         SendRetrigger(DELAY_TIME_LONG);
     }
@@ -559,6 +560,7 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
     if (workStatus == nullptr) {
         WS_HILOGE("watchdog:%{public}u time out error, workStatus is nullptr", watchdogId);
+        WorkSchedUtil::HiSysEventException(WATCHDOG_TIMEOUT, __func__, "get workstatus from watchdog is nullptr");
         return;
     }
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
@@ -659,10 +661,11 @@ void WorkPolicyManager::Dump(string& result)
     result.append("2. workPolicyManager uidQueueMap:\n");
     DumpUidQueueMap(result);
 
-    std::string policyName;
+    WorkSchedSystemPolicy systemPolicy;
     result.append("3. GetMaxRunningCount:");
-    result.append(to_string(GetMaxRunningCount(policyName))
-        + (policyName.empty() ? "" : " reason: " + policyName) + "\n");
+    int32_t maxRunningCount = GetMaxRunningCount(systemPolicy);
+    result.append(to_string(maxRunningCount)
+        + (maxRunningCount == MAX_RUNNING_COUNT ? "" : systemPolicy.GetInfo()) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()

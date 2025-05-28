@@ -61,6 +61,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/work_queue_test.cpp",
     "src/work_sched_config_test.cpp",
     "src/work_sched_data_manager_test.cpp",
+    "src/work_standby_state_change_callback_test.cpp",
     "src/work_status_test.cpp",
     "src/workschedulerservice_test.cpp",
     "src/zidl/work_scheduler_proxy_test.cpp",
@@ -91,6 +92,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "jsoncpp:jsoncpp",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "time_service:time_client",
   ]
   defines = []
   if (bundle_active_enable) {

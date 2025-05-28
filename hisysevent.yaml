@@ -49,3 +49,21 @@ WORK_STOP:
   WORKID: {type: STRING, desc: work id}
   REASON: {type: INT32, desc: work stop reason}
   DURATION: {type: INT32, desc: work running duration}
+
+DEEP_IDLE_STATE:
+  __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: deep idle state changed}
+  STATE: {type: INT32, desc: deep idle state}
+
+DEVICE_STANDBY_STATE:
+  __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: device standby state changed}
+  STATE: {type: INT32, desc: device standby state}
+
+SYSTEM_POLICY_LIMIT:
+  __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: system policy limit work start}
+  POLICY: {type: STRING, desc: work start delay reason}
+
+WORK_SCHEDULER_RUNTIME_EXCEPTION:
+  __BASE: {type: STATISTIC, level: MINOR, tag: PowerStats, desc: work scheduler service runtime exception}
+  MODULE_NAME: {type: STRING, desc: module name}
+  FUNC_NAME: {type: STRING, desc: function name}
+  EXCEPTION_INFO: {type: STRING, desc: exception info}

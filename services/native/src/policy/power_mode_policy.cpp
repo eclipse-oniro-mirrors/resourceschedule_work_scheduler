@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -40,7 +40,7 @@ PowerModePolicy::~PowerModePolicy()
 {
 }
 
-int32_t PowerModePolicy::GetPolicyMaxRunning()
+int32_t PowerModePolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
 {
     int32_t res = COUNT_POWER_MODE_NORMAL;
     auto mode = PowerMgrClient::GetInstance().GetDeviceMode();
@@ -52,16 +52,13 @@ int32_t PowerModePolicy::GetPolicyMaxRunning()
     auto charge = BatterySrvClient::GetInstance().GetChargingStatus();
     if (charge == BatteryChargeState::CHARGE_STATE_NONE || charge == BatteryChargeState::CHARGE_STATE_DISABLE) {
         res = COUNT_POWER_MODE_CRUCIAL;
+        systemPolicy.powerMode = static_cast<uint32_t>(mode);
+        systemPolicy.policyName = "POWER_MODE_POLICY";
         WS_HILOGI("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
     }
 #endif
     WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
     return res;
-}
-
-std::string PowerModePolicy::GetPolicyName()
-{
-    return "POWER_MODE_POLICY";
 }
 } // namespace WorkScheduler
 } // namespace OHOS
