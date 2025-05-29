@@ -61,6 +61,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/work_queue_test.cpp",
     "src/work_sched_config_test.cpp",
     "src/work_sched_data_manager_test.cpp",
+    "src/work_scheduler_connection_test.cpp",
     "src/work_standby_state_change_callback_test.cpp",
     "src/work_status_test.cpp",
     "src/workschedulerservice_test.cpp",
