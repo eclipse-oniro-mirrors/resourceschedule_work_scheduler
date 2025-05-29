@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -22,6 +22,7 @@
 #include "work_status.h"
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
+#include "work_sched_constants.h"
 #include "watchdog.h"
 
 
@@ -1098,6 +1099,152 @@ HWTEST_F(WorkPolicyManagerTest, DumpTriggerWork_003, TestSize.Level1)
     std::string result;
     workPolicyManager_->DumpTriggerWork(uId, workId, result);
     EXPECT_EQ(result, "the work trigger error\n");
+}
+
+/**
+ * @tc.name: OnPolicyChanged_001
+ * @tc.desc: Test WorkPolicyManagerTest OnPolicyChanged.
+ * @tc.type: FUNC
+ * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ */
+HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_001, TestSize.Level1)
+{
+    std::shared_ptr<DetectorValue> detectorVal = std::make_shared<DetectorValue>(0, 0, false, "preinstalled_app");
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workPolicyManager_->OnPolicyChanged(PolicyType::APP_ADDED, detectorVal);
+
+    EXPECT_FALSE(workPolicyManager_->wss_.lock() == nullptr);
+}
+
+/**
+ * @tc.name: OnPolicyChanged_002
+ * @tc.desc: Test WorkPolicyManagerTest OnPolicyChanged.
+ * @tc.type: FUNC
+ * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ */
+HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_002, TestSize.Level1)
+{
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workPolicyManager_->OnPolicyChanged(static_cast<PolicyType>(999), std::make_shared<DetectorValue>(0, 0, false, ""));
+    EXPECT_FALSE(workPolicyManager_->wss_.lock() == nullptr);
+}
+
+/**
+ * @tc.name: UpdateWatchdogTime_001
+ * @tc.desc: Test WorkPolicyManagerTest UpdateWatchdogTime.
+ * @tc.type: FUNC
+ * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ */
+HWTEST_F(WorkPolicyManagerTest, UpdateWatchdogTime_001, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    int32_t workId = 10000;
+    int32_t uid = 20200;
+    workInfo.SetWorkId(workId);
+    workInfo.RequestDeepIdle(true);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workInfo, uid);
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workPolicyManager_->UpdateWatchdogTime(workSchedulerService, topWork);
+    EXPECT_EQ(workPolicyManager_->GetWatchdogTime(), LONG_WATCHDOG_TIME);
+}
+
+/**
+ * @tc.name: UpdateWatchdogTime_002
+ * @tc.desc: Test WorkPolicyManagerTest UpdateWatchdogTime.
+ * @tc.type: FUNC
+ * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ */
+HWTEST_F(WorkPolicyManagerTest, UpdateWatchdogTime_002, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    int32_t workId = 10000;
+    int32_t uid = 20200;
+    workInfo.SetWorkId(workId);
+    workInfo.RequestDeepIdle(false);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_UNKNOWN);
+    std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workInfo, uid);
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workSchedulerService->UpdateEffiResApplyInfo(uid, false);
+
+    workPolicyManager_->UpdateWatchdogTime(workSchedulerService, topWork);
+    EXPECT_EQ(workPolicyManager_->GetWatchdogTime(), g_lastWatchdogTime);
+}
+
+/**
+ * @tc.name: UpdateWatchdogTime_003
+ * @tc.desc: Test WorkPolicyManagerTest UpdateWatchdogTime.
+ * @tc.type: FUNC
+ * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ */
+HWTEST_F(WorkPolicyManagerTest, UpdateWatchdogTime_003, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    int32_t workId = 10000;
+    int32_t uid = 20200;
+    workInfo.SetWorkId(workId);
+    workInfo.RequestDeepIdle(false);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_UNKNOWN);
+    std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workInfo, uid);
+
+    auto workCondition = std::make_shared<Condition>();
+    workCondition->enumVal = static_cast<int32_t>(WorkCondition::Charger::CHARGING_UNKNOWN);
+    topWork->conditionMap_.emplace(WorkCondition::Type::CHARGER, workCondition);
+
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workSchedulerService->UpdateEffiResApplyInfo(uid, true);
+
+    workPolicyManager_->UpdateWatchdogTime(workSchedulerService, topWork);
+    EXPECT_EQ(workPolicyManager_->GetWatchdogTime(), MEDIUM_WATCHDOG_TIME);
+}
+
+/**
+ * @tc.name: UpdateWatchdogTime_004
+ * @tc.desc: Test WorkPolicyManagerTest UpdateWatchdogTime.
+ * @tc.type: FUNC
+ * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ */
+HWTEST_F(WorkPolicyManagerTest, UpdateWatchdogTime_004, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    int32_t workId = 10000;
+    int32_t uid = 20200;
+    workInfo.SetWorkId(workId);
+    workInfo.RequestDeepIdle(false);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workInfo, uid);
+
+    auto workCondition = std::make_shared<Condition>();
+    workCondition->enumVal = static_cast<int32_t>(WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    topWork->conditionMap_.emplace(WorkCondition::Type::CHARGER, workCondition);
+
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workSchedulerService->UpdateEffiResApplyInfo(uid, true);
+
+    workPolicyManager_->UpdateWatchdogTime(workSchedulerService, topWork);
+    EXPECT_EQ(workPolicyManager_->GetWatchdogTime(), LONG_WATCHDOG_TIME);
+}
+
+/**
+ * @tc.name: WatchdogTimeOut_001
+ * @tc.desc: Test WorkPolicyManagerTest WatchdogTimeOut.
+ * @tc.type: FUNC
+ * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ */
+HWTEST_F(WorkPolicyManagerTest, WatchdogTimeOut_001, TestSize.Level1)
+{
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workPolicyManager_->watchdogIdMap_.clear();
+    uint32_t watchdogId = 1;
+    workPolicyManager_->WatchdogTimeOut(watchdogId);
+    EXPECT_EQ(workPolicyManager_->watchdogIdMap_.size(), 0);
 }
 }
 }
