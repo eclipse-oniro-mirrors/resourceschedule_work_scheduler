@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@
 #include "work_scheduler_connection.h"
 #include "work_status.h"
 #include "ffrt.h"
+#include "ability_manager_interface.h"
 
 namespace OHOS {
 using namespace Utils;
@@ -56,6 +57,7 @@ private:
     void AddConnInfo(std::string &workId, sptr<WorkSchedulerConnection> &connection);
     sptr<WorkSchedulerConnection> GetConnInfo(std::string &workId);
     bool DisConnect(sptr<WorkSchedulerConnection> connect);
+    sptr<OHOS::AAFwk::IAbilityManager> GetSystemAbilityManager(const std::string& moduleName);
 
 private:
     ffrt::mutex connMapMutex_;

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -36,7 +36,7 @@ ThermalPolicy::~ThermalPolicy()
 {
 }
 
-int32_t ThermalPolicy::GetPolicyMaxRunning()
+int32_t ThermalPolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
 {
     auto& thermalMgrClient = ThermalMgrClient::GetInstance();
     ThermalLevel thermalLevel = thermalMgrClient.GetThermalLevel();
@@ -48,13 +48,10 @@ int32_t ThermalPolicy::GetPolicyMaxRunning()
     } else {
         res = COUNT_THERMAL_NORMAL;
     }
+    systemPolicy.thermalLevel = static_cast<int32_t>(thermalLevel);
+    systemPolicy.policyName = "THERMAL_POLICY";
     WS_HILOGD("ThermalLevel:%{public}d, PolicyRes:%{public}d", thermalLevel, res);
     return res;
-}
-
-std::string ThermalPolicy::GetPolicyName()
-{
-    return "THERMAL_POLICY";
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -53,8 +53,9 @@ void MemoryPolicyTest::SetUpTestCase()
  */
 HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_001, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     memoryPolicy_->workPolicyManager_->SetMemoryByDump(1 * 1024 * 1024);
-    int32_t ret = memoryPolicy_->GetPolicyMaxRunning();
+    int32_t ret = memoryPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 1);
 }
 
@@ -66,8 +67,9 @@ HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_001, TestSize.Level1)
  */
 HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_002, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     memoryPolicy_->workPolicyManager_->SetMemoryByDump(2 * 1024 * 1024);
-    int32_t ret = memoryPolicy_->GetPolicyMaxRunning();
+    int32_t ret = memoryPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 2);
 }
 
@@ -79,21 +81,10 @@ HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_002, TestSize.Level1)
  */
 HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_003, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     memoryPolicy_->workPolicyManager_->SetMemoryByDump(3 * 1024 * 1024);
-    int32_t ret = memoryPolicy_->GetPolicyMaxRunning();
+    int32_t ret = memoryPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 3);
-}
-
-/**
- * @tc.name: GetPolicyName_001
- * @tc.desc: Test MemoryPolicy GetPolicyName.
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(MemoryPolicyTest, GetPolicyName_001, TestSize.Level1)
-{
-    std::string ret = memoryPolicy_->GetPolicyName();
-    EXPECT_EQ(ret, "MEMORY_POLICY");
 }
 }
 }

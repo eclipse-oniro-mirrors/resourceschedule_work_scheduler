@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -29,14 +29,7 @@ public:
      *
      * @return Res.
      */
-    int32_t GetPolicyMaxRunning() override;
-    
-    /**
-     * @brief Get policyName.
-     *
-     * @return PolicyName.
-     */
-    std::string GetPolicyName() override;
+    int32_t GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy) override;
 private:
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
 };

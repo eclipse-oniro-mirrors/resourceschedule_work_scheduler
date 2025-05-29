@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -60,7 +60,7 @@ int32_t CpuPolicy::GetCpuUsage()
     return cpuUsage;
 }
 
-int32_t CpuPolicy::GetPolicyMaxRunning()
+int32_t CpuPolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
 {
     int32_t cpuUsage = GetCpuUsage();
     int32_t policyRes;
@@ -73,13 +73,10 @@ int32_t CpuPolicy::GetPolicyMaxRunning()
     } else {
         policyRes = COUNT_CPU_MAX;
     }
+    systemPolicy.cpuUsage = cpuUsage;
+    systemPolicy.policyName = "CPU_POLICY";
     WS_HILOGD("cpu_usage: %{public}d, policyRes: %{public}d", cpuUsage, policyRes);
     return policyRes;
-}
-
-std::string CpuPolicy::GetPolicyName()
-{
-    return "CPU_POLICY";
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -27,6 +27,8 @@
 #include "work_sched_utils.h"
 #include "errors.h"
 #include <cinttypes>
+#include "work_sched_constants.h"
+#include "work_sched_hisysevent_report.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
 #include "standby_service_client.h"
@@ -67,6 +69,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     if (conn) {
         WS_HILOGE("Work has started with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
             workStatus->workId_.c_str(), workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str());
+        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "connect info has existed, connect failed");
         RemoveConnInfo(workStatus->workId_);
         if (conn->IsConnected()) {
             conn->StopWork();
@@ -76,31 +79,20 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 
     if (!workStatus->workInfo_->GetExtension()) {
         WS_HILOGE("%{public}s extension's type is not workScheduler, connect failed", workStatus->bundleName_.c_str());
+        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "app extension's type is not workScheduler");
         return false;
     }
 
     WS_HILOGI("Begin to connect bundle:%{public}s, abilityName:%{public}s, workId:%{public}s",
         workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str(), workStatus->workId_.c_str());
-    sptr<ISystemAbilityManager> systemAbilityManager =
-        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (systemAbilityManager == nullptr) {
-        WS_HILOGE("Failed to get system ability manager service.");
+    sptr<AAFwk::IAbilityManager> abilityMgr_ = GetSystemAbilityManager(CONNECT_ABILITY);
+    if (abilityMgr_ == nullptr) {
         return false;
     }
-    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
-    if (remoteObject == nullptr) {
-        WS_HILOGE("Failed to ability manager service.");
-        return false;
-    }
-    sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
-    if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
-        WS_HILOGE("Failed to get ability manager services object");
-        return false;
-    }
-
     sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
     if (connection == nullptr) {
         WS_HILOGE("Failed to new connection.");
+        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "create connection failed");
         return false;
     }
 
@@ -110,6 +102,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     int32_t ret = abilityMgr_->ConnectAbility(want, connection, nullptr, workStatus->userId_);
     if (ret != ERR_OK) {
         WS_HILOGE("connect failed");
+        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "connect system ability failed");
         return false;
     }
     AddConnInfo(workStatus->workId_, connection);
@@ -122,25 +115,14 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 
 bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
 {
-    sptr<ISystemAbilityManager> systemAbilityManager =
-        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (systemAbilityManager == nullptr) {
-        WS_HILOGE("Failed to get system ability manager service.");
-        return false;
-    }
-    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
-    if (remoteObject == nullptr) {
-        WS_HILOGE("Failed to ability manager service.");
-        return false;
-    }
-    sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
-    if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
-        WS_HILOGE("Failed to  get ability manager services object.");
+    sptr<AAFwk::IAbilityManager> abilityMgr_ = GetSystemAbilityManager(DISCONNECT_ABILITY);
+    if (abilityMgr_ == nullptr) {
         return false;
     }
     int32_t ret = abilityMgr_->DisconnectAbility(connect);
     if (ret != ERR_OK) {
         WS_HILOGE("disconnect failed");
+        WorkSchedUtil::HiSysEventException(DISCONNECT_ABILITY, __func__, "disconnect system ability failed");
         return false;
     }
     return true;
@@ -230,6 +212,30 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
     DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(true,
         workStatus->uid_, workStatus->bundleName_);
 #endif // DEVICE_STANDBY_ENABLE
+}
+
+sptr<AAFwk::IAbilityManager> WorkConnManager::GetSystemAbilityManager(const std::string& moduleName)
+{
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (systemAbilityManager == nullptr) {
+        WS_HILOGE("Failed to get system ability manager service.");
+        WorkSchedUtil::HiSysEventException(moduleName, __func__, "get system ability manager failed");
+        return nullptr;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
+    if (remoteObject == nullptr) {
+        WS_HILOGE("Failed to get system ability.");
+        WorkSchedUtil::HiSysEventException(moduleName, __func__, "get system ability failed");
+        return nullptr;
+    }
+    sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
+    if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
+        WS_HILOGE("Failed to get ability manager services object");
+        WorkSchedUtil::HiSysEventException(moduleName, __func__, "cast system ability failed");
+        return nullptr;
+    }
+    return abilityMgr_;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

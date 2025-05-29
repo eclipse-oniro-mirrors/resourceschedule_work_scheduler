@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Huawei Device Co., Ltd.
+ * Copyright (c) 2023-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -20,6 +20,7 @@
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
 #include "work_sched_data_manager.h"
+#include "work_sched_hisysevent_report.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -42,7 +43,13 @@ void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping
         // (1, 0) or (0, 0)
         WS_HILOGI("Device standby exit sleeping state");
     }
-    DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(sleeping);
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    if (dataManager->GetDeviceSleep() == sleeping) {
+        WS_HILOGI("Device standby state is not changed");
+        return;
+    }
+    WorkSchedUtil::HiSysEventDeviceStandbyState(sleeping);
+    dataManager->SetDeviceSleep(sleeping);
     workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
         std::make_shared<DetectorValue>(0, 0, sleeping, std::string()));
 }

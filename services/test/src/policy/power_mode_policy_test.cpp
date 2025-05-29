@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -63,8 +63,9 @@ void PowerModePolicyTest::SetUpTestCase()
  */
 HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_001, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     PowerMgr::PowerMgrClient::GetInstance().SetDeviceMode(PowerMgr::PowerMode::NORMAL_MODE);
-    int32_t ret = powerModePolicy_->GetPolicyMaxRunning();
+    int32_t ret = powerModePolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 3);
 }
 
@@ -76,8 +77,9 @@ HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_001, TestSize.Level1)
  */
 HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_002, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     PowerMgr::PowerMgrClient::GetInstance().SetDeviceMode(PowerMgr::PowerMode::PERFORMANCE_MODE);
-    int32_t ret = powerModePolicy_->GetPolicyMaxRunning();
+    int32_t ret = powerModePolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 3);
 }
 
@@ -89,21 +91,10 @@ HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_002, TestSize.Level1)
  */
 HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_003, TestSize.Level1)
 {
+    WorkSchedSystemPolicy systemPolicy;
     PowerMgr::PowerMgrClient::GetInstance().SetDeviceMode(PowerMgr::PowerMode::POWER_MODE_MIN);
-    int32_t ret = powerModePolicy_->GetPolicyMaxRunning();
+    int32_t ret = powerModePolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 3);
-}
-
-/**
- * @tc.name: GetPolicyName_001
- * @tc.desc: Test PowerModePolicy GetPolicyName.
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(PowerModePolicyTest, GetPolicyName_001, TestSize.Level1)
-{
-    std::string ret = powerModePolicy_->GetPolicyName();
-    EXPECT_EQ(ret, "POWER_MODE_POLICY");
 }
 }
 }

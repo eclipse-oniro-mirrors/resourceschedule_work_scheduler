@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -297,7 +297,7 @@ public:
     bool FindWork(int32_t uid);
     bool FindWork(const int32_t userId, const std::string &bundleName);
 private:
-    int32_t GetMaxRunningCount(std::string& policyName);
+    int32_t GetMaxRunningCount(WorkSchedSystemPolicy& systemPolicy);
     int32_t GetRunningCount();
     void DumpConditionReadyQueue(std::string& result);
     void DumpUidQueueMap(std::string& result);
