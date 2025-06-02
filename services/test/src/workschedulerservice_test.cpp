@@ -29,6 +29,7 @@
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
 #include "event_publisher.h"
+#include "json/json.h"
 #include "accesstoken_kit.h"
 #include "token_setproc.h"
 
@@ -110,7 +111,7 @@ public:
 void GetNativeToken(const std::string &name)
 {
     auto tokenId = Security::AccessToken::AccessTokenKit::GetNativeTokenId(name);
-    SetSelfTokenId(tokenId);
+    SetSelfTokenID(tokenId);
 }
 
 std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ =

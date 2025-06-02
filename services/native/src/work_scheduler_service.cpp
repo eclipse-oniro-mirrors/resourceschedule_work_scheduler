@@ -669,7 +669,7 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     int32_t appIndex;
     string bundleName;
     if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
-        WS_HILOGE("uid %{public}s is invalid", uid);
+        WS_HILOGE("uid %{public}d is invalid", uid);
         return false;
     }
     workInfo.RefreshAppIndex(appIndex);
@@ -779,7 +779,7 @@ int32_t WorkSchedulerService::StartWorkForInner(const WorkInfo& workInfo)
     workInfo_.SetIsInnerApply(true);
     int32_t timerId = SetTimer();
     int32_t uid;
-    if (!GetUidByBundleName(workinfo->GetBundleName(), uid)) {
+    if (!GetUidByBundleName(workInfo_.GetBundleName(), uid)) {
         return E_INVALID_PROCESS_NAME;
     }
     int32_t ret = StartWorkInner(workInfo, uid);
@@ -823,7 +823,7 @@ int32_t WorkSchedulerService::StopWorkForInner(const WorkInfo& workInfo, bool ne
         return E_SERVICE_NOT_READY;
     }
     int32_t uid;
-    if (!GetUidByBundleName(workInfo_->GetBundleName(), uid)) {
+    if (!GetUidByBundleName(workInfo_.GetBundleName(), uid)) {
         return E_INVALID_PROCESS_NAME;
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo_, uid);
@@ -831,7 +831,7 @@ int32_t WorkSchedulerService::StopWorkForInner(const WorkInfo& workInfo, bool ne
         WS_HILOGE("workStatus is nullptr");
         return E_WORK_NOT_EXIST_FAILED;
     }
-    WS_HILOGI("StopWork %{public}s workId:%{public}d", workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
+    WS_HILOGI("StopWorkForInner %{public}s workId:%{public}d", workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
     StopWorkInner(workStatus, uid, needCancel, false);
     return ERR_OK;
 }
@@ -1524,7 +1524,7 @@ bool WorkSchedulerService::CheckCallingServiceName()
     Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo callingTokenInfo;
     Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenId, callingTokenInfo);
-    WS_HILOGD("process name: %{public}s called CheckProcessName.", callingTokenInfo.processName.c_str());
+    WS_HILOGD("process name: %{public}s called CheckCallingServiceName.", callingTokenInfo.processName.c_str());
     if (WORK_SCHED_SA_CALLER.find(callingTokenInfo.processName) == WORK_SCHED_SA_CALLER.end()) {
         WS_HILOGE("check process name illegal, process name: %{public}s.", callingTokenInfo.processName.c_str());
         return false;
