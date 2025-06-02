@@ -29,7 +29,8 @@
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
 #include "event_publisher.h"
-#include "json/json.h"
+#include "accesstoken_kit.h"
+#include "token_setproc.h"
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
@@ -93,6 +94,10 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 using namespace testing::ext;
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+    static const std::string PUSH_SERVICE_NAME = "push_manager_service";
+    static const std::string BGTASK_SERVICE_NAME = "bgtaskmgr_service";
+}
 class WorkSchedulerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
@@ -102,12 +107,18 @@ public:
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 
+void GetNativeToken(const std::string &name)
+{
+    auto tokenId = Security::AccessToken::AccessTokenKit::GetNativeTokenId(name);
+    SetSelfTokenId(tokenId);
+}
+
 std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ =
     DelayedSingleton<WorkSchedulerService>::GetInstance();
 
 class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t StartWork(const WorkInfo& workInfo) { return 0; }
-    int32_t StopWork(const WorkInfo& workInfo) { return 0; };
+    int32_t StopWork(const WorkInfo& workInfo) { return 0; }
     int32_t StopAndCancelWork(const WorkInfo& workInfo)  { return 0; }
     int32_t StopAndClearWorks() { return 0; }
     int32_t IsLastWorkTimeout(int32_t workId, bool &result) { return 0; }
@@ -120,6 +131,8 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t ResumePausedWorks(int32_t uid) {return 0; }
     int32_t SetWorkSchedulerConfig(const std::string &configData, int32_t sourceType) { return 0; }
     int32_t StopWorkForSA(int32_t saId) { return 0; }
+    int32_t StartWorkForInner(const WorkInfo& workInfo) { return 0; }
+    int32_t StopWorkForInner(const WorkInfo& workInfo, bool needCancel) { return 0; }
 };
 /**
  * @tc.name: onStart_001
@@ -1268,6 +1281,54 @@ HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_004, TestSize.Level1)
     std::string result;
     workSchedulerService_->DumpTriggerWork(uIdStr, workIdStr, result);
     EXPECT_EQ(result, "the work is not exist\n");
+}
+
+/**
+ * @tc.name: StartWorkForInner_001
+ * @tc.desc: Test WorkSchedulerService StartWorkForInner.
+ * @tc.type: FUNC
+ * @tc.require: issue:#ICBWOI
+ */
+HWTEST_F(WorkSchedulerServiceTest, StartWorkForInner_001, TestSize.Level1)
+{
+    int32_t ret;
+    WorkInfo workinfo = WorkInfo();
+
+    ret = workSchedulerService_->StartWorkForInner(workinfo);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GetNativeToken(PUSH_SERVICE_NAME);
+    ret = workSchedulerService_->StartWorkForInner(workinfo);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+}
+
+/**
+ * @tc.name: StopWorkForInner_001
+ * @tc.desc: Test WorkSchedulerService StopWorkForInner.
+ * @tc.type: FUNC
+ * @tc.require: issue:#ICBWOI
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopWorkForInner_001, TestSize.Level1)
+{
+    int32_t ret;
+    WS_HILOGI("WorkSchedulerServiceTest.StopWorkForInner_001 begin");
+    workSchedulerService_->ready_ = false;
+    workSchedulerService_->checkBundle_ = true;
+    WorkInfo workinfo = WorkInfo();
+
+    ret = workSchedulerService_->StopWorkForInner(workinfo, false);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+
+    GetNativeToken(PUSH_SERVICE_NAME);
+    ret = workSchedulerService_->StopWorkForInner(workinfo, false);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+
+    workSchedulerService_->ready_ = true;
+    ret = workSchedulerService_->StopWorkForInner(workinfo, false);
+    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    WS_HILOGI("WorkSchedulerServiceTest.StopWorkForInner_001 end");
 }
 }
 }

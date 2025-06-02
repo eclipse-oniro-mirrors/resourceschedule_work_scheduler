@@ -87,6 +87,18 @@ ErrCode WorkSchedulerSrvClient::StartWork(WorkInfo& workInfo)
     return iWorkSchedService_->StartWork(workInfo);
 }
 
+ErrCode WorkSchedulerSrvClient::StartWorkForInner(WorkInfo& workInfo)
+{
+    WS_HILOGD("start work for inner");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode ret = Connect();
+    if (ret != ERR_OK) {
+        WS_HILOGE("Connect() failed, errno: %{public}d", ret);
+        return ret;
+    }
+    return iWorkSchedService_->StartWorkForInner(workInfo);
+}
+
 ErrCode WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
 {
     WS_HILOGD("Stop Work");
@@ -97,6 +109,18 @@ ErrCode WorkSchedulerSrvClient::StopWork(WorkInfo& workInfo)
         return ret;
     }
     return iWorkSchedService_->StopWork(workInfo);
+}
+
+ErrCode WorkSchedulerSrvClient::StopWorkForInner(WorkInfo& workInfo, bool needCancel)
+{
+    WS_HILOGD("stop work for inner");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode ret = Connect();
+    if (ret != ERR_OK) {
+        WS_HILOGE("Connect() failed, errno: %{public}d", ret);
+        return ret;
+    }
+    return iWorkSchedService_->StopWorkForInner(workInfo, needCancel);
 }
 
 ErrCode WorkSchedulerSrvClient::StopAndCancelWork(WorkInfo& workInfo)

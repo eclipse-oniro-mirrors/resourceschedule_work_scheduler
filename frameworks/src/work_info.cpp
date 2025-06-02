@@ -719,5 +719,15 @@ std::string WorkInfo::GetBriefInfo()
         return GetBundleName() + "_" + std::to_string(GetWorkId());
     }
 }
+
+void WorkInfo::SetIsInnerApply(bool isInnerApply)
+{
+    isInnerApply_ = isInnerApply;
+}
+
+bool WorkInfo::GetIsInnerApply() const
+{
+    return isInnerApply_;
+}
 } // namespace WorkScheduler
 } // namespace OHOS

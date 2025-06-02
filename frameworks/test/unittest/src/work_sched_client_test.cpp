@@ -243,12 +243,12 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_015, TestSize.Level0)
 }
 
 /**
- * @tc.name: ObtainWorksByUidAndWorkIdForInner_016
+ * @tc.name: WorkSchedClientTest_016
  * @tc.desc: Test ObtainWorksByUidAndWorkIdForInner
  * @tc.type: FUNC
  * @tc.require: issueIC1RS6
  */
-HWTEST_F(WorkSchedClientTest, ObtainWorksByUidAndWorkIdForInner_016, TestSize.Level0)
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_016, TestSize.Level0)
 {
     std::list<std::shared_ptr<WorkInfo>> workInfos;
     int32_t uid = -1;
@@ -259,6 +259,32 @@ HWTEST_F(WorkSchedClientTest, ObtainWorksByUidAndWorkIdForInner_016, TestSize.Le
     uid = 1;
     ret = WorkSchedulerSrvClient::GetInstance().ObtainWorksByUidAndWorkIdForInner(uid, workInfos);
     EXPECT_EQ(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_017
+ * @tc.desc: Test StartWorkForInner
+ * @tc.type: FUNC
+ * @tc.require: issue:#ICBWOI
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_017, TestSize.Level0)
+{
+    WorkInfo workInfo = WorkInfo();
+    auto ret = WorkSchedulerSrvClient::GetInstance().StartWorkForInner(workInfo);
+    EXPECT_NE(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: WorkSchedClientTest_018
+ * @tc.desc: Test StopWorkForInner
+ * @tc.type: FUNC
+ * @tc.require: issue:#ICBWOI
+ */
+HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_018, TestSize.Level0)
+{
+    WorkInfo workInfo = WorkInfo();
+    auto ret = WorkSchedulerSrvClient::GetInstance().StopWorkForInner(workInfo);
+    EXPECT_NE(ret, ERR_OK);
 }
 }  // namespace WorkScheduler
 }  // namespace OHOS

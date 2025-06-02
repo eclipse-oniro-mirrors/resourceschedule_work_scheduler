@@ -201,6 +201,9 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
     if (!workStatus->workInfo_->IsRepeat()) {
         type = "Not Repeat";
     }
+    if (!workStatus->workInfo_->GetIsInnerApply()) {
+        type = "inner apply" + type;
+    }
 
     HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_START",
         HiSysEvent::EventType::STATISTIC, "UID",

@@ -37,12 +37,27 @@ public:
      */
     ErrCode StartWork(WorkInfo& workInfo);
     /**
+     * @brief Start work for inner.
+     *
+     * @param workInfo The info of work.
+     * @return ERR_OK on success, others on failure.
+     */
+    ErrCode StartWorkForInner(WorkInfo& workInfo);
+    /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
      * @return ERR_OK on success, others on failure.
      */
     ErrCode StopWork(WorkInfo& workInfo);
+    /**
+     * @brief Stop work for inner.
+     *
+     * @param workInfo The info of work.
+     * @param needCancel True if force stop the work that is being executed, else false.
+     * @return ERR_OK on success, others on failure.
+     */
+    ErrCode StopWorkForInner(WorkInfo& workInfo, bool needCancel = false);
     /**
      * @brief Stop and cancel work.
      *

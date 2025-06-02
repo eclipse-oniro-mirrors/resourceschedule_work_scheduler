@@ -66,12 +66,27 @@ public:
      */
     int32_t StartWork(const WorkInfo& workInfo) override;
     /**
+     * @brief Start work for inner.
+     *
+     * @param workInfo The info of work.
+     * @return error code, ERR_OK if success.
+     */
+    int32_t StartWorkForInner(const WorkInfo& workInfo) override;
+    /**
      * @brief Stop work.
      *
      * @param workInfo The info of work.
      * @return error code, ERR_OK if success.
      */
     int32_t StopWork(const WorkInfo& workInfo) override;
+    /**
+     * @brief Stop work for inner.
+     *
+     * @param workInfo The info of work.
+     * @param needCancel True if force stop the work that is being executed, else false.
+     * @return error code, ERR_OK if success.
+     */
+    int32_t StopWorkForInner(const WorkInfo& workInfo, bool needCancel) override;
     /**
      * @brief Stop and cancel work.
      *
@@ -324,7 +339,7 @@ private:
     std::list<std::shared_ptr<WorkInfo>> ReadPersistedWorks();
     void DumpAllInfo(std::string& result);
     bool CheckWorkInfo(WorkInfo& workInfo, int32_t& uid);
-    int32_t StartWorkInner(const WorkInfo& workInfo);
+    int32_t StartWorkInner(const WorkInfo& workInfo, int32_t uid);
     bool CheckCondition(WorkInfo& workInfo);
     bool IsBaseAbilityReady();
     void DumpUsage(std::string& result);
@@ -344,7 +359,7 @@ private:
     void LoadExemptionBundlesFromFile(const char *path);
     void InitPersistedWork();
     bool CheckProcessName();
-    bool CheckCallingTokenType();
+    bool CheckCallingServiceName();
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
     bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result);
