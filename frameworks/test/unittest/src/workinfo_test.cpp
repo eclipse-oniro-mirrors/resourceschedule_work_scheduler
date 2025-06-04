@@ -656,6 +656,19 @@ HWTEST_F (WorkInfoTest, WorkInfoTest022, Function | MediumTest | Level2)
 }
 
 /**
+ * @tc.name WorkInfoTest023
+ * @tc.desc test SetIsInnerApply and GetIsInnerApply.
+ * @tc.type FUNC
+ * @tc.require: issue:#ICBWOI
+ */
+HWTEST_F (WorkInfoTest, WorkInfoTest023, Function | MediumTest | Level2)
+{
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetIsInnerApply(true);
+    EXPECT_TRUE(workInfo.GetIsInnerApply());
+}
+
+/**
  * @tc.name WorkSchedUtils001
  * @tc.desc test GetCurrentAccountId
  * @tc.type FUNC
