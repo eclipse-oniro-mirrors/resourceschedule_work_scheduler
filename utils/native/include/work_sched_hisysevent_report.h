@@ -40,7 +40,7 @@ namespace WorkSchedUtil {
      *
      * @param systemPolicy The system policy limit.
      */
-    void HiSysEventSystemPolicyLimit(WorkSchedSystemPolicy& systemPolicy);
+    void HiSysEventSystemPolicyLimit(const WorkSchedSystemPolicy& systemPolicy);
 
     /**
      * @brief Send a exception event to the system.
@@ -49,7 +49,8 @@ namespace WorkSchedUtil {
      * @param funcName the function name of the exception.
      * @param exceptionInfo the exception info.
      */
-    void HiSysEventException(const std::string& moduleName, const std::string& funcName, const std::string& exceptionInfo);
+    void HiSysEventException(
+        const std::string &moduleName, const std::string &funcName, const std::string &exceptionInfo);
 } // namespace WorkSchedUtil
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -36,7 +36,7 @@ void HiSysEventDeviceStandbyState(bool deviceStandbyState)
         "DEVICE_STANDBY_STATE", HiviewDFX::HiSysEvent::EventType::STATISTIC, "STATE", deviceStandbyState);
 }
 
-void HiSysEventSystemPolicyLimit(WorkSchedSystemPolicy& systemPolicy)
+void HiSysEventSystemPolicyLimit(const WorkSchedSystemPolicy& systemPolicy)
 {
     HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
         "SYSTEM_POLICY_LIMIT", HiviewDFX::HiSysEvent::EventType::STATISTIC, "POLICY", systemPolicy.GetInfo());

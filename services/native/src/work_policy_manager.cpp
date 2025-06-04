@@ -664,8 +664,8 @@ void WorkPolicyManager::Dump(string& result)
     WorkSchedSystemPolicy systemPolicy;
     result.append("3. GetMaxRunningCount:");
     int32_t maxRunningCount = GetMaxRunningCount(systemPolicy);
-    result.append(to_string(maxRunningCount)
-        + (maxRunningCount == MAX_RUNNING_COUNT ? "" : systemPolicy.GetInfo()) + "\n");
+    result.append(to_string(maxRunningCount) +
+        (maxRunningCount == MAX_RUNNING_COUNT ? "" : systemPolicy.GetInfo()) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()

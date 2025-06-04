@@ -29,6 +29,7 @@
 #include "work_sched_constants.h"
 #include "conditions/timer_info.h"
 #include "work_sched_hisysevent_report.h"
+#include "work_sched_data_manager.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -45,8 +46,11 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
         return;
     }
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
+        if (DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle()) {
+            DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+            WorkSchedUtil::HiSysEventDeepIdleState(false);
+        }
         listener_.StopTimer();
-        WorkSchedUtil::HiSysEventDeepIdleState(false);
         listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,
             std::make_shared<DetectorValue>(0, 0, false, std::string()));
         auto task = [weak = weak_from_this()]() {
@@ -128,6 +132,7 @@ void ScreenListener::StartTimer()
     WS_HILOGI("deep idle timer start with time = %{public}d.", MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
     auto task = [=]() {
         WS_HILOGI("Into deep idle mode");
+        DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(true);
         service_->HandleDeepIdleMsg();
     };
     auto timerInfo = std::make_shared<TimerInfo>();
