@@ -31,6 +31,9 @@ public:
     // device sleep
     void SetDeviceSleep(const bool isSleep);
     bool GetDeviceSleep() const;
+    // deep idle
+    void SetDeepIdle(const bool isDeepIdle);
+    bool GetDeepIdle() const;
     bool IsInDeviceStandyWhitelist(const std::string& bundleName);
     void OnDeviceStandyWhitelistChanged(const std::string& bundleName, const bool add);
     void AddDeviceStandyWhitelist(const std::list<std::string>& bundleNames);
@@ -48,6 +51,7 @@ public:
     void ClearAllGroup();
 private:
     std::atomic<bool> deviceSleep_ = false;
+    std::atomic<bool> deepIdle_ = false;
     ffrt::mutex deviceStandySetMutex_;
     // <bundle>
     std::set<std::string> deviceStandySet {};

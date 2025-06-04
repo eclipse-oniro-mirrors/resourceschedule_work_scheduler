@@ -20,7 +20,7 @@ namespace OHOS {
 namespace WorkScheduler {
 // services\native\src\work_policy_manager.cpp
 inline constexpr int32_t MAX_RUNNING_COUNT = 3;
-inline const int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
+inline constexpr int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
 inline constexpr uint32_t MAX_WORK_COUNT_PER_UID = 10;
 inline constexpr int32_t DELAY_TIME_LONG = 30000;
 inline constexpr int32_t DELAY_TIME_SHORT = 5000;
@@ -50,6 +50,9 @@ inline const std::string WATCHDOG_TIMEOUT = "WATCHDOG_TIMEOUT";
 inline const std::string LOAD_WORK = "LOAD_WORK";
 inline const std::string SERVICE_INIT = "SERVICE_INIT";
 inline const std::string LOAD_SA = "LOAD_SA";
+inline const std::string TOKEN_CHECK = "TOKEN_CHECK";
+inline const std::string WORK_CHECK = "WORK_CHECK";
+inline const std::string SERVICE_STOP = "SERVICE_STOP";
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H

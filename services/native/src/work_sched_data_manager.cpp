@@ -33,6 +33,16 @@ void DataManager::SetDeviceSleep(const bool isSleep)
     deviceSleep_ = isSleep;
 }
 
+bool DataManager::GetDeepIdle() const
+{
+    return deepIdle_;
+}
+
+void DataManager::SetDeepIdle(const bool isDeepIdle)
+{
+    deepIdle_ = isDeepIdle;
+}
+
 bool DataManager::IsInDeviceStandyWhitelist(const std::string& bundleName)
 {
     std::lock_guard<ffrt::mutex> lock(deviceStandySetMutex_);
