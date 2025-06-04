@@ -713,7 +713,7 @@ int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
     int32_t timerId = SetTimer();
-    int32_t uid = IPCSkeleton::GetcallingUid();
+    int32_t uid = IPCSkeleton::GetCallingUid();
     int32_t ret = StartWorkInner(workInfo, uid);
     CancelTimer(timerId);
     return ret;
