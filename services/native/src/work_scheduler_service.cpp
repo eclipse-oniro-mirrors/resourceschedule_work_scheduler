@@ -682,7 +682,6 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
         return false;
     }
     return true;
-    
 }
 
 bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
@@ -831,7 +830,8 @@ int32_t WorkSchedulerService::StopWorkForInner(const WorkInfo& workInfo, bool ne
         WS_HILOGE("workStatus is nullptr");
         return E_WORK_NOT_EXIST_FAILED;
     }
-    WS_HILOGI("StopWorkForInner %{public}s workId:%{public}d", workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
+    WS_HILOGI("StopWorkForInner %{public}s workId:%{public}d",
+        workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
     StopWorkInner(workStatus, uid, needCancel, false);
     return ERR_OK;
 }
