@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -718,6 +718,16 @@ std::string WorkInfo::GetBriefInfo()
     } else {
         return GetBundleName() + "_" + std::to_string(GetWorkId());
     }
+}
+
+void WorkInfo::SetIsInnerApply(bool isInnerApply)
+{
+    isInnerApply_ = isInnerApply;
+}
+
+bool WorkInfo::GetIsInnerApply() const
+{
+    return isInnerApply_;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

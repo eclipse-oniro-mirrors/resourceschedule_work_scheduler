@@ -16,7 +16,9 @@
 sequenceable work_info..OHOS.WorkScheduler.WorkInfo;
 interface OHOS.WorkScheduler.IWorkSchedService {
     void StartWork([in] WorkInfo workInfo);
+    void StartWorkForInner([in] WorkInfo workInfo);
     void StopWork([in] WorkInfo workInfo);
+    void StopWorkForInner([in] WorkInfo workInfo, [in] boolean needCancel);
     void StopAndCancelWork([in] WorkInfo workInfo);
     void StopAndClearWorks();
     void IsLastWorkTimeout([in] int workId, [out] boolean isTimeout);

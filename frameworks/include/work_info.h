@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -49,6 +49,7 @@ public:
         residentSa_ = workInfo.residentSa_;
         extras_ = workInfo.extras_;
         conditionMap_ = workInfo.conditionMap_;
+        isInnerApply_ = workInfo.isInnerApply_;
     }
     ~WorkInfo() override;
     /**
@@ -350,6 +351,16 @@ public:
     bool IsResidentSa() const;
     bool IsSA();
     std::string GetBriefInfo();
+    /**
+     * @brief Set apply flag.
+     */
+    void SetIsInnerApply(bool isInnerApply);
+    /**
+     * @brief Get apply flag.
+     *
+     * @return The apply flag.
+     */
+    bool GetIsInnerApply() const;
 
 private:
     int32_t workId_;
@@ -366,6 +377,7 @@ private:
     bool extension_;
     int32_t saId_;
     bool residentSa_;
+    bool isInnerApply_ {false};
 private:
     static bool UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t mapsize);
     void ParseConditionToJsonStr(Json::Value &root);

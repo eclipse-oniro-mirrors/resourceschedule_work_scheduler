@@ -118,6 +118,10 @@ const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
     "resource_schedule_service",
     "hidumper_service",
 };
+
+const std::set<std::string> WORK_SCHED_SA_CALLER = {
+    "push_manager_service",
+};
 }
 
 #ifdef WORK_SCHEDULER_TEST
@@ -670,15 +674,20 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
 {
     int32_t appIndex;
     string bundleName;
-    if (GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
-        workInfo.RefreshAppIndex(appIndex);
-        if (workInfo.GetBundleName() == bundleName) {
-            CheckExtensionInfos(workInfo, uid);
-            return true;
-        }
+    if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
+        WS_HILOGE("uid %{public}d is invalid", uid);
+        return false;
     }
-    WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
-    return false;
+    workInfo.RefreshAppIndex(appIndex);
+    if (workInfo.GetBundleName() != bundleName) {
+        WS_HILOGE("bundleName %{public}s is invalid", workInfo.GetBundleName().c_str());
+        return false;
+    }
+    if (!CheckExtensionInfos(workInfo, uid)) {
+        WS_HILOGE("workInfo is invalid");
+        return false;
+    }
+    return true;
 }
 
 bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
@@ -709,19 +718,19 @@ int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
     int32_t timerId = SetTimer();
-    int32_t ret = StartWorkInner(workInfo);
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t ret = StartWorkInner(workInfo, uid);
     CancelTimer(timerId);
     return ret;
 }
 
-int32_t WorkSchedulerService::StartWorkInner(const WorkInfo& workInfo)
+int32_t WorkSchedulerService::StartWorkInner(const WorkInfo& workInfo, int32_t uid)
 {
     WorkInfo workInfo_ = workInfo;
     if (!ready_) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
     if (checkBundle_ && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
@@ -764,6 +773,25 @@ void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
     }
 }
 
+int32_t WorkSchedulerService::StartWorkForInner(const WorkInfo& workInfo)
+{
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWorkForInner");
+    if (!CheckCallingToken() || !CheckCallingServiceName()) {
+        WS_HILOGE("StartWorkForInner not allowed.");
+        return E_PERMISSION_DENIED;
+    }
+    WorkInfo workInfo_ = workInfo;
+    workInfo_.SetIsInnerApply(true);
+    int32_t timerId = SetTimer();
+    int32_t uid;
+    if (!GetUidByBundleName(workInfo_.GetBundleName(), uid)) {
+        return E_INVALID_PROCESS_NAME;
+    }
+    int32_t ret = StartWorkInner(workInfo, uid);
+    CancelTimer(timerId);
+    return ret;
+}
+
 int32_t WorkSchedulerService::StopWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StopWork");
@@ -784,6 +812,33 @@ int32_t WorkSchedulerService::StopWork(const WorkInfo& workInfo)
     }
     WS_HILOGI("StopWork %{public}s workId:%{public}d", workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
     StopWorkInner(workStatus, uid, false, false);
+    return ERR_OK;
+}
+
+int32_t WorkSchedulerService::StopWorkForInner(const WorkInfo& workInfo, bool needCancel)
+{
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StopWorkForInner");
+    if (!CheckCallingToken() || !CheckCallingServiceName()) {
+        WS_HILOGE("StopWorkForInner not allowed.");
+        return E_PERMISSION_DENIED;
+    }
+    WorkInfo workInfo_ = workInfo;
+    if (!ready_) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    int32_t uid;
+    if (!GetUidByBundleName(workInfo_.GetBundleName(), uid)) {
+        return E_INVALID_PROCESS_NAME;
+    }
+    shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workInfo_, uid);
+    if (workStatus == nullptr) {
+        WS_HILOGE("workStatus is nullptr");
+        return E_WORK_NOT_EXIST_FAILED;
+    }
+    WS_HILOGI("StopWorkForInner %{public}s workId:%{public}d",
+        workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId());
+    StopWorkInner(workStatus, uid, needCancel, false);
     return ERR_OK;
 }
 
@@ -1482,21 +1537,23 @@ bool WorkSchedulerService::CheckProcessName()
     return true;
 }
 
-bool WorkSchedulerService::CheckCallingTokenType()
+bool WorkSchedulerService::CheckCallingServiceName()
 {
     Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetCallingTokenID();
-    auto tokenFlag = Security::AccessToken::AccessTokenKit::GetTokenTypeFlag(tokenId);
-    if (tokenFlag == Security::AccessToken::ATokenTypeEnum::TOKEN_NATIVE ||
-        tokenFlag == Security::AccessToken::ATokenTypeEnum::TOKEN_SHELL) {
-        return true;
+    Security::AccessToken::NativeTokenInfo callingTokenInfo;
+    Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenId, callingTokenInfo);
+    WS_HILOGD("process name: %{public}s called CheckCallingServiceName.", callingTokenInfo.processName.c_str());
+    if (WORK_SCHED_SA_CALLER.find(callingTokenInfo.processName) == WORK_SCHED_SA_CALLER.end()) {
+        WS_HILOGE("check process name illegal, process name: %{public}s.", callingTokenInfo.processName.c_str());
+        return false;
     }
-    return false;
+    return true;
 }
 
 int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGD("pause Running Work Scheduler Work, uid:%{public}d", uid);
-    if (!CheckProcessName() || !CheckCallingTokenType()) {
+    if (!CheckProcessName() || !CheckCallingToken()) {
         return E_INVALID_PROCESS_NAME;
     }
 
@@ -1507,7 +1564,7 @@ int32_t WorkSchedulerService::PauseRunningWorks(int32_t uid)
 int32_t WorkSchedulerService::ResumePausedWorks(int32_t uid)
 {
     WS_HILOGD("resume Paused Work Scheduler Work, uid:%{public}d", uid);
-    if (!CheckProcessName() || !CheckCallingTokenType()) {
+    if (!CheckProcessName() || !CheckCallingToken()) {
         return E_INVALID_PROCESS_NAME;
     }
 
@@ -1548,7 +1605,7 @@ int32_t WorkSchedulerService::SetWorkSchedulerConfig(const std::string &configDa
         WS_HILOGE("service is not ready");
         return E_SERVICE_NOT_READY;
     }
-    if (!CheckProcessName() || !CheckCallingTokenType()) {
+    if (!CheckProcessName() || !CheckCallingToken()) {
         return E_INVALID_PROCESS_NAME;
     }
     WS_HILOGD("Set work scheduler configData: %{public}s, sourceType: %{public}d", configData.c_str(), sourceType);
