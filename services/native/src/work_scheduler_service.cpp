@@ -226,6 +226,10 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     if (!GetJsonFromFile(PERSISTED_FILE_PATH, root)) {
         return workInfos;
     }
+    if (root.empty() || !root.isObject()) {
+        WS_HILOGE("ReadPersistedWorks failed, root is empty or not an object");
+        return workInfos;
+    }
     for (const auto &it : root.getMemberNames()) {
         Json::Value workJson = root[it];
         shared_ptr<WorkInfo> workInfo = make_shared<WorkInfo>();
