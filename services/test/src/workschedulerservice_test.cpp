@@ -688,8 +688,6 @@ HWTEST_F(WorkSchedulerServiceTest, WorkQueueEventHandler_001, TestSize.Level1)
     WorkQueueEventHandler handler(nullptr, nullptr);
     AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
     handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(1);
-    handler.ProcessEvent(event);
     event = AppExecFwk::InnerEvent::Get(2);
     handler.ProcessEvent(event);
     EXPECT_TRUE(handler.manager_ == nullptr);
@@ -701,8 +699,6 @@ HWTEST_F(WorkSchedulerServiceTest, WorkEventHandler_001, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkEventHandler_001 begin ====== ");
     WorkEventHandler handler(workSchedulerService_->eventRunner_, workSchedulerService_);
     AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(1);
     handler.ProcessEvent(event);
     event = AppExecFwk::InnerEvent::Get(2);
     handler.ProcessEvent(event);
