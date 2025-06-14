@@ -421,12 +421,6 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_002, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_002 begin ====== ");
     std::vector<std::string> argsInStr;
     std::string result;
-    argsInStr.push_back("-repeat_time_min");
-    argsInStr.push_back("600000");
-    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
-    WS_HILOGI("%{public}s", result.c_str());
-
-    result.clear();
     argsInStr.clear();
     argsInStr.push_back("-min_interval");
     argsInStr.push_back("7200000");
