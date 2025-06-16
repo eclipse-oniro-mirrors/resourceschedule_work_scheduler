@@ -16,7 +16,8 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H
 
-namespace {
+namespace OHOS {
+namespace WorkScheduler {
 constexpr int32_t MAX_RUNNING_COUNT = 3;
 const int32_t STANDBY_MAX_RUNNING_COUNT = 2 * MAX_RUNNING_COUNT;
 constexpr uint32_t MAX_WORK_COUNT_PER_UID = 10;
@@ -34,5 +35,6 @@ constexpr int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
 static int32_t g_lastWatchdogTime = WATCHDOG_TIME;
 const std::string OK = "1";
 const std::string NOT_OK = "0";
-}
+} // namespace WorkScheduler
+} // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H
