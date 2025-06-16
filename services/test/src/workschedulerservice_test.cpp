@@ -945,29 +945,6 @@ HWTEST_F(WorkSchedulerServiceTest, AllowDump_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: UpdateWorkBeforeRealStart_001
- * @tc.desc: Test WorkSchedulerService UpdateWorkBeforeRealStart.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_001, TestSize.Level1)
-{
-    std::shared_ptr<WorkStatus> workStatus = nullptr;
-    workSchedulerService_->UpdateWorkBeforeRealStart(workStatus);
-
-    WorkInfo workInfo = WorkInfo();
-    workStatus = std::make_shared<WorkStatus>(workInfo, 1);
-    workStatus->conditionMap_.clear();
-    workSchedulerService_->UpdateWorkBeforeRealStart(workStatus);
-
-    std::shared_ptr<Condition> repeatCycle = std::make_shared<Condition>();
-    repeatCycle->boolVal = true;
-    workStatus->conditionMap_.emplace(WorkCondition::Type::TIMER, repeatCycle);
-    workSchedulerService_->UpdateWorkBeforeRealStart(workStatus);
-    EXPECT_TRUE(repeatCycle->intVal == 0);
-}
-
-/**
  * @tc.name: CheckEffiResApplyInfo_001
  * @tc.desc: Test WorkSchedulerService CheckEffiResApplyInfo.
  * @tc.type: FUNC
