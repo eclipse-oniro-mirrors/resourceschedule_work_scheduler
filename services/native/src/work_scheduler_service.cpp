@@ -689,7 +689,6 @@ bool WorkSchedulerService::CheckWorkInfo(WorkInfo &workInfo, int32_t &uid)
     }
     if (!CheckExtensionInfos(workInfo, uid)) {
         WS_HILOGE("workInfo is invalid");
-        return false;
     }
     return true;
 }
