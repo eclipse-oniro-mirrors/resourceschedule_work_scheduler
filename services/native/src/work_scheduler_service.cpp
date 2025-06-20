@@ -1816,7 +1816,6 @@ void WorkSchedulerService::ReportUserDataSizeEvent()
     };
     uint64_t remainPartitionSize = GetRemainPartitionSize("/data");
     std::vector<uint64_t> folderSize = GetFileOrFolderSize(paths);
-    WS_HILOGE("CJM 大数据打点.");
     HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::FILEMANAGEMENT, "USER_DATA_SIZE",
         HiviewDFX::HiSysEvent::EventType::STATISTIC,
         "COMPONENT_NAME", "work_scheduler",
