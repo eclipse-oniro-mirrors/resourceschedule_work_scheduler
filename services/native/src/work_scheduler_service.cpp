@@ -29,6 +29,7 @@
 #include <string_ex.h>
 #include <system_ability_definition.h>
 #include <sys/stat.h>
+#include <sys/statfs.h>
 #include <unistd.h>
 
 #include "parameters.h"
@@ -51,6 +52,7 @@
 #include "conditions/timer_listener.h"
 #include "conditions/group_listener.h"
 #include "config_policy_utils.h"           // for GetOneCfgFile
+#include "directory_ex.h"
 #include "event_publisher.h"
 #include "json/json.h"
 #include "policy/app_data_clear_listener.h"
@@ -72,6 +74,7 @@
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
 #include "hitrace_meter.h"
+#include "hisysevent.h"
 #include "res_type.h"
 #include "res_sched_client.h"
 #include "work_sched_data_manager.h"
