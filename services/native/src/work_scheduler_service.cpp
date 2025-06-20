@@ -1786,5 +1786,43 @@ bool WorkSchedulerService::CheckCallingToken()
     }
     return false;
 }
+
+uint64_t GetRemainPartitionSize(const std::string& partitionName)
+{
+    struct statfs stat;
+    if (statfs(partitionName.c_str(), &stat) != 0) {
+        return -1;
+    }
+    uint64_t blockSize = stat.f_bsize;
+    uint64_t freeSize = stat.f_bfree * blockSize;
+    constexpr double units = 1024.0;
+    return freeSize / (units * units);
+}
+
+std::vector<uint64_t> GetFileOrFolderSize(const std::vector<std::string>& paths)
+{
+    std::vector<uint64_t> folderSize;
+    for (auto path : paths) {
+        folderSize.emplace_back(OHOS::GetFolderSize(path));
+    }
+    return folderSize;
+}
+
+void WorkSchedulerService::ReportUserDataSizeEvent()
+{
+    std::vector<std::string> paths = {
+        "/data/service/el1/public/WorkScheduler/"
+    };
+    uint64_t remainPartitionSize = GetRemainPartitionSize("/data");
+    std::vector<uint64_t> folderSize = GetFileOrFolderSize(paths);
+    WS_HILOGE("CJM 大数据打点.");
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::FILEMANAGEMENT, "USER_DATA_SIZE",
+        HiviewDFX::HiSysEvent::EventType::STATISTIC,
+        "COMPONENT_NAME", "work_scheduler",
+        "PARTITION_NAME", "/data",
+        "REMAIN_PARTITION_SIZE", remainPartitionSize,
+        "FILE_OR_FOLDER_PATH", paths,
+        "FILE_OR_FOLDER_SIZE", folderSize);
+}
 } // namespace WorkScheduler
 } // namespace OHOS
