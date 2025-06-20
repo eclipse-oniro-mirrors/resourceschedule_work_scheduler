@@ -29,6 +29,7 @@
 #include <string_ex.h>
 #include <system_ability_definition.h>
 #include <sys/stat.h>
+#include <sys/statfs.h>
 #include <unistd.h>
 
 #include "parameters.h"
@@ -51,6 +52,7 @@
 #include "conditions/timer_listener.h"
 #include "conditions/group_listener.h"
 #include "config_policy_utils.h"           // for GetOneCfgFile
+#include "directory_ex.h"
 #include "event_publisher.h"
 #include "json/json.h"
 #include "policy/app_data_clear_listener.h"
@@ -72,6 +74,7 @@
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
 #include "hitrace_meter.h"
+#include "hisysevent.h"
 #include "res_type.h"
 #include "res_sched_client.h"
 #include "work_sched_data_manager.h"
@@ -1344,6 +1347,7 @@ void WorkSchedulerService::RefreshPersistedWorks()
     fout.open(realPath, ios::out);
     fout<<result.c_str()<<endl;
     fout.close();
+    ReportUserDataSizeEvent();
     WS_HILOGD("Refresh persisted works success");
 }
 
@@ -1785,6 +1789,43 @@ bool WorkSchedulerService::CheckCallingToken()
         return true;
     }
     return false;
+}
+
+uint64_t GetRemainPartitionSize(const std::string& partitionName)
+{
+    struct statfs stat;
+    if (statfs(partitionName.c_str(), &stat) != 0) {
+        return -1;
+    }
+    uint64_t blockSize = stat.f_bsize;
+    uint64_t freeSize = stat.f_bfree * blockSize;
+    constexpr double units = 1024.0;
+    return freeSize / (units * units);
+}
+
+std::vector<uint64_t> GetFileOrFolderSize(const std::vector<std::string>& paths)
+{
+    std::vector<uint64_t> folderSize;
+    for (auto path : paths) {
+        folderSize.emplace_back(OHOS::GetFolderSize(path));
+    }
+    return folderSize;
+}
+
+void WorkSchedulerService::ReportUserDataSizeEvent()
+{
+    std::vector<std::string> paths = {
+        "/data/service/el1/public/WorkScheduler/"
+    };
+    uint64_t remainPartitionSize = GetRemainPartitionSize("/data");
+    std::vector<uint64_t> folderSize = GetFileOrFolderSize(paths);
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::FILEMANAGEMENT, "USER_DATA_SIZE",
+        HiviewDFX::HiSysEvent::EventType::STATISTIC,
+        "COMPONENT_NAME", "work_scheduler",
+        "PARTITION_NAME", "/data",
+        "REMAIN_PARTITION_SIZE", remainPartitionSize,
+        "FILE_OR_FOLDER_PATH", paths,
+        "FILE_OR_FOLDER_SIZE", folderSize);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
