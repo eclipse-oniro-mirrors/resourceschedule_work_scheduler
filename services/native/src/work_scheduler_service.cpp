@@ -1344,6 +1344,7 @@ void WorkSchedulerService::RefreshPersistedWorks()
     fout.open(realPath, ios::out);
     fout<<result.c_str()<<endl;
     fout.close();
+    ReportUserDataSizeEvent();
     WS_HILOGD("Refresh persisted works success");
 }
 
