@@ -560,29 +560,29 @@ bool WorkInfo::ParseFromJson(const nlohmann::json &value)
         return false;
     }
     this->workId_ = value["workId"].get<int32_t>();
-    if ((value.contains("saId") && value["saId"].is_number_integer()) && IsHget<bool>Prop(value, "residentSa")) {
+    if ((value.contains("saId") && value["saId"].is_number_integer()) && IsHasBoolProp(value, "residentSa")) {
         this->saId_ = value["saId"].get<int32_t>();
         this->residentSa_ = value["residentSa"].get<bool>();
     }
     if (!ParseElementFromJson(value)) {
         return false;
     }
-    if (IsHget<bool>Prop(value, "persisted")) {
+    if (IsHasBoolProp(value, "persisted")) {
         this->persisted_ = value["persisted"].get<bool>();
     }
-    if (IsHget<bool>Prop(value, "preinstalled")) {
+    if (IsHasBoolProp(value, "preinstalled")) {
         this->preinstalled_ = value["preinstalled"].get<bool>();
     }
     if (value.contains("uriKey") && value["uriKey"].is_string()) {
         this->uriKey_ = value["uriKey"].get<std::string>();
     }
-    if (IsHget<bool>Prop(value, "callBySystemApp")) {
+    if (IsHasBoolProp(value, "callBySystemApp")) {
         this->callBySystemApp_ = value["callBySystemApp"].get<bool>();
     }
     if (value.contains("appIndex") && value["appIndex"].is_number_integer()) {
         this->appIndex_ = value["appIndex"].get<int32_t>();
     }
-    if (IsHget<bool>Prop(value, "extension")) {
+    if (IsHasBoolProp(value, "extension")) {
         this->extension_ = value["extension"].get<bool>();
     }
     ParseConditionFromJsonStr(value);
@@ -678,7 +678,7 @@ void WorkInfo::Dump(std::string &result)
     result.append(ParseToJsonStr());
 }
 
-bool WorkInfo::IsHget<bool>Prop(const nlohmann::json &value, const std::string &key)
+bool WorkInfo::IsHasBoolProp(const nlohmann::json &value, const std::string &key)
 {
     if (value.contains(key) && value[key].is_boolean()) {
         return true;

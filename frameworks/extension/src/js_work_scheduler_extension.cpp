@@ -24,11 +24,10 @@
 #include "js_work_scheduler_extension_context.h"
 #include "work_scheduler_stub_imp.h"
 #include "hitrace_meter.h"
+#include "work_sched_constants.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t INVALID_VALUE = -1;
-
 JsWorkSchedulerExtension* JsWorkSchedulerExtension::Create(const std::unique_ptr<AbilityRuntime::Runtime>& runtime)
 {
     return new JsWorkSchedulerExtension(static_cast<AbilityRuntime::JsRuntime&>(*runtime));
