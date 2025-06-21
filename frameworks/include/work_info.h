@@ -22,11 +22,11 @@
 #include <string>
 
 #include <parcel.h>
-#include "json/json.h"
 #include "want_params.h"
 #include "refbase.h"
 
 #include "work_condition.h"
+#include "nlohmann/json.hpp"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -295,14 +295,14 @@ public:
      * @param value The value.
      * @return True if success,else false.
      */
-    bool ParseFromJson(const Json::Value &value);
+    bool ParseFromJson(const nlohmann::json &value);
     /**
      * @brief Parse element from json.
      *
      * @param value The value.
      * @return True if success,else false.
      */
-    bool ParseElementFromJson(const Json::Value &value);
+    bool ParseElementFromJson(const nlohmann::json &value);
     /**
      * @brief Set preinstalled flag.
     */
@@ -380,11 +380,11 @@ private:
     bool isInnerApply_ {false};
 private:
     static bool UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t mapsize);
-    void ParseConditionToJsonStr(Json::Value &root);
-    void ParseConditionFromJsonStr(const Json::Value &value);
-    void ParseParametersFromJsonStr(const Json::Value &value);
-    void ParseTimerFormJsonStr(const Json::Value &conditions);
-    bool IsHasBoolProp(const Json::Value &value, const std::string &key);
+    void ParseConditionToJsonStr(nlohmann::json &root);
+    void ParseConditionFromJsonStr(const nlohmann::json &value);
+    void ParseParametersFromJsonStr(const nlohmann::json &value);
+    void ParseTimerFormJsonStr(const nlohmann::json &conditions);
+    bool IsHasBoolProp(const nlohmann::json &value, const std::string &key);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

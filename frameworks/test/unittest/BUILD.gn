@@ -45,7 +45,6 @@ ohos_systemtest("WorkSchedulerWorkInfoTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_core",
-    "jsoncpp:jsoncpp",
   ]
 }
 
@@ -84,7 +83,6 @@ ohos_unittest("WorkSchedulerClientTest") {
     "googletest:gtest_main",
     "hilog:libhilog",
     "ipc:ipc_single",
-    "jsoncpp:jsoncpp",
     "samgr:samgr_proxy",
   ]
 }

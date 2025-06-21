@@ -54,7 +54,6 @@
 #include "config_policy_utils.h"           // for GetOneCfgFile
 #include "directory_ex.h"
 #include "event_publisher.h"
-#include "json/json.h"
 #include "policy/app_data_clear_listener.h"
 #include "policy/memory_policy.h"
 #include "policy/thermal_policy.h"
@@ -225,16 +224,15 @@ void WorkSchedulerService::InitWorkInner()
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
 {
     list<shared_ptr<WorkInfo>> workInfos;
-    Json::Value root;
+    nlohmann::json root;
     if (!GetJsonFromFile(PERSISTED_FILE_PATH, root)) {
         return workInfos;
     }
-    if (root.empty() || !root.isObject()) {
+    if (root.is_null() || root.empty()) {
         WS_HILOGE("ReadPersistedWorks failed, root is empty or not an object");
         return workInfos;
     }
-    for (const auto &it : root.getMemberNames()) {
-        Json::Value workJson = root[it];
+    for (const auto &[key, workJson] : root.items()) {
         shared_ptr<WorkInfo> workInfo = make_shared<WorkInfo>();
         if (!workInfo->ParseFromJson(workJson)) {
             WS_HILOGE("ReadPersistedWorks failed, parseFromJson error");
@@ -263,22 +261,21 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
     if (!path) {
         return;
     }
-    Json::Value root;
-    if (!GetJsonFromFile(path, root) || root.empty()) {
+    nlohmann::json root;
+    if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
         WS_HILOGE("file is empty %{private}s", path);
         return;
     }
-    if (!root.isMember(PRINSTALLED_WORKS_KEY)) {
+    if (!root.contains(PRINSTALLED_WORKS_KEY)) {
         WS_HILOGE("no work_scheduler_preinstalled_works key");
         return;
     }
-    Json::Value preinstalledWorksRoot = root[PRINSTALLED_WORKS_KEY];
-    if (preinstalledWorksRoot.empty() || !preinstalledWorksRoot.isObject()) {
+    nlohmann::json preinstalledWorksRoot = root[PRINSTALLED_WORKS_KEY];
+    if (preinstalledWorksRoot.empty() || !preinstalledWorksRoot.is_object()) {
         WS_HILOGE("work_scheduler_preinstalled_works content is empty");
         return;
     }
-    for (const auto &it : preinstalledWorksRoot.getMemberNames()) {
-        Json::Value workJson = preinstalledWorksRoot[it];
+    for (const auto &[key, workJson] : preinstalledWorksRoot.items()) {
         shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
         if (!workinfo->ParseFromJson(workJson)) {
             WS_HILOGE("LoadWorksFromFile failed, parseFromJson error");
@@ -302,27 +299,27 @@ void WorkSchedulerService::LoadExemptionBundlesFromFile(const char *path)
     if (!path) {
         return;
     }
-    Json::Value root;
-    if (!GetJsonFromFile(path, root) || root.empty()) {
+    nlohmann::json root;
+    if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
         WS_HILOGE("file is empty %{private}s", path);
         return;
     }
-    if (!root.isMember(EXEMPTION_BUNDLES_KEY)) {
+    if (!root.contains(EXEMPTION_BUNDLES_KEY)) {
         WS_HILOGE("no work_scheduler_eng_exemption_bundles key");
         return;
     }
-    Json::Value exemptionBundlesRoot = root[EXEMPTION_BUNDLES_KEY];
-    if (exemptionBundlesRoot.empty() || !exemptionBundlesRoot.isArray()) {
+    nlohmann::json exemptionBundlesRoot = root[EXEMPTION_BUNDLES_KEY];
+    if (exemptionBundlesRoot.empty() || !exemptionBundlesRoot.is_array()) {
         WS_HILOGE("work_scheduler_eng_exemption_bundles content is empty");
         return;
     }
 
     for (const auto &exemptionBundleName : exemptionBundlesRoot) {
-        if (exemptionBundleName.empty() || !exemptionBundleName.isString()) {
+        if (exemptionBundleName.empty() || !exemptionBundleName.is_string()) {
             WS_HILOGE("Item type error");
         } else {
-            WS_HILOGI("bundle name:%{public}s", exemptionBundleName.asString().c_str());
-            exemptionBundles_.insert(exemptionBundleName.asString());
+            WS_HILOGI("bundle name:%{public}s", exemptionBundleName.get<std::string>().c_str());
+            exemptionBundles_.insert(exemptionBundleName.get<std::string>());
         }
     }
 }
@@ -332,49 +329,49 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
     if (!path) {
         return;
     }
-    Json::Value root;
-    if (!GetJsonFromFile(path, root) || root.empty()) {
+    nlohmann::json root;
+    if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
         WS_HILOGE("file is empty %{private}s", path);
         return;
     }
-    if (!root.isMember(MIN_REPEAT_TIME_KEY)) {
+    if (!root.contains(MIN_REPEAT_TIME_KEY)) {
         WS_HILOGE("no work_scheduler_min_repeat_time key");
         return;
     }
-    Json::Value minRepeatTimeRoot = root[MIN_REPEAT_TIME_KEY];
-    if (minRepeatTimeRoot.empty() || !minRepeatTimeRoot.isObject()) {
+    nlohmann::json minRepeatTimeRoot = root[MIN_REPEAT_TIME_KEY];
+    if (minRepeatTimeRoot.empty() || !minRepeatTimeRoot.is_object()) {
         WS_HILOGE("work_scheduler_min_repeat_time content is empty");
         return;
     }
-    if (minRepeatTimeRoot.isMember("default") && minRepeatTimeRoot["default"].isInt()) {
-        minTimeCycle_ = static_cast<uint32_t>(minRepeatTimeRoot["default"].asInt());
+    if (minRepeatTimeRoot.contains("default") && minRepeatTimeRoot["default"].is_number_unsigned()) {
+        minTimeCycle_ = minRepeatTimeRoot["default"].get<uint32_t>();
     }
-    if (!minRepeatTimeRoot.isMember("special")) {
+    if (!minRepeatTimeRoot.contains("special")) {
         WS_HILOGE("no special key");
         return;
     }
-    Json::Value specialRoot = minRepeatTimeRoot["special"];
-    if (specialRoot.empty() || !specialRoot.isArray()) {
+    nlohmann::json specialRoot = minRepeatTimeRoot["special"];
+    if (specialRoot.empty() || !specialRoot.is_array()) {
         WS_HILOGE("special content is empty");
         return;
     }
     minCheckTime_ = workQueueManager_->GetTimeCycle();
     for (const auto &it : specialRoot) {
-        if (!it.isMember("bundleName") || !it["bundleName"].isString() ||
-            !it.isMember("time") || !it["time"].isInt()) {
+        if (!it.contains("bundleName") || !it["bundleName"].is_string() ||
+            !it.contains("time") || !it["time"].is_number_unsigned()) {
             WS_HILOGE("special content is error");
             continue;
         }
-        uint32_t time = static_cast<uint32_t>(it["time"].asInt());
+        uint32_t time = it["time"].get<uint32_t>();
         if (time < SYS_APP_MIN_REPEAT_TIME) {
             WS_HILOGE("bundleName: %{public}s set time: %{public}d not available, must more than %{public}d",
-                it["bundleName"].asString().c_str(), time, SYS_APP_MIN_REPEAT_TIME);
+                it["bundleName"].get<std::string>().c_str(), time, SYS_APP_MIN_REPEAT_TIME);
             continue;
         }
         if (minCheckTime_ > time) {
             minCheckTime_ = time;
         }
-        specialMap_.emplace(it["bundleName"].asString(), time);
+        specialMap_.emplace(it["bundleName"].get<std::string>(), time);
     }
 }
 
@@ -397,7 +394,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPreinstalledWorks()
     return workInfos;
 }
 
-bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &root)
+bool WorkSchedulerService::GetJsonFromFile(const char *filePath, nlohmann::json &root)
 {
     std::string realPath;
     if (!WorkSchedUtils::ConvertFullPath(filePath, realPath)) {
@@ -409,11 +406,8 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, Json::Value &ro
     std::string data;
     LoadStringFromFile(realPath.c_str(), data);
     WS_HILOGI("data read success");
-    JSONCPP_STRING errs;
-    Json::CharReaderBuilder readerBuilder;
-    const unique_ptr<Json::CharReader> jsonReader(readerBuilder.newCharReader());
-    bool res = jsonReader->parse(data.c_str(), data.c_str() + data.length(), &root, &errs);
-    if (!res || !errs.empty()) {
+    const nlohmann::json &jsonObj = nlohmann::json::parse(data, nullptr, false);
+    if (jsonObj.is_null() || jsonObj.empty()) {
         WS_HILOGE("parse %{private}s json error", realPath.c_str());
         WorkSchedUtil::HiSysEventException(LOAD_WORK, __func__, "json parse failed");
         return false;
@@ -1316,24 +1310,16 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
 
 void WorkSchedulerService::RefreshPersistedWorks()
 {
-    Json::Value root;
+    nlohmann::json root;
     for (auto &it : persistedMap_) {
         auto workInfo = it.second;
         string data = workInfo->ParseToJsonStr();
-        JSONCPP_STRING errs;
-        Json::Value workJson;
-        Json::CharReaderBuilder readerBuilder;
-        const unique_ptr<Json::CharReader> jsonReader(readerBuilder.newCharReader());
-        bool res = jsonReader->parse(data.c_str(), data.c_str() + data.length(), &workJson, &errs);
-        if (res && errs.empty()) {
+        const nlohmann::json &workJson = nlohmann::json::parse(data, nullptr, false);
+        if (!workJson.is_null() && !workJson.empty()) {
             root[it.first] = workJson;
         }
     }
-    Json::StreamWriterBuilder writerBuilder;
-    ostringstream os;
-    unique_ptr<Json::StreamWriter> jsonWriter(writerBuilder.newStreamWriter());
-    jsonWriter->write(root, &os);
-    string result = os.str();
+    string result = root.dump(4);
     CreateNodeDir(PERSISTED_PATH);
     CreateNodeFile();
     ofstream fout;

@@ -39,7 +39,6 @@ ohos_source_set("workschedutils") {
     "hisysevent:libhisysevent",
     "init:libbegetutil",
     "ipc:ipc_single",
-    "jsoncpp:jsoncpp",
     "os_account:os_account_innerkits",
   ]
 

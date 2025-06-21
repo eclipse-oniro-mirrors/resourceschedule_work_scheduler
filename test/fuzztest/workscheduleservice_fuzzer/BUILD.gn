@@ -64,7 +64,6 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
-    "jsoncpp:jsoncpp",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]

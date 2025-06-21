@@ -60,8 +60,6 @@ ohos_shared_library("workschedclient") {
     "${worksched_utils_path}:workschedutils",
   ]
 
-  public_external_deps = [ "jsoncpp:jsoncpp" ]
-
   external_deps = [
     "ability_base:want",
     "hilog:libhilog",
@@ -93,7 +91,6 @@ ohos_source_set("work_sched_service_proxy") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_core",
-    "jsoncpp:jsoncpp",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
@@ -118,7 +115,6 @@ ohos_source_set("work_sched_service_stub") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_core",
-    "jsoncpp:jsoncpp",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"

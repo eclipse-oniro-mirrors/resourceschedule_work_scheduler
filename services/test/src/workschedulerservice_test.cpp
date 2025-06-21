@@ -29,7 +29,6 @@
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
 #include "event_publisher.h"
-#include "json/json.h"
 #include "accesstoken_kit.h"
 #include "token_setproc.h"
 
@@ -868,7 +867,7 @@ HWTEST_F(WorkSchedulerServiceTest, SendEvent_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, GetJsonFromFile_001, TestSize.Level1)
 {
-    Json::Value root;
+    nlohmann::json root;
     const char* path = "/a/b/c";
     bool ret = workSchedulerService_->GetJsonFromFile(path, root);
     EXPECT_FALSE(ret);
