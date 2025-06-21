@@ -53,6 +53,7 @@ inline const std::string LOAD_SA = "LOAD_SA";
 inline const std::string TOKEN_CHECK = "TOKEN_CHECK";
 inline const std::string WORK_CHECK = "WORK_CHECK";
 inline const std::string SERVICE_STOP = "SERVICE_STOP";
+inline constexpr uint32_t JSON_INDENT_WIDTH = 4;
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H

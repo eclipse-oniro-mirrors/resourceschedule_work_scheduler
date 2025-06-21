@@ -46,7 +46,6 @@ ohos_source_set("workschedservice_zidl_stub") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_core",
-    "jsoncpp:jsoncpp",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
@@ -71,7 +70,6 @@ ohos_source_set("workschedservice_zidl_proxy") {
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_core",
-    "jsoncpp:jsoncpp",
   ]
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"

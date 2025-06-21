@@ -15,10 +15,10 @@
 #include "work_info.h"
 
 #include "work_sched_hilog.h"
+#include "work_sched_constants.h"
 
 namespace OHOS {
 namespace WorkScheduler {
-const int32_t INVALID_VALUE = -1;
 const int32_t INVALID_TIME_VALUE = 0;
 const uint32_t MAX_SIZE = 1024;
 const int32_t APPINDEX_INIT_VALUE = 0;
@@ -463,7 +463,7 @@ bool WorkInfo::UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t maps
 
 std::string WorkInfo::ParseToJsonStr()
 {
-    Json::Value root;
+    nlohmann::json root;
     if (uid_ != INVALID_VALUE) {
         root["uid"] = uid_;
     }
@@ -483,8 +483,8 @@ std::string WorkInfo::ParseToJsonStr()
     root["uriKey"] = uriKey_;
     ParseConditionToJsonStr(root);
     if (extras_) {
-        Json::Value extras;
-        Json::Value extrasType;
+        nlohmann::json extras;
+        nlohmann::json extrasType;
         std::map<std::string, sptr<AAFwk::IInterface>> extrasMap = extras_->GetParams();
         int typeId = INVALID_VALUE;
         for (auto it : extrasMap) {
@@ -500,17 +500,13 @@ std::string WorkInfo::ParseToJsonStr()
         root["parameters"] = extras;
         root["parametersType"] = extrasType;
     }
-    Json::StreamWriterBuilder writerBuilder;
-    std::ostringstream os;
-    std::unique_ptr<Json::StreamWriter> jsonWriter(writerBuilder.newStreamWriter());
-    jsonWriter->write(root, &os);
-    std::string result = os.str();
+    std::string result = root.dump(JSON_INDENT_WIDTH);
     return result;
 }
 
-void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
+void WorkInfo::ParseConditionToJsonStr(nlohmann::json &root)
 {
-    Json::Value conditions;
+    nlohmann::json conditions;
     for (auto it : conditionMap_) {
         switch (it.first) {
             case WorkCondition::Type::NETWORK: {
@@ -553,126 +549,125 @@ void WorkInfo::ParseConditionToJsonStr(Json::Value &root)
     root["conditions"] = conditions;
 }
 
-bool WorkInfo::ParseFromJson(const Json::Value &value)
+bool WorkInfo::ParseFromJson(const nlohmann::json &value)
 {
-    if (value.empty()) {
+    if (value.is_null() || value.empty()) {
         WS_HILOGE("workinfo json is empty");
         return false;
     }
-    if (!value.isMember("workId") || !value["workId"].isInt()) {
+    if (!value.contains("workId") || !value["workId"].is_number_integer()) {
         WS_HILOGE("workinfo json is invalid, workId is missing or not int");
         return false;
     }
-    this->workId_ = value["workId"].asInt();
-    if ((value.isMember("saId") && value["saId"].isInt()) && IsHasBoolProp(value, "residentSa")) {
-        this->saId_ = value["saId"].asInt();
-        this->residentSa_ = value["residentSa"].asBool();
+    this->workId_ = value["workId"].get<int32_t>();
+    if ((value.contains("saId") && value["saId"].is_number_integer()) && IsHget<bool>Prop(value, "residentSa")) {
+        this->saId_ = value["saId"].get<int32_t>();
+        this->residentSa_ = value["residentSa"].get<bool>();
     }
     if (!ParseElementFromJson(value)) {
         return false;
     }
-    if (IsHasBoolProp(value, "persisted")) {
-        this->persisted_ = value["persisted"].asBool();
+    if (IsHget<bool>Prop(value, "persisted")) {
+        this->persisted_ = value["persisted"].get<bool>();
     }
-    if (IsHasBoolProp(value, "preinstalled")) {
-        this->preinstalled_ = value["preinstalled"].asBool();
+    if (IsHget<bool>Prop(value, "preinstalled")) {
+        this->preinstalled_ = value["preinstalled"].get<bool>();
     }
-    if (value.isMember("uriKey") && value["uriKey"].isString()) {
-        this->uriKey_ = value["uriKey"].asString();
+    if (value.contains("uriKey") && value["uriKey"].is_string()) {
+        this->uriKey_ = value["uriKey"].get<std::string>();
     }
-    if (IsHasBoolProp(value, "callBySystemApp")) {
-        this->callBySystemApp_ = value["callBySystemApp"].asBool();
+    if (IsHget<bool>Prop(value, "callBySystemApp")) {
+        this->callBySystemApp_ = value["callBySystemApp"].get<bool>();
     }
-    if (value.isMember("appIndex") && value["appIndex"].isInt()) {
-        this->appIndex_ = value["appIndex"].asInt();
+    if (value.contains("appIndex") && value["appIndex"].is_number_integer()) {
+        this->appIndex_ = value["appIndex"].get<int32_t>();
     }
-    if (IsHasBoolProp(value, "extension")) {
-        this->extension_ = value["extension"].asBool();
+    if (IsHget<bool>Prop(value, "extension")) {
+        this->extension_ = value["extension"].get<bool>();
     }
     ParseConditionFromJsonStr(value);
-    if (!value.isMember("parameters")) {
+    if (!value.contains("parameters")) {
         return true;
     }
     ParseParametersFromJsonStr(value);
     return true;
 }
 
-bool WorkInfo::ParseElementFromJson(const Json::Value &value)
+bool WorkInfo::ParseElementFromJson(const nlohmann::json &value)
 {
     if (!IsSA()) {
-        if (!value.isMember("bundleName") || !value["bundleName"].isString() ||
-            !value.isMember("abilityName") || !value["abilityName"].isString()) {
+        if (!value.contains("bundleName") || !value["bundleName"].is_string() ||
+            !value.contains("abilityName") || !value["abilityName"].is_string()) {
             WS_HILOGE("workinfo json is invalid, bundleName or abilityName is missing or not string");
             return false;
         }
-        this->bundleName_ = value["bundleName"].asString();
-        this->abilityName_ = value["abilityName"].asString();
+        this->bundleName_ = value["bundleName"].get<std::string>();
+        this->abilityName_ = value["abilityName"].get<std::string>();
     }
     return true;
 }
 
-void WorkInfo::ParseParametersFromJsonStr(const Json::Value &value)
+void WorkInfo::ParseParametersFromJsonStr(const nlohmann::json &value)
 {
-    Json::Value extrasJson = value["parameters"];
-    Json::Value extrasType = value["parametersType"];
+    nlohmann::json extrasJson = value["parameters"];
+    nlohmann::json extrasType = value["parametersType"];
     AAFwk::WantParams extras;
-    Json::Value::Members keyList = extrasJson.getMemberNames();
     int typeId = INVALID_VALUE;
-    for (auto key : keyList) {
-        if (extrasType[key].isInt()) {
-            typeId = extrasType[key].asInt();
+    for (const auto &[key, parameter] : extrasJson.items()) {
+        if (extrasType[key].is_number_integer()) {
+            typeId = extrasType[key].get<int32_t>();
         }
-        if (typeId != INVALID_VALUE && extrasJson[key].isString()) {
+        if (typeId != INVALID_VALUE && extrasJson[key].is_string()) {
             sptr<AAFwk::IInterface> exInterface = AAFwk::WantParams::GetInterfaceByType(typeId,
-                extrasJson[key].asString());
+                extrasJson[key].get<std::string>());
             extras.SetParam(key, exInterface);
         }
     }
     this->RequestExtras(extras);
 }
 
-void WorkInfo::ParseConditionFromJsonStr(const Json::Value &value)
+void WorkInfo::ParseConditionFromJsonStr(const nlohmann::json &value)
 {
-    if (value.isMember("uid") && value["uid"].isInt()) {
-        this->uid_ = value["uid"].asInt();
+    if (value.contains("uid") && value["uid"].is_number_integer()) {
+        this->uid_ = value["uid"].get<int32_t>();
     }
-    Json::Value conditions = value["conditions"];
-    if (conditions.isMember("network") && conditions["network"].isInt()) {
-        this->RequestNetworkType(WorkCondition::Network(conditions["network"].asInt()));
+    nlohmann::json conditions = value["conditions"];
+    if (conditions.contains("network") && conditions["network"].is_number_integer()) {
+        this->RequestNetworkType(WorkCondition::Network(conditions["network"].get<int32_t>()));
     }
-    if (conditions.isMember("isCharging") && conditions["isCharging"].isBool() &&
-        conditions.isMember("chargerType") && conditions["chargerType"].isInt()) {
-        this->RequestChargerType(conditions["isCharging"].asBool(),
-            WorkCondition::Charger(conditions["chargerType"].asInt()));
+    if (conditions.contains("isCharging") && conditions["isCharging"].is_boolean() &&
+        conditions.contains("chargerType") && conditions["chargerType"].is_number_integer()) {
+        this->RequestChargerType(conditions["isCharging"].get<bool>(),
+            WorkCondition::Charger(conditions["chargerType"].get<int32_t>()));
     }
-    if (conditions.isMember("batteryLevel") && conditions["batteryLevel"].isInt()) {
-        this->RequestBatteryLevel(conditions["batteryLevel"].asInt());
+    if (conditions.contains("batteryLevel") && conditions["batteryLevel"].is_number_integer()) {
+        this->RequestBatteryLevel(conditions["batteryLevel"].get<int32_t>());
     }
-    if (conditions.isMember("batteryStatus") && conditions["batteryStatus"].isInt()) {
-        this->RequestBatteryStatus(WorkCondition::BatteryStatus(conditions["batteryStatus"].asInt()));
+    if (conditions.contains("batteryStatus") && conditions["batteryStatus"].is_number_integer()) {
+        this->RequestBatteryStatus(WorkCondition::BatteryStatus(conditions["batteryStatus"].get<int32_t>()));
     }
-    if (conditions.isMember("storage") && conditions["storage"].isInt()) {
-        this->RequestStorageLevel(WorkCondition::Storage(conditions["storage"].asInt()));
+    if (conditions.contains("storage") && conditions["storage"].is_number_integer()) {
+        this->RequestStorageLevel(WorkCondition::Storage(conditions["storage"].get<int32_t>()));
     }
-    if (conditions.isMember("isDeepIdle") && conditions["isDeepIdle"].isBool()) {
-        this->RequestDeepIdle(conditions["isDeepIdle"].asBool());
+    if (conditions.contains("isDeepIdle") && conditions["isDeepIdle"].is_boolean()) {
+        this->RequestDeepIdle(conditions["isDeepIdle"].get<bool>());
     }
     ParseTimerFormJsonStr(conditions);
 }
 
-void WorkInfo::ParseTimerFormJsonStr(const Json::Value &conditions)
+void WorkInfo::ParseTimerFormJsonStr(const nlohmann::json &conditions)
 {
-    if (conditions.isMember("timer") && conditions["timer"].isInt() &&
-        conditions.isMember("repeat") && conditions["repeat"].isBool()) {
-        if (conditions["repeat"].asBool()) {
-            this->RequestRepeatCycle(conditions["timer"].asInt());
+    if (conditions.contains("timer") && conditions["timer"].is_number_integer() &&
+        conditions.contains("repeat") && conditions["repeat"].is_boolean()) {
+        if (conditions["repeat"].get<bool>()) {
+            this->RequestRepeatCycle(conditions["timer"].get<int32_t>());
         } else {
-            if (conditions.isMember("cycle") && conditions["cycle"].isInt()) {
-                this->RequestRepeatCycle(conditions["timer"].asInt(), conditions["cycle"].asInt());
+            if (conditions.contains("cycle") && conditions["cycle"].is_number_integer()) {
+                this->RequestRepeatCycle(conditions["timer"].get<int32_t>(), conditions["cycle"].get<int32_t>());
             }
         }
-        if (conditions.isMember("baseTime") && conditions["baseTime"].isInt64()) {
-            time_t baseTime = (time_t)(conditions["baseTime"].asInt64());
+        if (conditions.contains("baseTime") && conditions["baseTime"].is_number_integer()) {
+            time_t baseTime = (time_t)(conditions["baseTime"].get<int64_t>());
             this->RequestBaseTime(baseTime);
         }
     }
@@ -683,9 +678,9 @@ void WorkInfo::Dump(std::string &result)
     result.append(ParseToJsonStr());
 }
 
-bool WorkInfo::IsHasBoolProp(const Json::Value &value, const std::string &key)
+bool WorkInfo::IsHget<bool>Prop(const nlohmann::json &value, const std::string &key)
 {
-    if (value.isMember(key) && value[key].isBool()) {
+    if (value.contains(key) && value[key].is_boolean()) {
         return true;
     }
     return false;

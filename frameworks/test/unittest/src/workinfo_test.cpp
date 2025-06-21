@@ -349,7 +349,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level2)
 {
     using namespace OHOS::WorkScheduler;
     WorkInfo workInfo = WorkInfo();
-    Json::Value root;
+    nlohmann::json root;
     bool res = workInfo.ParseFromJson(root);
     EXPECT_FALSE(res);
 
@@ -405,12 +405,12 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson002, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, WorkInfoTestJson003, Function | MediumTest | Level2)
 {
     WorkInfo workInfo = WorkInfo();
-    Json::Value root;
+    nlohmann::json root;
     root["workId"] = 1;
     root["bundleName"] = "bundleName";
     root["abilityName"] = "abilityName";
     root["uid"] = 1;
-    Json::Value conditions;
+    nlohmann::json conditions;
     conditions["network"] = 0;
     conditions["isCharging"] = true;
     conditions["batteryLevel"] = 0;
@@ -462,16 +462,16 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson003, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, WorkInfoTestJson004, Function | MediumTest | Level2)
 {
     WorkInfo workInfo = WorkInfo();
-    Json::Value root;
+    nlohmann::json root;
     root["workId"] = 1;
     root["bundleName"] = "bundleName";
     root["abilityName"] = "abilityName";
     root["uid"] = 1;
-    Json::Value extrasJson;
+    nlohmann::json extrasJson;
     extrasJson["key1"] = "value1";
     extrasJson["key2"] = "value2";
     root["parameters"] = extrasJson;
-    Json::Value extrasType;
+    nlohmann::json extrasType;
     extrasType["key1"] = 9;
     extrasType["key2"] = -1;
     root["parametersType"] = extrasType;
@@ -489,7 +489,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson005, Function | MediumTest | Level2)
 {
     using namespace OHOS::WorkScheduler;
     WorkInfo workInfo = WorkInfo();
-    Json::Value root;
+    nlohmann::json root;
     root.clear();
     root["workId"] = "1";
     bool res = workInfo.ParseFromJson(root);
@@ -516,7 +516,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level2)
 {
     using namespace OHOS::WorkScheduler;
     WorkInfo workInfo = WorkInfo();
-    Json::Value root;
+    nlohmann::json root;
     root.clear();
     root["workId"] = 1;
     root["bundleName"] = "bundleName";

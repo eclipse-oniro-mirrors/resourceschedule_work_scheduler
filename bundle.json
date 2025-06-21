@@ -48,7 +48,6 @@
           "data_share",
           "config_policy",
           "hiview",
-          "jsoncpp",
           "hicollie",
           "hitrace",
           "power_manager",

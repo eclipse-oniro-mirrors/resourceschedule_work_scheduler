@@ -479,7 +479,7 @@ void JsWorkSchedulerExtension::GetSrcPath(std::string &srcPath)
 bool JsWorkSchedulerExtension::GetExtrasJsonStr(const WorkInfo& workInfo, std::string& extrasStr)
 {
     std::shared_ptr<AAFwk::WantParams> extras = workInfo.GetExtras();
-    Json::Value extrasJson;
+    nlohmann::json extrasJson;
     if (!extras) {
         WS_HILOGD("parameter is null.");
         return false;
@@ -495,8 +495,7 @@ bool JsWorkSchedulerExtension::GetExtrasJsonStr(const WorkInfo& workInfo, std::s
             WS_HILOGE("parameters type not supported.");
         }
     }
-    Json::StreamWriterBuilder builder;
-    extrasStr = Json::writeString(builder, extrasJson);
+    extrasStr = extrasJson.dump(JSON_INDENT_WIDTH);
     return true;
 }
 } // namespace WorkScheduler

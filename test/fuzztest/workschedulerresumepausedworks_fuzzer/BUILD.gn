@@ -67,7 +67,6 @@ ohos_fuzztest("WorkSchedulerResumePausedWorksFuzzTest") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
-    "jsoncpp:jsoncpp",
     "resource_management:global_resmgr",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",

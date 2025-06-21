@@ -350,7 +350,7 @@ private:
     bool AllowDump();
     void DumpProcessForEngMode(std::vector<std::string>& argsInStr, std::string& result);
     void DumpProcessForUserMode(std::vector<std::string>& argsInStr, std::string& result);
-    bool GetJsonFromFile(const char* filePath, Json::Value& root);
+    bool GetJsonFromFile(const char* filePath, nlohmann::json& root);
     bool GetUidByBundleName(const std::string& bundleName, int32_t& uid);
     void InitWorkInner();
     void AddWorkInner(WorkInfo& workInfo);
