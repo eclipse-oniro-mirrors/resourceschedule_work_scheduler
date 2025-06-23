@@ -406,8 +406,8 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, nlohmann::json 
     std::string data;
     LoadStringFromFile(realPath.c_str(), data);
     WS_HILOGI("data read success");
-    const nlohmann::json &jsonObj = nlohmann::json::parse(data, nullptr, false);
-    if (jsonObj.is_null() || jsonObj.empty()) {
+    root = nlohmann::json::parse(data, nullptr, false);
+    if (root.is_discarded()) {
         WS_HILOGE("parse %{private}s json error", realPath.c_str());
         WorkSchedUtil::HiSysEventException(LOAD_WORK, __func__, "json parse failed");
         return false;
@@ -1315,7 +1315,7 @@ void WorkSchedulerService::RefreshPersistedWorks()
         auto workInfo = it.second;
         string data = workInfo->ParseToJsonStr();
         const nlohmann::json &workJson = nlohmann::json::parse(data, nullptr, false);
-        if (!workJson.is_null() && !workJson.empty()) {
+        if (!workJson.is_discarded()) {
             root[it.first] = workJson;
         }
     }
