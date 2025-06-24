@@ -71,13 +71,9 @@ HWTEST_F(WorkSchedulerConnectionTest, StopWork_002, TestSize.Level2)
 {
     sptr<ISystemAbilityManager> SystemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (SystemAbilityManager == nullptr) {
-        return;
-    }
+    ASSERT_NE(SystemAbilityManager, nullptr);
     sptr<IRemoteObject> remoteObject = SystemAbilityManager->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
-    if (remoteObject == nullptr) {
-        return;
-    }
+    ASSERT_NE(remoteObject, nullptr);
     AppExecFwk::ElementName element;
     int32_t resultCode = 0;
     workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, resultCode);
