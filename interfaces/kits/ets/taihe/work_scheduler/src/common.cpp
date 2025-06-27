@@ -346,7 +346,6 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
             default: {
                 WS_HILOGE("parameters type not supported.");
                 return false;
-                break;
             }
         }
     }
