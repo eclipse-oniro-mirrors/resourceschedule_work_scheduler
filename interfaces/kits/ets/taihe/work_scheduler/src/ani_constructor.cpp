@@ -22,7 +22,7 @@ ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
         return ANI_ERROR;
     }
     if (ANI_OK != ohos::resourceschedule::workScheduler::ANIRegister(env)) {
-        std::cerr << "Error from ohos::resourceschedule::workScheduler::ANI_Constructor" << std::endl;
+        std::cerr << "Error from ohos::resourceschedule::workScheduler::ANIRegister" << std::endl;
         return ANI_ERROR;
     }
     *result = ANI_VERSION_1;
