@@ -31,7 +31,7 @@ namespace WorkScheduler {
 const int32_t BATTERY_LEVEL_MIN = 0;
 const int32_t BATTERY_LEVEL_MAX = 100;
 const int32_t TRUE_PARAM = 1;
-
+const int32_t UNSET_INT_PARAM = -1;
 // need to be same as WantParams
 enum {
     VALUE_TYPE_NULL = -1,
@@ -312,8 +312,7 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
                 if (intPtr == nullptr) {
                     return false;
                 }
-                int intVal = AAFwk::Integer::Unbox(intPtr);
-                aniParams.emplace(iter.first, ParameType::make_int_type(intVal));
+                aniParams.emplace(iter.first, ParameType::make_int_type(AAFwk::Integer::Unbox(intPtr)));
                 break;
             }
             case VALUE_TYPE_DOUBLE: {
@@ -321,8 +320,7 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
                 if (doublePtr == nullptr) {
                     return false;
                 }
-                double doubleVal = AAFwk::Double::Unbox(doublePtr);
-                aniParams.emplace(iter.first, ParameType::make_double_type(doubleVal));
+                aniParams.emplace(iter.first, ParameType::make_double_type(AAFwk::Double::Unbox(doublePtr)));
                 break;
             }
             case VALUE_TYPE_BOOLEAN: {
@@ -330,8 +328,7 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
                 if (boolPtr == nullptr) {
                     return false;
                 }
-                bool boolVal = AAFwk::Boolean::Unbox(boolPtr);
-                aniParams.emplace(iter.first, ParameType::make_bool_type(boolVal));
+                aniParams.emplace(iter.first, ParameType::make_bool_type(AAFwk::Boolean::Unbox(boolPtr)));
                 break;
             }
             case VALUE_TYPE_STRING: {
@@ -339,8 +336,7 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
                 if (strPtr == nullptr) {
                     return false;
                 }
-                std::string strVal = AAFwk::String::Unbox(strPtr);
-                aniParams.emplace(iter.first, ParameType::make_string_type(strVal));
+                aniParams.emplace(iter.first, ParameType::make_string_type(AAFwk::String::Unbox(strPtr)));
                 break;
             }
             default: {
@@ -382,7 +378,7 @@ void Common::ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workIn
     aniWork.networkType = optional<NetworkType>(std::in_place, NetworkType::key_t(workInfo->GetNetworkType()));
     if (workInfo->GetChargerType() >= WorkCondition::Charger::CHARGING_UNPLUGGED) {
         aniWork.isCharging = optional<bool>(std::in_place, false);
-        aniWork.chargerType = optional<ChargingType>(std::in_place, ChargingType::key_t(-1));
+        aniWork.chargerType = optional<ChargingType>(std::in_place, ChargingType::key_t(UNSET_INT_PARAM));
     } else {
         aniWork.isCharging = optional<bool>(std::in_place, true);
         aniWork.chargerType = optional<ChargingType>(std::in_place, ChargingType::key_t(workInfo->GetChargerType()));
@@ -395,8 +391,8 @@ void Common::ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workIn
     aniWork.repeatCycleTime = optional<double>(std::in_place, workInfo->GetTimeInterval());
     aniWork.isRepeat = optional<bool>(std::in_place, workInfo->IsRepeat());
     aniWork.repeatCount = optional<double>(std::in_place, workInfo->GetCycleCount());
-    aniWork.isDeepIdle = optional<bool>(std::in_place, -1);
-    aniWork.idleWaitTime = optional<double>(std::in_place, -1);
+    aniWork.isDeepIdle = optional<bool>(std::in_place, UNSET_INT_PARAM);
+    aniWork.idleWaitTime = optional<double>(std::in_place, UNSET_INT_PARAM);
     ParseExtrasInfo(workInfo, aniWork);
 }
 }  // namespace WorkScheduler
