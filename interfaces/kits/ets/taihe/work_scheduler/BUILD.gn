@@ -14,7 +14,7 @@
 import("//build/config/components/ets_frontend/ets2abc_config.gni")
 import("//build/ohos.gni")
 import("//build/ohos/taihe_idl/taihe.gni")
-import("//foundation/resourceschedule/work_scheduler/workScheduler.gni")
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 copy_taihe_idl("copy_workScheduler") {
   sources = [ "idl/ohos.resourceschedule.workScheduler.taihe" ]
