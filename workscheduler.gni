@@ -35,6 +35,8 @@ worksched_frameworks_path = "${worksched_root_path}/frameworks"
 
 worksched_test_path = "${worksched_root_path}/test"
 
+worksched_taihe_path = "${worksched_interfaces_path}/kits/ets/taihe"
+
 system_type = "default"
 
 declare_args() {
