@@ -68,6 +68,7 @@ ohos_shared_library("workschedextension") {
     "eventhandler:libeventhandler",
     "hilog:libhilog",
     "hitrace:hitrace_meter",
+    "ipc:ipc_napi",
     "ipc:ipc_single",
     "napi:ace_napi",
   ]
