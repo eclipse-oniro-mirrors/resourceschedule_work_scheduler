@@ -44,16 +44,18 @@ inline constexpr int32_t WATCHDOG_TIMEOUT_THRESHOLD_MS = 500;
 // services\native\src\conditions\screen_listener.cpp
 inline constexpr int MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN = 31 * 60 * 1000;
 
-inline const std::string CONNECT_ABILITY = "CONNECT_ABILITY";
-inline const std::string DISCONNECT_ABILITY = "DISCONNECT_ABILITY";
-inline const std::string WATCHDOG_TIMEOUT = "WATCHDOG_TIMEOUT";
-inline const std::string LOAD_WORK = "LOAD_WORK";
-inline const std::string SERVICE_INIT = "SERVICE_INIT";
-inline const std::string LOAD_SA = "LOAD_SA";
-inline const std::string TOKEN_CHECK = "TOKEN_CHECK";
-inline const std::string WORK_CHECK = "WORK_CHECK";
-inline const std::string SERVICE_STOP = "SERVICE_STOP";
-inline constexpr uint32_t JSON_INDENT_WIDTH = 4;
+enum EventErrorCode {
+    CONNECT_ABILITY = 1,
+    DISCONNECT_ABILITY,
+    WATCHDOG_TIMEOUT,
+    LOAD_WORK,
+    SERVICE_INIT,
+    LOAD_SA,
+    TOKEN_CHECK,
+    WORK_CHECK,
+    SERVICE_STOP
+};
+inline constexpr int JSON_INDENT_WIDTH = 4;
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H

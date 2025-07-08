@@ -49,7 +49,7 @@ int32_t ThermalPolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
         res = COUNT_THERMAL_NORMAL;
     }
     systemPolicy.thermalLevel = static_cast<int32_t>(thermalLevel);
-    systemPolicy.policyName = "THERMAL_POLICY";
+    systemPolicy.SetPolicyName("THERMAL_POLICY", res);
     WS_HILOGD("ThermalLevel:%{public}d, PolicyRes:%{public}d", thermalLevel, res);
     return res;
 }

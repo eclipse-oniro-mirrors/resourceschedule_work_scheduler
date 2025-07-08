@@ -48,7 +48,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
         if (DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle()) {
             DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
-            WorkSchedUtil::HiSysEventDeepIdleState(false);
+            WorkSchedUtil::HiSysEventStateChanged({"DEEP_IDLE", 0});
         }
         listener_.StopTimer();
         listener_.OnConditionChanged(WorkCondition::Type::DEEP_IDLE,

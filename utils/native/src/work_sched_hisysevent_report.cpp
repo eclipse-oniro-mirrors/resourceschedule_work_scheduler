@@ -24,16 +24,38 @@ using namespace OHOS;
 namespace OHOS {
 namespace WorkScheduler {
 namespace WorkSchedUtil {
-void HiSysEventDeepIdleState(bool deepIdleState)
+void HiSysEventStateChanged(const ServiceState state)
 {
-    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
-        "DEEP_IDLE_STATE", HiviewDFX::HiSysEvent::EventType::STATISTIC, "STATE", deepIdleState);
-}
+    char* events[] = { const_cast<char *>(state.eventName.c_str()) };
+    int32_t states[] = { state.state };
+    int64_t timestamps[] = { WorkSchedUtils::GetCurrentTimeMs() };
+    struct HiSysEventParam params[] = {
+        {
+            .name = "EVENT",
+            .t = HISYSEVENT_STRING_ARRAY,
+            .v = { .array = events },
+            .arraySize = sizeof(events) / sizeof(events[0])
+        },
+        {
+            .name = "STATE",
+            .t = HISYSEVENT_INT32_ARRAY,
+            .v = { .array = states },
+            .arraySize = sizeof(states) / sizeof(states[0])
+        },
+        {
+            .name = "TIMESTAMP",
+            .t = HISYSEVENT_INT64_ARRAY,
+            .v = { .array = timestamps },
+            .arraySize = sizeof(timestamps) / sizeof(timestamps[0])
+        }
+    };
 
-void HiSysEventDeviceStandbyState(bool deviceStandbyState)
-{
-    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
-        "DEVICE_STANDBY_STATE", HiviewDFX::HiSysEvent::EventType::STATISTIC, "STATE", deviceStandbyState);
+    OH_HiSysEvent_Write(
+        HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
+        "SERVICE_STATE_CHANGE",
+        HISYSEVENT_STATISTIC,
+        params,
+        sizeof(params) / sizeof(params[0]));
 }
 
 void HiSysEventSystemPolicyLimit(const WorkSchedSystemPolicy& systemPolicy)
@@ -42,19 +64,13 @@ void HiSysEventSystemPolicyLimit(const WorkSchedSystemPolicy& systemPolicy)
         "SYSTEM_POLICY_LIMIT", HiviewDFX::HiSysEvent::EventType::STATISTIC, "POLICY", systemPolicy.GetInfo());
 }
 
-void HiSysEventException(const std::string& moduleName, const std::string& funcName, const std::string& exceptionInfo)
+void HiSysEventException(int32_t errCode, const std::string& exceptionInfo)
 {
     struct HiSysEventParam params[] = {
         {
-            .name = "MODULE_NAME",
-            .t = HISYSEVENT_STRING,
-            .v = { .s = const_cast<char *>(moduleName.c_str()) },
-            .arraySize = 0
-        },
-        {
-            .name = "FUNC_NAME",
-            .t = HISYSEVENT_STRING,
-            .v = { .s = const_cast<char *>(funcName.c_str()) },
+            .name = "ERR_CODE",
+            .t = HISYSEVENT_INT32,
+            .v = { .i32 = errCode },
             .arraySize = 0
         },
         {
@@ -67,11 +83,10 @@ void HiSysEventException(const std::string& moduleName, const std::string& funcN
 
     OH_HiSysEvent_Write(
         HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER,
-        "WORK_SCHEDULER_RUNTIME_EXCEPTION",
+        "WORK_SCHEDULER_RTE",
         HISYSEVENT_STATISTIC,
         params,
-        sizeof(params)/sizeof(params[0])
-    );
+        sizeof(params) / sizeof(params[0]));
 }
 } // namespace WorkSchedUtil
 } // namespace WorkScheduler

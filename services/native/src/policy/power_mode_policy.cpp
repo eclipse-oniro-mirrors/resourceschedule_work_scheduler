@@ -46,18 +46,17 @@ int32_t PowerModePolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy
     auto mode = PowerMgrClient::GetInstance().GetDeviceMode();
     if (mode == PowerMode::NORMAL_MODE || mode == PowerMode::PERFORMANCE_MODE) {
         WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
-        return res;
     }
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     auto charge = BatterySrvClient::GetInstance().GetChargingStatus();
     if (charge == BatteryChargeState::CHARGE_STATE_NONE || charge == BatteryChargeState::CHARGE_STATE_DISABLE) {
         res = COUNT_POWER_MODE_CRUCIAL;
-        systemPolicy.powerMode = static_cast<uint32_t>(mode);
-        systemPolicy.policyName = "POWER_MODE_POLICY";
         WS_HILOGI("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
     }
 #endif
     WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
+    systemPolicy.powerMode = static_cast<uint32_t>(mode);
+    systemPolicy.SetPolicyName("POWER_MODE_POLICY", res);
     return res;
 }
 } // namespace WorkScheduler

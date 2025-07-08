@@ -80,17 +80,18 @@ int32_t MemoryPolicy::GetMemAvailable()
 int32_t MemoryPolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
 {
     int32_t memAvailable = GetMemAvailable();
+    int32_t res = COUNT_MEMORY_NORMAL;
     WS_HILOGD("mem_available: %{public}d", memAvailable);
     if (memAvailable <= MEM_CRUCIAL) {
-        return COUNT_MEMORY_CRUCIAL;
+        res = COUNT_MEMORY_CRUCIAL;
     }
     if (memAvailable <= MEM_LOW) {
-        return COUNT_MEMORY_LOW;
+        res = COUNT_MEMORY_LOW;
     }
     systemPolicy.memAvailable = memAvailable;
-    systemPolicy.policyName = "MEMORY_POLICY";
+    systemPolicy.SetPolicyName("MEMORY_POLICY", res);
     WS_HILOGD("memory left normal");
-    return COUNT_MEMORY_NORMAL;
+    return res;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

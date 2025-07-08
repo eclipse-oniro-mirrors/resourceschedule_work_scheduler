@@ -407,8 +407,11 @@ void WorkPolicyManager::CheckWorkToRun()
     WorkSchedSystemPolicy systemPolicy;
     int32_t runningCount = GetRunningCount();
     int32_t allowRunningCount = GetMaxRunningCount(systemPolicy);
+    if (HasSystemPolicyEventSend() && allowRunningCount == MAX_RUNNING_COUNT && runningCount < MAX_RUNNING_COUNT) {
+        SetSystemPolicyEventSend(false);
+        WorkSchedUtil::HiSysEventSystemPolicyLimit(systemPolicy);
+    }
     if (runningCount < allowRunningCount || IsSpecialScene(topWork, runningCount)) {
-        WS_HILOGD("running count < max running count");
         if (topWork->workInfo_->IsSA()) {
             RealStartSA(topWork);
         } else {
@@ -416,17 +419,17 @@ void WorkPolicyManager::CheckWorkToRun()
         }
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
-        WS_HILOGD("trigger delay: %{public}d", DELAY_TIME_LONG);
         if (runningCount == MAX_RUNNING_COUNT) {
             systemPolicy.policyName = "OVER_LIMIT";
         }
 
-        if (!systemPolicy.policyName.empty()) {
+        if (!HasSystemPolicyEventSend() && !systemPolicy.policyName.empty()) {
             topWork->delayReason_= systemPolicy.policyName;
             WS_HILOGI("trigger delay, reason:%{public}s, runningCount:%{public}d allowRunningCount:%{public}d,"
                 "bundleName:%{public}s, workId:%{public}s", systemPolicy.GetInfo().c_str(), runningCount,
                 allowRunningCount, topWork->bundleName_.c_str(), topWork->workId_.c_str());
             WorkSchedUtil::HiSysEventSystemPolicyLimit(systemPolicy);
+            SetSystemPolicyEventSend(true);
         }
         SendRetrigger(DELAY_TIME_LONG);
     }
@@ -560,7 +563,7 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
     if (workStatus == nullptr) {
         WS_HILOGE("watchdog:%{public}u time out error, workStatus is nullptr", watchdogId);
-        WorkSchedUtil::HiSysEventException(WATCHDOG_TIMEOUT, __func__, "get workstatus from watchdog is nullptr");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::WATCHDOG_TIMEOUT, "get workstatus from watchdog is nullptr");
         return;
     }
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
@@ -665,7 +668,7 @@ void WorkPolicyManager::Dump(string& result)
     result.append("3. GetMaxRunningCount:");
     int32_t maxRunningCount = GetMaxRunningCount(systemPolicy);
     result.append(to_string(maxRunningCount) +
-        (maxRunningCount == MAX_RUNNING_COUNT ? "" : systemPolicy.GetInfo()) + "\n");
+        (maxRunningCount == MAX_RUNNING_COUNT ? "" : " " + systemPolicy.GetInfo()) + "\n");
 }
 
 uint32_t WorkPolicyManager::NewWatchdogId()
@@ -949,6 +952,16 @@ bool WorkPolicyManager::FindWork(const int32_t userId, const std::string &bundle
         }
     }
     return false;
+}
+
+bool WorkPolicyManager::HasSystemPolicyEventSend() const
+{
+    return systemPolicyEventSend_.load();
+}
+
+void WorkPolicyManager::SetSystemPolicyEventSend(bool systemPolicyEventSend)
+{
+    systemPolicyEventSend_.store(systemPolicyEventSend);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

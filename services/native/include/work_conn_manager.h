@@ -57,7 +57,7 @@ private:
     void AddConnInfo(std::string &workId, sptr<WorkSchedulerConnection> &connection);
     sptr<WorkSchedulerConnection> GetConnInfo(std::string &workId);
     bool DisConnect(sptr<WorkSchedulerConnection> connect);
-    sptr<OHOS::AAFwk::IAbilityManager> GetSystemAbilityManager(const std::string& moduleName);
+    sptr<OHOS::AAFwk::IAbilityManager> GetSystemAbilityManager(int32_t errCode);
 
 private:
     ffrt::mutex connMapMutex_;

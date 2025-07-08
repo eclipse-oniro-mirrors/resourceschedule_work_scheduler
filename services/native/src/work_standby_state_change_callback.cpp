@@ -48,7 +48,7 @@ void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping
         WS_HILOGI("Device standby state is not changed");
         return;
     }
-    WorkSchedUtil::HiSysEventDeviceStandbyState(sleeping);
+    WorkSchedUtil::HiSysEventStateChanged({"DEVICE_STANDBY", sleeping});
     dataManager->SetDeviceSleep(sleeping);
     workQueueManager_->OnConditionChanged(WorkCondition::Type::STANDBY,
         std::make_shared<DetectorValue>(0, 0, sleeping, std::string()));

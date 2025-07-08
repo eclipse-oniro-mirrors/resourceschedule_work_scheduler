@@ -17,11 +17,12 @@
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_SYSTEM_POLICY_H
 
 #include <string>
+#include "work_sched_constants.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 struct WorkSchedSystemPolicy {
-    std::string policyName;
+    std::string policyName = "NONE";
     int32_t cpuUsage;
     int32_t memAvailable;
     // interfaces/inner_api/native/include/thermal_level_info.h
@@ -30,6 +31,7 @@ struct WorkSchedSystemPolicy {
     uint32_t powerMode;
 
     inline std::string GetInfo() const;
+    inline void SetPolicyName(const std::string &policyName, int32_t allowRunningCount);
 };
 
 std::string WorkSchedSystemPolicy::GetInfo() const
@@ -37,6 +39,17 @@ std::string WorkSchedSystemPolicy::GetInfo() const
     return "policyName: " + policyName + ", cpuUsage: " + std::to_string(cpuUsage) +
            ", memAvailable: " + std::to_string(memAvailable) + ", thermalLevel: " + std::to_string(thermalLevel) +
            ", powerMode: " + std::to_string(powerMode);
+}
+
+void WorkSchedSystemPolicy::SetPolicyName(const std::string &name, int32_t allowRunningCount)
+{
+    if (allowRunningCount < MAX_RUNNING_COUNT) {
+        if (policyName == "NONE") {
+            policyName = name;
+        } else {
+            policyName.append("&").append(name);
+        }
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

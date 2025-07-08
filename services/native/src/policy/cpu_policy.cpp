@@ -74,7 +74,7 @@ int32_t CpuPolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
         policyRes = COUNT_CPU_MAX;
     }
     systemPolicy.cpuUsage = cpuUsage;
-    systemPolicy.policyName = "CPU_POLICY";
+    systemPolicy.SetPolicyName("CPU_POLICY", policyRes);
     WS_HILOGD("cpu_usage: %{public}d, policyRes: %{public}d", cpuUsage, policyRes);
     return policyRes;
 }
