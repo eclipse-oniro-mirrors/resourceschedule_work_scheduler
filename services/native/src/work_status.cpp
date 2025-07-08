@@ -617,10 +617,11 @@ void WorkStatus::ToString(WorkCondition::Type type)
     if (dataManager->GetDeviceSleep()) {
         if (dataManager->IsInDeviceStandyWhitelist(bundleName_)) {
             conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&" + OK;
+        } else {
+            conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&" + NOT_OK;
         }
-        conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::STANDBY] + "&" + NOT_OK;
     }
-    if (conditionStatus_.empty()) {
+    if (type != WorkCondition::Type::GROUP && conditionStatus_.empty()) {
         WS_HILOGE("%{public}s, condition is empty", COND_TYPE_STRING_MAP[type].c_str());
         return;
     }

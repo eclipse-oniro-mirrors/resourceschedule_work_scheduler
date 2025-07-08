@@ -320,6 +320,8 @@ private:
     void SendIdeWorkRetriggerEvent(int32_t delaytime);
     bool IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int32_t runningCount);
     std::string GetConditionString(const std::shared_ptr<WorkStatus> workStatus);
+    bool HasSystemPolicyEventSend() const;
+    void SetSystemPolicyEventSend(bool systemPolicyEventSend);
 
 private:
     const std::weak_ptr<WorkSchedulerService> wss_;
@@ -347,6 +349,7 @@ private:
 
     ffrt::recursive_mutex ideDebugListMutex_;
     std::list<std::shared_ptr<WorkStatus>> ideDebugList;
+    std::atomic<bool> systemPolicyEventSend_ {false};
 };
 } // namespace WorkScheduler
 } // namespace OHOS

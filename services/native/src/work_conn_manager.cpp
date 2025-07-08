@@ -69,7 +69,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     if (conn) {
         WS_HILOGE("Work has started with id: %{public}s, bundleName: %{public}s, abilityName: %{public}s",
             workStatus->workId_.c_str(), workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str());
-        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "connect info has existed, connect failed");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::CONNECT_ABILITY, "connect info has existed, connect failed");
         RemoveConnInfo(workStatus->workId_);
         if (conn->IsConnected()) {
             conn->StopWork();
@@ -79,7 +79,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
 
     if (!workStatus->workInfo_->GetExtension()) {
         WS_HILOGE("%{public}s extension's type is not workScheduler, connect failed", workStatus->bundleName_.c_str());
-        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "app extension's type is not workScheduler");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::CONNECT_ABILITY, "app extension's type is not workScheduler");
         return false;
     }
 
@@ -92,7 +92,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
     if (connection == nullptr) {
         WS_HILOGE("Failed to new connection.");
-        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "create connection failed");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::CONNECT_ABILITY, "create connection failed");
         return false;
     }
 
@@ -101,8 +101,8 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     want.SetParam(PARAM_APP_CLONE_INDEX_KEY, workStatus->workInfo_->GetAppIndex());
     int32_t ret = abilityMgr_->ConnectAbility(want, connection, nullptr, workStatus->userId_);
     if (ret != ERR_OK) {
-        WS_HILOGE("connect failed");
-        WorkSchedUtil::HiSysEventException(CONNECT_ABILITY, __func__, "connect system ability failed");
+        WS_HILOGE("connect failed, ret: %{public}d", ret);
+        WorkSchedUtil::HiSysEventException(EventErrorCode::CONNECT_ABILITY, "connect system ability failed");
         return false;
     }
     AddConnInfo(workStatus->workId_, connection);
@@ -121,8 +121,8 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
     }
     int32_t ret = abilityMgr_->DisconnectAbility(connect);
     if (ret != ERR_OK) {
-        WS_HILOGE("disconnect failed");
-        WorkSchedUtil::HiSysEventException(DISCONNECT_ABILITY, __func__, "disconnect system ability failed");
+        WS_HILOGE("disconnect failed, ret: %{public}d", ret);
+        WorkSchedUtil::HiSysEventException(EventErrorCode::DISCONNECT_ABILITY, "disconnect system ability failed");
         return false;
     }
     return true;
@@ -217,25 +217,25 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
 #endif // DEVICE_STANDBY_ENABLE
 }
 
-sptr<AAFwk::IAbilityManager> WorkConnManager::GetSystemAbilityManager(const std::string& moduleName)
+sptr<AAFwk::IAbilityManager> WorkConnManager::GetSystemAbilityManager(int32_t errCode)
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
         WS_HILOGE("Failed to get system ability manager service.");
-        WorkSchedUtil::HiSysEventException(moduleName, __func__, "get system ability manager failed");
+        WorkSchedUtil::HiSysEventException(errCode, "get system ability manager failed");
         return nullptr;
     }
     sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
     if (remoteObject == nullptr) {
         WS_HILOGE("Failed to get system ability.");
-        WorkSchedUtil::HiSysEventException(moduleName, __func__, "get system ability failed");
+        WorkSchedUtil::HiSysEventException(errCode, "get system ability failed");
         return nullptr;
     }
     sptr<AAFwk::IAbilityManager> abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
     if ((abilityMgr_ == nullptr) || (abilityMgr_->AsObject() == nullptr)) {
         WS_HILOGE("Failed to get ability manager services object");
-        WorkSchedUtil::HiSysEventException(moduleName, __func__, "cast system ability failed");
+        WorkSchedUtil::HiSysEventException(errCode, "cast system ability failed");
         return nullptr;
     }
     return abilityMgr_;
