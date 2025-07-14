@@ -1,0 +1,91 @@
+/*
+ * Copyright (c) 2025 Huawei Device Co., Ltd.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@!namespace("@ohos.resourceschedule.workScheduler", "workScheduler")
+@!sts_inject("""
+static { loadLibrary("work_scheduler_ani.z"); }
+""")
+
+enum NetworkType : i32 {
+  NETWORK_TYPE_ANY = 0,
+  NETWORK_TYPE_MOBILE,
+  NETWORK_TYPE_WIFI,
+  NETWORK_TYPE_BLUETOOTH,
+  NETWORK_TYPE_WIFI_P2P,
+  NETWORK_TYPE_ETHERNET
+}
+
+enum ChargingType : i32 {
+  CHARGING_PLUGGED_ANY = 0,
+  CHARGING_PLUGGED_AC,
+  CHARGING_PLUGGED_USB,
+  CHARGING_PLUGGED_WIRELESS
+}
+
+enum BatteryStatus : i32 {
+  BATTERY_STATUS_LOW = 0,
+  BATTERY_STATUS_OKAY,
+  BATTERY_STATUS_LOW_OR_OKAY
+}
+
+enum StorageRequest : i32 {
+  STORAGE_LEVEL_LOW = 0,
+  STORAGE_LEVEL_OKAY,
+  STORAGE_LEVEL_LOW_OR_OKAY
+}
+
+union ParameType {
+  int_type : i32;
+  double_type : f64;
+  string_type : String;
+  bool_type : bool;
+}
+
+struct WorkInfo {
+  workId: f64;
+  bundleName: String;
+  abilityName: String;
+  isPersisted: Optional<bool>;
+  networkType: Optional<NetworkType>;
+  isCharging: Optional<bool>;
+  chargerType: Optional<ChargingType>;
+  batteryLevel: Optional<f64>;
+  batteryStatus: Optional<BatteryStatus>;
+  storageRequest: Optional<StorageRequest>;
+  repeatCycleTime: Optional<f64>;
+  isRepeat: Optional<bool>;
+  repeatCount: Optional<f64>;
+  isDeepIdle: Optional<bool>;
+  idleWaitTime: Optional<f64>;
+  parameters: Optional<@record Map<String, ParameType>>;
+}
+
+function StartWork(work: WorkInfo): void;
+
+function StopWork(work: WorkInfo, needCancel: Optional<bool>): void;
+
+@gen_async("getWorkStatus")
+@gen_promise("getWorkStatus")
+function GetWorkStatusSync(workId: f64): WorkInfo;
+
+@gen_async("obtainAllWorks")
+@gen_promise("obtainAllWorks")
+function ObtainAllWorksSync(): Array<WorkInfo>;
+
+function StopAndClearWorks(): void;
+
+@gen_async("isLastWorkTimeOut")
+@gen_promise("isLastWorkTimeOut")
+function IsLastWorkTimeOutSync(workId: f64): bool;
