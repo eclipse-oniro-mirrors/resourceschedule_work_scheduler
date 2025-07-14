@@ -1,4 +1,4 @@
-# Copyright (c) 2022 Huawei Device Co., Ltd.
+# Copyright (c) 2022-2025 Huawei Device Co., Ltd.
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -34,6 +34,8 @@ worksched_interfaces_path = "${worksched_root_path}/interfaces"
 worksched_frameworks_path = "${worksched_root_path}/frameworks"
 
 worksched_test_path = "${worksched_root_path}/test"
+
+worksched_taihe_path = "${worksched_interfaces_path}/kits/ets/taihe"
 
 system_type = "default"
 

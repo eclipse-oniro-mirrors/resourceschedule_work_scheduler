@@ -44,14 +44,14 @@
           "netmanager_base",
           "time_service",
           "init",
-          "idl_tool",
           "data_share",
           "config_policy",
           "hiview",
           "hicollie",
           "hitrace",
           "power_manager",
-          "resource_schedule_service"
+          "resource_schedule_service",
+          "runtime_core"
         ]
       },
       "build": {
