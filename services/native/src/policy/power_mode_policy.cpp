@@ -46,6 +46,9 @@ int32_t PowerModePolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy
     auto mode = PowerMgrClient::GetInstance().GetDeviceMode();
     if (mode == PowerMode::NORMAL_MODE || mode == PowerMode::PERFORMANCE_MODE) {
         WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);
+        systemPolicy.powerMode = static_cast<uint32_t>(mode);
+        systemPolicy.SetPolicyName("POWER_MODE_POLICY", res);
+        return res;
     }
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
     auto charge = BatterySrvClient::GetInstance().GetChargingStatus();

@@ -84,8 +84,7 @@ int32_t MemoryPolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy)
     WS_HILOGD("mem_available: %{public}d", memAvailable);
     if (memAvailable <= MEM_CRUCIAL) {
         res = COUNT_MEMORY_CRUCIAL;
-    }
-    if (memAvailable <= MEM_LOW) {
+    } else if (memAvailable <= MEM_LOW) {
         res = COUNT_MEMORY_LOW;
     }
     systemPolicy.memAvailable = memAvailable;
