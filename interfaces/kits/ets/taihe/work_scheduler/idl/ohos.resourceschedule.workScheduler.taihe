@@ -54,21 +54,21 @@ union ParameType {
 }
 
 struct WorkInfo {
-  workId: f64;
+  workId: i32;
   bundleName: String;
   abilityName: String;
   isPersisted: Optional<bool>;
   networkType: Optional<NetworkType>;
   isCharging: Optional<bool>;
   chargerType: Optional<ChargingType>;
-  batteryLevel: Optional<f64>;
+  batteryLevel: Optional<i32>;
   batteryStatus: Optional<BatteryStatus>;
   storageRequest: Optional<StorageRequest>;
-  repeatCycleTime: Optional<f64>;
+  repeatCycleTime: Optional<i32>;
   isRepeat: Optional<bool>;
-  repeatCount: Optional<f64>;
+  repeatCount: Optional<i32>;
   isDeepIdle: Optional<bool>;
-  idleWaitTime: Optional<f64>;
+  idleWaitTime: Optional<i32>;
   parameters: Optional<@record Map<String, ParameType>>;
 }
 
@@ -78,7 +78,7 @@ function StopWork(work: WorkInfo, needCancel: Optional<bool>): void;
 
 @gen_async("getWorkStatus")
 @gen_promise("getWorkStatus")
-function GetWorkStatusSync(workId: f64): WorkInfo;
+function GetWorkStatusSync(workId: i32): WorkInfo;
 
 @gen_async("obtainAllWorks")
 @gen_promise("obtainAllWorks")
@@ -88,4 +88,4 @@ function StopAndClearWorks(): void;
 
 @gen_async("isLastWorkTimeOut")
 @gen_promise("isLastWorkTimeOut")
-function IsLastWorkTimeOutSync(workId: f64): bool;
+function IsLastWorkTimeOutSync(workId: i32): bool;

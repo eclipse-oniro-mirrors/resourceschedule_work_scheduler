@@ -69,11 +69,10 @@ void StopWork(::ohos::resourceschedule::workScheduler::WorkInfo const &work, opt
     }
 }
 
-::ohos::resourceschedule::workScheduler::WorkInfo GetWorkStatusSync(double workId)
+::ohos::resourceschedule::workScheduler::WorkInfo GetWorkStatusSync(int32_t workId)
 {
     std::shared_ptr<WorkScheduler::WorkInfo> workInfo {nullptr};
-    ErrCode errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().GetWorkStatus(
-        static_cast<int32_t>(workId), workInfo);
+    ErrCode errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().GetWorkStatus(workId, workInfo);
     if (errCode) {
         WS_HILOGE("get work status failed errCode: %{public}d", errCode);
         set_business_error(errCode, Common::FindErrMsg(errCode));
@@ -133,10 +132,10 @@ void StopAndClearWorks()
     }
 }
 
-bool IsLastWorkTimeOutSync(double workId)
+bool IsLastWorkTimeOutSync(int32_t workId)
 {
     AsyncCallbackIsLastWorkTimeOut asyncCallbackInfo;
-    asyncCallbackInfo.workId = static_cast<int32_t>(workId);
+    asyncCallbackInfo.workId = workId;
     ErrCode errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(
         asyncCallbackInfo.workId, asyncCallbackInfo.result);
     if (errCode) {
