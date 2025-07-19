@@ -44,6 +44,10 @@ napi_value StopWork(napi_env env, napi_callback_info info)
 
     // get params
     bool needCancel = false;
+    if (!Common::MatchValueType(env, argv[NEED_CANCEL_INDEX], napi_boolean)) {
+        Common::HandleParamErr(env, E_WORK_INFO_TYPE_ERR);
+        return Common::NapiGetNull(env);
+    }
     napi_get_value_bool(env, argv[NEED_CANCEL_INDEX], &needCancel);
 
     // Check workInfo and call service.
