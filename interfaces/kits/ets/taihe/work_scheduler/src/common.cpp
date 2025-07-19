@@ -169,7 +169,7 @@ bool Common::GetBatteryInfo(
     if (!aniWork.batteryLevel.has_value()) {
         WS_HILOGD("Unset batteryLevel.");
     } else {
-        auto batteryLevel = static_cast<int32_t>(aniWork.batteryLevel.value());
+        auto batteryLevel = aniWork.batteryLevel.value();
         if (batteryLevel >= BATTERY_LEVEL_MIN && batteryLevel <= BATTERY_LEVEL_MAX) {
             workInfo.RequestBatteryLevel(batteryLevel);
             hasCondition = true;
@@ -228,8 +228,8 @@ bool Common::GetRepeatInfo(
         return false;
     }
 
-    auto repeatCycleTime = static_cast<int32_t>(aniWork.repeatCycleTime.value());
-    auto repeatCount = static_cast<int32_t>(aniWork.repeatCount.value());
+    auto repeatCycleTime = aniWork.repeatCycleTime.value();
+    auto repeatCount = aniWork.repeatCount.value();
     if (aniWork.isRepeat.value()) {
         if (repeatCount > 0) {
             WS_HILOGI("RepeatCount has been set , ignore isRepeat.");
@@ -264,7 +264,7 @@ bool Common::GetDeepIdleInfo(
 bool Common::GetWorkInfo(
     ::ohos::resourceschedule::workScheduler::WorkInfo const &aniWork, OHOS::WorkScheduler::WorkInfo &workInfo)
 {
-    workInfo.SetWorkId(static_cast<int32_t>(aniWork.workId));
+    workInfo.SetWorkId(aniWork.workId);
     workInfo.SetElement(std::string(aniWork.bundleName), std::string(aniWork.abilityName));
     workInfo.RequestPersisted(aniWork.isPersisted.has_value() ? aniWork.isPersisted.value() : false);
     // Get extra parameters.
@@ -365,7 +365,7 @@ void Common::ParseExtrasInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> work
         WS_HILOGE("extras parameters is 0.");
         return;
     }
-    if (ConvertToAniParameters(extrasMap, aniWork)) {
+    if (!ConvertToAniParameters(extrasMap, aniWork)) {
         aniWork.parameters = {};
         WS_HILOGE("convert extra parameters failed.");
         return;
@@ -384,16 +384,16 @@ void Common::ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workIn
         aniWork.isCharging = optional<bool>(std::in_place, true);
         aniWork.chargerType = optional<ChargingType>(std::in_place, ChargingType::key_t(workInfo->GetChargerType()));
     }
-    aniWork.batteryLevel = optional<double>(std::in_place, workInfo->GetBatteryLevel());
+    aniWork.batteryLevel = optional<int32_t>(std::in_place, workInfo->GetBatteryLevel());
     aniWork.batteryStatus =
         optional<BatteryStatus>(std::in_place, BatteryStatus::key_t(workInfo->GetBatteryStatus()));
     aniWork.storageRequest =
         optional<StorageRequest>(std::in_place, StorageRequest::key_t(workInfo->GetStorageLevel()));
-    aniWork.repeatCycleTime = optional<double>(std::in_place, workInfo->GetTimeInterval());
+    aniWork.repeatCycleTime = optional<int32_t>(std::in_place, workInfo->GetTimeInterval());
     aniWork.isRepeat = optional<bool>(std::in_place, workInfo->IsRepeat());
-    aniWork.repeatCount = optional<double>(std::in_place, workInfo->GetCycleCount());
+    aniWork.repeatCount = optional<int32_t>(std::in_place, workInfo->GetCycleCount());
     aniWork.isDeepIdle = optional<bool>(std::in_place, UNSET_INT_PARAM);
-    aniWork.idleWaitTime = optional<double>(std::in_place, UNSET_INT_PARAM);
+    aniWork.idleWaitTime = optional<int32_t>(std::in_place, UNSET_INT_PARAM);
     ParseExtrasInfo(workInfo, aniWork);
 }
 }  // namespace WorkScheduler

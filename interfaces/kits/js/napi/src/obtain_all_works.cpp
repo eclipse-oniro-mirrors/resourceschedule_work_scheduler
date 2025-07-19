@@ -45,6 +45,12 @@ napi_value ParseParameters(const napi_env &env, const napi_callback_info &info, 
 
     // argv[0]: callback
     if (argc == OBTAIN_ALL_WORKS_MAX_PARAMS) {
+        napi_valuetype valuetype = napi_undefined;
+        NAPI_CALL(env, napi_typeof(env, argv[CALLBACK_INDEX], &valuetype));
+        if (valuetype != napi_function) {
+            Common::HandleParamErr(env, E_CALLBACK_TYPE_ERR);
+            return nullptr;
+        }
         napi_create_reference(env, argv[CALLBACK_INDEX], 1, &callback);
     }
     return Common::NapiGetNull(env);
