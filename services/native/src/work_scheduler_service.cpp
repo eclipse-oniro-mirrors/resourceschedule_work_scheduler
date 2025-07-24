@@ -1312,6 +1312,10 @@ void WorkSchedulerService::RefreshPersistedWorks()
 {
     nlohmann::json root;
     for (auto &it : persistedMap_) {
+        if (it.second == nullptr) {
+            WS_HILOGE("workInfo is nullptr");
+            continue;
+        }
         auto workInfo = it.second;
         string data = workInfo->ParseToJsonStr();
         const nlohmann::json &workJson = nlohmann::json::parse(data, nullptr, false);
