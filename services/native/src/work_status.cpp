@@ -377,6 +377,7 @@ bool WorkStatus::IsStandbyExemption()
 {
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->IsInDeviceStandyRestrictlist(bundleName_)) {
+        WS_HILOGD("%{public}s is in restrict list.", bundleName_.c_str());
         return false;
     }
     if (dataManager->GetDeviceSleep()) {

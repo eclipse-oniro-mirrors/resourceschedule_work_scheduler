@@ -44,7 +44,6 @@
           "netmanager_base",
           "time_service",
           "init",
-          "idl_tool",
           "data_share",
           "config_policy",
           "hiview",
