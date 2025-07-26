@@ -1227,7 +1227,7 @@ HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_002, TestSize.Level
  * @tc.name: DumpTriggerWork_001
  * @tc.desc: Test WorkSchedulerService DumpTriggerWork.
  * @tc.type: FUNC
- * @tc.require: I9J0A7
+ * @tc.require: IC5H77
  */
 HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_001, TestSize.Level1)
 {

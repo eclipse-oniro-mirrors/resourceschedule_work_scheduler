@@ -323,7 +323,6 @@ private:
     bool HasSystemPolicyEventSend() const;
     void SetSystemPolicyEventSend(bool systemPolicyEventSend);
 
-private:
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;
     std::shared_ptr<WorkEventHandler> handler_;
