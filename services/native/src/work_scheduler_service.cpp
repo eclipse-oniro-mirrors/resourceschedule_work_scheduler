@@ -263,7 +263,7 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
     }
     nlohmann::json root;
     if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
-        WS_HILOGE("file is empty %{private}s", path);
+        WS_HILOGE("file is empty");
         return;
     }
     if (!root.contains(PRINSTALLED_WORKS_KEY)) {
@@ -301,7 +301,7 @@ void WorkSchedulerService::LoadExemptionBundlesFromFile(const char *path)
     }
     nlohmann::json root;
     if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
-        WS_HILOGE("file is empty %{private}s", path);
+        WS_HILOGE("file is empty");
         return;
     }
     if (!root.contains(EXEMPTION_BUNDLES_KEY)) {
@@ -331,7 +331,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
     }
     nlohmann::json root;
     if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
-        WS_HILOGE("file is empty %{private}s", path);
+        WS_HILOGE("file is empty");
         return;
     }
     if (!root.contains(MIN_REPEAT_TIME_KEY)) {
