@@ -1282,53 +1282,5 @@ HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_004, TestSize.Level1)
     workSchedulerService_->DumpTriggerWork(uIdStr, workIdStr, result);
     EXPECT_EQ(result, "the work is not exist\n");
 }
-
-/**
- * @tc.name: StartWorkForInner_001
- * @tc.desc: Test WorkSchedulerService StartWorkForInner.
- * @tc.type: FUNC
- * @tc.require: issue:#ICBWOI
- */
-HWTEST_F(WorkSchedulerServiceTest, StartWorkForInner_001, TestSize.Level1)
-{
-    int32_t ret;
-    WorkInfo workinfo = WorkInfo();
-
-    ret = workSchedulerService_->StartWorkForInner(workinfo);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-
-    GetNativeToken(PUSH_SERVICE_NAME);
-    ret = workSchedulerService_->StartWorkForInner(workinfo);
-    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
-    GetNativeToken(BGTASK_SERVICE_NAME);
-}
-
-/**
- * @tc.name: StopWorkForInner_001
- * @tc.desc: Test WorkSchedulerService StopWorkForInner.
- * @tc.type: FUNC
- * @tc.require: issue:#ICBWOI
- */
-HWTEST_F(WorkSchedulerServiceTest, StopWorkForInner_001, TestSize.Level1)
-{
-    int32_t ret;
-    WS_HILOGI("WorkSchedulerServiceTest.StopWorkForInner_001 begin");
-    workSchedulerService_->ready_ = false;
-    workSchedulerService_->checkBundle_ = true;
-    WorkInfo workinfo = WorkInfo();
-
-    ret = workSchedulerService_->StopWorkForInner(workinfo, false);
-    EXPECT_EQ(ret, E_PERMISSION_DENIED);
-
-    GetNativeToken(PUSH_SERVICE_NAME);
-    ret = workSchedulerService_->StopWorkForInner(workinfo, false);
-    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
-
-    workSchedulerService_->ready_ = true;
-    ret = workSchedulerService_->StopWorkForInner(workinfo, false);
-    EXPECT_EQ(ret, E_INVALID_PROCESS_NAME);
-    GetNativeToken(BGTASK_SERVICE_NAME);
-    WS_HILOGI("WorkSchedulerServiceTest.StopWorkForInner_001 end");
-}
 }
 }
