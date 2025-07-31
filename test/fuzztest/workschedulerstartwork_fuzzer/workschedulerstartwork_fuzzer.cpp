@@ -463,6 +463,7 @@ namespace WorkScheduler {
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }
+        
         WorkInfo workInfo = CreateWorkInfo();
         if (!dataMessageParcel.WriteParcelable(&workInfo)) {
             return false;
