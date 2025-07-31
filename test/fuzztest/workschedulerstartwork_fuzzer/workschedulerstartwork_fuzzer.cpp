@@ -446,20 +446,19 @@ namespace WorkScheduler {
         
         workSchedulerService_->OnStart();
         workSchedulerService_->InitBgTaskSubscriber();
-        OnProcEfficiencyResourcesChange();
-        OnWorkStandbyStateChange();
-        OnWorkBundleGroupChange();
-
-        if (workSchedulerService_->workQueueManager_ == nullptr) {
-            workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
-        }
         if (!workSchedulerService_->ready_) {
             workSchedulerService_->ready_ = true;
+        }
+        if (workSchedulerService_->workQueueManager_ == nullptr) {
+            workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
         }
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }
 
+        OnProcEfficiencyResourcesChange();
+        OnWorkStandbyStateChange();
+        OnWorkBundleGroupChange();
         WorkInfo workInfo = CreateWorkInfo();
         if (!dataMessageParcel.WriteParcelable(&workInfo)) {
             return false;
