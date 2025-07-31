@@ -34,6 +34,7 @@
 #include "conditions/network_listener.h"
 #include "conditions/storage_listener.h"
 #include "net_supplier_info.h"
+#include "work_standby_state_change_callback.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
@@ -452,13 +453,16 @@ namespace WorkScheduler {
         if (workSchedulerService_->workQueueManager_ == nullptr) {
             workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
         }
-        if (workSchedulerService_->checkBundle_) {
-            workSchedulerService_->checkBundle_ = false;
+        if (workSchedulerService_->standbyStateObserver_ == nullptr) {
+            workSchedulerService_->standbyStateObserver_ =
+                new (std::nothrow) WorkStandbyStateChangeCallback(workSchedulerService_->workQueueManager_);
         }
-
         OnProcEfficiencyResourcesChange();
         OnWorkStandbyStateChange();
         OnWorkBundleGroupChange();
+        if (workSchedulerService_->checkBundle_) {
+            workSchedulerService_->checkBundle_ = false;
+        }
         WorkInfo workInfo = CreateWorkInfo();
         if (!dataMessageParcel.WriteParcelable(&workInfo)) {
             return false;
