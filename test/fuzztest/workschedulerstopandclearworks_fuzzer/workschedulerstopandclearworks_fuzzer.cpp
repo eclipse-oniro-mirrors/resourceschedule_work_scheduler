@@ -18,7 +18,8 @@
 #include "iwork_sched_service.h"
 #include "work_scheduler_service.h"
 #include "work_condition.h"
-
+#include "work_policy_manager.h"
+#include "work_queue_manager.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
@@ -128,6 +129,12 @@ namespace WorkScheduler {
         workSchedulerService_->InitBgTaskSubscriber();
         if (!workSchedulerService_->ready_) {
             workSchedulerService_->ready_ = true;
+        }
+        if (workSchedulerService_->workPolicyManager_ == nullptr) {
+            workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
+        }
+        if (workSchedulerService_->workQueueManager_ == nullptr) {
+            workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
         }
         TirggerBatteryStatusListener();
         TirggerStorageLevelListener();
