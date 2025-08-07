@@ -544,7 +544,7 @@ WorkStatus::Status WorkStatus::GetStatus()
 int WorkStatus::GetPriority()
 {
     if ((OHOS::system::GetIntParameter("const.debuggable", 0) == 1) &&
-        (bundleName_ == "com.huawei.hmos.hiviewx")) {
+        DelayedSingleton<WorkSchedulerService>::GetInstance()->IsExemptionBundle(bundleName_)) {
         return HIGH_PRIORITY;
     }
     return DEFAULT_PRIORITY;
