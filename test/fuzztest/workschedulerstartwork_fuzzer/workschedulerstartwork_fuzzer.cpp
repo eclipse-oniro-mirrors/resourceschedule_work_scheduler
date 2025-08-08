@@ -457,6 +457,10 @@ namespace WorkScheduler {
             workSchedulerService_->standbyStateObserver_ =
                 new (std::nothrow) WorkStandbyStateChangeCallback(workSchedulerService_->workQueueManager_);
         }
+        if (workSchedulerService_->groupObserver_ == nullptr) {
+            workSchedulerService_->groupObserver_ =
+                new (std::nothrow) WorkBundleGroupChangeCallback(workSchedulerService_->workQueueManager_);
+        }
         OnProcEfficiencyResourcesChange();
         OnWorkStandbyStateChange();
         OnWorkBundleGroupChange();
