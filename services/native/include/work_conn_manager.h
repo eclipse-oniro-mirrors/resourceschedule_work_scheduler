@@ -53,9 +53,9 @@ public:
     void WriteStartWorkEvent(std::shared_ptr<WorkStatus> workStatus);
 
 private:
-    void RemoveConnInfo(std::string &workId);
-    void AddConnInfo(std::string &workId, sptr<WorkSchedulerConnection> &connection);
-    sptr<WorkSchedulerConnection> GetConnInfo(std::string &workId);
+    void RemoveConnInfo(const std::string &workId);
+    void AddConnInfo(const std::string &workId, sptr<WorkSchedulerConnection> &connection);
+    sptr<WorkSchedulerConnection> GetConnInfo(const std::string &workId);
     bool DisConnect(sptr<WorkSchedulerConnection> connect);
     sptr<OHOS::AAFwk::IAbilityManager> GetSystemAbilityManager(int32_t errCode);
 

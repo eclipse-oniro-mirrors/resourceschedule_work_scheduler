@@ -42,19 +42,19 @@ namespace OHOS {
 namespace WorkScheduler {
 const std::string PARAM_APP_CLONE_INDEX_KEY = "ohos.extra.param.key.appCloneIndex";
 
-void WorkConnManager::AddConnInfo(string &workId, sptr<WorkSchedulerConnection> &connection)
+void WorkConnManager::AddConnInfo(const string &workId, sptr<WorkSchedulerConnection> &connection)
 {
     std::lock_guard<ffrt::mutex> lock(connMapMutex_);
     connMap_.emplace(workId, connection);
 }
 
-void WorkConnManager::RemoveConnInfo(string &workId)
+void WorkConnManager::RemoveConnInfo(const string &workId)
 {
     std::lock_guard<ffrt::mutex> lock(connMapMutex_);
     connMap_.erase(workId);
 }
 
-sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(string &workId)
+sptr<WorkSchedulerConnection> WorkConnManager::GetConnInfo(const string &workId)
 {
     std::lock_guard<ffrt::mutex> lock(connMapMutex_);
     if (connMap_.count(workId) > 0) {
