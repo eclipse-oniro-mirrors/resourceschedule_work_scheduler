@@ -1524,10 +1524,8 @@ bool WorkSchedulerService::CheckProcessName()
     Security::AccessToken::AccessTokenID tokenId = OHOS::IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo callingTokenInfo;
     Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenId, callingTokenInfo);
-    WS_HILOGD("process name: %{public}s called CheckProcessName.", callingTokenInfo.processName.c_str());
     if (WORK_SCHED_NATIVE_OPERATE_CALLER.find(callingTokenInfo.processName) == WORK_SCHED_NATIVE_OPERATE_CALLER.end()) {
-        WS_HILOGE("check process name illegal access to this interface; process name: %{public}s.",
-            callingTokenInfo.processName.c_str());
+        WS_HILOGE("check process name illegal access to this interface");
         WorkSchedUtil::HiSysEventException(EventErrorCode::TOKEN_CHECK, "illegal process name");
         return false;
     }
@@ -1539,9 +1537,8 @@ bool WorkSchedulerService::CheckCallingServiceName()
     Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo callingTokenInfo;
     Security::AccessToken::AccessTokenKit::GetNativeTokenInfo(tokenId, callingTokenInfo);
-    WS_HILOGD("process name: %{public}s called CheckCallingServiceName.", callingTokenInfo.processName.c_str());
     if (WORK_SCHED_SA_CALLER.find(callingTokenInfo.processName) == WORK_SCHED_SA_CALLER.end()) {
-        WS_HILOGE("check process name illegal, process name: %{public}s.", callingTokenInfo.processName.c_str());
+        WS_HILOGE("check process name illegal");
         return false;
     }
     return true;
