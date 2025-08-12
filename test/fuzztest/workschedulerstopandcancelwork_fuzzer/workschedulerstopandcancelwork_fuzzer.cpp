@@ -21,7 +21,7 @@
 #include "work_condition.h"
 #include "work_policy_manager.h"
 #include "work_queue_manager.h"
-
+#include "work_conn_manager.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
@@ -84,6 +84,10 @@ namespace WorkScheduler {
         }
         if (workSchedulerService_->workPolicyManager_ == nullptr) {
             workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
+            workSchedulerService_->workPolicyManager_->Init(workSchedulerService_->eventRunner_);
+        }
+        if (workSchedulerService_->workPolicyManager_->workConnManager_ == nullptr) {
+            workSchedulerService_->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
         }
         if (workSchedulerService_->workQueueManager_ == nullptr) {
             workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
