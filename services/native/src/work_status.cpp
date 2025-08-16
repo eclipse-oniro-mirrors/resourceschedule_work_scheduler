@@ -668,5 +668,26 @@ bool WorkStatus::IsTimeout()
 {
     return timeout_.load();
 }
+
+bool WorkStatus::IsSpecial()
+{
+    if (!workInfo_ || !workInfo_->GetExtras()) {
+        return false;
+    }
+    std::shared_ptr<AAFwk::WantParams> extras = workInfo_->GetExtras();
+    auto extrasMap = extras->GetParams();
+    int typeId = INVALID_VALUE;
+    for (const auto& pair : extrasMap) {
+        typeId = AAFwk::WantParams::GetDataType(pair.second);
+        if (typeId == INVALID_VALUE) {
+            WS_HILOGE("parameters type not supported.");
+            continue;
+        }
+        if (pair.first == "executeImmediate") {
+            return AAFwk::WantParams::GetStringByType(pair.second, typeId) == "false";
+        }
+    }
+    return false;
+}
 } // namespace WorkScheduler
 } // namespace OHOS
