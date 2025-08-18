@@ -185,6 +185,7 @@ public:
     void HasTimeout();
     bool IsTimeout();
     void SetTimeout(bool timeout);
+    bool IsSpecial();
 private:
     Status currentStatus_;
     time_t baseTime_;

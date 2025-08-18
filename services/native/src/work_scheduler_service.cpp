@@ -744,6 +744,11 @@ int32_t WorkSchedulerService::StartWorkInner(const WorkInfo& workInfo, int32_t u
     WS_HILOGD("workInfo %{public}s/%{public}s ID: %{public}d, uid: %{public}d",
         workInfo_.GetBundleName().c_str(), workInfo_.GetAbilityName().c_str(), workInfo_.GetWorkId(), uid);
     shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo_, uid);
+    if (WorkSchedUtils::IsSystemApp() && workStatus->IsSpecial()) {
+        WS_HILOGI("bundleName:%{public}s, workId:%{public}d, IsSpecial:%{public}d",
+            workInfo_.GetBundleName().c_str(), workInfo_.GetWorkId(), workStatus->IsSpecial());
+        workStatus->UpdateUidLastTimeMap();
+    }
     int32_t ret = workPolicyManager_->AddWork(workStatus, uid);
     if (ret == ERR_OK) {
         workQueueManager_->AddWork(workStatus);
