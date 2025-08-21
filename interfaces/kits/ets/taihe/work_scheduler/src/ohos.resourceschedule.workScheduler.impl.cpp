@@ -43,8 +43,8 @@ void StartWork(::ohos::resourceschedule::workScheduler::WorkInfo const &work)
     }
     ErrCode errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().StartWork(workInfo);
     if (errCode) {
-        WS_HILOGE("StartWork failed errCode: %{public}d", errCode);
-        set_business_error(errCode, Common::FindErrMsg(errCode));
+        WS_HILOGE("StartWork failed errCode: %{public}d", Common::FindErrCode(errCode));
+        set_business_error(Common::FindErrCode(errCode), Common::FindErrMsg(errCode));
     }
 }
 
@@ -64,8 +64,8 @@ void StopWork(::ohos::resourceschedule::workScheduler::WorkInfo const &work, opt
         errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().StopWork(workInfo);
     }
     if (errCode) {
-        WS_HILOGE("StopWork failed errCode: %{public}d", errCode);
-        set_business_error(errCode, Common::FindErrMsg(errCode));
+        WS_HILOGE("StopWork failed errCode: %{public}d", Common::FindErrCode(errCode));
+        set_business_error(Common::FindErrCode(errCode), Common::FindErrMsg(errCode));
     }
 }
 
@@ -74,8 +74,8 @@ void StopWork(::ohos::resourceschedule::workScheduler::WorkInfo const &work, opt
     std::shared_ptr<WorkScheduler::WorkInfo> workInfo {nullptr};
     ErrCode errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().GetWorkStatus(workId, workInfo);
     if (errCode) {
-        WS_HILOGE("get work status failed errCode: %{public}d", errCode);
-        set_business_error(errCode, Common::FindErrMsg(errCode));
+        WS_HILOGE("get work status failed errCode: %{public}d", Common::FindErrCode(errCode));
+        set_business_error(Common::FindErrCode(errCode), Common::FindErrMsg(errCode));
         return {};
     }
     if (workInfo == nullptr) {
@@ -97,8 +97,8 @@ array<::ohos::resourceschedule::workScheduler::WorkInfo> ObtainAllWorksSync()
     std::list<std::shared_ptr<WorkScheduler::WorkInfo>> workInfoList;
     ErrCode errCode = WorkSchedulerSrvClient::GetInstance().ObtainAllWorks(workInfoList);
     if (errCode) {
-        WS_HILOGE("get work status failed errCode: %{public}d", errCode);
-        set_business_error(errCode, Common::FindErrMsg(errCode));
+        WS_HILOGE("get work status failed errCode: %{public}d", Common::FindErrCode(errCode));
+        set_business_error(Common::FindErrCode(errCode), Common::FindErrMsg(errCode));
         return {};
     }
     if (workInfoList.empty()) {
@@ -127,8 +127,8 @@ void StopAndClearWorks()
 {
     ErrCode errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().StopAndClearWorks();
     if (errCode) {
-        WS_HILOGE("stop and clear works failed errCode: %{public}d", errCode);
-        set_business_error(errCode, Common::FindErrMsg(errCode));
+        WS_HILOGE("stop and clear works failed errCode: %{public}d", Common::FindErrCode(errCode));
+        set_business_error(Common::FindErrCode(errCode), Common::FindErrMsg(errCode));
     }
 }
 
@@ -139,8 +139,8 @@ bool IsLastWorkTimeOutSync(int32_t workId)
     ErrCode errCode = WorkScheduler::WorkSchedulerSrvClient::GetInstance().IsLastWorkTimeout(
         asyncCallbackInfo.workId, asyncCallbackInfo.result);
     if (errCode) {
-        WS_HILOGE("IsLastWorkTimeOutSync errCode: %{public}d", errCode);
-        set_business_error(errCode, Common::FindErrMsg(errCode));
+        WS_HILOGE("IsLastWorkTimeOutSync errCode: %{public}d", Common::FindErrCode(errCode));
+        set_business_error(Common::FindErrCode(errCode), Common::FindErrMsg(errCode));
         return false;
     }
     return asyncCallbackInfo.result;
