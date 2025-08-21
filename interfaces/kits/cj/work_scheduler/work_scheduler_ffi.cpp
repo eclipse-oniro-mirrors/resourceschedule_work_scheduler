@@ -26,6 +26,20 @@
 namespace OHOS {
 namespace WorkScheduler {
 
+int32_t InnerWrapWantParamsString(const sptr<AAFwk::IInterface> iIt, CParameters *p)
+{
+    AAFwk::IString *ao = AAFwk::IString::Query(iIt);
+    if (ao == nullptr) {
+        LOGE("ao is nullptr, no memory.");
+        return ERR_NO_MEMORY;
+    }
+    
+    std::string natValue = OHOS::AAFwk::String::Unbox(ao);
+    p->value = MallocCString(natValue);
+    p->size = static_cast<int64_t>(natValue.length()) + 1;
+    return 0;
+}
+
 template <class T, class IT, class NativeT>
 int32_t InnerWrapWantParamsT(const sptr<AAFwk::IInterface> iIt, CParameters *p)
 {
@@ -462,7 +476,7 @@ extern "C" {
                 }
                 case VALUE_TYPE_STRING: {
                     arrParam.head[i].valueType = STRING_TYPE;
-                    InnerWrapWantParamsT<AAFwk::String, AAFwk::IString, std::string>(it.second, &arrParam.head[i]);
+                    InnerWrapWantParamsString(it.second, &arrParam.head[i]);
                     break;
                 }
                 default: {
