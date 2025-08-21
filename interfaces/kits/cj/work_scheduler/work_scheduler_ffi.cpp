@@ -445,8 +445,26 @@ extern "C" {
         cwork.idleWaitTime = -1;
     }
 
+    void ClearParametersPtr(CParameters **ptr, int count, bool isKey) 
+    {
+        CParameters *p = *ptr;
+        for (int i= 0; i < count; i ++) {
+            free(p[i].key);
+            free(p[i].value);
+            p[i].key = nullptr;
+            p[i].value = nullptr;
+        }
+        if (!isKey) {
+            free(p[count].key);
+            p[count].key = nullptr;
+        }
+        free(*ptr);
+        *ptr = nullptr;
+    }
+
     void ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
     {
+        int32_t code = 0;
         int typeId = VALUE_TYPE_NULL;
         int i = 0;
         int32_t mallocSize = static_cast<int32_t>(sizeof(CParameters) * arrParam.size);
@@ -461,28 +479,32 @@ extern "C" {
             switch (typeId) {
                 case VALUE_TYPE_INT: {
                     arrParam.head[i].valueType = INT_TYPE;
-                    InnerWrapWantParamsT<AAFwk::Integer, AAFwk::IInteger, int>(it.second, &arrParam.head[i]);
+                    code = InnerWrapWantParamsT<AAFwk::Integer, AAFwk::IInteger, int>(it.second, &arrParam.head[i]);
                     break;
                 }
                 case VALUE_TYPE_DOUBLE: {
                     arrParam.head[i].valueType = F64_TYPE;
-                    InnerWrapWantParamsT<AAFwk::Double, AAFwk::IDouble, double>(it.second, &arrParam.head[i]);
+                    code = InnerWrapWantParamsT<AAFwk::Double, AAFwk::IDouble, double>(it.second, &arrParam.head[i]);
                     break;
                 }
                 case VALUE_TYPE_BOOLEAN: {
                     arrParam.head[i].valueType = BOOL_TYPE;
-                    InnerWrapWantParamsT<AAFwk::Boolean, AAFwk::IBoolean, bool>(it.second, &arrParam.head[i]);
+                    code = InnerWrapWantParamsT<AAFwk::Boolean, AAFwk::IBoolean, bool>(it.second, &arrParam.head[i]);
                     break;
                 }
                 case VALUE_TYPE_STRING: {
                     arrParam.head[i].valueType = STRING_TYPE;
-                    InnerWrapWantParamsString(it.second, &arrParam.head[i]);
+                    code = InnerWrapWantParamsString(it.second, &arrParam.head[i]);
                     break;
                 }
                 default: {
                     LOGE("parameters type not supported.");
                     break;
                 }
+            }
+
+            if (code == ERR_NO_MEMORY) {
+                return ClearParametersPtr(&arrParam.head, i, true);
             }
             ++i;
         }
