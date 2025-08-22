@@ -67,8 +67,7 @@ int32_t GetWorkInfoV2(RetWorkInfoV2 cwork, WorkInfo& workInfo)
 int32_t ParseWorkInfoV2(std::shared_ptr<WorkInfo> workInfo, RetWorkInfoV2& cwork)
 {
     ParseWorkInfo(workInfo, cwork.v1);
-    auto code = ParseExtrasInfo(workInfo, cwork.parameters);
-    return code;
+    return ParseExtrasInfo(workInfo, cwork.parameters);
 }
 
 extern "C" {
@@ -205,10 +204,10 @@ extern "C" {
             LOGE("WorkScheduler: CJ_GetWorkStatus failed %{public}d", errCode);
             return errCode;
         }
-        auto code = ParseWorkInfoV2(workInfo, result);
-        if (code != ERR_OK) {
-            LOGE("WorkScheduler: CJ_GetWorkStatus ParseWorkInfoV2 failed %{public}d", code);
-            return code;
+        errCode = ParseWorkInfoV2(workInfo, result);
+        if (errCode != ERR_OK) {
+            LOGE("WorkScheduler: CJ_GetWorkStatus ParseWorkInfoV2 failed %{public}d", errCode);
+            return errCode;
         }
         LOGI("WorkScheduler: CJ_GetWorkStatus success");
         return errCode;
@@ -235,10 +234,10 @@ extern "C" {
         ret.size = listSize;
         int index = 0;
         for (auto workInfo: workInfoList) {
-            auto code = ParseWorkInfoV2(workInfo, data[index]);
-            if (code != ERR_OK) {
-                LOGE("CJ_ObtainAllWorksV2: ParseWorkInfoV2 failed %{public}d", code);
-                ret = {.code = code, .size = 0, .data = nullptr};
+            errCode = ParseWorkInfoV2(workInfo, data[index]);
+            if (errCode != ERR_OK) {
+                LOGE("CJ_ObtainAllWorksV2: ParseWorkInfoV2 failed %{public}d", errCode);
+                ret.code = errCode;
                 return ret;
             }
             index++;
@@ -474,15 +473,15 @@ extern "C" {
 
     int32_t ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
     {
-        int32_t code = 0;
+        ErrCode errCode;
         int typeId = VALUE_TYPE_NULL;
         int i = 0;
         int32_t mallocSize = static_cast<int32_t>(sizeof(CParameters) * arrParam.size);
         arrParam.head = static_cast<CParameters *>(malloc(mallocSize));
         if (!arrParam.head) {
-            code = ERR_NO_MEMORY;
+            errCode = ERR_NO_MEMORY;
             arrParam.size = 0;
-            return code;
+            return errCode;
         }
         for (auto it : extrasMap) {
             typeId = AAFwk::WantParams::GetDataType(it.second);
@@ -490,22 +489,22 @@ extern "C" {
             switch (typeId) {
                 case VALUE_TYPE_INT: {
                     arrParam.head[i].valueType = INT_TYPE;
-                    code = InnerWrapWantParamsT<AAFwk::Integer, AAFwk::IInteger, int>(it.second, &arrParam.head[i]);
+                    errCode = InnerWrapWantParamsT<AAFwk::Integer, AAFwk::IInteger, int>(it.second, &arrParam.head[i]);
                     break;
                 }
                 case VALUE_TYPE_DOUBLE: {
                     arrParam.head[i].valueType = F64_TYPE;
-                    code = InnerWrapWantParamsT<AAFwk::Double, AAFwk::IDouble, double>(it.second, &arrParam.head[i]);
+                    errCode = InnerWrapWantParamsT<AAFwk::Double, AAFwk::IDouble, double>(it.second, &arrParam.head[i]);
                     break;
                 }
                 case VALUE_TYPE_BOOLEAN: {
                     arrParam.head[i].valueType = BOOL_TYPE;
-                    code = InnerWrapWantParamsT<AAFwk::Boolean, AAFwk::IBoolean, bool>(it.second, &arrParam.head[i]);
+                    errCode = InnerWrapWantParamsT<AAFwk::Boolean, AAFwk::IBoolean, bool>(it.second, &arrParam.head[i]);
                     break;
                 }
                 case VALUE_TYPE_STRING: {
                     arrParam.head[i].valueType = STRING_TYPE;
-                    code = InnerWrapWantParamsString(it.second, &arrParam.head[i]);
+                    errCode = InnerWrapWantParamsString(it.second, &arrParam.head[i]);
                     break;
                 }
                 default: {
@@ -514,13 +513,13 @@ extern "C" {
                 }
             }
 
-            if (code == ERR_NO_MEMORY) {
+            if (errCode == ERR_NO_MEMORY) {
                 ClearParametersPtr(&arrParam.head, i, true);
-                return code;
+                return errCode;
             }
             ++i;
         }
-        return code;
+        return errCode;
     }
 
     int32_t ParseExtrasInfo(std::shared_ptr<WorkInfo> workInfo, CArrParameters &arrParam)
