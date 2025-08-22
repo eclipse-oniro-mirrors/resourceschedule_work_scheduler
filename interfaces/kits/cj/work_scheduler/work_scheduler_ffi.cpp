@@ -235,10 +235,10 @@ extern "C" {
         ret.size = listSize;
         int index = 0;
         for (auto workInfo: workInfoList) {
-            auto code= ParseWorkInfoV2(workInfo, data[index]);
+            auto code = ParseWorkInfoV2(workInfo, data[index]);
             if (code != ERR_OK) {
                 LOGE("CJ_ObtainAllWorksV2: ParseWorkInfoV2 failed %{public}d", code);
-                ret = {.code = code, .size = 0, .data = nullptr}
+                ret = {.code = code, .size = 0, .data = nullptr};
                 return ret;
             }
             index++;
