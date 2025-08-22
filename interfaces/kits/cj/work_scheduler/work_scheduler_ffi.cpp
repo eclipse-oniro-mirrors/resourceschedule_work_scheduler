@@ -454,7 +454,7 @@ extern "C" {
         cwork.idleWaitTime = -1;
     }
 
-    void ClearParametersPtr(CParameters *&ptr, int count, bool isKey) 
+    void ClearParametersPtr(CParameters **ptr, int count, bool isKey) 
     {
         CParameters *p = ptr;
         for (int i= 0; i < count; i++) {
@@ -467,8 +467,8 @@ extern "C" {
             free(p[count].key);
             p[count].key = nullptr;
         }
-        free(ptr);
-        ptr = nullptr;
+        free(*ptr);
+        *ptr = nullptr;
     }
 
     int32_t ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
