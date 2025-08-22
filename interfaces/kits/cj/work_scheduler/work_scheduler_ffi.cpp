@@ -64,10 +64,11 @@ int32_t GetWorkInfoV2(RetWorkInfoV2 cwork, WorkInfo& workInfo)
     return GetExtrasInfo(cwork, workInfo);
 }
 
-void ParseWorkInfoV2(std::shared_ptr<WorkInfo> workInfo, RetWorkInfoV2& cwork)
+int32_t ParseWorkInfoV2(std::shared_ptr<WorkInfo> workInfo, RetWorkInfoV2& cwork)
 {
     ParseWorkInfo(workInfo, cwork.v1);
-    ParseExtrasInfo(workInfo, cwork.parameters);
+    auto code = ParseExtrasInfo(workInfo, cwork.parameters);
+    return code;
 }
 
 extern "C" {
@@ -204,7 +205,11 @@ extern "C" {
             LOGE("WorkScheduler: CJ_GetWorkStatus failed %{public}d", errCode);
             return errCode;
         }
-        ParseWorkInfoV2(workInfo, result);
+        auto code = ParseWorkInfoV2(workInfo, result);
+        if (code != ERR_OK) {
+            LOGE("WorkScheduler: CJ_GetWorkStatus ParseWorkInfoV2 failed %{public}d", code);
+            return code;
+        }
         LOGI("WorkScheduler: CJ_GetWorkStatus success");
         return errCode;
     }
@@ -230,7 +235,12 @@ extern "C" {
         ret.size = listSize;
         int index = 0;
         for (auto workInfo: workInfoList) {
-            ParseWorkInfoV2(workInfo, data[index]);
+            auto code= ParseWorkInfoV2(workInfo, data[index]);
+            if (code != ERR_OK) {
+                LOGE("CJ_ObtainAllWorksV2: ParseWorkInfoV2 failed %{public}d", code);
+                ret = {.code = code, .size = 0, .data = nullptr}
+                return ret;
+            }
             index++;
         }
         ret.data = data;
@@ -462,7 +472,7 @@ extern "C" {
         *ptr = nullptr;
     }
 
-    void ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
+    int32_t ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
     {
         int32_t code = 0;
         int typeId = VALUE_TYPE_NULL;
@@ -470,8 +480,9 @@ extern "C" {
         int32_t mallocSize = static_cast<int32_t>(sizeof(CParameters) * arrParam.size);
         arrParam.head = static_cast<CParameters *>(malloc(mallocSize));
         if (!arrParam.head) {
+            code = ERR_NO_MEMORY;
             arrParam.size = 0;
-            return;
+            return code;
         }
         for (auto it : extrasMap) {
             typeId = AAFwk::WantParams::GetDataType(it.second);
@@ -504,13 +515,15 @@ extern "C" {
             }
 
             if (code == ERR_NO_MEMORY) {
-                return ClearParametersPtr(&arrParam.head, i, true);
+                ClearParametersPtr(&arrParam.head, i, true);
+                return code;
             }
             ++i;
         }
+        return code;
     }
 
-    void ParseExtrasInfo(std::shared_ptr<WorkInfo> workInfo, CArrParameters &arrParam)
+    int32_t ParseExtrasInfo(std::shared_ptr<WorkInfo> workInfo, CArrParameters &arrParam)
     {
         // init arrParam
         arrParam.size = 0;
@@ -518,15 +531,15 @@ extern "C" {
         std::shared_ptr<AAFwk::WantParams> extras = workInfo->GetExtras();
         if (extras.get() == nullptr) {
             LOGI("extras map is not initialized.");
-            return;
+            return ERR_NO_MEMORY;
         }
         auto extrasMap = extras->GetParams();
         arrParam.size = static_cast<int64_t>(extrasMap.size());
         if (extrasMap.size() == 0) {
             LOGI("extras parameters is 0.");
-            return;
+            return ERR_NO_MEMORY;
         }
-        ConvertToCArrParameters(extrasMap, arrParam);
+        return ConvertToCArrParameters(extrasMap, arrParam);
     }
 
     char* MallocCString(const std::string& origin)

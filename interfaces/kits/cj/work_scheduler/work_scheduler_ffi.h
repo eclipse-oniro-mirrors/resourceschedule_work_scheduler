@@ -91,7 +91,7 @@ extern "C" {
     int32_t GetStorageInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
     int32_t GetRepeatInfo(RetWorkInfo cwork, OHOS::WorkScheduler::WorkInfo& workInfo, bool& hasCondition);
     int32_t GetExtrasInfo(RetWorkInfoV2 cwork, OHOS::WorkScheduler::WorkInfo& workInfo);
-    void ParseExtrasInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workInfo, CArrParameters& arrParam);
+    int32_t ParseExtrasInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workInfo, CArrParameters& arrParam);
     void ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workInfo, RetWorkInfo& cwork);
     char* MallocCString(const std::string& origin);
 }
