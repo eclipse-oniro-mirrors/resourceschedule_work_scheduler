@@ -471,7 +471,8 @@ extern "C" {
         *ptr = nullptr;
     }
 
-    int32_t g_convertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
+    int32_t g_convertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap,
+                                        CArrParameters& arrParam)
     {
         ErrCode errCode;
         int typeId = VALUE_TYPE_NULL;
