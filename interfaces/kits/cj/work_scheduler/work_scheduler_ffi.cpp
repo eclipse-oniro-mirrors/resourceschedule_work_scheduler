@@ -538,7 +538,9 @@ extern "C" {
             LOGI("extras parameters is 0.");
             return ERR_NO_MEMORY;
         }
-        return ConvertToCArrParameters(extrasMap, arrParam);
+        ErrCode errCode;
+        errCode = ConvertToCArrParameters(extrasMap, arrParam);
+        return errCode;
     }
 
     char* MallocCString(const std::string& origin)
