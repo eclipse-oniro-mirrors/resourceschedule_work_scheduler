@@ -538,8 +538,7 @@ extern "C" {
             LOGI("extras parameters is 0.");
             return ERR_NO_MEMORY;
         }
-        ErrCode errCode;
-        errCode = ConvertToCArrParameters(extrasMap, arrParam);
+        ErrCode errCode = ConvertToCArrParameters(extrasMap, arrParam);
         return errCode;
     }
 
