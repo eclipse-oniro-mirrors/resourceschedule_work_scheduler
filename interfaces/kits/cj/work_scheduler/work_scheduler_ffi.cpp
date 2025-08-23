@@ -456,7 +456,7 @@ extern "C" {
 
     void ClearParametersPtr(CParameters **ptr, int count, bool isKey) 
     {
-        CParameters *p = ptr;
+        CParameters *p = *ptr;
         for (int i= 0; i < count; i++) {
             free(p[i].key);
             free(p[i].value);
