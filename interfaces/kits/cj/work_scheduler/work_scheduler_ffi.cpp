@@ -237,7 +237,10 @@ extern "C" {
             errCode = ParseWorkInfoV2(workInfo, data[index]);
             if (errCode != ERR_OK) {
                 LOGE("CJ_ObtainAllWorksV2: ParseWorkInfoV2 failed %{public}d", errCode);
+                free(data);
                 ret.code = errCode;
+                ret.size = 0;
+                ret.data = nullptr;
                 return ret;
             }
             index++;
@@ -474,7 +477,7 @@ extern "C" {
     int32_t g_convertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap,
         CArrParameters& arrParam)
     {
-        ErrCode errCode;
+        ErrCode errCode = ERR_OK;
         int typeId = VALUE_TYPE_NULL;
         int i = 0;
         int32_t mallocSize = static_cast<int32_t>(sizeof(CParameters) * arrParam.size);
