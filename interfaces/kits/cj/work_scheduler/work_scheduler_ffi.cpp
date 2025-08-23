@@ -454,7 +454,7 @@ extern "C" {
         cwork.idleWaitTime = -1;
     }
 
-    void ClearParametersPtr(CParameters **ptr, int count, bool isKey) 
+    void ClearParametersPtr(CParameters **ptr, int count, bool isKey)
     {
         CParameters *p = *ptr;
         for (int i = 0; i < count; i++) {
