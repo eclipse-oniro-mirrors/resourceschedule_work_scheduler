@@ -471,7 +471,7 @@ extern "C" {
         *ptr = nullptr;
     }
 
-    int32_t ConvertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
+    int32_t g_convertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap, CArrParameters& arrParam)
     {
         ErrCode errCode;
         int typeId = VALUE_TYPE_NULL;
@@ -538,7 +538,7 @@ extern "C" {
             LOGI("extras parameters is 0.");
             return ERR_NO_MEMORY;
         }
-        ErrCode errCode = ConvertToCArrParameters(extrasMap, arrParam);
+        ErrCode errCode = g_convertToCArrParameters(extrasMap, arrParam);
         return errCode;
     }
 
