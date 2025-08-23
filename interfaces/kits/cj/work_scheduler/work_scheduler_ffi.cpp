@@ -472,7 +472,7 @@ extern "C" {
     }
 
     int32_t g_convertToCArrParameters(std::map<std::string, sptr<AAFwk::IInterface>>& extrasMap,
-                                        CArrParameters& arrParam)
+        CArrParameters& arrParam)
     {
         ErrCode errCode;
         int typeId = VALUE_TYPE_NULL;
