@@ -27,7 +27,9 @@ using namespace std;
 
 namespace OHOS {
 namespace WorkScheduler {
-
+namespace {
+const int32_t WORK_ID = 123;
+}
 class WorkSchedulerConnectionTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -42,7 +44,7 @@ std::shared_ptr<WorkSchedulerConnection> WorkSchedulerConnectionTest::workSchedu
 void WorkSchedulerConnectionTest::SetUpTestCase()
 {
     std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
-    workInfo->workId_ = 123;
+    workInfo->workId_ = WORK_ID;
     workInfo->bundleName_ = "com.unittest.bundleName";
     workInfo->abilityName_ = "unittestAbility";
 
