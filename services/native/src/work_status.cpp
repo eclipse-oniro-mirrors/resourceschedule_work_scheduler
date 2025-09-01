@@ -24,7 +24,7 @@
 #include "work_sched_errors.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
-#include "bundle_active_group_common.h"
+#include "bundle_active_group_map.h"
 #endif
 #include "parameters.h"
 #include "work_sched_data_manager.h"
@@ -32,11 +32,6 @@
 #include "work_sched_constants.h"
 #include <unordered_map>
 #include <cinttypes>
-#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
-#include "battery_srv_client.h"
-#endif
-#include "res_sched_client.h"
-#include "res_type.h"
 
 using namespace std;
 
@@ -48,43 +43,10 @@ static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
+const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
 const string DELIMITER = ",";
 ffrt::mutex WorkStatus::s_uid_last_time_mutex;
-
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
-namespace GroupConst {
-constexpr int32_t APP_TYPE_EMAIL = 673;
-constexpr int64_t ONE_MINUTE = 60 * 1000LL;
-constexpr int64_t TWENTY_MINUTE = 20 * ONE_MINUTE;
-constexpr int64_t THIRTY_MINUTE = 30 * ONE_MINUTE;
-
-const std::unordered_map<int32_t, int64_t> GROUP_INTERVAL_MAP = {
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FORCED_SET, 0},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE,
-        DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_DAILY,
-        2 * DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED,
-        DeviceUsageStats::DeviceUsageStatsGroupConst::TWENTY_FOUR_HOUR},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE,
-        DeviceUsageStats::DeviceUsageStatsGroupConst::FOURTY_EIGHT_HOUR},
-};
-
-const std::unordered_map<int32_t, int64_t> MAIL_APP_GROUP_INTERVAL_MAP = {
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FORCED_SET, 0},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE, THIRTY_MINUTE},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_DAILY,
-        2 * DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED,
-        DeviceUsageStats::DeviceUsageStatsGroupConst::TWELVE_HOUR},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE,
-        DeviceUsageStats::DeviceUsageStatsGroupConst::TWENTY_FOUR_HOUR},
-    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_LIMIT,
-        DeviceUsageStats::DeviceUsageStatsGroupConst::FOURTY_EIGHT_HOUR},
-};
-} // namespace GroupConst
-#endif
 
 std::unordered_map<WorkCondition::Type, std::string> COND_TYPE_STRING_MAP = {
     {WorkCondition::Type::NETWORK, "NETWORK"},
@@ -461,44 +423,13 @@ bool WorkStatus::IsNapReady(WorkCondition::Type type)
     return true;
 }
 
-bool WorkStatus::IsChargingState()
-{
-#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
-    auto type = PowerMgr::BatterySrvClient::GetInstance().GetPluggedType();
-    return type != PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE &&
-        type != PowerMgr::BatteryPluggedType::PLUGGED_TYPE_BUTT;
-#else
-    return false;
-#endif
-}
-
-bool WorkStatus::IsMailApp()
-{
-    nlohmann::json payload;
-    nlohmann::json reply;
-    payload["bundleName"] = bundleName_;
-    int32_t ret = ResourceSchedule::ResSchedClient::GetInstance().ReportSyncEvent(
-        ResourceSchedule::ResType::SYNC_RES_TYPE_GET_APP_STATUS, 0, payload, reply);
-    if (ret != ERR_OK) {
-        WS_HILOGE("getapp type err:%{public}d", ret);
-        return false;
-    }
-    int32_t pkgType = -1;
-    if (reply.contains("thirdKindId") && reply.at("thirdKindId").is_number_integer()) {
-        pkgType = reply["thirdKindId"].get<int32_t>();
-    } else {
-        WS_HILOGD("no thirdKindId");
-    }
-    return pkgType == GroupConst::APP_TYPE_EMAIL;
-}
-
 bool WorkStatus::SetMinInterval()
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     int32_t group = 0;
     if (workInfo_->IsCallBySystemApp()) {
         WS_HILOGD("system app %{public}s, default group is active.", bundleName_.c_str());
-        return SetMinIntervalByGroup(DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE);
+        return SetMinIntervalByGroup(ACTIVE_GROUP);
     }
     bool res = DelayedSingleton<DataManager>::GetInstance()->FindGroup(bundleName_, userId_, group);
     if (!res) {
@@ -507,12 +438,12 @@ bool WorkStatus::SetMinInterval()
         if (errCode != ERR_OK) {
             WS_HILOGE("query package group failed. userId = %{public}d, bundleName = %{public}s",
                 userId_, bundleName_.c_str());
-            group = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE;
+            group = ACTIVE_GROUP;
         }
         DelayedSingleton<DataManager>::GetInstance()->AddGroup(bundleName_, userId_, group);
     }
 #else
-    int32_t group = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE;
+    int32_t group = ACTIVE_GROUP;
 #endif
     return SetMinIntervalByGroup(group);
 }
@@ -527,10 +458,13 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
         group > DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED) {
         newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED;
     }
-    if (IsChargingState()) {
-        SetMinIntervalWhenCharging(newGroup);
+    auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(newGroup);
+    if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
+        minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[newGroup];
     } else {
-        SetMinIntervalWhenNotCharging(newGroup);
+        WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
+            newGroup, bundleName_.c_str());
+        minInterval_ = -1;
     }
 #else
     minInterval_ = MIN_INTERVAL_DEFAULT;
@@ -538,52 +472,6 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
     WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d", minInterval_, group);
     return true;
 }
-
-#ifdef DEVICE_USAGE_STATISTICS_ENABLE
-void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
-{
-    int32_t newGroup = group;
-    if (group < DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE) {
-        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE;
-    } else if (group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_LIMIT) {
-        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE;
-    }
-    auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(newGroup);
-    if (itMap == GroupConst::GROUP_INTERVAL_MAP.end()) {
-        WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
-            newGroup, bundleName_.c_str());
-        minInterval_ = -1;
-    }
-    if (IsMailApp() && group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE) {
-        minInterval_ = GroupConst::TWENTY_MINUTE;
-    } else {
-        minInterval_ = GroupConst::GROUP_INTERVAL_MAP.at(newGroup);
-    }
-}
-
-void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
-{
-    if (IsMailApp()) {
-        auto itMap = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.find(group);
-        if (itMap != GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.at(group);
-        } else {
-            WS_HILOGE("query mail app group interval failed. group:%{public}d, bundleName:%{public}s",
-                group, bundleName_.c_str());
-            minInterval_ = -1;
-        }
-    } else {
-        auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(group);
-        if (itMap != GroupConst::GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = GroupConst::GROUP_INTERVAL_MAP.at(group);
-        } else {
-            WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
-                group, bundleName_.c_str());
-            minInterval_ = -1;
-        }
-    }
-}
-#endif
 
 void WorkStatus::SetMinIntervalByDump(int64_t interval)
 {
