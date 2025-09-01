@@ -180,31 +180,6 @@ public:
      * @brief get min interval.
      */
     int64_t GetMinInterval();
-     /**
-     * @brief Judge whether the app is a mail application.
-     *
-     * @return True if the app is a mail app, false otherwise.
-     */
-    bool IsMailApp();
-    /**
-     * @brief Judge whether the device is currently charging.
-     *
-     * @return True if the device is charging, false otherwise.
-     */
-    bool IsChargingState();
-    /**
-     * @brief Set min interval when charging.
-     *
-     * @param group The new group.
-     */
-    void SetMinIntervalWhenCharging(int32_t group);
-    /**
-     * @brief Set min interval when not charging.
-     *
-     * @param group The new group.
-     */
-    void SetMinIntervalWhenNotCharging(int32_t group);
-
     bool IsUriKeySwitchOn();
     void ToString(WorkCondition::Type conditionType);
     void HasTimeout();
