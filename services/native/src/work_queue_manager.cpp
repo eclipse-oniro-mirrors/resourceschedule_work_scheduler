@@ -281,8 +281,8 @@ void WorkQueueManager::SetTimeCycle(uint32_t time)
     timeCycle_ = time;
     auto timerListener = listenerMap_.find(WorkCondition::Type::TIMER);
     if (timerListener != listenerMap_.end()) {
-        listenerMap_->second->Stop();
-        listenerMap_->second->Start();
+        timerListener->second->Stop();
+        timerListener->second->Start();
     }
 }
 
