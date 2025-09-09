@@ -35,6 +35,7 @@
 #include "conditions/storage_listener.h"
 #include "net_supplier_info.h"
 #include "work_standby_state_change_callback.h"
+#include "work_policy_manager.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
@@ -460,6 +461,13 @@ namespace WorkScheduler {
         if (workSchedulerService_->groupObserver_ == nullptr) {
             workSchedulerService_->groupObserver_ =
                 new (std::nothrow) WorkBundleGroupChangeCallback(workSchedulerService_->workQueueManager_);
+        }
+        if (workSchedulerService_->workPolicyManager_ == nullptr) {
+            workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
+            workSchedulerService_->workPolicyManager_->Init(workSchedulerService_->eventRunner_);
+        }
+        if (workSchedulerService_->workPolicyManager_->workConnManager_ == nullptr) {
+            workSchedulerService_->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
         }
         OnProcEfficiencyResourcesChange();
         OnWorkStandbyStateChange();
