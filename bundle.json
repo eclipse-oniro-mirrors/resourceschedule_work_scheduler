@@ -81,7 +81,7 @@
             "header": {
                 "header_base":"//foundation/resourceschedule/work_scheduler/interfaces/kits/cj/work_scheduler",
                 "header_files":[
-                    "work_scheduler_ffi.h"
+
                 ]
             }
           }
