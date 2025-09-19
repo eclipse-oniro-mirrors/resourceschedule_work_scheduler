@@ -1096,7 +1096,7 @@ HWTEST_F(WorkStatusTest, IsMailApp_001, TestSize.Level1)
 {
     workStatus_->bundleName_ = "test";
     bool isMailApp = workStatus_->IsMailApp();
-    EXPECT_FALSE(isChargingState);
+    EXPECT_FALSE(isMailApp);
 }
 
 /**
