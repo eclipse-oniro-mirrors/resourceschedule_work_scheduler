@@ -550,12 +550,12 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
     }
     if (IsMailApp() && group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE) {
         minInterval_ = GroupConst::TWENTY_MINUTE;
-        WS_HILOGD("SetMinIntervalWhenCharging mailApp. group:%{public}d, bundleName:%{public}s",
-            group, bundleName_.c_str());
+        WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
+            minInterval_, group, bundleName_.c_str());
     } else {
         minInterval_ = itMap->second;
-        WS_HILOGD("SetMinIntervalWhenCharging not mail active. group:%{public}d, bundleName:%{public}s"
-            "minInterval_%{public}ld:", group, bundleName_.c_str(), minInterval_);
+        WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
+            minInterval_, group, bundleName_.c_str());
     }
 }
 
@@ -565,7 +565,7 @@ void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
         auto itMap = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.find(group);
         if (itMap != GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.end()) {
             minInterval_ = itMap->second;
-            WS_HILOGI("SetMinIntervalWhenNotCharging mailApp. group:%{public}d, bundleName:%{public}s"
+            WS_HILOGD("SetMinIntervalWhenNotCharging mailApp. group:%{public}d, bundleName:%{public}s"
                 "minInterval_%{public}ld:", group, bundleName_.c_str(), minInterval_);
         } else {
             WS_HILOGE("query mail app group interval failed. group:%{public}d, bundleName:%{public}s",
@@ -575,7 +575,7 @@ void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
     } else {
         auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
         if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
-            WS_HILOGI("SetMinIntervalWhenNotCharging not mailApp. group:%{public}d, bundleName:%{public}s",
+            WS_HILOGD("SetMinIntervalWhenNotCharging not mailApp. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
             minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
         } else {
