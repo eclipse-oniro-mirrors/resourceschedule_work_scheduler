@@ -554,7 +554,7 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
             group, bundleName_.c_str());
     } else {
         minInterval_ = itMap->second;
-        WS_HILOGD("SetMinIntervalWhenCharging not mail active. group:%{public}d, bundleName:%{public}s",
+        WS_HILOGD("SetMinIntervalWhenCharging not mail active. group:%{public}d, bundleName:%{public}s"
             "minInterval_%{public}ld:", group, bundleName_.c_str(), minInterval_);
     }
 }
