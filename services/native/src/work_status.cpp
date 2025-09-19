@@ -24,6 +24,7 @@
 #include "work_sched_errors.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
+#include "bundle_active_group_map.h"
 #include "bundle_active_group_common.h"
 #endif
 #include "parameters.h"
@@ -48,6 +49,7 @@ static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
 const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
+const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
 const string DELIMITER = ",";
 ffrt::mutex WorkStatus::s_uid_last_time_mutex;
@@ -64,10 +66,12 @@ const std::unordered_map<int32_t, int64_t> GROUP_INTERVAL_MAP = {
     {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE,
         DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
     {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_DAILY,
-        2 * DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
+        DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
     {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_FIXED,
-        DeviceUsageStats::DeviceUsageStatsGroupConst::TWENTY_FOUR_HOUR},
+        DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
     {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE,
+        DeviceUsageStats::DeviceUsageStatsGroupConst::TWO_HOUR},
+    {DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_LIMIT,
         DeviceUsageStats::DeviceUsageStatsGroupConst::FOURTY_EIGHT_HOUR},
 };
 
@@ -415,7 +419,7 @@ bool WorkStatus::IsStandbyExemption()
 {
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->IsInDeviceStandyRestrictlist(bundleName_)) {
-        WS_HILOGD("%{public}s is in restrict list.", bundleName_.c_str());
+        WS_HILOGD("%{public}s is in restrict list", bundleName_.c_str());
         return false;
     }
     if (dataManager->GetDeviceSleep()) {
@@ -472,6 +476,7 @@ bool WorkStatus::IsChargingState()
 #endif
 }
 
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
 bool WorkStatus::IsMailApp()
 {
     nlohmann::json payload;
@@ -489,8 +494,10 @@ bool WorkStatus::IsMailApp()
     } else {
         WS_HILOGD("no thirdKindId");
     }
+    WS_HILOGD("IsMailApp type bundleName_:%{public}s, pkgType:%{public}d", bundleName_.c_str(), pkgType);
     return pkgType == GroupConst::APP_TYPE_EMAIL;
 }
+#endif
 
 bool WorkStatus::SetMinInterval()
 {
@@ -512,7 +519,7 @@ bool WorkStatus::SetMinInterval()
         DelayedSingleton<DataManager>::GetInstance()->AddGroup(bundleName_, userId_, group);
     }
 #else
-    int32_t group = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE;
+    int32_t group = ACTIVE_GROUP;
 #endif
     return SetMinIntervalByGroup(group);
 }
@@ -542,22 +549,21 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
 {
-    int32_t newGroup = group;
-    if (group < DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE) {
-        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE;
-    } else if (group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_LIMIT) {
-        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE;
-    }
-    auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(newGroup);
+    auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(group);
     if (itMap == GroupConst::GROUP_INTERVAL_MAP.end()) {
         WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
-            newGroup, bundleName_.c_str());
+            group, bundleName_.c_str());
         minInterval_ = -1;
+        return;
     }
     if (IsMailApp() && group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE) {
         minInterval_ = GroupConst::TWENTY_MINUTE;
+        WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
+            minInterval_, group, bundleName_.c_str());
     } else {
-        minInterval_ = GroupConst::GROUP_INTERVAL_MAP.at(newGroup);
+        minInterval_ = itMap->second;
+        WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
+            minInterval_, group, bundleName_.c_str());
     }
 }
 
@@ -566,16 +572,20 @@ void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
     if (IsMailApp()) {
         auto itMap = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.find(group);
         if (itMap != GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.at(group);
+            minInterval_ = itMap->second;
+            WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
+                minInterval_, group, bundleName_.c_str());
         } else {
             WS_HILOGE("query mail app group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
             minInterval_ = -1;
         }
     } else {
-        auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(group);
-        if (itMap != GroupConst::GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = GroupConst::GROUP_INTERVAL_MAP.at(group);
+        auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
+        if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
+            WS_HILOGD("SetMinIntervalWhenNotCharging not mailApp. group:%{public}d, bundleName:%{public}s",
+                group, bundleName_.c_str());
+            minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
         } else {
             WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
