@@ -26,6 +26,19 @@ using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+constexpr int64_t INVALID_VALUE = -1;
+constexpr int64_t ONE_MINUTE = 60 * 1000LL;
+constexpr int64_t TWENTY_MINUTE = 20 * ONE_MINUTE;
+constexpr int64_t THIRTY_MINUTE = 30 * ONE_MINUTE;
+constexpr int64_t TWO_HOUR = 4 * THIRTY_MINUTE;
+constexpr int64_t FOUR_HOUR = 2 * TWO_HOUR;
+constexpr int64_t TWELVE_HOUR = 6 * TWO_HOUR;
+constexpr int64_t TWENTY_FOUR_HOUR = 12 * TWO_HOUR;
+constexpr int64_t FOURTY_EIGHT_HOUR = 24 * TWO_HOUR;
+const std::string MAIL_APP_NAME = "com.netease.ohmail";
+}
+
 class WorkStatusTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -1059,5 +1072,102 @@ HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
     workStatus_->ToString(WorkCondition::Type::TIMER);
     EXPECT_FALSE(workStatus_->conditionStatus_.empty());
 }
+
+#ifdef DEVICE_USAGE_STATISTICS_ENABLE
+/**
+ * @tc.name: IsChargingState_001
+ * @tc.desc: Test IsChargingState.
+ * @tc.type: FUNC
+ * @tc.require: ICVNC0
+ */
+HWTEST_F(WorkStatusTest, IsChargingState_001, TestSize.Level1)
+{
+    bool isChargingState = workStatus_->IsChargingState();
+    EXPECT_TRUE(isChargingState);
+}
+
+/**
+ * @tc.name: IsMailApp_001
+ * @tc.desc: Test IsMailApp.
+ * @tc.type: FUNC
+ * @tc.require: ICVNC0
+ */
+HWTEST_F(WorkStatusTest, IsMailApp_001, TestSize.Level1)
+{
+    workStatus_->bundleName_ = "test";
+    bool isMailApp = workStatus_->IsMailApp();
+    EXPECT_FALSE(isChargingState);
+}
+
+/**
+ * @tc.name: SetMinIntervalWhenCharging_001
+ * @tc.desc: 非邮箱充电场景
+ * @tc.type: FUNC
+ * @tc.require: ICVNC0
+ */
+HWTEST_F(WorkStatusTest, SetMinIntervalWhenCharging_001, TestSize.Level1)
+{
+    workStatus_->bundleName_ = "test";
+    workStatus_->SetMinIntervalWhenCharging(60);
+    EXPECT_EQ(workStatus_->minInterval_, INVALID_VALUE);
+    workStatus_->SetMinIntervalWhenCharging(50);
+    EXPECT_EQ(workStatus_->minInterval_, FOURTY_EIGHT_HOUR);
+    workStatus_->SetMinIntervalWhenCharging(40);
+    EXPECT_EQ(workStatus_->minInterval_, TWO_HOUR);
+    workStatus_->SetMinIntervalWhenCharging(30);
+    EXPECT_EQ(workStatus_->minInterval_, TWO_HOUR);
+    workStatus_->SetMinIntervalWhenCharging(20);
+    EXPECT_EQ(workStatus_->minInterval_, TWO_HOUR);
+    workStatus_->SetMinIntervalWhenCharging(10);
+    EXPECT_EQ(workStatus_->minInterval_, TWO_HOUR);
+}
+
+/**
+ * @tc.name: SetMinIntervalWhenCharging_002
+ * @tc.desc: 邮箱充电场景
+ * @tc.type: FUNC
+ * @tc.require: ICVNC0
+ */
+HWTEST_F(WorkStatusTest, SetMinIntervalWhenCharging_002, TestSize.Level1)
+{
+    workStatus_->bundleName_ = MAIL_APP_NAME;
+    workStatus_->SetMinIntervalWhenCharging(60);
+    EXPECT_EQ(workStatus_->minInterval_, INVALID_VALUE);
+    workStatus_->SetMinIntervalWhenCharging(50);
+    EXPECT_EQ(workStatus_->minInterval_, FOURTY_EIGHT_HOUR);
+    workStatus_->SetMinIntervalWhenCharging(40);
+    EXPECT_EQ(workStatus_->minInterval_, TWO_HOUR);
+    workStatus_->SetMinIntervalWhenCharging(30);
+    EXPECT_EQ(workStatus_->minInterval_, TWO_HOUR);
+    workStatus_->SetMinIntervalWhenCharging(20);
+    EXPECT_EQ(workStatus_->minInterval_, TWO_HOUR);
+}
+
+/**
+ * @tc.name: SetMinIntervalWhenNotCharging_001
+ * @tc.desc: 邮箱非充电场景
+ * @tc.type: FUNC
+ * @tc.require: ICVNC0
+ */
+HWTEST_F(WorkStatusTest, SetMinIntervalWhenNotCharging_001, TestSize.Level1)
+{
+    workStatus_->bundleName_ = MAIL_APP_NAME;
+    workStatus_->SetMinIntervalWhenNotCharging(60);
+    EXPECT_EQ(workStatus_->minInterval_, INVALID_VALUE);
+}
+
+/**
+ * @tc.name: SetMinIntervalWhenNotCharging_002
+ * @tc.desc: 非邮箱非充电场景
+ * @tc.type: FUNC
+ * @tc.require: ICVNC0
+ */
+HWTEST_F(WorkStatusTest, SetMinIntervalWhenNotCharging_002, TestSize.Level1)
+{
+    workStatus_->bundleName_ = "test";
+    workStatus_->SetMinIntervalWhenNotCharging(60);
+    EXPECT_EQ(workStatus_->minInterval_, INVALID_VALUE);
+}
+#endif
 }
 }

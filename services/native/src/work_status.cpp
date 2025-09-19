@@ -542,22 +542,20 @@ bool WorkStatus::SetMinIntervalByGroup(int32_t group)
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
 {
-    int32_t newGroup = group;
-    if (group < DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE) {
-        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE;
-    } else if (group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_LIMIT) {
-        newGroup = DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_RARE;
-    }
-    auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(newGroup);
+    auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(group);
     if (itMap == GroupConst::GROUP_INTERVAL_MAP.end()) {
         WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
-            newGroup, bundleName_.c_str());
+            group, bundleName_.c_str());
         minInterval_ = -1;
     }
     if (IsMailApp() && group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE) {
         minInterval_ = GroupConst::TWENTY_MINUTE;
+        WS_HILOGD("SetMinIntervalWhenCharging mailApp. group:%{public}d, bundleName:%{public}s",
+            group, bundleName_.c_str());
     } else {
-        minInterval_ = GroupConst::GROUP_INTERVAL_MAP.at(newGroup);
+        minInterval_ = itMap->second;
+        WS_HILOGD("SetMinIntervalWhenCharging not mail active. group:%{public}d, bundleName:%{public}s",
+            "minInterval_%{public}ld:", group, bundleName_.c_str(), minInterval_);
     }
 }
 
@@ -566,16 +564,20 @@ void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
     if (IsMailApp()) {
         auto itMap = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.find(group);
         if (itMap != GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.at(group);
+            minInterval_ = itMap->second;
+            WS_HILOGI("SetMinIntervalWhenNotCharging mailApp. group:%{public}d, bundleName:%{public}s"
+                "minInterval_%{public}ld:", group, bundleName_.c_str(), minInterval_);
         } else {
             WS_HILOGE("query mail app group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
             minInterval_ = -1;
         }
     } else {
-        auto itMap = GroupConst::GROUP_INTERVAL_MAP.find(group);
-        if (itMap != GroupConst::GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = GroupConst::GROUP_INTERVAL_MAP.at(group);
+        auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
+        if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
+            WS_HILOGI("SetMinIntervalWhenNotCharging not mailApp. group:%{public}d, bundleName:%{public}s",
+                group, bundleName_.c_str());
+            minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
         } else {
             WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
