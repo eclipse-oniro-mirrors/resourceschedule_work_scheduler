@@ -565,8 +565,8 @@ void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
         auto itMap = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.find(group);
         if (itMap != GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.end()) {
             minInterval_ = itMap->second;
-            WS_HILOGD("SetMinIntervalWhenNotCharging mailApp. group:%{public}d, bundleName:%{public}s"
-                "minInterval_%{public}ld:", group, bundleName_.c_str(), minInterval_);
+            WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
+                minInterval_, group, bundleName_.c_str());
         } else {
             WS_HILOGE("query mail app group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
