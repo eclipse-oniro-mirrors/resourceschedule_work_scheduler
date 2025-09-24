@@ -232,6 +232,7 @@ private:
     bool IsTimerReady(WorkCondition::Type type);
     bool IsConditionReady();
     bool IsStandbyExemption();
+    bool CheckEarliestStartTime();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -50,6 +50,8 @@ public:
         extras_ = workInfo.extras_;
         conditionMap_ = workInfo.conditionMap_;
         isInnerApply_ = workInfo.isInnerApply_;
+        createTime_ = workInfo.createTime_;
+        earliestStartTime_ = workInfo.earliestStartTime_;
     }
     ~WorkInfo() override;
     /**
@@ -361,6 +363,22 @@ public:
      * @return The apply flag.
      */
     bool GetIsInnerApply() const;
+    /**
+     * @brief Set earliest start time.
+     */
+    void SetEarliestStartTime(int32_t earliestStartTime);
+    /**
+     * @brief Get earliest start time.
+     *
+     * @return The earliest start time.
+     */
+    int32_t GetEarliestStartTime() const;
+    /**
+     * @brief Get create time.
+     *
+     * @return The create time.
+     */
+    time_t GetCreateTime() const;
 
 private:
     int32_t workId_;
@@ -378,6 +396,8 @@ private:
     int32_t saId_;
     bool residentSa_;
     bool isInnerApply_ {false};
+    int32_t earliestStartTime_ {0};
+    time_t createTime_ {0};
 private:
     static bool UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t mapsize);
     void ParseConditionToJsonStr(nlohmann::json &root);

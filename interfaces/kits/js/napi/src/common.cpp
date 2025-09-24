@@ -76,6 +76,8 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
         return false;
     }
 
+    int32_t earliestStartTime = GetIntProperty(env, objValue, "earliestStartTime", E_EARLIEST_START_TIME_TYPE_ERR);
+    workInfo.SetEarliestStartTime(earliestStartTime > 0 ? earliestStartTime : 0);
     workInfo.SetWorkId(workId);
     workInfo.SetElement(bundleName, abilityName);
 
@@ -431,6 +433,10 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     napi_set_named_property(env, napiWork, "workId", napiWorkId);
     napi_set_named_property(env, napiWork, "bundleName", napiBundleName);
     napi_set_named_property(env, napiWork, "abilityName", napiAbilityName);
+
+    napi_value napiEarliestStartTime = nullptr;
+    napi_create_int32(env, workInfo->GetEarliestStartTime(), &napiEarliestStartTime);
+    napi_set_named_property(env, napiWork, "earliestStartTime", napiEarliestStartTime);
 
     // Set isPersisted.
     napi_value napiIsPersisted = nullptr;

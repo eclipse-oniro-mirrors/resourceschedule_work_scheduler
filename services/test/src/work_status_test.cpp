@@ -1073,6 +1073,22 @@ HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
     EXPECT_FALSE(workStatus_->conditionStatus_.empty());
 }
 
+/**
+ * @tc.name: ToString_003
+ * @tc.desc: Test WorkStatus ToString.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
+{
+    workStatus_->conditionStatus_.clear();
+    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->SetDeviceSleep(false);
+    workStatus_->conditionStatus_ = "TIMER&ready";
+    workStatus_->ToString(WorkCondition::Type::TIMER);
+    EXPECT_FALSE(workStatus_->conditionStatus_.empty());
+}
+
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 /**
  * @tc.name: IsChargingState_001
