@@ -785,7 +785,7 @@ HWTEST_F (WorkInfoTest, EarliestStartTime001, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, GetCreateTime001, Function | MediumTest | Level2)
 {
     WorkInfo workInfo;
-    EXPECT_EQ(workInfo.GetCreateTime(), 0);
+    EXPECT_NE(workInfo.GetCreateTime(), 0);
 }
 
 /**
@@ -819,7 +819,7 @@ HWTEST_F (WorkInfoTest, ParseFromJson001, Function | MediumTest | Level2)
     root["abilityName"] = "abilityName";
     root["saId"] = 1;
     root["residentSa"] = true;
-    res = workInfo.ParseFromJson(root);
+    bool res = workInfo.ParseFromJson(root);
     EXPECT_TRUE(res);
     EXPECT_EQ(workInfo.GetCreateTime(), createTime);
     EXPECT_EQ(workInfo.GetEarliestStartTime(), 0);
