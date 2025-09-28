@@ -813,7 +813,7 @@ HWTEST_F (WorkInfoTest, ParseFromJson001, Function | MediumTest | Level2)
 {
     nlohmann::json root;
     WorkInfo workInfo;
-    time_t createTime = workInfo.GetCreateTime();
+    uint64_t createTime = workInfo.GetCreateTime();
     root["workId"] = 1;
     root["bundleName"] = "bundleName";
     root["abilityName"] = "abilityName";

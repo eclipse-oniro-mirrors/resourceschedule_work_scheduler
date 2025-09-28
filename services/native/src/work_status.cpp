@@ -826,10 +826,9 @@ bool WorkStatus::CheckEarliestStartTime()
     if (earliestStartTime <= 0) {
         return false;
     }
-    time_t createTime = workInfo_->GetCreateTime();
-    time_t now;
-    time(&now);
-    if (static_cast<int32_t>(now - createTime) >= earliestStartTime) {
+    int64_t createTime = static_cast<int64_t>(workInfo_->GetCreateTime());
+    int64_t now = static_cast<int64_t>(WorkSchedUtils::GetCurrentTimeMs());
+    if (now - createTime >= static_cast<int64_t>(earliestStartTime)) {
         return false;
     } else {
         return true;

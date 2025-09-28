@@ -1088,13 +1088,13 @@ HWTEST_F(WorkStatusTest, CheckEarliestStartTime_001, TestSize.Level1)
     work->SetEarliestStartTime(-1);
     workStatus.workInfo_ = work;
     EXPECT_FALSE(workStatus.CheckEarliestStartTime());
-    work->SetEarliestStartTime(1000);
+    work->SetEarliestStartTime(60 * 1000);
     EXPECT_TRUE(workStatus.CheckEarliestStartTime());
     time_t now;
     time(&now);
     now = static_cast<time_t>(static_cast<int64_t>(now) - 50);
     work->SetEarliestStartTime(10);
-    work->createTime_ = now;
+    work->createTime_ = static_cast<uint64_t>(now) * 1000;
     EXPECT_FALSE(workStatus.CheckEarliestStartTime());
 }
 

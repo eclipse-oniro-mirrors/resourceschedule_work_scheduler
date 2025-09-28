@@ -378,7 +378,7 @@ public:
      *
      * @return The create time.
      */
-    time_t GetCreateTime() const;
+    uint64_t GetCreateTime() const;
 
 private:
     int32_t workId_;
@@ -397,13 +397,14 @@ private:
     bool residentSa_;
     bool isInnerApply_ {false};
     int32_t earliestStartTime_ {0};
-    time_t createTime_ {0};
+    uint64_t createTime_ {0};
 private:
     static bool UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t mapsize);
     void ParseConditionToJsonStr(nlohmann::json &root);
     void ParseConditionFromJsonStr(const nlohmann::json &value);
     void ParseParametersFromJsonStr(const nlohmann::json &value);
     void ParseTimerFormJsonStr(const nlohmann::json &conditions);
+    void ParseTimeFromJsonStr(const nlohmann::json &value);
     bool IsHasBoolProp(const nlohmann::json &value, const std::string &key);
 };
 } // namespace WorkScheduler

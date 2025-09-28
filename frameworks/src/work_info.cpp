@@ -16,6 +16,7 @@
 
 #include "work_sched_hilog.h"
 #include "work_sched_constants.h"
+#include "work_sched_utils.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -33,7 +34,7 @@ WorkInfo::WorkInfo()
     extension_ = true;
     saId_ = INVALID_VALUE;
     residentSa_ = false;
-    time(&createTime_);
+    createTime_ = WorkSchedUtils::GetCurrentTimeMs();
 }
 
 WorkInfo::~WorkInfo() {}
@@ -378,13 +379,8 @@ WorkInfo* WorkInfo::Unmarshalling(Parcel &parcel)
         delete read;
         return nullptr;
     }
-    if (!parcel.ReadInt32(read->earliestStartTime_)) {
-        WS_HILOGE("Failed to read the earliestStartTime.");
-        delete read;
-        return nullptr;
-    }
-    if (!parcel.ReadBool(read->persisted_)) {
-        WS_HILOGE("Failed to read the persisted.");
+    if (!parcel.ReadInt32(read->earliestStartTime_) || !parcel.ReadBool(read->persisted_)) {
+        WS_HILOGE("Failed to read the earliestStartTime or persisted.");
         delete read;
         return nullptr;
     }
@@ -591,12 +587,7 @@ bool WorkInfo::ParseFromJson(const nlohmann::json &value)
     if (value.contains("appIndex") && value["appIndex"].is_number_integer()) {
         this->appIndex_ = value["appIndex"].get<int32_t>();
     }
-    if (value.contains("earliestStartTime") && value["earliestStartTime"].is_number_integer()) {
-        this->earliestStartTime_ = value["earliestStartTime"].get<int32_t>();
-    }
-    if (value.contains("createTime") && value["createTime"].is_number_integer()) {
-        this->createTime_ = static_cast<time_t>(value["createTime"].get<int64_t>());
-    }
+    ParseTimeFromJsonStr(value);
     if (IsHasBoolProp(value, "extension")) {
         this->extension_ = value["extension"].get<bool>();
     }
@@ -688,6 +679,16 @@ void WorkInfo::ParseTimerFormJsonStr(const nlohmann::json &conditions)
     }
 }
 
+void WorkInfo::ParseTimeFromJsonStr(const nlohmann::json &value)
+{
+    if (value.contains("earliestStartTime") && value["earliestStartTime"].is_number_integer()) {
+        this->earliestStartTime_ = value["earliestStartTime"].get<int32_t>();
+    }
+    if (value.contains("createTime") && value["createTime"].is_number_integer()) {
+        this->createTime_ = value["createTime"].get<uint64_t>();
+    }
+}
+
 void WorkInfo::Dump(std::string &result)
 {
     result.append(ParseToJsonStr());
@@ -750,7 +751,7 @@ int32_t WorkInfo::GetEarliestStartTime() const
     return earliestStartTime_;
 }
 
-time_t WorkInfo::GetCreateTime() const
+uint64_t WorkInfo::GetCreateTime() const
 {
     return createTime_;
 }
