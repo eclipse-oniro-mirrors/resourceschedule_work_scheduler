@@ -834,5 +834,20 @@ bool WorkStatus::CheckEarliestStartTime()
         return true;
     }
 }
+
+bool WorkStatus::IsNeedDiscreteScheduled()
+{
+    // system app and conditaion is net
+    if (workInfo_ == nullptr) {
+        return false;
+    }
+    if (!workInfo_->IsCallBySystemApp()) {
+        return false;
+    }
+    if (!IsBatteryAndNetworkReady(WorkCondition::Type::NETWORK)) {
+        return false;
+    }
+    return true;
+}
 } // namespace WorkScheduler
 } // namespace OHOS

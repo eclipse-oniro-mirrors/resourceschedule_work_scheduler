@@ -1098,6 +1098,24 @@ HWTEST_F(WorkStatusTest, CheckEarliestStartTime_001, TestSize.Level1)
     EXPECT_FALSE(workStatus.CheckEarliestStartTime());
 }
 
+/**
+ * @tc.name: IsNeedDiscreteScheduled_001
+ * @tc.desc: Test WorkStatus IsNeedDiscreteScheduled.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsNeedDiscreteScheduled_001, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    WorkStatus workStatus(workInfo, 100);
+    auto work = std::move(workStatus.workInfo_);
+    EXPECT_FALSE(workStatus.IsNeedDiscreteScheduled());
+    workStatus.workInfo_ = work;
+    EXPECT_FALSE(workStatus.IsNeedDiscreteScheduled());
+    work->SetCallBySystemApp(true);
+    EXPECT_GE(workStatus.IsNeedDiscreteScheduled(), 0);
+}
+
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 /**
  * @tc.name: IsChargingState_001

@@ -204,6 +204,10 @@ public:
      * @param group The new group.
      */
     void SetMinIntervalWhenNotCharging(int32_t group);
+    /**
+     * @brief Check task need discrete scheduled.
+     */
+    bool IsNeedDiscreteScheduled();
 
     bool IsUriKeySwitchOn();
     void ToString(WorkCondition::Type conditionType);
