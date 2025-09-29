@@ -1073,6 +1073,31 @@ HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
     EXPECT_FALSE(workStatus_->conditionStatus_.empty());
 }
 
+/**
+ * @tc.name: CheckEarliestStartTime_001
+ * @tc.desc: Test WorkStatus CheckEarliestStartTime.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, CheckEarliestStartTime_001, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    WorkStatus workStatus(workInfo, 100);
+    auto work = std::move(workStatus.workInfo_);
+    EXPECT_FALSE(workStatus.CheckEarliestStartTime());
+    work->SetEarliestStartTime(-1);
+    workStatus.workInfo_ = work;
+    EXPECT_FALSE(workStatus.CheckEarliestStartTime());
+    work->SetEarliestStartTime(60 * 1000);
+    EXPECT_TRUE(workStatus.CheckEarliestStartTime());
+    time_t now;
+    time(&now);
+    now = static_cast<time_t>(static_cast<int64_t>(now) - 50);
+    work->SetEarliestStartTime(10);
+    work->createTime_ = static_cast<uint64_t>(now) * 1000;
+    EXPECT_FALSE(workStatus.CheckEarliestStartTime());
+}
+
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 /**
  * @tc.name: IsChargingState_001

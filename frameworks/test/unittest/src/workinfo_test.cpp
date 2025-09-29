@@ -761,5 +761,80 @@ HWTEST_F (WorkInfoTest, GetSaId001, Function | MediumTest | Level2)
     bool residentSa = workInfo.IsResidentSa();
     EXPECT_FALSE(residentSa);
 }
+
+/**
+ * @tc.name EarliestStartTime001
+ * @tc.desc test EarliestStartTime
+ * @tc.type FUNC
+ * @tc.require: issueIAHY0B
+ */
+HWTEST_F (WorkInfoTest, EarliestStartTime001, Function | MediumTest | Level2)
+{
+    WorkInfo workInfo;
+    EXPECT_EQ(workInfo.GetEarliestStartTime(), 0);
+    workInfo.SetEarliestStartTime(1000);
+    EXPECT_EQ(workInfo.GetEarliestStartTime(), 1000);
+}
+
+/**
+ * @tc.name GetCreateTime001
+ * @tc.desc test GetCreateTime
+ * @tc.type FUNC
+ * @tc.require: issueIAHY0B
+ */
+HWTEST_F (WorkInfoTest, GetCreateTime001, Function | MediumTest | Level2)
+{
+    WorkInfo workInfo;
+    EXPECT_NE(workInfo.GetCreateTime(), 0);
+}
+
+/**
+ * @tc.name ParseToJsonStr001
+ * @tc.desc test ParseToJsonStr
+ * @tc.type FUNC
+ * @tc.require: issueIAHY0B
+ */
+HWTEST_F (WorkInfoTest, ParseToJsonStr001, Function | MediumTest | Level2)
+{
+    WorkInfo workInfo;
+    workInfo.RefreshUid(100);
+    std::string result = workInfo.ParseToJsonStr();
+    EXPECT_NE(result.find("earliestStartTime"), -1);
+    EXPECT_NE(result.find("createTime"), -1);
+}
+
+/**
+ * @tc.name ParseFromJson001
+ * @tc.desc test ParseToJsonStr
+ * @tc.type FUNC
+ * @tc.require: issueIAHY0B
+ */
+HWTEST_F (WorkInfoTest, ParseFromJson001, Function | MediumTest | Level2)
+{
+    nlohmann::json root;
+    WorkInfo workInfo;
+    uint64_t createTime = workInfo.GetCreateTime();
+    root["workId"] = 1;
+    root["bundleName"] = "bundleName";
+    root["abilityName"] = "abilityName";
+    root["saId"] = 1;
+    root["residentSa"] = true;
+    bool res = workInfo.ParseFromJson(root);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(workInfo.GetCreateTime(), createTime);
+    EXPECT_EQ(workInfo.GetEarliestStartTime(), 0);
+    root["earliestStartTime"] = "a";
+    root["createTime"] = "b";
+    res = workInfo.ParseFromJson(root);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(workInfo.GetCreateTime(), createTime);
+    EXPECT_EQ(workInfo.GetEarliestStartTime(), 0);
+    root["earliestStartTime"] = 1000;
+    root["createTime"] = 2000;
+    res = workInfo.ParseFromJson(root);
+    EXPECT_TRUE(res);
+    EXPECT_EQ(workInfo.GetCreateTime(), 2000);
+    EXPECT_EQ(workInfo.GetEarliestStartTime(), 1000);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

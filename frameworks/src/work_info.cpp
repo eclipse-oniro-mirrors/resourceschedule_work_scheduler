@@ -16,6 +16,7 @@
 
 #include "work_sched_hilog.h"
 #include "work_sched_constants.h"
+#include "work_sched_utils.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -33,6 +34,7 @@ WorkInfo::WorkInfo()
     extension_ = true;
     saId_ = INVALID_VALUE;
     residentSa_ = false;
+    createTime_ = WorkSchedUtils::GetCurrentTimeMs();
 }
 
 WorkInfo::~WorkInfo() {}
@@ -318,6 +320,7 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
     ret = parcel.WriteInt32(workId_);
     ret = ret && parcel.WriteString(bundleName_);
     ret = ret && parcel.WriteString(abilityName_);
+    ret = ret && parcel.WriteInt32(earliestStartTime_);
     ret = ret && parcel.WriteBool(persisted_);
     ret = ret && parcel.WriteInt32(uid_);
     ret = ret && parcel.WriteUint32(conditionMap_.size());
@@ -376,8 +379,8 @@ WorkInfo* WorkInfo::Unmarshalling(Parcel &parcel)
         delete read;
         return nullptr;
     }
-    if (!parcel.ReadBool(read->persisted_)) {
-        WS_HILOGE("Failed to read the persisted.");
+    if (!parcel.ReadInt32(read->earliestStartTime_) || !parcel.ReadBool(read->persisted_)) {
+        WS_HILOGE("Failed to read the earliestStartTime or persisted.");
         delete read;
         return nullptr;
     }
@@ -478,6 +481,8 @@ std::string WorkInfo::ParseToJsonStr()
         root["appIndex"] = appIndex_;
         root["extension"] = extension_;
     }
+    root["earliestStartTime"] = earliestStartTime_;
+    root["createTime"] = createTime_;
     root["persisted"] = persisted_;
     root["preinstalled"] = preinstalled_;
     root["uriKey"] = uriKey_;
@@ -582,6 +587,7 @@ bool WorkInfo::ParseFromJson(const nlohmann::json &value)
     if (value.contains("appIndex") && value["appIndex"].is_number_integer()) {
         this->appIndex_ = value["appIndex"].get<int32_t>();
     }
+    ParseTimeFromJsonStr(value);
     if (IsHasBoolProp(value, "extension")) {
         this->extension_ = value["extension"].get<bool>();
     }
@@ -673,6 +679,16 @@ void WorkInfo::ParseTimerFormJsonStr(const nlohmann::json &conditions)
     }
 }
 
+void WorkInfo::ParseTimeFromJsonStr(const nlohmann::json &value)
+{
+    if (value.contains("earliestStartTime") && value["earliestStartTime"].is_number_integer()) {
+        this->earliestStartTime_ = value["earliestStartTime"].get<int32_t>();
+    }
+    if (value.contains("createTime") && value["createTime"].is_number_integer()) {
+        this->createTime_ = value["createTime"].get<uint64_t>();
+    }
+}
+
 void WorkInfo::Dump(std::string &result)
 {
     result.append(ParseToJsonStr());
@@ -723,6 +739,21 @@ void WorkInfo::SetIsInnerApply(bool isInnerApply)
 bool WorkInfo::GetIsInnerApply() const
 {
     return isInnerApply_;
+}
+
+void WorkInfo::SetEarliestStartTime(int32_t earliestStartTime)
+{
+    earliestStartTime_ = earliestStartTime;
+}
+
+int32_t WorkInfo::GetEarliestStartTime() const
+{
+    return earliestStartTime_;
+}
+
+uint64_t WorkInfo::GetCreateTime() const
+{
+    return createTime_;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -62,6 +62,7 @@ enum ParamError {
     E_PARAMETERS_TYPE_ERR,
     E_NEED_CANCLE_TYPE_ERR,
     E_UID_NO_MATCHING_WORK_ERR,
+    E_EARLIEST_START_TIME_TYPE_ERR,
 };
 
 const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
@@ -102,6 +103,7 @@ const inline std::map<int32_t, std::string> paramErrCodeMsgMap = {
     {E_NEED_CANCLE_TYPE_ERR, "The type of needCancle must be boolean."},
     {E_UID_NO_MATCHING_WORK_ERR, "The UID has no matching work."},
     {E_PARAM_ERROR, "The input param is error."},
+    {E_EARLIEST_START_TIME_TYPE_ERR, "The type of earliestStartTime must be number."},
 };
 } // namespace WorkScheduler
 } // namespace OHOS

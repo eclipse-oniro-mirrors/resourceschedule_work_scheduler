@@ -292,6 +292,11 @@ bool WorkStatus::IsReady()
         return false;
     }
     if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+        // first run task
+        if (CheckEarliestStartTime()) {
+            WS_HILOGE("The initial startup time does not meet the EarliestStartTime requirement.");
+            return false;
+        }
         conditionStatus_ += DELIMITER + "firstTrigger";
         return true;
     }
@@ -810,6 +815,24 @@ bool WorkStatus::IsSpecial()
         }
     }
     return false;
+}
+
+bool WorkStatus::CheckEarliestStartTime()
+{
+    if (workInfo_ == nullptr) {
+        return false;
+    }
+    int32_t earliestStartTime = workInfo_->GetEarliestStartTime();
+    if (earliestStartTime <= 0) {
+        return false;
+    }
+    int64_t createTime = static_cast<int64_t>(workInfo_->GetCreateTime());
+    int64_t now = static_cast<int64_t>(WorkSchedUtils::GetCurrentTimeMs());
+    if (now - createTime >= static_cast<int64_t>(earliestStartTime)) {
+        return false;
+    } else {
+        return true;
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS
