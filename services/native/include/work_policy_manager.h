@@ -322,6 +322,8 @@ private:
     std::string GetConditionString(const std::shared_ptr<WorkStatus> workStatus);
     bool HasSystemPolicyEventSend() const;
     void SetSystemPolicyEventSend(bool systemPolicyEventSend);
+    bool IsNeedDiscreteScheduled();
+    void DiscreteScheduled(std::shared_ptr<WorkStatus> topWork);
 
     const std::weak_ptr<WorkSchedulerService> wss_;
     std::shared_ptr<WorkConnManager> workConnManager_;

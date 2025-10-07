@@ -483,8 +483,13 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     }
     UpdateWatchdogTime(wss_.lock(), topWork);
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
-    wss_.lock()->UpdateWorkBeforeRealStart(topWork);
     RemoveFromReadyQueue(topWork);
+    if (IsNeedDiscreteScheduled() && topWork->IsNeedDiscreteScheduled()) {
+        WS_HILOGI("Discrete scheduled work id: %{public}s", topWork->workId_.c_str());
+        DiscreteScheduled(topWork);
+        return;
+    }
+    wss_.lock()->UpdateWorkBeforeRealStart(topWork);
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
         AddWatchdogForWork(topWork);
@@ -962,6 +967,60 @@ bool WorkPolicyManager::HasSystemPolicyEventSend() const
 void WorkPolicyManager::SetSystemPolicyEventSend(bool systemPolicyEventSend)
 {
     systemPolicyEventSend_.store(systemPolicyEventSend);
+}
+
+bool WorkPolicyManager::IsNeedDiscreteScheduled()
+{
+    const std::vector<int32_t> mins{ 0, 29, 30, 59 };
+    constexpr int32_t MIN_HOUR = 6;
+    constexpr int32_t MAX_HOUR = 9;
+    time_t t;
+    (void)time(&t);
+    struct tm nowTime;
+    (void)localtime_r(&t, &nowTime);
+    if (nowTime.tm_hour < MIN_HOUR || nowTime.tm_hour > MAX_HOUR) {
+        return false;
+    }
+    auto iter = std::find(mins.cbegin(), mins.cend(), nowTime.tm_min);
+    if (iter == mins.end()) {
+        return false;
+    }
+    return true;
+}
+
+void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
+{
+    auto service = wss_.lock();
+    if (!service) {
+        WS_HILOGE("service is null");
+        return;
+    }
+    auto task = [this, topWork]() {
+        wss_.lock()->UpdateWorkBeforeRealStart(topWork);
+        bool ret = workConnManager_->StartWork(topWork);
+        if (ret) {
+            AddWatchdogForWork(topWork);
+            topWork->UpdateUidLastTimeMap();
+        } else {
+            if (!topWork->IsRepeating()) {
+                topWork->MarkStatus(WorkStatus::Status::REMOVED);
+                RemoveFromUidQueue(topWork, topWork->uid_);
+            } else {
+                topWork->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+            }
+        }
+    };
+    auto handler = service->GetHandler();
+    if (!handler) {
+        WS_HILOGE("handler is null");
+        return;
+    }
+    constexpr int32_t MAX_DELAY_SECOND = 120;
+    constexpr int32_t MILLISECOND = 1000;
+    int32_t seed = (unsigned)time(NULL);
+    srand(seed);
+    int32_t delay = rand() % MAX_DELAY_SECOND + 1;
+    handler->PostTask(task, delay * MILLISECOND);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
