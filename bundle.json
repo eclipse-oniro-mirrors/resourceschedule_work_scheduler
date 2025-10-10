@@ -50,7 +50,8 @@
           "hicollie",
           "hitrace",
           "power_manager",
-          "resource_schedule_service"
+          "resource_schedule_service",
+          "runtime_core"
         ]
       },
       "build": {
