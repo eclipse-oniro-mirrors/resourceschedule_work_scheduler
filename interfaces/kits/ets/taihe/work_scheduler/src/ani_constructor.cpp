@@ -17,8 +17,15 @@
 
 ANI_EXPORT ani_status ANI_Constructor(ani_vm *vm, uint32_t *result)
 {
+    if (vm == nullptr || result == nullptr) {
+        return ANI_ERROR;
+    }
     ani_env *env;
     if (ANI_OK != vm->GetEnv(ANI_VERSION_1, &env)) {
+        return ANI_ERROR;
+    }
+    if (env == nullptr) {
+        std::cerr << "Error::env is nullptr" << std::endl;
         return ANI_ERROR;
     }
     if (ANI_OK != ohos::resourceschedule::workScheduler::ANIRegister(env)) {

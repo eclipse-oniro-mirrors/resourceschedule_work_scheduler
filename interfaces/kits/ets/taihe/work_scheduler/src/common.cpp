@@ -57,14 +57,14 @@ std::string Common::FindErrMsg(const int32_t errCode)
     }
     auto iter = saErrCodeMsgMap.find(errCode);
     if (iter != saErrCodeMsgMap.end()) {
-        std::string errMessage = "BussinessError ";
+        std::string errMessage = "BusinessError ";
         int32_t errCodeInfo = FindErrCode(errCode);
         errMessage.append(std::to_string(errCodeInfo)).append(": ").append(iter->second);
         return errMessage;
     }
     iter = paramErrCodeMsgMap.find(errCode);
     if (iter != paramErrCodeMsgMap.end()) {
-        std::string errMessage = "BussinessError 401: Parameter error. ";
+        std::string errMessage = "BusinessError 401: Parameter error. ";
         errMessage.append(iter->second);
         return errMessage;
     }
@@ -304,7 +304,7 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
     ::ohos::resourceschedule::workScheduler::WorkInfo &aniWork)
 {
     int typeId = VALUE_TYPE_NULL;
-    auto aniParams = aniWork.parameters.has_value() ? aniWork.parameters.value() : map<string, ParameType>{};
+    auto aniParams = aniWork.parameters.has_value() ? aniWork.parameters.value() : std::map<std::string, ParameType>{};
     for (const auto &iter : extrasMap) {
         typeId = AAFwk::WantParams::GetDataType(iter.second);
         switch (typeId) {
@@ -341,12 +341,12 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
                 break;
             }
             default: {
-                WS_HILOGE("parameters type not supported.");
+                WS_HILOGE("parameters type not supported: %{public}d", typeId);
                 return false;
             }
         }
     }
-    aniWork.parameters = optional<map<string, ParameType>>(std::in_place, aniParams);
+    aniWork.parameters = optional<std::map<std::string, ParameType>>(std::in_place, aniParams);
     return true;
 }
 
@@ -392,7 +392,7 @@ void Common::ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workIn
     aniWork.repeatCycleTime = optional<int32_t>(std::in_place, workInfo->GetTimeInterval());
     aniWork.isRepeat = optional<bool>(std::in_place, workInfo->IsRepeat());
     aniWork.repeatCount = optional<int32_t>(std::in_place, workInfo->GetCycleCount());
-    aniWork.isDeepIdle = optional<bool>(std::in_place, UNSET_INT_PARAM);
+    aniWork.isDeepIdle = optional<bool>(std::in_place, false);
     aniWork.idleWaitTime = optional<int32_t>(std::in_place, UNSET_INT_PARAM);
     ParseExtrasInfo(workInfo, aniWork);
 }

@@ -52,7 +52,7 @@ void StopWork(::ohos::resourceschedule::workScheduler::WorkInfo const &work, opt
 {
     WorkScheduler::WorkInfo workInfo = WorkScheduler::WorkInfo();
     if (!Common::GetWorkInfo(work, workInfo)) {
-        WS_HILOGE("StartWork parse parameter failed");
+        WS_HILOGE("StopWork parse parameter failed");
         return;
     }
     ErrCode errCode = ERR_OK;
@@ -102,7 +102,7 @@ array<::ohos::resourceschedule::workScheduler::WorkInfo> ObtainAllWorksSync()
         return {};
     }
     if (workInfoList.empty()) {
-        WS_HILOGE("workInfoList is nullptr");
+        WS_HILOGE("workInfoList is empty");
         return {};
     }
     std::vector<::ohos::resourceschedule::workScheduler::WorkInfo> aniWorkInfoList;
