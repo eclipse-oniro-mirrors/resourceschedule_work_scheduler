@@ -304,7 +304,7 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
     ::ohos::resourceschedule::workScheduler::WorkInfo &aniWork)
 {
     int typeId = VALUE_TYPE_NULL;
-    auto aniParams = aniWork.parameters.has_value() ? aniWork.parameters.value() : std::map<std::string, ParameType>{};
+    auto aniParams = aniWork.parameters.has_value() ? aniWork.parameters.value() : map<string, ParameType>{};
     for (const auto &iter : extrasMap) {
         typeId = AAFwk::WantParams::GetDataType(iter.second);
         switch (typeId) {
@@ -346,7 +346,7 @@ bool Common::ConvertToAniParameters(std::map<std::string, sptr<AAFwk::IInterface
             }
         }
     }
-    aniWork.parameters = optional<std::map<std::string, ParameType>>(std::in_place, aniParams);
+    aniWork.parameters = optional<map<string, ParameType>>(std::in_place, aniParams);
     return true;
 }
 
