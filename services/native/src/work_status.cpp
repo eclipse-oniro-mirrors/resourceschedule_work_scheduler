@@ -844,7 +844,13 @@ bool WorkStatus::IsNeedDiscreteScheduled()
     if (!workInfo_->IsCallBySystemApp()) {
         return false;
     }
-    if (!IsBatteryAndNetworkReady(WorkCondition::Type::NETWORK)) {
+    auto workConditionMap = workInfo_->GetConditionMap();
+    auto type = WorkCondition::Type::NETWORK;
+    std::lock_guard<ffrt::mutex> lock(conditionMapMutex_);
+    if (conditionMap_.count(type) <= 0 || workConditionMap->count(type) <= 0) {
+        return false;
+    }
+    if (!IsBatteryAndNetworkReady(type)) {
         return false;
     }
     return true;
