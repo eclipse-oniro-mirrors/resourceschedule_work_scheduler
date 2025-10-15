@@ -878,13 +878,14 @@ int32_t WorkSchedulerService::StopAndCancelWork(const WorkInfo& workInfo)
 bool WorkSchedulerService::StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
     const bool needCancel, bool isTimeOut)
 {
-    if (workPolicyManager_->StopWork(workStatus, uid, needCancel, isTimeOut)) {
+    bool stopSuccess = workPolicyManager_->StopWork(workStatus, uid, needCancel, isTimeOut);
+    if (stopSuccess) {
         workQueueManager_->CancelWork(workStatus);
     }
-    if (!isTimeOut) {
+    if (!isTimeOut && stopSuccess) {
         workPolicyManager_->RemoveWatchDog(workStatus);
     }
-    return true;
+    return stopSuccess;
 }
 
 void WorkSchedulerService::WatchdogTimeOut(std::shared_ptr<WorkStatus> workStatus)
@@ -1590,10 +1591,13 @@ int32_t WorkSchedulerService::StopDeepIdleWorks()
     }
 
     for (shared_ptr<WorkStatus> workStatus : works) {
-        WS_HILOGI("stop work by condition, bundleName:%{public}s, workId:%{public}s",
+        if (StopWorkInner(workStatus, workStatus->uid_, false, false)) {
+            WS_HILOGI("stop work by condition success, bundleName:%{public}s, workId:%{public}s",
+                workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+            continue;
+        }
+        WS_HILOGE("stop work by condition failed, bundleName:%{public}s, workId:%{public}s",
             workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
-        StopWorkInner(workStatus, workStatus->uid_, false, false);
-        workPolicyManager_->RemoveWatchDog(workStatus);
     }
     return ERR_OK;
 }

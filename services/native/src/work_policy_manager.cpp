@@ -217,7 +217,9 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
     bool hasCanceled = false;
     if (workStatus->IsRunning()) {
         workStatus->lastTimeout_ = isTimeOut;
-        workConnManager_->StopWork(workStatus, isTimeOut);
+        if (!workConnManager_->StopWork(workStatus, isTimeOut)) {
+            return hasCanceled;
+        }
         if (!workStatus->IsRepeating()) {
             workStatus->MarkStatus(WorkStatus::Status::REMOVED);
             RemoveFromUidQueue(workStatus, uid);

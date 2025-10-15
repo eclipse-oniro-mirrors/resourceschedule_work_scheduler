@@ -15,6 +15,7 @@
 
 #include <unistd.h>
 #include "work_scheduler_connection.h"
+#include "work_sched_data_manager.h"
 
 #include "work_sched_hilog.h"
 
@@ -43,6 +44,13 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
         return;
     }
     sleep(1);
+    if (workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN &&
+        !DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle()) {
+        WS_HILOGE("Exited deep idle, cancel execute OnWorkStart, bundleName:%{public}s workId = %{public}d.",
+            workInfo_->GetBundleName().c_str(), workInfo_->GetWorkId());
+        isConnected_.store(true);
+        return;
+    }
     proxy_->OnWorkStart(*workInfo_);
     WS_HILOGI("On ability connectDone, workId = %{public}d.", workInfo_->GetWorkId());
     isConnected_.store(true);
