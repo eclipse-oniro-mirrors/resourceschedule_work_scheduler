@@ -493,6 +493,10 @@ std::string WorkInfo::ParseToJsonStr()
         std::map<std::string, sptr<AAFwk::IInterface>> extrasMap = extras_->GetParams();
         int typeId = INVALID_VALUE;
         for (auto it : extrasMap) {
+            if (it.second == nullptr) {
+                WS_HILOGE("extrasMap value is nullptr, key: %{public}s", it.first.c_str());
+                continue;
+            }
             typeId = AAFwk::WantParams::GetDataType(it.second);
             extrasType[it.first] = typeId;
             if (typeId != INVALID_VALUE) {
