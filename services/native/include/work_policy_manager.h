@@ -78,9 +78,12 @@ public:
      * @param uid The uid.
      * @param needCancel The need cancel.
      * @param isTimeOut The is time out.
-     * @return True if success,else false.
+     * @return std::pair<bool, bool> a pair containing:
+     *         - first: `true` if workConnManger successfully stops the task, `false` if failed.
+     *         - second: `true` if the task was canceled, `false` otherwise.
      */
-    bool StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
+    std::pair<bool, bool> StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
+        const bool needCancel, bool isTimeOut);
     /**
      * @brief Stop and clear works.
      *

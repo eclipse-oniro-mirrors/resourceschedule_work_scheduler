@@ -77,7 +77,7 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
         }
     }
 
-    if (!workStatus->workInfo_->GetExtension()) {
+    if (!WorkSchedUtils::CheckExtensionInfos(workStatus->bundleName_, workStatus->abilityName_, workStatus->uid_)) {
         WS_HILOGE("%{public}s extension's type is not workScheduler, connect failed", workStatus->bundleName_.c_str());
         WorkSchedUtil::HiSysEventException(EventErrorCode::CONNECT_ABILITY,
             "app extension's type is not workScheduler");

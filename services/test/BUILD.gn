@@ -97,7 +97,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "samgr:samgr_proxy",
     "time_service:time_client",
   ]
-  defines = []
+  defines = [ "WORK_SCHEDULER_TEST" ]
   if (bundle_active_enable) {
     external_deps += [ "device_usage_statistics:usagestatsinner" ]
     defines += [ "DEVICE_USAGE_STATISTICS_ENABLE" ]

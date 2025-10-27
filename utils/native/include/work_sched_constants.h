@@ -56,6 +56,7 @@ enum EventErrorCode {
     SERVICE_STOP
 };
 inline constexpr int JSON_INDENT_WIDTH = 4;
+inline constexpr int32_t UID_TRANSFORM_DIVISOR = 200000;
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H

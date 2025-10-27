@@ -44,7 +44,6 @@ public:
         preinstalled_ = workInfo.preinstalled_;
         uriKey_ = workInfo.uriKey_;
         appIndex_ = workInfo.appIndex_;
-        extension_ = workInfo.extension_;
         saId_ = workInfo.saId_;
         residentSa_ = workInfo.residentSa_;
         extras_ = workInfo.extras_;
@@ -154,12 +153,6 @@ public:
      * @param appIndex The appIndex.
      */
     void RefreshAppIndex(int32_t appIndex);
-    /**
-     * @brief Refresh extension.
-     *
-     * @param extension The extension.
-     */
-    void RefreshExtension(bool extension);
     /**
      * @brief Set callBySystemApp flag.
      */
@@ -328,12 +321,6 @@ public:
      */
     int32_t GetAppIndex() const;
     /**
-     * @brief Get extension.
-     *
-     * @return The extension.
-     */
-    bool GetExtension() const;
-    /**
      * @brief Get saId.
      *
      * @return The saId.
@@ -392,7 +379,6 @@ private:
     bool preinstalled_ {false};
     std::string uriKey_;
     int32_t appIndex_;
-    bool extension_;
     int32_t saId_;
     bool residentSa_;
     bool isInnerApply_ {false};

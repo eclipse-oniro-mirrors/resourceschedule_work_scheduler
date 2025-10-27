@@ -64,6 +64,19 @@ public:
      * @return Millisecond time.
      */
     static uint64_t GetCurrentTimeMs();
+    /**
+     * @brief check workinfo has workschedulerextensionability.
+     *
+     * @return True has workschedulerextensionability, else false.
+     */
+    static bool CheckExtensionInfos(const std::string &bundleName, const std::string &abilityName, int32_t uid);
+
+    /**
+     * @brief check is user mode or not.
+     *
+     * @return True is user mode, else false.
+     */
+    static bool IsUserMode();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -210,15 +210,17 @@ void WorkPolicyManager::RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workSta
     conditionReadyQueue_->RemoveUnReady();
 }
 
-bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
+std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
     const bool needCancel, bool isTimeOut)
 {
-    WS_HILOGD("enter");
+    bool stopWorkSuccess = false;
     bool hasCanceled = false;
     if (workStatus->IsRunning()) {
         workStatus->lastTimeout_ = isTimeOut;
-        if (!workConnManager_->StopWork(workStatus, isTimeOut)) {
-            return hasCanceled;
+        if (workConnManager_->StopWork(workStatus, isTimeOut)) {
+            stopWorkSuccess = true;
+        } else {
+            return {stopWorkSuccess, hasCanceled};
         }
         if (!workStatus->IsRepeating()) {
             workStatus->MarkStatus(WorkStatus::Status::REMOVED);
@@ -244,7 +246,7 @@ bool WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t
         workConnManager_->StopWork(workStatus, isTimeOut);
     }
     CheckWorkToRun();
-    return hasCanceled;
+    return {stopWorkSuccess, hasCanceled};
 }
 
 bool WorkPolicyManager::StopAndClearWorks(int32_t uid)

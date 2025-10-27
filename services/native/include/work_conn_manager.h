@@ -30,6 +30,8 @@ using namespace Utils;
 namespace WorkScheduler {
 class WorkConnManager {
 public:
+    virtual ~WorkConnManager() = default;
+
     /**
      * @brief Start work.
      *
@@ -44,7 +46,7 @@ public:
      * @param isTimeOut If the work is timeout.
      * @return True if success,else false.
      */
-    bool StopWork(std::shared_ptr<WorkStatus> workStatus, bool isTimeOut);
+    virtual bool StopWork(std::shared_ptr<WorkStatus> workStatus, bool isTimeOut);
     /**
      * @brief Write start work event.
      *
