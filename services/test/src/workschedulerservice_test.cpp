@@ -928,22 +928,6 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: CheckExtensionInfos_001
- * @tc.desc: Test WorkSchedulerService CheckExtensionInfos.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
-{
-    int32_t uid = 1;
-    WorkInfo workInfo = WorkInfo();
-    workInfo.SetWorkId(1);
-    workInfo.SetElement("bundleName", "abilityName");
-    bool ret = workSchedulerService_->CheckExtensionInfos(workInfo, uid);
-    EXPECT_TRUE(ret);
-}
-
-/**
  * @tc.name: InitBgTaskSubscriber_001
  * @tc.desc: Test WorkSchedulerService InitBgTaskSubscriber.
  * @tc.type: FUNC

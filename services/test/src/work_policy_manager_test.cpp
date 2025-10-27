@@ -52,6 +52,14 @@ public:
     }
 };
 
+class MockWorkConnManager : public WorkConnManager {
+public:
+    bool StopWork(std::shared_ptr<WorkStatus> workStatus, bool isTimeOut)
+    {
+        return true;
+    }
+};
+
 std::shared_ptr<WorkPolicyManager> WorkPolicyManagerTest::workPolicyManager_ = nullptr;
 
 void WorkPolicyManagerTest::SetUpTestCase()
@@ -586,14 +594,15 @@ HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_002, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, StopWork_001, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
+    workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.RequestDeepIdle(true);
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    bool ret = workPolicyManager_->StopWork(workStatus, uid, false, false);
-    EXPECT_TRUE(ret);
+    std::pair<bool, bool> ret = workPolicyManager_->StopWork(workStatus, uid, false, false);
+    EXPECT_TRUE(ret.second);
 }
 
 /**
@@ -605,14 +614,15 @@ HWTEST_F(WorkPolicyManagerTest, StopWork_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, StopWork_002, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
+    workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.RequestRepeatCycle(1200000);
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    bool ret = workPolicyManager_->StopWork(workStatus, uid, true, false);
-    EXPECT_TRUE(ret);
+    std::pair<bool, bool> ret = workPolicyManager_->StopWork(workStatus, uid, true, false);
+    EXPECT_TRUE(ret.second);
 }
 
 /**
@@ -624,14 +634,15 @@ HWTEST_F(WorkPolicyManagerTest, StopWork_002, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, StopWork_003, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
+    workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.RequestRepeatCycle(1200000);
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    bool ret = workPolicyManager_->StopWork(workStatus, uid, true, false);
-    EXPECT_TRUE(ret);
+    std::pair<bool, bool> ret = workPolicyManager_->StopWork(workStatus, uid, true, false);
+    EXPECT_TRUE(ret.second);
 }
 
 /**
@@ -643,14 +654,15 @@ HWTEST_F(WorkPolicyManagerTest, StopWork_003, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, StopWork_004, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
+    workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.RequestDeepIdle(true);
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    bool ret = workPolicyManager_->StopWork(workStatus, uid, false, true);
-    EXPECT_TRUE(ret);
+    std::pair<bool, bool> ret = workPolicyManager_->StopWork(workStatus, uid, false, true);
+    EXPECT_TRUE(ret.second);
 }
 
 /**

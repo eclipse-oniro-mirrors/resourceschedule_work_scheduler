@@ -515,7 +515,6 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson005, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level2)
 {
     using namespace OHOS::WorkScheduler;
-    WorkInfo workInfo = WorkInfo();
     nlohmann::json root;
     root.clear();
     root["workId"] = 1;
@@ -523,6 +522,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level2)
     root["abilityName"] = "abilityName";
     root["saId"] = "1";
     root["residentSa"] = true;
+    WorkInfo workInfo = WorkInfo();
     bool res = workInfo.ParseFromJson(root);
     EXPECT_TRUE(res);
 
@@ -532,7 +532,8 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level2)
     root["abilityName"] = "abilityName";
     root["saId"] = 1;
     root["residentSa"] = "true";
-    res = workInfo.ParseFromJson(root);
+    WorkInfo workInfo1 = WorkInfo();
+    res = workInfo1.ParseFromJson(root);
     EXPECT_TRUE(res);
 
     root.clear();
@@ -541,7 +542,8 @@ HWTEST_F (WorkInfoTest, WorkInfoTestJson006, Function | MediumTest | Level2)
     root["abilityName"] = "abilityName";
     root["saId"] = 1;
     root["residentSa"] = true;
-    res = workInfo.ParseFromJson(root);
+    WorkInfo workInfo2 = WorkInfo();
+    res = workInfo2.ParseFromJson(root);
     EXPECT_TRUE(res);
 }
 

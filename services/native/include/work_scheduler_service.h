@@ -361,7 +361,6 @@ private:
     bool CheckProcessName();
     bool CheckCallingServiceName();
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t &appIndex, std::string &bundleName);
-    bool CheckExtensionInfos(WorkInfo &workInfo, int32_t uid);
     void DumpLoadSaWorks(const std::string &saIdStr, const std::string &uidStr, std::string &result);
     void DumpGetWorks(const std::string &uidStr, const std::string &workIdStr, std::string &result);
     std::string DumpExemptionBundles();

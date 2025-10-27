@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include "work_sched_utils.h"
+#include "work_sched_constants.h"
 
 #include "errors.h"
 #include "ohos_account_kits.h"
@@ -20,6 +21,14 @@
 #include "tokenid_kit.h"
 #include "ipc_skeleton.h"
 #include "work_sched_hilog.h"
+#include "parameters.h"
+#include <if_system_ability_manager.h>
+#include <iservice_registry.h>
+#include <system_ability_definition.h>
+#include "bundle_mgr_proxy.h"
+
+using namespace std;
+using namespace OHOS::AppExecFwk;
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -112,6 +121,50 @@ uint64_t WorkSchedUtils::GetCurrentTimeMs()
     auto now = chrono::system_clock::now();
     chrono::milliseconds currentTimeMs = chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch());
     return currentTimeMs.count();
+}
+
+bool WorkSchedUtils::CheckExtensionInfos(const string &bundleName, const string &abilityName, int32_t uid)
+{
+    if (bundleName.empty() || abilityName.empty()) {
+        return false;
+    }
+
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        WS_HILOGE("fail to get system ability mgr.");
+        return false;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        WS_HILOGE("fail to get bundle manager proxy.");
+        return false;
+    }
+    sptr<IBundleMgr> bundleMgr = iface_cast<IBundleMgr>(remoteObject);
+    BundleInfo bundleInfo;
+    if (bundleMgr->GetBundleInfo(bundleName,
+        BundleFlag::GET_BUNDLE_WITH_EXTENSION_INFO,
+        bundleInfo, uid / UID_TRANSFORM_DIVISOR)) {
+        auto findIter = std::find_if(bundleInfo.extensionInfos.begin(), bundleInfo.extensionInfos.end(),
+            [&](const auto &info) {
+                WS_HILOGD("%{public}s %{public}s %{public}d", info.bundleName.c_str(), info.name.c_str(), info.type);
+                return info.bundleName == bundleName &&
+                    info.name == abilityName &&
+                    info.type == ExtensionAbilityType::WORK_SCHEDULER;
+            });
+        if (findIter == bundleInfo.extensionInfos.end()) {
+            WS_HILOGE("extension info is error");
+            return false;
+        }
+    }
+    return true;
+}
+
+bool WorkSchedUtils::IsUserMode()
+{
+    bool secureMode = OHOS::system::GetBoolParameter("const.security.developermode.state", false);
+    bool debugable = OHOS::system::GetIntParameter("const.debuggable", 0) == 1;
+    return secureMode && !debugable;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
