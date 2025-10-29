@@ -497,7 +497,7 @@ std::string WorkInfo::ParseToJsonStr()
         root["parameters"] = extras;
         root["parametersType"] = extrasType;
     }
-    std::string result = root.dump(JSON_INDENT_WIDTH);
+    std::string result = root.dump(JSON_INDENT_WIDTH, ' ', false, nlohmann::json::error_handler_t::replace);
     return result;
 }
 
