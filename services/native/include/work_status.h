@@ -46,6 +46,7 @@ public:
      * @return Workid and uid.
      */
     static std::string MakeWorkId(int32_t workId, int32_t uid);
+    static time_t getOppositeTime();
 
     std::string workId_;
     std::string bundleName_;
