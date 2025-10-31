@@ -109,7 +109,7 @@ time_t getCurrentTime()
     return result;
 }
 
-time_t getOppositeTime()
+time_t WorkStatus::getOppositeTime()
 {
     time_t result;
     sptr<MiscServices::TimeServiceClient> timer = MiscServices::TimeServiceClient::GetInstance();

@@ -1021,8 +1021,9 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
     }
     constexpr int32_t MAX_DELAY_SECOND = 120;
     constexpr int32_t MILLISECOND = 1000;
-    uint32_t seed = static_cast<uint32_t>(time(NULL));
-    srand(seed);
+    int64_t seed = static_cast<int64_t>(WorkStatus::getOppositeTime())
+        + static_cast<int64_t>(getpid()) + static_cast<int64_t>(gettid());
+    srand(static_cast<uint32_t>(seed));
     int32_t delay = rand() % MAX_DELAY_SECOND + 1;
     handler->PostTask(task, delay * MILLISECOND);
 }
