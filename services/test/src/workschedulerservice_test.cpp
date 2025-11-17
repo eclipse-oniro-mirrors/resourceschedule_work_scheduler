@@ -96,7 +96,7 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
     static const std::string PUSH_SERVICE_NAME = "push_manager_service";
-    static const std::string BGTASK_SERVICE_NAME = "bgtaskmgr_service";
+    static const std::string BGTASK_SERVICE_NAME = "resource_schedule_service";
 }
 class WorkSchedulerServiceTest : public testing::Test {
 public:

@@ -75,11 +75,12 @@
 #include "hitrace_meter.h"
 #include "hisysevent.h"
 #include "res_type.h"
-#include "res_sched_client.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_config.h"
 #include "work_sched_constants.h"
 #include "work_sched_hisysevent_report.h"
+
+extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
 
 #ifdef HICOLLIE_ENABLE
 #include "xcollie/xcollie.h"
@@ -1621,11 +1622,11 @@ bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const 
         }
         WS_HILOGI("load SA: %{public}d residentSA:%{public}d successed.", saId, isResidentSa);
     }
-    std::unordered_map<std::string, std::string> payload;
+    nlohmann::json payload;
     payload["action"] = action;
     payload["saId"] = std::to_string(saId);
     uint32_t type = ResourceSchedule::ResType::RES_TYPE_DEVICE_IDLE;
-    ResourceSchedule::ResSchedClient::GetInstance().ReportData(type, 0, payload);
+    ReportDataInProcess(type, 0, payload);
     WS_HILOGI("Report SA: %{public}d residentSA:%{public}d successed.", saId, isResidentSa);
     return true;
 }
