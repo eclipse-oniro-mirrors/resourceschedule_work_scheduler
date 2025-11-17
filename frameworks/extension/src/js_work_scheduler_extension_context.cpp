@@ -84,7 +84,7 @@ public:
                 task->Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
             }
         };
-        if (napi_status::napi_ok != napi_send_event(env, asyncTask, napi_eprio_immediate)) {
+        if (napi_status::napi_ok != napi_send_event(env, asyncTask, napi_eprio_immediate, "OnStartExtensionAbility")) {
             napiAsyncTask->Reject(env, CreateJsErrorByNativeErr(
                 env, static_cast<int32_t>(AbilityErrorCode::ERROR_CODE_INNER), "send event failed"));
         } else {
@@ -124,7 +124,7 @@ public:
                 task->Reject(env, CreateJsErrorByNativeErr(env, innerErrorCode));
             }
         };
-        if (napi_status::napi_ok != napi_send_event(env, asyncTask, napi_eprio_immediate)) {
+        if (napi_status::napi_ok != napi_send_event(env, asyncTask, napi_eprio_immediate, "OnStopExtensionAbility")) {
             napiAsyncTask->Reject(env, CreateJsErrorByNativeErr(
                 env, static_cast<int32_t>(AbilityErrorCode::ERROR_CODE_INNER), "send event failed"));
         } else {
