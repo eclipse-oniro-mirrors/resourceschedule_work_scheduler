@@ -106,7 +106,7 @@ ohos_shared_library("workschedservice") {
     "hiview:libucollection_client",
     "init:libbegetutil",
     "ipc:ipc_single",
-    "resource_schedule_service:ressched_client",
+    "resource_schedule_service:resschedsvc",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
     "time_service:time_client",

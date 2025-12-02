@@ -36,10 +36,12 @@
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include "battery_srv_client.h"
 #endif
-#include "res_sched_client.h"
 #include "res_type.h"
 
 using namespace std;
+
+extern "C" int32_t ReportSyncEventInProcess(uint32_t resType, int64_t value,
+    const nlohmann::json& payload, nlohmann::json& reply);
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -487,7 +489,7 @@ bool WorkStatus::IsMailApp()
     nlohmann::json payload;
     nlohmann::json reply;
     payload["bundleName"] = bundleName_;
-    int32_t ret = ResourceSchedule::ResSchedClient::GetInstance().ReportSyncEvent(
+    int32_t ret = ReportSyncEventInProcess(
         ResourceSchedule::ResType::SYNC_RES_TYPE_GET_APP_TYPE, 0, payload, reply);
     if (ret != ERR_OK) {
         WS_HILOGE("getapp type err:%{public}d", ret);

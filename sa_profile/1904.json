@@ -1,5 +1,5 @@
 {
-    "process": "bgtaskmgr_service",
+    "process": "resource_schedule_service",
     "systemability": [
         {
             "name": 1904,
