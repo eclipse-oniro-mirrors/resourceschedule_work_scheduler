@@ -626,6 +626,9 @@ void WorkInfo::ParseConditionFromJsonStr(const nlohmann::json &value)
     if (value.contains("uid") && value["uid"].is_number_integer()) {
         this->uid_ = value["uid"].get<int32_t>();
     }
+    if (!value.contains("conditions")) {
+        return;
+    }
     nlohmann::json conditions = value["conditions"];
     if (conditions.contains("network") && conditions["network"].is_number_integer()) {
         this->RequestNetworkType(WorkCondition::Network(conditions["network"].get<int32_t>()));
