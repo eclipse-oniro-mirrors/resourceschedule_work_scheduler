@@ -447,6 +447,10 @@ namespace WorkScheduler {
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_START_WORK);
         
         workSchedulerService_->OnStart();
+        if (!workSchedulerService_->eventRunner_ ||
+            !workSchedulerService_->Init(workSchedulerService_->eventRunner_)) {
+            return false;
+        }
         workSchedulerService_->InitBgTaskSubscriber();
         if (!workSchedulerService_->ready_) {
             workSchedulerService_->ready_ = true;
