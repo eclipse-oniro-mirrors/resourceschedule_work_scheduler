@@ -452,22 +452,15 @@ namespace WorkScheduler {
             workSchedulerService_->ready_ = true;
         }
         if (workSchedulerService_->workQueueManager_ == nullptr) {
-            workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+            return false;
         }
-        if (workSchedulerService_->standbyStateObserver_ == nullptr) {
-            workSchedulerService_->standbyStateObserver_ =
-                new (std::nothrow) WorkStandbyStateChangeCallback(workSchedulerService_->workQueueManager_);
+        if (workSchedulerService_->standbyStateObserver_ == nullptr ||
+            workSchedulerService_->groupObserver_ == nullptr) {
+            return false;
         }
-        if (workSchedulerService_->groupObserver_ == nullptr) {
-            workSchedulerService_->groupObserver_ =
-                new (std::nothrow) WorkBundleGroupChangeCallback(workSchedulerService_->workQueueManager_);
-        }
-        if (workSchedulerService_->workPolicyManager_ == nullptr) {
-            workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
-            workSchedulerService_->workPolicyManager_->Init(workSchedulerService_->eventRunner_);
-        }
-        if (workSchedulerService_->workPolicyManager_->workConnManager_ == nullptr) {
-            workSchedulerService_->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+        if (workSchedulerService_->workPolicyManager_ == nullptr ||
+            workSchedulerService_->workPolicyManager_->workConnManager_ == nullptr) {
+            return false;
         }
         OnProcEfficiencyResourcesChange();
         OnWorkStandbyStateChange();
