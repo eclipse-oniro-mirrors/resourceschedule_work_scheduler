@@ -175,7 +175,7 @@ WEAK_FUNC bool WorkSchedulerService::IsBaseAbilityReady()
         WS_HILOGE("failed to get systemAbilityManger");
         return false;
     }
-    struct const SaInfo {
+    struct SaInfo {
         int32_t id;
         const char *name;
     };

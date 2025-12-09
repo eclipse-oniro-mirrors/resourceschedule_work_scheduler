@@ -1266,5 +1266,17 @@ HWTEST_F(WorkSchedulerServiceTest, DumpTriggerWork_004, TestSize.Level1)
     workSchedulerService_->DumpTriggerWork(uIdStr, workIdStr, result);
     EXPECT_EQ(result, "the work is not exist\n");
 }
+
+/**
+ * @tc.name: IsBaseAbilityReady_001
+ * @tc.desc: Test WorkSchedulerService IsBaseAbilityReady.
+ * @tc.type: FUNC
+ * @tc.require: https://gitcode.com/openharmony/resourceschedule_work_scheduler/issues/537
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsBaseAbilityReady_001, TestSize.Level1)
+{
+    bool ret = workSchedulerService_->IsBaseAbilityReady();
+    EXPECT_EQ(ret, true);
+}
 }
 }
