@@ -23,7 +23,8 @@ enum PolicyType {
     APP_DATA_CLEAR,
     APP_ADDED,
     APP_CHANGED,
-    USER_SWITCHED
+    USER_SWITCHED,
+    USER_STARTED
 };
 } // namespace WorkScheduler
 } // namespace OHOS

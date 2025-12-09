@@ -358,6 +358,10 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             service->InitPreinstalledWork();
             break;
         }
+        case PolicyType::USER_STARTED: {
+            service->InitPreinstalledWork();
+            break;
+        }
         case PolicyType::APP_REMOVED: {
             int32_t uid = detectorVal->intVal;
             WorkStatus::ClearUidLastTimeMap(uid);

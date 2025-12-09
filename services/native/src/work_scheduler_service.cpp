@@ -171,15 +171,31 @@ WEAK_FUNC bool WorkSchedulerService::IsBaseAbilityReady()
 {
     sptr<ISystemAbilityManager> systemAbilityManager
         = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (systemAbilityManager == nullptr
-        || systemAbilityManager->CheckSystemAbility(APP_MGR_SERVICE_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(COMMON_EVENT_SERVICE_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(BACKGROUND_TASK_MANAGER_SERVICE_ID) == nullptr
-        || systemAbilityManager->CheckSystemAbility(TIME_SERVICE_ID) == nullptr) {
+    if (systemAbilityManager == nullptr) {
+        WS_HILOGE("failed to get systemAbilityManger");
         return false;
     }
-    return true;
+    struct SaInfo {
+        int32_t id;
+        const char *name;
+    };
+    static const SaInfo saInfos[] = {
+        {APP_MGR_SERVICE_ID, "AppMgrService"},
+        {COMMON_EVENT_SERVICE_ID, "CommonEventService"},
+        {BUNDLE_MGR_SERVICE_SYS_ABILITY_ID, "BundleMgrService"},
+        {BACKGROUND_TASK_MANAGER_SERVICE_ID, "BackgroundTaskManagerService"},
+        {SUBSYS_ACCOUNT_SYS_ABILITY_ID_BEGIN, "AccountService"},
+        {TIME_SERVICE_ID, "TimeService"}
+    };
+    bool allReady = true;
+    for (const auto &sa : saInfos) {
+        if (systemAbilityManager->CheckSystemAbility(sa.id) == nullptr) {
+            WS_HILOGE("base ability %{public}s not ready", sa.name);
+            allReady = false;
+            break;
+        }
+    }
+    return allReady;
 }
 
 void WorkSchedulerService::InitPersistedWork()
