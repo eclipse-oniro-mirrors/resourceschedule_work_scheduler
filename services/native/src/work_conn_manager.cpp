@@ -103,7 +103,8 @@ bool WorkConnManager::StartWork(shared_ptr<WorkStatus> workStatus)
     int32_t ret = abilityMgr_->ConnectAbility(want, connection, nullptr, workStatus->userId_);
     if (ret != ERR_OK) {
         WS_HILOGE("connect failed, ret: %{public}d", ret);
-        WorkSchedUtil::HiSysEventException(EventErrorCode::CONNECT_ABILITY, "connect system ability failed");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::CONNECT_ABILITY, "connect system ability failed, ret: " +
+            std::to_string(ret));
         return false;
     }
     AddConnInfo(workStatus->workId_, connection);
@@ -123,7 +124,8 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
     int32_t ret = abilityMgr_->DisconnectAbility(connect);
     if (ret != ERR_OK) {
         WS_HILOGE("disconnect failed, ret: %{public}d", ret);
-        WorkSchedUtil::HiSysEventException(EventErrorCode::DISCONNECT_ABILITY, "disconnect system ability failed");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::DISCONNECT_ABILITY, 
+            "disconnect system ability failed, ret: " + std::to_string(ret));
         return false;
     }
     return true;
@@ -131,7 +133,6 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
 
 bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut)
 {
-    bool ret = false;
     sptr<WorkSchedulerConnection> conn = GetConnInfo(workStatus->workId_);
     if (!conn) {
         WS_HILOGE("%{public}s %{public}d connection is null", workStatus->workId_.c_str(), isTimeOut);
@@ -143,27 +144,25 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut
         return false;
     }
     conn->StopWork();
-    ret = DisConnect(conn);
+    DisConnect(conn);
 
     RemoveConnInfo(workStatus->workId_);
 
     // Notify work remove event to battery statistics only work has started
-    if (ret) {
-        int32_t pid = IPCSkeleton::GetCallingPid();
-        workStatus->duration_ += WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
-        HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
-            HiSysEvent::EventType::STATISTIC, "UID",
-            workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_,
-            "REASON", isTimeOut, "DURATION", workStatus->duration_);
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    workStatus->duration_ += WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
+    HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
+        HiSysEvent::EventType::STATISTIC, "UID",
+        workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_,
+        "REASON", isTimeOut, "DURATION", workStatus->duration_);
 #ifdef DEVICE_STANDBY_ENABLE
-        WS_HILOGI("OnWorkStop uid:%{public}d bundleName:%{public}s workId:%{public}s duration:%{public}" PRIu64
-            ", startTime:%{public}" PRIu64, workStatus->uid_, workStatus->bundleName_.c_str(),
-            workStatus->workId_.c_str(), workStatus->duration_, workStatus->workStartTime_);
-        DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,
-            workStatus->uid_, workStatus->bundleName_);
+    WS_HILOGI("OnWorkStop uid:%{public}d bundleName:%{public}s workId:%{public}s duration:%{public}" PRIu64
+        ", startTime:%{public}" PRIu64, workStatus->uid_, workStatus->bundleName_.c_str(),
+        workStatus->workId_.c_str(), workStatus->duration_, workStatus->workStartTime_);
+    DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,
+        workStatus->uid_, workStatus->bundleName_);
 #endif // DEVICE_STANDBY_ENABLE
-    }
-    return ret;
+    return true;
 }
 
 void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
