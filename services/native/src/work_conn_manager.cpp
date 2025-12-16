@@ -124,7 +124,7 @@ bool WorkConnManager::DisConnect(sptr<WorkSchedulerConnection> connect)
     int32_t ret = abilityMgr_->DisconnectAbility(connect);
     if (ret != ERR_OK) {
         WS_HILOGE("disconnect failed, ret: %{public}d", ret);
-        WorkSchedUtil::HiSysEventException(EventErrorCode::DISCONNECT_ABILITY, 
+        WorkSchedUtil::HiSysEventException(EventErrorCode::DISCONNECT_ABILITY,
             "disconnect system ability failed, ret: " + std::to_string(ret));
         return false;
     }
