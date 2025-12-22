@@ -321,7 +321,7 @@ void WorkQueueManager::AsyncStopWork(std::shared_ptr<WorkStatus> workStatus)
             WS_HILOGE("strong is null");
             return;
         }
-        service->StopWorkInner(workStatus, workStatus->uid_, false, false);
+        service->StopWorkInner(workStatus, workStatus->uid_, false, true);
         workStatus->SetTimeout(false);
     };
     auto handler = service->GetHandler();
