@@ -59,6 +59,10 @@ bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& run
         return false;
     }
     workConnManager_ = make_shared<WorkConnManager>();
+    if (wss_.lock() == nullptr) {
+        WS_HILOGE("wss_ lock failed");
+        return false;
+    }
     handler_ = wss_.lock()->GetHandler();
     if (handler_ == nullptr) {
         WS_HILOGE("failed due to handler_ is nullptr");
@@ -377,6 +381,10 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 
 bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int32_t runningCount)
 {
+    if (wss_.lock() == nullptr) {
+        WS_HILOGE("wss_ lock failed");
+        return false;
+    }
     if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1 &&
         wss_.lock()->IsExemptionBundle(topWork->bundleName_)) {
         return true;
@@ -462,6 +470,10 @@ void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
         WS_HILOGE("wss_ expired");
         return;
     }
+    if (wss_.lock() == nullptr) {
+        WS_HILOGE("wss_ lock failed");
+        return;
+    }
     wss_.lock()->UpdateWorkBeforeRealStart(topWork);
     RemoveFromReadyQueue(topWork);
     bool ret = wss_.lock()->LoadSa(topWork, "");
@@ -487,6 +499,10 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     WS_HILOGD("RealStartWork topWork ID: %{public}s", topWork->workId_.c_str());
     if (wss_.expired()) {
         WS_HILOGE("wss_ expired");
+        return;
+    }
+    if (wss_.lock() == nullptr) {
+        WS_HILOGE("wss_ lock failed");
         return;
     }
     UpdateWatchdogTime(wss_.lock(), topWork);
@@ -581,6 +597,10 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
     }
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
         watchdogId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
+    if (wss_.lock() == nullptr) {
+        WS_HILOGE("wss_ lock failed");
+        return;
+    }
     wss_.lock()->WatchdogTimeOut(workStatus);
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.erase(watchdogId);
