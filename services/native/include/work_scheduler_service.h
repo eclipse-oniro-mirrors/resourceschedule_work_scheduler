@@ -324,6 +324,7 @@ public:
     bool NeedCreateTimer(int32_t saId, int32_t uid, int32_t time);
     bool HasDeepIdleTime();
     std::map<int32_t, std::pair<int32_t, int32_t>> GetDeepIdleTimeMap();
+    bool IsValidPath(const std::string &path);
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);

@@ -1354,6 +1354,11 @@ bool WorkSchedulerService::CreateNodeFile()
     }
 
     std::string filePath = realPath + PERSISTED_FILE_NAME;
+    if (!IsValidPath(filePath)) {
+        WS_HILOGE("Get real dir path failed, is unvalid path");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "get real dir path failed, is unvalid path");
+        return false;
+    }
     // 2. 目录存在创建文件
     FILE *file = fopen(filePath.c_str(), "w+");
     if (file == nullptr) {
@@ -1374,6 +1379,11 @@ bool WorkSchedulerService::CreateNodeFile()
     }
     WS_HILOGI("Resources created successfully.");
     return true;
+}
+
+bool WorkSchedulerService::IsValidPath(const std::string path)
+{
+    return !(path.empty() || path.find(PERSISTED_FILE_PATH) != 0);
 }
 
 void WorkSchedulerService::UpdateEffiResApplyInfo(int32_t uid, bool isAdd)
