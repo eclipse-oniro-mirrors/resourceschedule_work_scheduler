@@ -706,7 +706,7 @@ HWTEST_F(WorkPolicyManagerTest, IsLastWorkTimeout_001, TestSize.Level1)
     workPolicyManager_->AddWork(workStatus, uid);
 
     bool ret = false;
-    ret = workPolicyManager_->IsLastWorkTimeout(workId, uid, ret);
+    workPolicyManager_->IsLastWorkTimeout(workId, uid, ret);
     EXPECT_TRUE(ret);
 }
 
