@@ -288,7 +288,8 @@ int32_t WorkPolicyManager::IsLastWorkTimeout(int32_t workId, int32_t uid, bool &
         }
         shared_ptr<WorkStatus> workStatus = queue->Find(workIdStr);
         if (workStatus != nullptr) {
-            return workStatus->IsLastWorkTimeout();
+            result = workStatus->IsLastWorkTimeout();
+            return ERR_OK;
         }
     }
     return E_WORK_NOT_EXIST_FAILED;
