@@ -42,7 +42,7 @@ namespace WorkScheduler {
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name1", "ability_name1");
         workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
-        workSchedulerService_->StartWork(workInfo);
+        workSchedulerService_->AddWorkInner(workInfo);
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
@@ -60,7 +60,7 @@ namespace WorkScheduler {
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name2", "ability_name2");
         workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
-        workSchedulerService_->StartWork(workInfo);
+        workSchedulerService_->AddWorkInner(workInfo);
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
@@ -78,7 +78,7 @@ namespace WorkScheduler {
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name3", "ability_name3");
         workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_USB);
-        workSchedulerService_->StartWork(workInfo);
+        workSchedulerService_->AddWorkInner(workInfo);
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");
@@ -96,7 +96,7 @@ namespace WorkScheduler {
         workInfo.SetWorkId(workId);
         workInfo.SetElement("bundle_name4", "ability_name4");
         workInfo.RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_WIFI);
-        workSchedulerService_->StartWork(workInfo);
+        workSchedulerService_->AddWorkInner(workInfo);
         argsInStr.clear();
         result.clear();
         argsInStr.push_back("-d");

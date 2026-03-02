@@ -79,7 +79,7 @@ namespace WorkScheduler {
             workSchedulerService_->groupObserver_ =
                 new (std::nothrow) WorkBundleGroupChangeCallback(workSchedulerService_->workQueueManager_);
         }
-        workSchedulerService_->StartWork(workInfo);
+        workSchedulerService_->AddWorkInner(workInfo);
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }
