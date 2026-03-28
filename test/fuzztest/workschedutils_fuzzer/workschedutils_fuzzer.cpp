@@ -33,7 +33,8 @@ namespace OHOS {
 namespace AccountSA {
 ErrCode OsAccountManager::QueryActiveOsAccountIds(std::vector<int32_t>& osAccountIds)
 {
-    osAccountIds.push_back(100);
+    constexpr int32_t mockAccountId = 100;
+    osAccountIds.push_back(mockAccountId);
     return ERR_OK;
 }
 }
@@ -68,14 +69,15 @@ sptr<ISystemAbilityManager> SystemAbilityManagerClient::GetSystemAbilityManager(
 }
 
 namespace WorkScheduler {
-    bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
-    {
-        if (data == nullptr || size < 8) {
-            return false;
-        }
+bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
+{
+    constexpr size_t minSize = 8;
+    if (data == nullptr || size < minSize) {
+        return false;
+    }
 
-        // Extract different types of data from the input
-        const uint8_t* ptr = data;
+    // Extract different types of data from the input
+    const uint8_t* ptr = data;
         size_t remaining = size;
 
         // Get an int32_t for IsIdActive and GetUserIdByUid

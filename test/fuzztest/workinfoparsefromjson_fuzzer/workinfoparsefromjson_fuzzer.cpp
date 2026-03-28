@@ -78,9 +78,10 @@ static uint32_t GetUint32FromData(const uint8_t* data, size_t size, size_t& offs
 
 static bool GetBoolFromData(const uint8_t* data, size_t size, size_t& offset)
 {
+    constexpr uint8_t modTwo = 2;
     bool val = false;
     if (offset < size) {
-        val = (data[offset] % 2) == 1;
+        val = (data[offset] % modTwo) == 1;
         offset += 1;
     }
     return val;
@@ -125,13 +126,18 @@ void FuzzParseFromJsonWithAllConditions(const uint8_t* data, size_t size)
     root["earliestStartTime"] = GetInt32FromData(data, size, offset);
     root["createTime"] = static_cast<uint64_t>(GetInt64FromData(data, size, offset));
 
+    constexpr int32_t modNetwork = 7;
+    constexpr int32_t modCharger = 6;
+    constexpr int32_t modBattery = 4;
+    constexpr int32_t modStorage = 4;
+    
     nlohmann::json conditions;
-    conditions["network"] = GetInt32FromData(data, size, offset) % 7;
+    conditions["network"] = GetInt32FromData(data, size, offset) % modNetwork;
     conditions["isCharging"] = GetBoolFromData(data, size, offset);
-    conditions["chargerType"] = GetInt32FromData(data, size, offset) % 6;
+    conditions["chargerType"] = GetInt32FromData(data, size, offset) % modCharger;
     conditions["batteryLevel"] = GetInt32FromData(data, size, offset);
-    conditions["batteryStatus"] = GetInt32FromData(data, size, offset) % 4;
-    conditions["storage"] = GetInt32FromData(data, size, offset) % 4;
+    conditions["batteryStatus"] = GetInt32FromData(data, size, offset) % modBattery;
+    conditions["storage"] = GetInt32FromData(data, size, offset) % modStorage;
     conditions["isDeepIdle"] = GetBoolFromData(data, size, offset);
     conditions["deepIdleTime"] = GetInt32FromData(data, size, offset);
 
@@ -179,38 +185,8 @@ void FuzzParseFromJsonSaPath(const uint8_t* data, size_t size)
     workInfo.Dump(dumpResult);
 }
 
-void FuzzParseFromJsonRoundTrip(const uint8_t* data, size_t size)
+void FuzzParseFromJsonRoundTripPart2(WorkInfo& srcInfo)
 {
-    size_t offset = 0;
-    int32_t workId = GetInt32FromData(data, size, offset);
-    int32_t batteryLevel = GetInt32FromData(data, size, offset);
-    uint32_t timeInterval = GetUint32FromData(data, size, offset);
-    int32_t cycle = GetInt32FromData(data, size, offset);
-    bool isCharging = GetBoolFromData(data, size, offset);
-    bool isDeepIdle = GetBoolFromData(data, size, offset);
-    int64_t baseTime = GetInt64FromData(data, size, offset);
-    int32_t networkType = GetInt32FromData(data, size, offset) % 7;
-    int32_t chargerType = GetInt32FromData(data, size, offset) % 6;
-
-    WorkInfo srcInfo;
-    srcInfo.SetWorkId(workId);
-    srcInfo.SetElement("com.example.fuzz", "FuzzAbility");
-    srcInfo.RequestPersisted(true);
-    srcInfo.RequestNetworkType(WorkCondition::Network(networkType));
-    srcInfo.RequestChargerType(isCharging, WorkCondition::Charger(chargerType));
-    srcInfo.RequestBatteryLevel(batteryLevel);
-    srcInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
-    srcInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
-    srcInfo.RequestRepeatCycle(timeInterval, cycle);
-    srcInfo.RequestBaseTime(static_cast<time_t>(baseTime));
-    srcInfo.RequestDeepIdle(isDeepIdle);
-    srcInfo.RefreshUid(1000);
-    srcInfo.RefreshAppIndex(1);
-    srcInfo.SetCallBySystemApp(true);
-    srcInfo.SetPreinstalled(true);
-    srcInfo.SetEarliestStartTime(100);
-    srcInfo.SetDeepIdleTime(300);
-
     std::string jsonStr = srcInfo.ParseToJsonStr();
 
     nlohmann::json parsed = nlohmann::json::parse(jsonStr, nullptr, false);
@@ -248,6 +224,95 @@ void FuzzParseFromJsonRoundTrip(const uint8_t* data, size_t size)
     }
 }
 
+void FuzzParseFromJsonRoundTrip(const uint8_t* data, size_t size)
+{
+    size_t offset = 0;
+    int32_t workId = GetInt32FromData(data, size, offset);
+    int32_t batteryLevel = GetInt32FromData(data, size, offset);
+    uint32_t timeInterval = GetUint32FromData(data, size, offset);
+    int32_t cycle = GetInt32FromData(data, size, offset);
+    bool isCharging = GetBoolFromData(data, size, offset);
+    bool isDeepIdle = GetBoolFromData(data, size, offset);
+    int64_t baseTime = GetInt64FromData(data, size, offset);
+    int32_t networkType = GetInt32FromData(data, size, offset) % 7;
+    int32_t chargerType = GetInt32FromData(data, size, offset) % 6;
+
+    WorkInfo srcInfo;
+    srcInfo.SetWorkId(workId);
+    srcInfo.SetElement("com.example.fuzz", "FuzzAbility");
+    srcInfo.RequestPersisted(true);
+    srcInfo.RequestNetworkType(WorkCondition::Network(networkType));
+    srcInfo.RequestChargerType(isCharging, WorkCondition::Charger(chargerType));
+    srcInfo.RequestBatteryLevel(batteryLevel);
+    constexpr int32_t mockUid = 1000;
+    constexpr int32_t mockAppIndex = 1;
+    constexpr int32_t mockEarliestStartTime = 100;
+    constexpr int32_t mockDeepIdleTime = 300;
+
+    srcInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
+    srcInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    srcInfo.RequestRepeatCycle(timeInterval, cycle);
+    srcInfo.RequestBaseTime(static_cast<time_t>(baseTime));
+    srcInfo.RequestDeepIdle(isDeepIdle);
+    
+    FuzzParseFromJsonRoundTripPart2(srcInfo);
+}
+
+void FuzzParseFromJsonEdgeCasesPart2()
+{
+    constexpr int32_t mockWorkId2 = 2;
+    constexpr int32_t mockWorkId3 = 3;
+    constexpr int32_t mockWorkId4 = 4;
+    constexpr int32_t mockWorkId5 = 5;
+    constexpr int32_t mockTimer1200 = 1200;
+    constexpr int32_t mockTimer600 = 600;
+    constexpr int32_t mockCycle5 = 5;
+    constexpr int32_t mockBaseTime1M = 1000000;
+    constexpr int32_t mockWrongCallBySystemApp = 123;
+
+    WorkInfo workInfo7;
+    nlohmann::json withEmptyParams;
+    withEmptyParams["workId"] = mockWorkId2;
+    withEmptyParams["bundleName"] = "com.example";
+    withEmptyParams["abilityName"] = "Ability";
+    withEmptyParams["parameters"] = nlohmann::json::object();
+    withEmptyParams["parametersType"] = nlohmann::json::object();
+    workInfo7.ParseFromJson(withEmptyParams);
+
+    WorkInfo workInfo8;
+    nlohmann::json timerRepeat;
+    timerRepeat["workId"] = mockWorkId3;
+    timerRepeat["bundleName"] = "com.example";
+    timerRepeat["abilityName"] = "Ability";
+    nlohmann::json conds;
+    conds["timer"] = mockTimer1200;
+    conds["repeat"] = true;
+    timerRepeat["conditions"] = conds;
+    workInfo8.ParseFromJson(timerRepeat);
+
+    WorkInfo workInfo9;
+    nlohmann::json timerCycle;
+    timerCycle["workId"] = mockWorkId4;
+    timerCycle["bundleName"] = "com.example";
+    timerCycle["abilityName"] = "Ability";
+    nlohmann::json conds2;
+    conds2["timer"] = mockTimer600;
+    conds2["repeat"] = false;
+    conds2["cycle"] = mockCycle5;
+    conds2["baseTime"] = mockBaseTime1M;
+    timerCycle["conditions"] = conds2;
+    workInfo9.ParseFromJson(timerCycle);
+
+    WorkInfo workInfo10;
+    nlohmann::json boolPropWrong;
+    boolPropWrong["workId"] = mockWorkId5;
+    boolPropWrong["bundleName"] = "com.example";
+    boolPropWrong["abilityName"] = "Ability";
+    boolPropWrong["persisted"] = "notABool";
+    boolPropWrong["callBySystemApp"] = mockWrongCallBySystemApp;
+    workInfo10.ParseFromJson(boolPropWrong);
+}
+
 void FuzzParseFromJsonEdgeCases(const uint8_t* data, size_t size)
 {
     WorkInfo workInfo1;
@@ -280,47 +345,7 @@ void FuzzParseFromJsonEdgeCases(const uint8_t* data, size_t size)
     minimal["abilityName"] = "Ability";
     workInfo6.ParseFromJson(minimal);
 
-    WorkInfo workInfo7;
-    nlohmann::json withEmptyParams;
-    withEmptyParams["workId"] = 2;
-    withEmptyParams["bundleName"] = "com.example";
-    withEmptyParams["abilityName"] = "Ability";
-    withEmptyParams["parameters"] = nlohmann::json::object();
-    withEmptyParams["parametersType"] = nlohmann::json::object();
-    workInfo7.ParseFromJson(withEmptyParams);
-
-    WorkInfo workInfo8;
-    nlohmann::json timerRepeat;
-    timerRepeat["workId"] = 3;
-    timerRepeat["bundleName"] = "com.example";
-    timerRepeat["abilityName"] = "Ability";
-    nlohmann::json conds;
-    conds["timer"] = 1200;
-    conds["repeat"] = true;
-    timerRepeat["conditions"] = conds;
-    workInfo8.ParseFromJson(timerRepeat);
-
-    WorkInfo workInfo9;
-    nlohmann::json timerCycle;
-    timerCycle["workId"] = 4;
-    timerCycle["bundleName"] = "com.example";
-    timerCycle["abilityName"] = "Ability";
-    nlohmann::json conds2;
-    conds2["timer"] = 600;
-    conds2["repeat"] = false;
-    conds2["cycle"] = 5;
-    conds2["baseTime"] = 1000000;
-    timerCycle["conditions"] = conds2;
-    workInfo9.ParseFromJson(timerCycle);
-
-    WorkInfo workInfo10;
-    nlohmann::json boolPropWrong;
-    boolPropWrong["workId"] = 5;
-    boolPropWrong["bundleName"] = "com.example";
-    boolPropWrong["abilityName"] = "Ability";
-    boolPropWrong["persisted"] = "notABool";
-    boolPropWrong["callBySystemApp"] = 123;
-    workInfo10.ParseFromJson(boolPropWrong);
+    FuzzParseFromJsonEdgeCasesPart2();
 }
 
 bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
