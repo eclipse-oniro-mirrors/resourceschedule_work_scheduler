@@ -16,6 +16,7 @@ group("fuzztest") {
   deps = []
   deps += [
     # deps file
+    "workinfoparsefromjson_fuzzer:fuzztest",
     "workschedulergetallrunningworks_fuzzer:fuzztest",
     "workschedulergetworkstatus_fuzzer:fuzztest",
     "workschedulerislastworktimeout_fuzzer:fuzztest",
