@@ -17,6 +17,8 @@
 
 #include <cstdint>
 #include <cstring>
+
+#include "securec.h"
 #include <memory>
 
 #include "conditions/condition_checker.h"
@@ -32,6 +34,9 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
+constexpr size_t POPULATE_WORK_COUNT = 4;
+constexpr size_t NETWORK_TYPE_COUNT = 8;
+
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
 {
@@ -39,17 +44,17 @@ int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
         return 0;
     }
     int32_t value = 0;
-    memcpy(&value, data + offset, sizeof(value));
+    memcpy_s(&value, sizeof(value), data + offset, sizeof(value));
     return value;
 }
 
 void PopulateQueue(WorkQueueManager& queueMgr, const uint8_t* data, size_t size)
 {
-    for (int32_t i = 0; i < 4; ++i) {
+    for (int32_t i = 0; i < static_cast<int32_t>(POPULATE_WORK_COUNT); ++i) {
         WorkInfo workInfo;
         workInfo.SetWorkId(FuzzInt32(data, size, sizeof(int32_t) * i));
         workInfo.SetElement("fuzz_bundle_" + std::to_string(i), "fuzz_ability_" + std::to_string(i));
-        workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(i % 8));
+        workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(i % NETWORK_TYPE_COUNT));
         workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
         workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
         workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_USB);

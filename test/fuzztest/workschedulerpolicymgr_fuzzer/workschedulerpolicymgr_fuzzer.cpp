@@ -17,6 +17,8 @@
 
 #include <cstdint>
 #include <cstring>
+
+#include "securec.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -37,6 +39,12 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
+constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t OFFSET_FIND_WORK_ID = 1;
+constexpr size_t OFFSET_FIND_SA = 2;
+constexpr size_t OFFSET_GET_STATUS = 3;
+constexpr size_t ADD_WORK_COUNT = 4;
+
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
 {
@@ -44,7 +52,7 @@ int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
         return 0;
     }
     int32_t value = 0;
-    memcpy(&value, data + offset, sizeof(value));
+    memcpy_s(&value, sizeof(value), data + offset, sizeof(value));
     return value;
 }
 
@@ -54,7 +62,7 @@ WorkInfo BuildFuzzWorkInfo(const uint8_t* data, size_t size, int32_t index)
     workInfo.SetWorkId(FuzzInt32(data, size, sizeof(int32_t) * index));
     workInfo.SetElement("fuzz_bundle_" + std::to_string(index), "fuzz_ability_" + std::to_string(index));
     workInfo.RequestPersisted((size > static_cast<size_t>(index)) && ((data[index] & 1) != 0));
-    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size) % 8));
+    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size) % NETWORK_TYPE_COUNT));
     workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
     workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t)));
     return workInfo;
@@ -77,19 +85,19 @@ void FuzzAddAndFind(WorkPolicyManager& policyMgr, const uint8_t* data, size_t si
         uid = DEFAULT_UID;
     }
 
-    for (int32_t i = 0; i < 4; ++i) {
+    for (int32_t i = 0; i < static_cast<int32_t>(ADD_WORK_COUNT); ++i) {
         auto workStatus = BuildFuzzWorkStatus(data, size, i);
         policyMgr.AddWork(workStatus, uid);
     }
 
     WorkInfo queryInfo = BuildFuzzWorkInfo(data, size, 0);
     (void)policyMgr.FindWorkStatus(queryInfo, uid);
-    (void)policyMgr.FindWorkStatus(uid, FuzzInt32(data, size, sizeof(int32_t)));
-    (void)policyMgr.FindSA(FuzzInt32(data, size, sizeof(int32_t) * 2), uid);
+    (void)policyMgr.FindWorkStatus(uid, FuzzInt32(data, size, sizeof(int32_t) * OFFSET_FIND_WORK_ID));
+    (void)policyMgr.FindSA(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_FIND_SA), uid);
     (void)policyMgr.ObtainAllWorks(uid);
     (void)policyMgr.GetAllWorkStatus(uid);
 
-    int32_t workId = FuzzInt32(data, size, sizeof(int32_t) * 3);
+    int32_t workId = FuzzInt32(data, size, sizeof(int32_t) * OFFSET_GET_STATUS);
     (void)policyMgr.GetWorkStatus(uid, workId);
     (void)policyMgr.GetAllRunningWorks();
     (void)policyMgr.FindWork(uid);

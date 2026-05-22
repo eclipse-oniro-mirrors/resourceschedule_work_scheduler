@@ -17,6 +17,8 @@
 
 #include <cstdint>
 #include <cstring>
+
+#include "securec.h"
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,6 +34,8 @@ namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
 constexpr size_t MAX_WORK_COUNT = 16;
+constexpr size_t NETWORK_TYPE_COUNT = 8;
+
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
 {
@@ -39,7 +43,7 @@ int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
         return 0;
     }
     int32_t value = 0;
-    memcpy(&value, data + offset, sizeof(value));
+    memcpy_s(&value, sizeof(value), data + offset, sizeof(value));
     return value;
 }
 
@@ -49,7 +53,7 @@ WorkInfo BuildFuzzWorkInfo(const uint8_t* data, size_t size, int32_t index)
     workInfo.SetWorkId(FuzzInt32(data, size, sizeof(int32_t) * index));
     workInfo.SetElement("fuzz_bundle_" + std::to_string(index), "fuzz_ability_" + std::to_string(index));
     workInfo.RequestPersisted((size > static_cast<size_t>(index)) && ((data[index] & 1) != 0));
-    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size) % 8));
+    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size) % NETWORK_TYPE_COUNT));
     workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
     workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t)));
     return workInfo;

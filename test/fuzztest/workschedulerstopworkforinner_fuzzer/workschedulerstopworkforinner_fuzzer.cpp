@@ -18,6 +18,8 @@
 #include <cstdint>
 #include <cstring>
 
+#include "securec.h"
+
 #include "iwork_sched_service.h"
 #include "work_scheduler_service.h"
 #include "work_condition.h"
@@ -44,7 +46,7 @@ int32_t FuzzInt32(const uint8_t* data, size_t size)
         return 0;
     }
     int32_t value = 0;
-    memcpy(&value, data, sizeof(value));
+    memcpy_s(&value, sizeof(value), data, sizeof(value));
     return value;
 }
 

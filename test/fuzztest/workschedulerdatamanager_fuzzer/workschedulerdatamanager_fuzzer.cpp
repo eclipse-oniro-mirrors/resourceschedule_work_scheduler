@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+
+#include "securec.h"
 #include <list>
 #include <string>
 
@@ -43,7 +45,7 @@ int32_t FuzzInt32(const uint8_t* data, size_t size)
         return 0;
     }
     int32_t value = 0;
-    memcpy(&value, data, sizeof(value));
+    memcpy_s(&value, sizeof(value), data, sizeof(value));
     return value;
 }
 } // namespace

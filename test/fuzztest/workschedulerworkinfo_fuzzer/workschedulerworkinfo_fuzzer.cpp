@@ -18,6 +18,8 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+
+#include "securec.h"
 #include <string>
 
 #include "parcel.h"
@@ -29,6 +31,19 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr size_t MAX_FUZZ_STRING_LEN = 512;
+constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t CHARGER_TYPE_COUNT = 7;
+constexpr size_t BATTERY_STATUS_COUNT = 4;
+constexpr size_t STORAGE_LEVEL_COUNT = 4;
+constexpr size_t BYTE_CHECK_INDEX_1 = 1;
+constexpr size_t BYTE_CHECK_INDEX_2 = 2;
+constexpr size_t BYTE_CHECK_INDEX_3 = 3;
+constexpr size_t OFFSET_UID = 5;
+constexpr size_t OFFSET_SA_ID = 6;
+constexpr size_t OFFSET_PREINSTALLED = 7;
+constexpr size_t OFFSET_DEEP_IDLE_TIME = 8;
+constexpr size_t OFFSET_TRIGGER_TYPE = 9;
+
 
 std::string FuzzString(const uint8_t* data, size_t size)
 {
@@ -45,7 +60,7 @@ int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
         return 0;
     }
     int32_t value = 0;
-    memcpy(&value, data + offset, sizeof(value));
+    memcpy_s(&value, sizeof(value), data + offset, sizeof(value));
     return value;
 }
 
@@ -57,24 +72,24 @@ void FuzzWorkInfoSetters(WorkInfo& workInfo, const uint8_t* data, size_t size)
         workInfo.SetElement(fuzzStr, fuzzStr);
     }
     workInfo.RequestPersisted((size > 0) && ((data[0] & 1) != 0));
-    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size) % 8));
-    workInfo.RequestChargerType((size > 1) && ((data[1] & 1) != 0),
-        static_cast<WorkCondition::Charger>(FuzzInt32(data, size, sizeof(int32_t)) % 7));
+    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size) % NETWORK_TYPE_COUNT));
+    workInfo.RequestChargerType((size > BYTE_CHECK_INDEX_1) && ((data[BYTE_CHECK_INDEX_1] & 1) != 0),
+        static_cast<WorkCondition::Charger>(FuzzInt32(data, size, sizeof(int32_t)) % CHARGER_TYPE_COUNT));
     workInfo.RequestBatteryLevel(FuzzInt32(data, size, sizeof(int32_t) * 2));
-    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(FuzzInt32(data, size, 1) % 4));
-    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(FuzzInt32(data, size, 2) % 4));
+    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(FuzzInt32(data, size, BYTE_CHECK_INDEX_1) % BATTERY_STATUS_COUNT));
+    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(FuzzInt32(data, size, BYTE_CHECK_INDEX_2) % STORAGE_LEVEL_COUNT));
     uint32_t interval = static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * 3));
     if (interval > 0) {
         workInfo.RequestRepeatCycle(interval, FuzzInt32(data, size, sizeof(int32_t) * 4));
     }
     workInfo.RequestDeepIdle(true);
-    workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t) * 5));
-    workInfo.RefreshSaId(FuzzInt32(data, size, sizeof(int32_t) * 6));
-    workInfo.SetPreinstalled((size > 2) && ((data[2] & 1) != 0));
-    workInfo.SetIsInnerApply((size > 3) && ((data[3] & 1) != 0));
-    workInfo.SetEarliestStartTime(FuzzInt32(data, size, sizeof(int32_t) * 7));
-    workInfo.SetDeepIdleTime(FuzzInt32(data, size, sizeof(int32_t) * 8));
-    workInfo.SetTriggerType(FuzzInt32(data, size, sizeof(int32_t) * 9));
+    workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_UID));
+    workInfo.RefreshSaId(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_SA_ID));
+    workInfo.SetPreinstalled((size > BYTE_CHECK_INDEX_2) && ((data[BYTE_CHECK_INDEX_2] & 1) != 0));
+    workInfo.SetIsInnerApply((size > BYTE_CHECK_INDEX_3) && ((data[BYTE_CHECK_INDEX_3] & 1) != 0));
+    workInfo.SetEarliestStartTime(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_PREINSTALLED));
+    workInfo.SetDeepIdleTime(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_DEEP_IDLE_TIME));
+    workInfo.SetTriggerType(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_TRIGGER_TYPE));
 }
 
 void FuzzMarshallingRoundTrip(WorkInfo& workInfo)

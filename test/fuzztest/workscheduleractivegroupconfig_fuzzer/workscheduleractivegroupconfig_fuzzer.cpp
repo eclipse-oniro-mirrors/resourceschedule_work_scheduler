@@ -24,6 +24,7 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr size_t MAX_FUZZ_STRING_LEN = 1000;
+constexpr size_t MAX_BUNDLE_NAME_LEN = 64;
 
 std::string FuzzString(const uint8_t* data, size_t size)
 {
@@ -45,7 +46,7 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     config->InitActiveGroupWhitelist(configData);
     std::string bundleName = "fuzz_bundle";
     if (!configData.empty()) {
-        bundleName.assign(configData.begin(), configData.begin() + std::min(configData.size(), size_t(64)));
+        bundleName.assign(configData.begin(), configData.begin() + std::min(configData.size(), MAX_BUNDLE_NAME_LEN));
     }
     (void)config->IsInActiveGroupWhitelist(bundleName);
     (void)config->IsInActiveGroupWhitelist("");

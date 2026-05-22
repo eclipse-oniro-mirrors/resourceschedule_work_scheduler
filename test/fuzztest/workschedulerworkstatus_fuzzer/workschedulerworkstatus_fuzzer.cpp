@@ -17,6 +17,8 @@
 
 #include <cstdint>
 #include <cstring>
+
+#include "securec.h"
 #include <memory>
 #include <string>
 
@@ -29,6 +31,16 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
+constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t BATTERY_STATUS_COUNT = 4;
+constexpr size_t STORAGE_LEVEL_COUNT = 4;
+constexpr size_t BYTE_CHECK_INDEX_1 = 1;
+constexpr size_t BYTE_CHECK_INDEX_2 = 2;
+constexpr size_t OFFSET_REPEAT_CYCLE = 3;
+constexpr size_t OFFSET_UID = 4;
+constexpr size_t OFFSET_MIN_INTERVAL_GROUP = 6;
+constexpr size_t OFFSET_MIN_INTERVAL_DUMP = 7;
+
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
 {
@@ -36,7 +48,7 @@ int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
         return 0;
     }
     int32_t value = 0;
-    memcpy(&value, data + offset, sizeof(value));
+    memcpy_s(&value, sizeof(value), data + offset, sizeof(value));
     return value;
 }
 
@@ -46,11 +58,11 @@ WorkInfo BuildFuzzWorkInfo(const uint8_t* data, size_t size)
     workInfo.SetWorkId(FuzzInt32(data, size));
     workInfo.SetElement("fuzz_bundle", "fuzz_ability");
     workInfo.RequestPersisted((size > 0) && ((data[0] & 1) != 0));
-    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size, sizeof(int32_t)) % 8));
-    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(FuzzInt32(data, size, 1) % 4));
-    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(FuzzInt32(data, size, 2) % 4));
-    workInfo.RequestRepeatCycle(static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * 3)));
-    workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t) * 4));
+    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size, sizeof(int32_t)) % NETWORK_TYPE_COUNT));
+    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(FuzzInt32(data, size, BYTE_CHECK_INDEX_1) % BATTERY_STATUS_COUNT));
+    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(FuzzInt32(data, size, BYTE_CHECK_INDEX_2) % STORAGE_LEVEL_COUNT));
+    workInfo.RequestRepeatCycle(static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE)));
+    workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_UID));
     return workInfo;
 }
 
@@ -60,7 +72,7 @@ void FuzzConditionChange(WorkStatus& workStatus, const uint8_t* data, size_t siz
     condition->enumVal = FuzzInt32(data, size);
     condition->intVal = FuzzInt32(data, size, sizeof(int32_t));
     condition->boolVal = (size > 1) && ((data[1] & 1) != 0);
-    WorkCondition::Type type = static_cast<WorkCondition::Type>(FuzzInt32(data, size, sizeof(int32_t) * 2) % 8);
+    WorkCondition::Type type = static_cast<WorkCondition::Type>(FuzzInt32(data, size, sizeof(int32_t) * 2) % NETWORK_TYPE_COUNT);
     workStatus.OnConditionChanged(type, condition);
 }
 } // namespace
@@ -86,8 +98,8 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
     (void)workStatus.IsLastWorkTimeout();
     workStatus.MarkStatus(WorkStatus::Status::CONDITION_READY);
     (void)workStatus.GetStatus();
-    workStatus.SetMinIntervalByGroup(FuzzInt32(data, size, sizeof(int32_t) * 6));
-    workStatus.SetMinIntervalByDump(FuzzInt32(data, size, sizeof(int32_t) * 7));
+    workStatus.SetMinIntervalByGroup(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_MIN_INTERVAL_GROUP));
+    workStatus.SetMinIntervalByDump(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_MIN_INTERVAL_DUMP));
     (void)workStatus.GetMinInterval();
     FuzzConditionChange(workStatus, data, size);
     WorkStatus::ClearUidLastTimeMap(uid);
