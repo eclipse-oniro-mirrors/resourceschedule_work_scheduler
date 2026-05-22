@@ -43,7 +43,9 @@ constexpr size_t OFFSET_SA_ID = 6;
 constexpr size_t OFFSET_PREINSTALLED = 7;
 constexpr size_t OFFSET_DEEP_IDLE_TIME = 8;
 constexpr size_t OFFSET_TRIGGER_TYPE = 9;
-
+constexpr size_t OFFSET_BATTERY_LEVEL = 2;
+constexpr size_t OFFSET_REPEAT_CYCLE = 3;
+constexpr size_t OFFSET_REPEAT_CYCLE_COUNT = 4;
 
 std::string FuzzString(const uint8_t* data, size_t size)
 {
@@ -75,12 +77,17 @@ void FuzzWorkInfoSetters(WorkInfo& workInfo, const uint8_t* data, size_t size)
     workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size) % NETWORK_TYPE_COUNT));
     workInfo.RequestChargerType((size > BYTE_CHECK_INDEX_1) && ((data[BYTE_CHECK_INDEX_1] & 1) != 0),
         static_cast<WorkCondition::Charger>(FuzzInt32(data, size, sizeof(int32_t)) % CHARGER_TYPE_COUNT));
-    workInfo.RequestBatteryLevel(FuzzInt32(data, size, sizeof(int32_t) * 2));
-    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(FuzzInt32(data, size, BYTE_CHECK_INDEX_1) % BATTERY_STATUS_COUNT));
-    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(FuzzInt32(data, size, BYTE_CHECK_INDEX_2) % STORAGE_LEVEL_COUNT));
-    uint32_t interval = static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * 3));
+    workInfo.RequestBatteryLevel(
+        FuzzInt32(data, size, sizeof(int32_t) * OFFSET_BATTERY_LEVEL));
+    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(
+        FuzzInt32(data, size, BYTE_CHECK_INDEX_1) % BATTERY_STATUS_COUNT));
+    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(
+        FuzzInt32(data, size, BYTE_CHECK_INDEX_2) % STORAGE_LEVEL_COUNT));
+    uint32_t interval = static_cast<uint32_t>(
+        FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE));
     if (interval > 0) {
-        workInfo.RequestRepeatCycle(interval, FuzzInt32(data, size, sizeof(int32_t) * 4));
+        workInfo.RequestRepeatCycle(interval,
+            FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE_COUNT));
     }
     workInfo.RequestDeepIdle(true);
     workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_UID));

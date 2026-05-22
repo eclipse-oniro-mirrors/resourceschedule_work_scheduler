@@ -63,7 +63,8 @@ WorkInfo BuildFuzzWorkInfo(const uint8_t* data, size_t size)
     workInfo.SetWorkId(FuzzInt32(data, size));
     workInfo.SetElement("fuzz_bundle", "fuzz_ability");
     workInfo.RequestPersisted((size > 0) && ((data[0] & 1) != 0));
-    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size, sizeof(int32_t)) % NETWORK_TYPE_COUNT));
+    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(
+        FuzzInt32(data, size, sizeof(int32_t)) % NETWORK_TYPE_COUNT));
     workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
     workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_UID));
     return workInfo;

@@ -58,9 +58,12 @@ WorkInfo BuildFuzzWorkInfo(const uint8_t* data, size_t size)
     workInfo.SetWorkId(FuzzInt32(data, size));
     workInfo.SetElement("fuzz_bundle", "fuzz_ability");
     workInfo.RequestPersisted((size > 0) && ((data[0] & 1) != 0));
-    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(FuzzInt32(data, size, sizeof(int32_t)) % NETWORK_TYPE_COUNT));
-    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(FuzzInt32(data, size, BYTE_CHECK_INDEX_1) % BATTERY_STATUS_COUNT));
-    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(FuzzInt32(data, size, BYTE_CHECK_INDEX_2) % STORAGE_LEVEL_COUNT));
+    workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(
+        FuzzInt32(data, size, sizeof(int32_t)) % NETWORK_TYPE_COUNT));
+    workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(
+        FuzzInt32(data, size, BYTE_CHECK_INDEX_1) % BATTERY_STATUS_COUNT));
+    workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(
+        FuzzInt32(data, size, BYTE_CHECK_INDEX_2) % STORAGE_LEVEL_COUNT));
     workInfo.RequestRepeatCycle(static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE)));
     workInfo.RefreshUid(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_UID));
     return workInfo;
@@ -72,7 +75,8 @@ void FuzzConditionChange(WorkStatus& workStatus, const uint8_t* data, size_t siz
     condition->enumVal = FuzzInt32(data, size);
     condition->intVal = FuzzInt32(data, size, sizeof(int32_t));
     condition->boolVal = (size > 1) && ((data[1] & 1) != 0);
-    WorkCondition::Type type = static_cast<WorkCondition::Type>(FuzzInt32(data, size, sizeof(int32_t) * 2) % NETWORK_TYPE_COUNT);
+    WorkCondition::Type type = static_cast<WorkCondition::Type>(
+        FuzzInt32(data, size, sizeof(int32_t) * 2) % NETWORK_TYPE_COUNT);
     workStatus.OnConditionChanged(type, condition);
 }
 } // namespace
