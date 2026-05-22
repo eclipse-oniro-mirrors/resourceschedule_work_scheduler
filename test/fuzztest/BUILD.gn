@@ -16,16 +16,31 @@ group("fuzztest") {
   deps = []
   deps += [
     # deps file
+    "workscheduleractivegroupconfig_fuzzer:fuzztest",
+    "workschedulerconditionchecker_fuzzer:fuzztest",
+    "workschedulerdatamanager_fuzzer:fuzztest",
+    "workschedulerdump_fuzzer:fuzztest",
+    "workschedulereventpublisher_fuzzer:fuzztest",
     "workschedulergetallrunningworks_fuzzer:fuzztest",
     "workschedulergetworkstatus_fuzzer:fuzztest",
     "workschedulerislastworktimeout_fuzzer:fuzztest",
     "workschedulerobtainallworks_fuzzer:fuzztest",
+    "workschedulerobtainworksbyuidandworkidforinner_fuzzer:fuzztest",
     "workschedulerpauserunningworks_fuzzer:fuzztest",
+    "workschedulerpolicymgr_fuzzer:fuzztest",
     "workschedulerresumepausedworks_fuzzer:fuzztest",
     "workschedulersetworkschedulerconfig_fuzzer:fuzztest",
+    "workschedulersrvclient_fuzzer:fuzztest",
     "workschedulerstartwork_fuzzer:fuzztest",
+    "workschedulerstartworkforinner_fuzzer:fuzztest",
     "workschedulerstopandcancelwork_fuzzer:fuzztest",
     "workschedulerstopandclearworks_fuzzer:fuzztest",
     "workschedulerstopwork_fuzzer:fuzztest",
+    "workschedulerstopworkforinner_fuzzer:fuzztest",
+    "workschedulerstopworkforsa_fuzzer:fuzztest",
+    "workschedulerwatchdog_fuzzer:fuzztest",
+    "workschedulerworkinfo_fuzzer:fuzztest",
+    "workschedulerworkqueue_fuzzer:fuzztest",
+    "workschedulerworkstatus_fuzzer:fuzztest",
   ]
 }
