@@ -16,10 +16,12 @@ group("fuzztest") {
   deps = []
   deps += [
     # deps file
+    "workcjparam_fuzzer:fuzztest",
     "workinfomarshalling_fuzzer:fuzztest",
     "workpolicymanager_fuzzer:fuzztest",
     "workqueuecondition_fuzzer:fuzztest",
     "workstatuscondition_fuzzer:fuzztest",
+    "worktaihecommon_fuzzer:fuzztest",
     "workschedulergetallrunningworks_fuzzer:fuzztest",
     "workschedulergetworkstatus_fuzzer:fuzztest",
     "workschedulerislastworktimeout_fuzzer:fuzztest",

@@ -1,0 +1,68 @@
+# Copyright (c) 2021 Huawei Device Co., Ltd.
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+import("//build/config/features.gni")
+import("//build/test.gni")
+import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
+
+module_output_path = "work_scheduler/work_scheduler"
+
+config("cj_fuzz_config") {
+  include_dirs = [
+    "${worksched_interfaces_path}/kits/cj/work_scheduler",
+    "${worksched_frameworks_path}/include",
+    "${worksched_utils_path}/include",
+  ]
+}
+
+##############################fuzztest##########################################
+ohos_fuzztest("WorkCjParamFuzzTest") {
+  module_out_path = module_output_path
+  fuzz_config_file = "${worksched_test_path}/fuzztest/workcjparam_fuzzer"
+
+  configs = [ ":cj_fuzz_config" ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  sources = [
+    "workcjparam_fuzzer.cpp",
+    "${worksched_interfaces_path}/kits/cj/work_scheduler/work_scheduler_ffi.cpp",
+  ]
+
+  deps = [
+    "${worksched_frameworks_path}:workschedclient",
+    "${worksched_utils_path}:workschedutils",
+  ]
+
+  external_deps = [
+    "ability_base:base",
+    "ability_base:want",
+    "c_utils:utils",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "napi:cj_bind_ffi",
+  ]
+}
+###############################################################################
+group("fuzztest") {
+  testonly = true
+  deps = []
+  deps += [
+    # deps file
+    ":WorkCjParamFuzzTest",
+  ]
+}
+###############################################################################
