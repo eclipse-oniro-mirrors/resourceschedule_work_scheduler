@@ -1,99 +1,104 @@
 {
-    "name": "@ohos/work_scheduler",
-    "description": "work scheduler service",
-    "version": "3.1",
-    "license": "Apache License 2.0",
-    "publishAs": "code-segment",
-    "segment": {
-      "destPath" : "foundation/resourceschedule/work_scheduler"
-    },
-    "dirs": {},
-    "scripts": {},
-    "component": {
-      "name": "work_scheduler",
-      "subsystem": "resourceschedule",
-      "syscap": [ "SystemCapability.ResourceSchedule.WorkScheduler" ],
-      "features": [ "work_scheduler_device_enable" ],
-      "adapted_system_type": [
-        "standard"
-      ],
-      "rom": "2048KB",
-      "ram": "10240KB",
-      "deps": {
-        "components": [
-          "thermal_manager",
-          "bundle_framework",
-          "safwk",
-          "os_account",
-          "common_event_service",
-          "ipc",
-          "c_utils",
-          "ability_runtime",
-          "hilog",
-          "samgr",
-          "hisysevent",
-          "napi",
-          "battery_manager",
-          "ability_base",
-          "eventhandler",
-          "ffrt",
-          "background_task_mgr",
-          "device_standby",
-          "device_usage_statistics",
-          "access_token",
-          "netmanager_base",
-          "time_service",
-          "init",
-          "data_share",
-          "config_policy",
-          "hiview",
-          "hicollie",
-          "hitrace",
-          "power_manager",
-          "resource_schedule_service",
-          "runtime_core",
-          "ets_frontend"
-        ]
-      },
-      "build": {
-        "group_type": {
-          "base_group": [],
-          "fwk_group": [
-            "//foundation/resourceschedule/work_scheduler:fwk_group_work_scheduler_all"
-          ],
-          "service_group": [
-            "//foundation/resourceschedule/work_scheduler:service_group_work_scheduler_all"
-          ]
-        },
-        "inner_kits": [
-          {
-            "header": {
-                "header_base": "//foundation/resourceschedule/work_scheduler/frameworks/include",
-                "header_files": [
-                    "work_condition.h",
-                    "work_info.h",
-                    "workscheduler_srv_client.h"
-                ]
-            },
-            "name": "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient"
-          },
-          {
-            "type": "so",
-            "name": "//foundation/resourceschedule/work_scheduler/interfaces/kits/cj:cj_work_scheduler_ffi",
-            "header": {
-                "header_base":"//foundation/resourceschedule/work_scheduler/interfaces/kits/cj/work_scheduler",
-                "header_files":[
-
-                ]
-            }
-          }
-        ],
-        "test": [
-          "//foundation/resourceschedule/work_scheduler:test_work_scheduler_all"
-        ]
-      },
-      "hisysevent_config": [
-        "//foundation/resourceschedule/work_scheduler/hisysevent.yaml"
+  "name": "@ohos/work_scheduler",
+  "description": "work scheduler service",
+  "version": "3.1",
+  "license": "Apache License 2.0",
+  "publishAs": "code-segment",
+  "segment": {
+    "destPath": "foundation/resourceschedule/work_scheduler"
+  },
+  "dirs": {},
+  "scripts": {},
+  "component": {
+    "name": "work_scheduler",
+    "subsystem": "resourceschedule",
+    "syscap": [
+      "SystemCapability.ResourceSchedule.WorkScheduler"
+    ],
+    "features": [
+      "work_scheduler_device_enable"
+    ],
+    "adapted_system_type": [
+      "standard"
+    ],
+    "rom": "2048KB",
+    "ram": "10240KB",
+    "deps": {
+      "components": [
+        "thermal_manager",
+        "bundle_framework",
+        "safwk",
+        "os_account",
+        "common_event_service",
+        "ipc",
+        "c_utils",
+        "ability_runtime",
+        "hilog",
+        "samgr",
+        "hisysevent",
+        "napi",
+        "battery_manager",
+        "ability_base",
+        "eventhandler",
+        "ffrt",
+        "background_task_mgr",
+        "device_standby",
+        "device_usage_statistics",
+        "access_token",
+        "netmanager_base",
+        "time_service",
+        "init",
+        "data_share",
+        "config_policy",
+        "hiview",
+        "hicollie",
+        "hitrace",
+        "power_manager",
+        "resource_schedule_service",
+        "runtime_core",
+        "ets_frontend"
       ]
-    }
+    },
+    "build": {
+      "group_type": {
+        "base_group": [],
+        "fwk_group": [
+          "//foundation/resourceschedule/work_scheduler:fwk_group_work_scheduler_all"
+        ],
+        "service_group": [
+          "//foundation/resourceschedule/work_scheduler:service_group_work_scheduler_all"
+        ]
+      },
+      "inner_kits": [
+        {
+          "header": {
+            "header_base": "//foundation/resourceschedule/work_scheduler/frameworks/include",
+            "header_files": [
+              "work_condition.h",
+              "work_info.h",
+              "workscheduler_srv_client.h"
+            ]
+          },
+          "name": "//foundation/resourceschedule/work_scheduler/frameworks:workschedclient"
+        },
+        {
+          "type": "so",
+          "name": "//foundation/resourceschedule/work_scheduler/interfaces/kits/cj:cj_work_scheduler_ffi",
+          "header": {
+            "header_base": "//foundation/resourceschedule/work_scheduler/interfaces/kits/cj/work_scheduler",
+            "header_files": []
+          }
+        }
+      ],
+      "test": [
+        "//foundation/resourceschedule/work_scheduler:test_work_scheduler_all",
+        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workinfomarshalling_fuzzer:fuzztest",
+        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workqueuecondition_fuzzer:fuzztest",
+        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workstatuscondition_fuzzer:fuzztest"
+      ]
+    },
+    "hisysevent_config": [
+      "//foundation/resourceschedule/work_scheduler/hisysevent.yaml"
+    ]
+  }
 }
