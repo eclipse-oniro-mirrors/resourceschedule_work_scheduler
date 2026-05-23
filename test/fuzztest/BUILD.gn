@@ -42,5 +42,8 @@ group("fuzztest") {
     "workschedulerworkinfo_fuzzer:fuzztest",
     "workschedulerworkqueue_fuzzer:fuzztest",
     "workschedulerworkstatus_fuzzer:fuzztest",
+    "workschedulerqueuemgr_fuzzer:fuzztest",
+    "workschedulerpolicy_fuzzer:fuzztest",
+    "workschedulerconnmgr_fuzzer:fuzztest",
   ]
 }
