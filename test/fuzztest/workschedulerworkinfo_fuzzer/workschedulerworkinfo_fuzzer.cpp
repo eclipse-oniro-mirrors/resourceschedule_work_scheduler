@@ -106,7 +106,10 @@ void FuzzMarshallingRoundTrip(WorkInfo& workInfo)
         return;
     }
     MessageParcel parcelIn;
-    parcelIn.WriteBuffer(parcel.GetData(), parcel.GetDataSize());
+    const void* parcelData = reinterpret_cast<const void*>(parcel.GetData());
+    if (parcelData == nullptr || !parcelIn.WriteBuffer(parcelData, parcel.GetDataSize())) {
+        return;
+    }
     parcelIn.RewindRead(0);
     WorkInfo* out = WorkInfo::Unmarshalling(parcelIn);
     if (out != nullptr) {
