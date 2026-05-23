@@ -27,15 +27,15 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
-namespace {
-constexpr int32_t DEFAULT_SA_ID = 100;
-const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
-std::shared_ptr<WorkSchedulerService> g_workSchedulerService;
-
 bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
 {
     return true;
 }
+
+namespace {
+constexpr int32_t DEFAULT_SA_ID = 100;
+const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
+std::shared_ptr<WorkSchedulerService> g_workSchedulerService;
 
 int32_t FuzzInt32(const uint8_t* data, size_t size)
 {

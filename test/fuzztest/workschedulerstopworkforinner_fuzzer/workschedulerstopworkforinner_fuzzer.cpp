@@ -31,14 +31,14 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
-namespace {
-const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
-std::shared_ptr<WorkSchedulerService> g_workSchedulerService;
-
 bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
 {
     return true;
 }
+
+namespace {
+const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
+std::shared_ptr<WorkSchedulerService> g_workSchedulerService;
 
 int32_t FuzzInt32(const uint8_t* data, size_t size)
 {
@@ -76,7 +76,7 @@ void InitService()
     if (g_workSchedulerService->workPolicyManager_ == nullptr) {
         g_workSchedulerService->workPolicyManager_ =
             std::make_shared<WorkPolicyManager>(g_workSchedulerService);
-        g_workSchedulerService->workPolicyManager_->Init(g_workSchedulerService_->eventRunner_);
+        g_workSchedulerService->workPolicyManager_->Init(g_workSchedulerService->eventRunner_);
     }
     if (g_workSchedulerService->workPolicyManager_->workConnManager_ == nullptr) {
         g_workSchedulerService->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();

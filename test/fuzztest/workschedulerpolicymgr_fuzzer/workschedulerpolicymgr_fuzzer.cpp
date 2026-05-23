@@ -153,9 +153,6 @@ void FuzzDumpAndConfig(WorkPolicyManager& policyMgr, const uint8_t* data, size_t
     int32_t delayTime = FuzzInt32(data, size, sizeof(int32_t) * 5);
     policyMgr.SendRetrigger(delayTime);
 
-    int32_t interval = FuzzInt32(data, size, sizeof(int32_t) * 6);
-    policyMgr.SetMinIntervalByDump(interval);
-
     policyMgr.CheckWorkToRun();
     policyMgr.TriggerIdeWork();
 }

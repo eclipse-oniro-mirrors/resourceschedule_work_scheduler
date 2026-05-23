@@ -28,15 +28,15 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
-namespace {
-constexpr size_t MAX_ARG_COUNT = 8;
-constexpr size_t MAX_ARG_LEN = 64;
-std::shared_ptr<WorkSchedulerService> g_workSchedulerService;
-
 bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
 {
     return true;
 }
+
+namespace {
+constexpr size_t MAX_ARG_COUNT = 8;
+constexpr size_t MAX_ARG_LEN = 64;
+std::shared_ptr<WorkSchedulerService> g_workSchedulerService;
 
 std::vector<std::string> BuildFuzzArgs(const uint8_t* data, size_t size)
 {
@@ -84,7 +84,7 @@ void InitService()
     if (g_workSchedulerService->workPolicyManager_ == nullptr) {
         g_workSchedulerService->workPolicyManager_ =
             std::make_shared<WorkPolicyManager>(g_workSchedulerService);
-        g_workSchedulerService->workPolicyManager_->Init(g_workSchedulerService_->eventRunner_);
+        g_workSchedulerService->workPolicyManager_->Init(g_workSchedulerService->eventRunner_);
     }
     if (g_workSchedulerService->checkBundle_) {
         g_workSchedulerService->checkBundle_ = false;
