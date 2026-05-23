@@ -50,7 +50,7 @@ constexpr int32_t PARAM_TYPE_BOOL = 2;
 constexpr int32_t APP_INDEX_RANGE = 128;
 constexpr int32_t BATTERY_LEVEL_SPREAD = 150;
 constexpr int32_t TIMER_CYCLE_SPREAD = 16;
-constexpr double DOUBLE_SCALE = 100.0;
+constexpr int32_t DOUBLE_SCALE = 100;
 constexpr uint32_t MIN_REPEAT_TIME = 1;
 constexpr uint32_t HOURS_PER_DAY = 24;
 constexpr uint32_t MINUTES_PER_HOUR = 60;
@@ -144,7 +144,8 @@ void AddExtras(FuzzData &provider, WorkInfo &workInfo)
                 params.SetParam(key, AAFwk::Boolean::Box(provider.GetBool()));
                 break;
             default:
-                params.SetParam(key, AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) / DOUBLE_SCALE));
+                params.SetParam(key, AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) /
+                    static_cast<double>(DOUBLE_SCALE)));
                 break;
         }
     }

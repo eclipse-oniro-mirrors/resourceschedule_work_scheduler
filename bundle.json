@@ -94,7 +94,8 @@
         "//foundation/resourceschedule/work_scheduler:test_work_scheduler_all",
         "//foundation/resourceschedule/work_scheduler/test/fuzztest/workinfomarshalling_fuzzer:fuzztest",
         "//foundation/resourceschedule/work_scheduler/test/fuzztest/workqueuecondition_fuzzer:fuzztest",
-        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workstatuscondition_fuzzer:fuzztest"
+        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workstatuscondition_fuzzer:fuzztest",
+        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workpolicymanager_fuzzer:fuzztest"
       ]
     },
     "hisysevent_config": [

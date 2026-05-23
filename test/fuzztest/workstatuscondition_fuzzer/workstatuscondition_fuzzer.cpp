@@ -61,7 +61,7 @@ constexpr int32_t FUZZ_STATUS_COUNT = 4;
 constexpr int32_t MILLISECONDS_PER_SECOND = 1000;
 constexpr int32_t SECONDS_PER_MINUTE = 60;
 constexpr int32_t LONG_TIMEOUT_MINUTES = 10;
-constexpr double DOUBLE_SCALE = 100.0;
+constexpr int32_t DOUBLE_SCALE = 100;
 constexpr uint64_t LONG_TIMEOUT = LONG_TIMEOUT_MINUTES * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
 class FuzzData {
@@ -214,7 +214,8 @@ void AddExtras(FuzzData &provider, WorkInfo &workInfo)
     params.SetParam("executeImmediate", AAFwk::String::Box(executeImmediate));
     params.SetParam(provider.GetString(), AAFwk::Integer::Box(provider.GetInt32()));
     params.SetParam(provider.GetString(), AAFwk::Boolean::Box(provider.GetBool()));
-    params.SetParam(provider.GetString(), AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) / DOUBLE_SCALE));
+    params.SetParam(provider.GetString(), AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) /
+        static_cast<double>(DOUBLE_SCALE)));
     workInfo.RequestExtras(params);
 }
 

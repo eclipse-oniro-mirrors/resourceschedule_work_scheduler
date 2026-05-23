@@ -17,6 +17,7 @@ group("fuzztest") {
   deps += [
     # deps file
     "workinfomarshalling_fuzzer:fuzztest",
+    "workpolicymanager_fuzzer:fuzztest",
     "workqueuecondition_fuzzer:fuzztest",
     "workstatuscondition_fuzzer:fuzztest",
     "workschedulergetallrunningworks_fuzzer:fuzztest",
