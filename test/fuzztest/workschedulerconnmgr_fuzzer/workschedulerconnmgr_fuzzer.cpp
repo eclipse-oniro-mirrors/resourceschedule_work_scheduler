@@ -35,6 +35,15 @@ constexpr size_t NETWORK_TYPE_COUNT = 8;
 constexpr size_t CHARGER_TYPE_COUNT = 5;
 constexpr size_t BATTERY_STATUS_COUNT = 4;
 constexpr size_t STORAGE_LEVEL_COUNT = 4;
+constexpr size_t OFFSET_UID = 0;
+constexpr size_t OFFSET_CHARGER = 1;
+constexpr size_t OFFSET_BATTERY_STATUS = 2;
+constexpr size_t OFFSET_BATTERY_LEVEL = 3;
+constexpr size_t OFFSET_STORAGE = 4;
+constexpr size_t OFFSET_REPEAT_CYCLE = 5;
+constexpr size_t OFFSET_UID_FIELD = 2;
+constexpr int32_t START_WORK_COUNT = 3;
+constexpr int32_t WRITE_EVENT_COUNT = 4;
 
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
@@ -63,21 +72,21 @@ WorkInfo BuildFuzzWorkInfoWithConditions(const uint8_t* data, size_t size, int32
     }
     if (selector & 0x02) {
         workInfo.RequestChargerType(static_cast<WorkCondition::Charger>(
-            FuzzInt32(data, size, sizeof(int32_t)) % CHARGER_TYPE_COUNT));
+            FuzzInt32(data, size, sizeof(int32_t) * OFFSET_CHARGER) % CHARGER_TYPE_COUNT));
     }
     if (selector & 0x04) {
         workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(
-            FuzzInt32(data, size, sizeof(int32_t) * 2) % BATTERY_STATUS_COUNT));
+            FuzzInt32(data, size, sizeof(int32_t) * OFFSET_BATTERY_STATUS) % BATTERY_STATUS_COUNT));
     }
     if (selector & 0x08) {
-        workInfo.RequestBatteryLevel(FuzzInt32(data, size, sizeof(int32_t) * 3));
+        workInfo.RequestBatteryLevel(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_BATTERY_LEVEL));
     }
     if (selector & 0x10) {
         workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(
-            FuzzInt32(data, size, sizeof(int32_t) * 4) % STORAGE_LEVEL_COUNT));
+            FuzzInt32(data, size, sizeof(int32_t) * OFFSET_STORAGE) % STORAGE_LEVEL_COUNT));
     }
     if (selector & 0x20) {
-        workInfo.RequestRepeatCycle(static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * 5)));
+        workInfo.RequestRepeatCycle(static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE)));
     }
     if (selector & 0x40) {
         workInfo.RequestDeepIdle(WorkCondition::DeepIdle::DEEP_IDLE_IN);
@@ -88,7 +97,7 @@ WorkInfo BuildFuzzWorkInfoWithConditions(const uint8_t* data, size_t size, int32
 std::shared_ptr<WorkStatus> BuildFuzzWorkStatusWithConditions(const uint8_t* data, size_t size, int32_t index)
 {
     WorkInfo workInfo = BuildFuzzWorkInfoWithConditions(data, size, index);
-    int32_t uid = FuzzInt32(data, size, sizeof(int32_t) * 2);
+    int32_t uid = FuzzInt32(data, size, sizeof(int32_t) * OFFSET_UID_FIELD);
     if (uid == 0) {
         uid = DEFAULT_UID;
     }
@@ -97,7 +106,7 @@ std::shared_ptr<WorkStatus> BuildFuzzWorkStatusWithConditions(const uint8_t* dat
 
 void FuzzStartWork(WorkConnManager& connMgr, const uint8_t* data, size_t size)
 {
-    for (int32_t i = 0; i < 3; ++i) {
+    for (int32_t i = 0; i < START_WORK_COUNT; ++i) {
         auto workStatus = BuildFuzzWorkStatusWithConditions(data, size, i);
         (void)connMgr.StartWork(workStatus);
     }
@@ -113,7 +122,7 @@ void FuzzStopWork(WorkConnManager& connMgr, const uint8_t* data, size_t size)
 void FuzzWriteStartWorkEvent(WorkConnManager& connMgr, const uint8_t* data, size_t size)
 {
     // Test with different condition combinations to exercise all WriteStartWorkEvent paths
-    for (int32_t i = 0; i < 4; ++i) {
+    for (int32_t i = 0; i < WRITE_EVENT_COUNT; ++i) {
         auto workStatus = BuildFuzzWorkStatusWithConditions(data, size, i);
         connMgr.WriteStartWorkEvent(workStatus);
     }

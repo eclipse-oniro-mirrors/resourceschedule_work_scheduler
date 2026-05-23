@@ -36,6 +36,12 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr size_t STRING_LEN_MAX = 256;
+constexpr size_t OFFSET_MEM_AVAILABLE = 1;
+constexpr size_t OFFSET_THERMAL_LEVEL = 2;
+constexpr size_t OFFSET_POWER_MODE = 3;
+constexpr size_t OFFSET_ALLOW_RUNNING_COUNT = 4;
+constexpr size_t OFFSET_CHAINED_POLICY_BASE = 5;
+constexpr int32_t CHAINED_POLICY_COUNT = 4;
 
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
@@ -66,23 +72,23 @@ void FuzzSystemPolicyStruct(const uint8_t* data, size_t size)
 {
     WorkSchedSystemPolicy policy;
     policy.cpuUsage = FuzzInt32(data, size);
-    policy.memAvailable = FuzzInt32(data, size, sizeof(int32_t));
-    policy.thermalLevel = FuzzInt32(data, size, sizeof(int32_t) * 2);
-    policy.powerMode = FuzzUint32(data, size, sizeof(int32_t) * 3);
+    policy.memAvailable = FuzzInt32(data, size, sizeof(int32_t) * OFFSET_MEM_AVAILABLE);
+    policy.thermalLevel = FuzzInt32(data, size, sizeof(int32_t) * OFFSET_THERMAL_LEVEL);
+    policy.powerMode = FuzzUint32(data, size, sizeof(int32_t) * OFFSET_POWER_MODE);
 
     // Test GetInfo with fuzzed fields
     (void)policy.GetInfo();
 
     // Test SetPolicyName with various policy name strings and allowRunningCount values
     std::string policyName = FuzzString(data, size);
-    int32_t allowRunningCount = FuzzInt32(data, size, sizeof(int32_t) * 4);
+    int32_t allowRunningCount = FuzzInt32(data, size, sizeof(int32_t) * OFFSET_ALLOW_RUNNING_COUNT);
     policy.SetPolicyName(policyName, allowRunningCount);
     (void)policy.GetInfo();
 
     // Test chained SetPolicyName calls to exercise the "&" concatenation path
-    for (int32_t i = 0; i < 4; ++i) {
+    for (int32_t i = 0; i < CHAINED_POLICY_COUNT; ++i) {
         std::string name = "POLICY_" + std::to_string(i);
-        int32_t count = FuzzInt32(data, size, sizeof(int32_t) * (5 + i));
+        int32_t count = FuzzInt32(data, size, sizeof(int32_t) * (OFFSET_CHAINED_POLICY_BASE + i));
         policy.SetPolicyName(name, count);
     }
     (void)policy.GetInfo();
@@ -145,7 +151,7 @@ void FuzzPolicyGetMaxRunning(const uint8_t* data, size_t size)
     // Test PowerModePolicy
     PowerModePolicy powerPolicy(policyMgr);
     WorkSchedSystemPolicy powerSysPolicy;
-    powerSysPolicy.powerMode = FuzzUint32(data, size, sizeof(int32_t) * 2);
+    powerSysPolicy.powerMode = FuzzUint32(data, size, sizeof(int32_t) * OFFSET_THERMAL_LEVEL);
     (void)powerPolicy.GetPolicyMaxRunning(powerSysPolicy);
     (void)powerSysPolicy.GetInfo();
 }

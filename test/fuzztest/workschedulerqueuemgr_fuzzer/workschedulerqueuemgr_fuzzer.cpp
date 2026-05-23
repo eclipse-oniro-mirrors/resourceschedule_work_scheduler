@@ -38,6 +38,8 @@ namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
 constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr int32_t ADD_WORK_COUNT = 4;
+constexpr int32_t CLEAR_WORK_COUNT = 3;
 
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
@@ -74,7 +76,7 @@ std::shared_ptr<WorkStatus> BuildFuzzWorkStatus(const uint8_t* data, size_t size
 
 void FuzzAddAndQuery(WorkQueueManager& queueMgr, const uint8_t* data, size_t size)
 {
-    for (int32_t i = 0; i < 4; ++i) {
+    for (int32_t i = 0; i < ADD_WORK_COUNT; ++i) {
         auto workStatus = BuildFuzzWorkStatus(data, size, i);
         queueMgr.AddWork(workStatus);
     }
@@ -126,7 +128,7 @@ void FuzzTimeConfig(WorkQueueManager& queueMgr, const uint8_t* data, size_t size
 void FuzzStopAndClear(WorkQueueManager& queueMgr, const uint8_t* data, size_t size)
 {
     std::list<std::shared_ptr<WorkStatus>> workList;
-    for (int32_t i = 0; i < 3; ++i) {
+    for (int32_t i = 0; i < CLEAR_WORK_COUNT; ++i) {
         workList.emplace_back(BuildFuzzWorkStatus(data, size, i));
     }
     (void)queueMgr.StopAndClearWorks(workList);
