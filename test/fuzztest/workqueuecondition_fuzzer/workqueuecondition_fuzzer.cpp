@@ -41,6 +41,24 @@ constexpr size_t MIN_SIZE = 4;
 constexpr size_t MAX_STRING_LEN = 24;
 constexpr int32_t MAX_WORK_COUNT = 8;
 constexpr int32_t TYPE_COUNT = static_cast<int32_t>(WorkCondition::Type::UNKNOWN) + 1;
+constexpr uint32_t BITS_PER_BYTE = 8;
+constexpr uint32_t ALPHABET_COUNT = 26;
+constexpr int32_t DETECTOR_VALUE_RANGE = 16;
+constexpr int32_t DETECTOR_TIME_RANGE = 100000;
+constexpr int32_t BASE_UID = 10000;
+constexpr int32_t UID_RANGE = 8;
+constexpr int32_t WORK_ID_RANGE = 32;
+constexpr int32_t USER_ID_RANGE = 4;
+constexpr int32_t STATUS_RANGE = 4;
+constexpr int32_t NETWORK_RANGE = 7;
+constexpr int32_t CHARGER_RANGE = 6;
+constexpr int32_t BATTERY_STATUS_RANGE = 4;
+constexpr int32_t BATTERY_LEVEL_RANGE = 120;
+constexpr int32_t STORAGE_RANGE = 4;
+constexpr int32_t TIMER_INTERVAL_RANGE = 100000;
+constexpr int32_t TIMER_CYCLE_RANGE = 5;
+constexpr int32_t GROUP_RANGE = 8;
+constexpr int32_t MIN_INTERVAL_RANGE = 10000;
 
 class FuzzData {
 public:
@@ -63,7 +81,7 @@ public:
     {
         uint32_t value = 0;
         for (size_t i = 0; i < sizeof(uint32_t); ++i) {
-            value = (value << 8) | GetU8();
+            value = (value << BITS_PER_BYTE) | GetU8();
         }
         return static_cast<int32_t>(value);
     }
@@ -74,7 +92,7 @@ public:
         std::string result;
         result.reserve(len);
         for (size_t i = 0; i < len; ++i) {
-            result.push_back(static_cast<char>('a' + (GetU8() % 26)));
+            result.push_back(static_cast<char>('a' + (GetU8() % ALPHABET_COUNT)));
         }
         return result;
     }
@@ -110,53 +128,54 @@ public:
     std::shared_ptr<DetectorValue> lastValue_ {nullptr};
 };
 
-int32_t PositiveMod(int32_t value, int32_t mod)
+template<int32_t MOD>
+int32_t PositiveMod(int32_t value)
 {
-    if (mod <= 0) {
-        return 0;
-    }
-    int64_t result = static_cast<int64_t>(value) % mod;
-    return static_cast<int32_t>(result < 0 ? result + mod : result);
+    return static_cast<int32_t>(static_cast<uint32_t>(value) % static_cast<uint32_t>(MOD));
 }
 
 std::shared_ptr<DetectorValue> BuildDetectorValue(FuzzData &provider)
 {
     return std::make_shared<DetectorValue>(
-        PositiveMod(provider.GetInt32(), 16), PositiveMod(provider.GetInt32(), 100000),
+        PositiveMod<DETECTOR_VALUE_RANGE>(provider.GetInt32()),
+        PositiveMod<DETECTOR_TIME_RANGE>(provider.GetInt32()),
         provider.GetBool(), provider.GetString());
 }
 
 void FillWorkInfo(FuzzData &provider, WorkInfo &workInfo, int32_t index)
 {
-    int32_t uid = 10000 + PositiveMod(provider.GetInt32(), 8);
-    workInfo.SetWorkId(index + 1 + PositiveMod(provider.GetInt32(), 32));
+    int32_t uid = BASE_UID + PositiveMod<UID_RANGE>(provider.GetInt32());
+    workInfo.SetWorkId(index + 1 + PositiveMod<WORK_ID_RANGE>(provider.GetInt32()));
     workInfo.SetElement(provider.GetString(), provider.GetString());
     workInfo.RefreshUid(uid);
     workInfo.RequestPersisted(provider.GetBool());
-    workInfo.SetEarliestStartTime(PositiveMod(provider.GetInt32(), 10000));
+    workInfo.SetEarliestStartTime(PositiveMod<MIN_INTERVAL_RANGE>(provider.GetInt32()));
 
     if (provider.GetBool()) {
-        workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(PositiveMod(provider.GetInt32(), 7)));
+        workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(PositiveMod<NETWORK_RANGE>(
+            provider.GetInt32())));
     }
     if (provider.GetBool()) {
         workInfo.RequestChargerType(provider.GetBool(), static_cast<WorkCondition::Charger>(
-            PositiveMod(provider.GetInt32(), 6)));
+            PositiveMod<CHARGER_RANGE>(provider.GetInt32())));
     }
     if (provider.GetBool()) {
-        workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(PositiveMod(provider.GetInt32(), 4)));
+        workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(
+            PositiveMod<BATTERY_STATUS_RANGE>(provider.GetInt32())));
     }
     if (provider.GetBool()) {
-        workInfo.RequestBatteryLevel(PositiveMod(provider.GetInt32(), 120));
+        workInfo.RequestBatteryLevel(PositiveMod<BATTERY_LEVEL_RANGE>(provider.GetInt32()));
     }
     if (provider.GetBool()) {
-        workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(PositiveMod(provider.GetInt32(), 4)));
+        workInfo.RequestStorageLevel(static_cast<WorkCondition::Storage>(PositiveMod<STORAGE_RANGE>(
+            provider.GetInt32())));
     }
     if (provider.GetBool()) {
-        uint32_t interval = 1 + static_cast<uint32_t>(PositiveMod(provider.GetInt32(), 100000));
+        uint32_t interval = 1 + static_cast<uint32_t>(PositiveMod<TIMER_INTERVAL_RANGE>(provider.GetInt32()));
         if (provider.GetBool()) {
             workInfo.RequestRepeatCycle(interval);
         } else {
-            workInfo.RequestRepeatCycle(interval, PositiveMod(provider.GetInt32(), 5));
+            workInfo.RequestRepeatCycle(interval, PositiveMod<TIMER_CYCLE_RANGE>(provider.GetInt32()));
         }
         workInfo.RequestBaseTime(static_cast<time_t>(provider.GetInt32()));
     }
@@ -175,15 +194,15 @@ std::shared_ptr<WorkStatus> BuildWorkStatus(FuzzData &provider, int32_t index)
 {
     WorkInfo workInfo;
     FillWorkInfo(provider, workInfo, index);
-    int32_t uid = workInfo.GetUid() > 0 ? workInfo.GetUid() : 10000 + index;
+    int32_t uid = workInfo.GetUid() > 0 ? workInfo.GetUid() : BASE_UID + index;
     auto workStatus = std::make_shared<WorkStatus>(workInfo, uid);
-    workStatus->userId_ = PositiveMod(provider.GetInt32(), 4);
-    workStatus->MarkStatus(static_cast<WorkStatus::Status>(PositiveMod(provider.GetInt32(), 4)));
-    workStatus->workStartTime_ = static_cast<uint64_t>(PositiveMod(provider.GetInt32(), 100000));
-    workStatus->workWatchDogTime_ = static_cast<uint64_t>(PositiveMod(provider.GetInt32(), 100000));
-    workStatus->duration_ = static_cast<uint64_t>(PositiveMod(provider.GetInt32(), 100000));
+    workStatus->userId_ = PositiveMod<USER_ID_RANGE>(provider.GetInt32());
+    workStatus->MarkStatus(static_cast<WorkStatus::Status>(PositiveMod<STATUS_RANGE>(provider.GetInt32())));
+    workStatus->workStartTime_ = static_cast<uint64_t>(PositiveMod<TIMER_INTERVAL_RANGE>(provider.GetInt32()));
+    workStatus->workWatchDogTime_ = static_cast<uint64_t>(PositiveMod<TIMER_INTERVAL_RANGE>(provider.GetInt32()));
+    workStatus->duration_ = static_cast<uint64_t>(PositiveMod<TIMER_INTERVAL_RANGE>(provider.GetInt32()));
     workStatus->paused_ = provider.GetBool();
-    workStatus->SetMinIntervalByDump(1 + PositiveMod(provider.GetInt32(), 10000));
+    workStatus->SetMinIntervalByDump(1 + PositiveMod<MIN_INTERVAL_RANGE>(provider.GetInt32()));
     return workStatus;
 }
 
@@ -198,7 +217,8 @@ void PrepareDataManager(FuzzData &provider)
     dataManager->SetDeepIdle(provider.GetBool());
     dataManager->OnDeviceStandyWhitelistChanged(bundleName, provider.GetBool());
     dataManager->OnDeviceStandyRestrictlistChanged(provider.GetString(), provider.GetBool());
-    dataManager->AddGroup(bundleName, PositiveMod(provider.GetInt32(), 4), PositiveMod(provider.GetInt32(), 8));
+    dataManager->AddGroup(bundleName, PositiveMod<USER_ID_RANGE>(provider.GetInt32()),
+        PositiveMod<GROUP_RANGE>(provider.GetInt32()));
 }
 
 void FuzzWorkQueue(FuzzData &provider)
@@ -257,7 +277,7 @@ void FuzzWorkQueueManager(FuzzData &provider)
         workList.emplace_back(work);
     }
 
-    manager->SetTimeCycle(static_cast<uint32_t>(PositiveMod(provider.GetInt32(), 100000)));
+    manager->SetTimeCycle(static_cast<uint32_t>(PositiveMod<TIMER_INTERVAL_RANGE>(provider.GetInt32())));
     manager->SetTimeRetrigger(provider.GetInt32());
     for (int32_t i = 0; i < TYPE_COUNT; ++i) {
         auto type = static_cast<WorkCondition::Type>(i);

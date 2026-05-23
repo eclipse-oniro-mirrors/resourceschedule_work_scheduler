@@ -13,6 +13,9 @@
  * limitations under the License.
  */
 
+#ifndef WORKINFOMARSHALLING_FUZZER_H
+#define WORKINFOMARSHALLING_FUZZER_H
+
 #include <cstdint>
 #include <unistd.h>
 #include <climits>
@@ -22,3 +25,4 @@
 
 #define FUZZ_PROJECT_NAME "workinfomarshalling_fuzzer"
 
+#endif // WORKINFOMARSHALLING_FUZZER_H

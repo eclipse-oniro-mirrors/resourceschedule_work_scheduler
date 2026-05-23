@@ -39,8 +39,25 @@ namespace {
 constexpr size_t MIN_SIZE = 4;
 constexpr size_t MAX_STRING_LEN = 32;
 constexpr int32_t ENUM_SPREAD = 8;
+constexpr uint32_t BITS_PER_BYTE = 8;
+constexpr uint32_t ALPHABET_COUNT = 26;
+constexpr uint32_t DECIMAL_COUNT = 10;
+constexpr uint8_t DIGIT_BRANCH_MASK = 3;
+constexpr int32_t EXTRA_PARAM_COUNT = 4;
+constexpr int32_t PARAM_TYPE_INT = 0;
+constexpr int32_t PARAM_TYPE_STRING = 1;
+constexpr int32_t PARAM_TYPE_BOOL = 2;
+constexpr int32_t APP_INDEX_RANGE = 128;
+constexpr int32_t BATTERY_LEVEL_SPREAD = 150;
+constexpr int32_t TIMER_CYCLE_SPREAD = 16;
+constexpr double DOUBLE_SCALE = 100.0;
 constexpr uint32_t MIN_REPEAT_TIME = 1;
-constexpr uint32_t MAX_REPEAT_TIME = 24 * 60 * 60 * 1000;
+constexpr uint32_t HOURS_PER_DAY = 24;
+constexpr uint32_t MINUTES_PER_HOUR = 60;
+constexpr uint32_t SECONDS_PER_MINUTE = 60;
+constexpr uint32_t MILLISECONDS_PER_SECOND = 1000;
+constexpr uint32_t MAX_REPEAT_TIME =
+    HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE * MILLISECONDS_PER_SECOND;
 
 class FuzzData {
 public:
@@ -63,7 +80,7 @@ public:
     {
         uint32_t value = 0;
         for (size_t i = 0; i < sizeof(uint32_t); ++i) {
-            value = (value << 8) | GetU8();
+            value = (value << BITS_PER_BYTE) | GetU8();
         }
         return static_cast<int32_t>(value);
     }
@@ -79,9 +96,9 @@ public:
         std::string result;
         result.reserve(len);
         for (size_t i = 0; i < len; ++i) {
-            char ch = static_cast<char>('a' + (GetU8() % 26));
-            if ((GetU8() & 3) == 0) {
-                ch = static_cast<char>('0' + (GetU8() % 10));
+            char ch = static_cast<char>('a' + (GetU8() % ALPHABET_COUNT));
+            if ((GetU8() & DIGIT_BRANCH_MASK) == 0) {
+                ch = static_cast<char>('0' + (GetU8() % DECIMAL_COUNT));
             }
             result.push_back(ch);
         }
@@ -94,46 +111,40 @@ private:
     size_t offset_ {0};
 };
 
-template<typename T>
-T PickEnum(FuzzData &provider, int32_t spread = ENUM_SPREAD)
+template<typename T, int32_t SPREAD = ENUM_SPREAD>
+T PickEnum(FuzzData &provider)
 {
-    if (spread <= 0) {
-        return static_cast<T>(0);
-    }
-    int64_t value = static_cast<int64_t>(provider.GetInt32()) % spread;
-    return static_cast<T>(value < 0 ? value + spread : value);
+    uint32_t value = static_cast<uint32_t>(provider.GetInt32()) % static_cast<uint32_t>(SPREAD);
+    return static_cast<T>(value);
 }
 
-int32_t PositiveMod(int32_t value, int32_t mod)
+template<int32_t MOD>
+int32_t PositiveMod(int32_t value)
 {
-    if (mod <= 0) {
-        return 0;
-    }
-    int64_t result = static_cast<int64_t>(value) % mod;
-    return static_cast<int32_t>(result < 0 ? result + mod : result);
+    return static_cast<int32_t>(static_cast<uint32_t>(value) % static_cast<uint32_t>(MOD));
 }
 
 void AddExtras(FuzzData &provider, WorkInfo &workInfo)
 {
     AAFwk::WantParams params;
-    int32_t count = provider.GetU8() % 4;
+    int32_t count = provider.GetU8() % EXTRA_PARAM_COUNT;
     for (int32_t i = 0; i < count; ++i) {
         std::string key = provider.GetString();
         if (key.empty()) {
             key = "executeImmediate";
         }
-        switch (provider.GetU8() % 4) {
-            case 0:
+        switch (provider.GetU8() % EXTRA_PARAM_COUNT) {
+            case PARAM_TYPE_INT:
                 params.SetParam(key, AAFwk::Integer::Box(provider.GetInt32()));
                 break;
-            case 1:
+            case PARAM_TYPE_STRING:
                 params.SetParam(key, AAFwk::String::Box(provider.GetBool() ? "false" : provider.GetString()));
                 break;
-            case 2:
+            case PARAM_TYPE_BOOL:
                 params.SetParam(key, AAFwk::Boolean::Box(provider.GetBool()));
                 break;
             default:
-                params.SetParam(key, AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) / 100.0));
+                params.SetParam(key, AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) / DOUBLE_SCALE));
                 break;
         }
     }
@@ -147,10 +158,10 @@ WorkInfo BuildWorkInfo(FuzzData &provider, bool allowExtras = true)
     workInfo.SetElement(provider.GetString(), provider.GetString());
     workInfo.RequestPersisted(provider.GetBool());
     workInfo.RefreshUid(provider.GetInt32());
-    workInfo.RefreshAppIndex(PositiveMod(provider.GetInt32(), 128));
+    workInfo.RefreshAppIndex(PositiveMod<APP_INDEX_RANGE>(provider.GetInt32()));
     workInfo.SetPreinstalled(provider.GetBool());
     workInfo.SetCallBySystemApp(provider.GetBool());
-    workInfo.SetEarliestStartTime(PositiveMod(provider.GetInt32(), MAX_REPEAT_TIME));
+    workInfo.SetEarliestStartTime(PositiveMod<static_cast<int32_t>(MAX_REPEAT_TIME)>(provider.GetInt32()));
     if (provider.GetBool()) {
         workInfo.RefreshSaId(provider.GetInt32());
     }
@@ -161,7 +172,7 @@ WorkInfo BuildWorkInfo(FuzzData &provider, bool allowExtras = true)
         workInfo.RequestChargerType(provider.GetBool(), PickEnum<WorkCondition::Charger>(provider));
     }
     if (provider.GetBool()) {
-        workInfo.RequestBatteryLevel(PositiveMod(provider.GetInt32(), 150));
+        workInfo.RequestBatteryLevel(PositiveMod<BATTERY_LEVEL_SPREAD>(provider.GetInt32()));
     }
     if (provider.GetBool()) {
         workInfo.RequestBatteryStatus(PickEnum<WorkCondition::BatteryStatus>(provider));
@@ -174,13 +185,13 @@ WorkInfo BuildWorkInfo(FuzzData &provider, bool allowExtras = true)
         if (provider.GetBool()) {
             workInfo.RequestRepeatCycle(interval);
         } else {
-            workInfo.RequestRepeatCycle(interval, PositiveMod(provider.GetInt32(), 16));
+            workInfo.RequestRepeatCycle(interval, PositiveMod<TIMER_CYCLE_SPREAD>(provider.GetInt32()));
         }
         workInfo.RequestBaseTime(static_cast<time_t>(provider.GetUInt32()));
     }
     if (provider.GetBool()) {
         workInfo.RequestDeepIdle(provider.GetBool());
-        workInfo.SetDeepIdleTime(PositiveMod(provider.GetInt32(), MAX_REPEAT_TIME));
+        workInfo.SetDeepIdleTime(PositiveMod<static_cast<int32_t>(MAX_REPEAT_TIME)>(provider.GetInt32()));
     }
     if (allowExtras && provider.GetBool()) {
         AddExtras(provider, workInfo);
@@ -221,9 +232,8 @@ void FuzzStructuredParcel(FuzzData &provider)
     }
 }
 
-nlohmann::json BuildJson(FuzzData &provider)
+void FillJsonBase(FuzzData &provider, nlohmann::json &root)
 {
-    nlohmann::json root;
     if (provider.GetBool()) {
         root["workId"] = provider.GetInt32();
     }
@@ -239,27 +249,30 @@ nlohmann::json BuildJson(FuzzData &provider)
     root["persisted"] = provider.GetBool();
     root["preinstalled"] = provider.GetBool();
     root["callBySystemApp"] = provider.GetBool();
-    root["appIndex"] = PositiveMod(provider.GetInt32(), 128);
+    root["appIndex"] = PositiveMod<APP_INDEX_RANGE>(provider.GetInt32());
     root["earliestStartTime"] = provider.GetInt32();
     root["createTime"] = provider.GetUInt32();
     root["uriKey"] = provider.GetString();
+}
 
+void FillJsonConditions(FuzzData &provider, nlohmann::json &root)
+{
     nlohmann::json conditions;
     if (provider.GetBool()) {
-        conditions["network"] = PositiveMod(provider.GetInt32(), ENUM_SPREAD);
+        conditions["network"] = PositiveMod<ENUM_SPREAD>(provider.GetInt32());
     }
     if (provider.GetBool()) {
         conditions["isCharging"] = provider.GetBool();
-        conditions["chargerType"] = PositiveMod(provider.GetInt32(), ENUM_SPREAD);
+        conditions["chargerType"] = PositiveMod<ENUM_SPREAD>(provider.GetInt32());
     }
     if (provider.GetBool()) {
-        conditions["batteryLevel"] = PositiveMod(provider.GetInt32(), 150);
+        conditions["batteryLevel"] = PositiveMod<BATTERY_LEVEL_SPREAD>(provider.GetInt32());
     }
     if (provider.GetBool()) {
-        conditions["batteryStatus"] = PositiveMod(provider.GetInt32(), ENUM_SPREAD);
+        conditions["batteryStatus"] = PositiveMod<ENUM_SPREAD>(provider.GetInt32());
     }
     if (provider.GetBool()) {
-        conditions["storage"] = PositiveMod(provider.GetInt32(), ENUM_SPREAD);
+        conditions["storage"] = PositiveMod<ENUM_SPREAD>(provider.GetInt32());
     }
     if (provider.GetBool()) {
         conditions["isDeepIdle"] = provider.GetBool();
@@ -268,26 +281,37 @@ nlohmann::json BuildJson(FuzzData &provider)
     if (provider.GetBool()) {
         conditions["timer"] = provider.GetInt32();
         conditions["repeat"] = provider.GetBool();
-        conditions["cycle"] = PositiveMod(provider.GetInt32(), 16);
+        conditions["cycle"] = PositiveMod<TIMER_CYCLE_SPREAD>(provider.GetInt32());
         conditions["baseTime"] = provider.GetInt32();
     }
     root["conditions"] = conditions;
+}
 
+void FillJsonParameters(FuzzData &provider, nlohmann::json &root)
+{
     nlohmann::json parameters;
     nlohmann::json parameterTypes;
-    int32_t count = provider.GetU8() % 4;
+    int32_t count = provider.GetU8() % EXTRA_PARAM_COUNT;
     for (int32_t i = 0; i < count; ++i) {
         std::string key = provider.GetString();
         if (key.empty()) {
             key = "key" + std::to_string(i);
         }
         parameters[key] = provider.GetString();
-        parameterTypes[key] = PositiveMod(provider.GetInt32(), 16);
+        parameterTypes[key] = PositiveMod<TIMER_CYCLE_SPREAD>(provider.GetInt32());
     }
     if (provider.GetBool()) {
         root["parameters"] = parameters;
         root["parametersType"] = parameterTypes;
     }
+}
+
+nlohmann::json BuildJson(FuzzData &provider)
+{
+    nlohmann::json root;
+    FillJsonBase(provider, root);
+    FillJsonConditions(provider, root);
+    FillJsonParameters(provider, root);
     return root;
 }
 
