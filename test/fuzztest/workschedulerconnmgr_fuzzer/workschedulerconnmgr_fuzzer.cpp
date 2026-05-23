@@ -86,7 +86,8 @@ WorkInfo BuildFuzzWorkInfoWithConditions(const uint8_t* data, size_t size, int32
             FuzzInt32(data, size, sizeof(int32_t) * OFFSET_STORAGE) % STORAGE_LEVEL_COUNT));
     }
     if (selector & 0x20) {
-        workInfo.RequestRepeatCycle(static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE)));
+        workInfo.RequestRepeatCycle(
+            static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE)));
     }
     if (selector & 0x40) {
         workInfo.RequestDeepIdle(WorkCondition::DeepIdle::DEEP_IDLE_IN);
