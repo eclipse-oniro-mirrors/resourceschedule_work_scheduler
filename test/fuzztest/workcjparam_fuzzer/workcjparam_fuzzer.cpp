@@ -181,6 +181,72 @@ void FillRetWorkInfo(FuzzData &provider, RetWorkInfo &cwork)
     cwork.idleWaitTime = provider.GetInt32();
 }
 
+bool FillCParameterIntValue(FuzzData &provider, CParameters &entry)
+{
+    int32_t *value = static_cast<int32_t *>(malloc(sizeof(int32_t)));
+    if (value == nullptr) {
+        return false;
+    }
+    *value = provider.GetInt32();
+    entry.value = value;
+    entry.size = sizeof(int32_t);
+    return true;
+}
+
+bool FillCParameterDoubleValue(FuzzData &provider, CParameters &entry)
+{
+    double *value = static_cast<double *>(malloc(sizeof(double)));
+    if (value == nullptr) {
+        return false;
+    }
+    *value = static_cast<double>(provider.GetInt32()) / static_cast<double>(DOUBLE_SCALE);
+    entry.value = value;
+    entry.size = sizeof(double);
+    return true;
+}
+
+bool FillCParameterStringValue(FuzzData &provider, CParameters &entry)
+{
+    std::string strVal = provider.GetString();
+    entry.value = AllocCString(strVal);
+    if (entry.value == nullptr) {
+        return false;
+    }
+    entry.size = static_cast<int64_t>(strVal.size()) + 1;
+    return true;
+}
+
+bool FillCParameterBoolValue(FuzzData &provider, CParameters &entry)
+{
+    bool *value = static_cast<bool *>(malloc(sizeof(bool)));
+    if (value == nullptr) {
+        return false;
+    }
+    *value = provider.GetBool();
+    entry.value = value;
+    entry.size = sizeof(bool);
+    return true;
+}
+
+bool FillCParameterValue(FuzzData &provider, CParameters &entry)
+{
+    entry.valueType = static_cast<int8_t>(provider.GetU8() % (PARAM_TYPE_INVALID + 1));
+    entry.value = nullptr;
+    entry.size = 0;
+    switch (entry.valueType) {
+        case CJ_INT_TYPE:
+            return FillCParameterIntValue(provider, entry);
+        case CJ_F64_TYPE:
+            return FillCParameterDoubleValue(provider, entry);
+        case CJ_STRING_TYPE:
+            return FillCParameterStringValue(provider, entry);
+        case CJ_BOOL_TYPE:
+            return FillCParameterBoolValue(provider, entry);
+        default:
+            return true;
+    }
+}
+
 bool FillCParameterEntry(FuzzData &provider, int64_t index, CParameters *head)
 {
     std::string key = provider.GetString();
@@ -191,52 +257,7 @@ bool FillCParameterEntry(FuzzData &provider, int64_t index, CParameters *head)
     if (head[index].key == nullptr) {
         return false;
     }
-    head[index].valueType = static_cast<int8_t>(provider.GetU8() % (PARAM_TYPE_INVALID + 1));
-    head[index].value = nullptr;
-    head[index].size = 0;
-    switch (head[index].valueType) {
-        case CJ_INT_TYPE: {
-            int32_t *value = static_cast<int32_t *>(malloc(sizeof(int32_t)));
-            if (value == nullptr) {
-                return false;
-            }
-            *value = provider.GetInt32();
-            head[index].value = value;
-            head[index].size = sizeof(int32_t);
-            return true;
-        }
-        case CJ_F64_TYPE: {
-            double *value = static_cast<double *>(malloc(sizeof(double)));
-            if (value == nullptr) {
-                return false;
-            }
-            *value = static_cast<double>(provider.GetInt32()) / static_cast<double>(DOUBLE_SCALE);
-            head[index].value = value;
-            head[index].size = sizeof(double);
-            return true;
-        }
-        case CJ_STRING_TYPE: {
-            std::string strVal = provider.GetString();
-            head[index].value = AllocCString(strVal);
-            if (head[index].value == nullptr) {
-                return false;
-            }
-            head[index].size = static_cast<int64_t>(strVal.size()) + 1;
-            return true;
-        }
-        case CJ_BOOL_TYPE: {
-            bool *value = static_cast<bool *>(malloc(sizeof(bool)));
-            if (value == nullptr) {
-                return false;
-            }
-            *value = provider.GetBool();
-            head[index].value = value;
-            head[index].size = sizeof(bool);
-            return true;
-        }
-        default:
-            return true;
-    }
+    return FillCParameterValue(provider, head[index]);
 }
 
 void BuildCArrParameters(FuzzData &provider, CArrParameters &arrParam)
@@ -270,20 +291,42 @@ void BuildCArrParameters(FuzzData &provider, CArrParameters &arrParam)
     }
 }
 
-WorkInfo BuildNativeWorkInfo(FuzzData &provider)
+void AddNativeWorkInfoExtras(FuzzData &provider, WorkInfo &workInfo)
 {
-    WorkInfo workInfo;
-    workInfo.SetWorkId(MIN_WORK_ID + PositiveMod<ENUM_SPREAD>(provider.GetInt32()));
-    std::string bundle = provider.GetString();
-    std::string ability = provider.GetString();
-    if (bundle.empty()) {
-        bundle = "com.example.fuzz";
+    if (!provider.GetBool()) {
+        return;
     }
-    if (ability.empty()) {
-        ability = "FuzzAbility";
+    AAFwk::WantParams params;
+    int32_t count = provider.GetU8() % EXTRA_PARAM_COUNT;
+    for (int32_t i = 0; i < count; ++i) {
+        std::string key = provider.GetString();
+        if (key.empty()) {
+            key = "param" + std::to_string(i);
+        }
+        switch (provider.GetU8() % EXTRA_PARAM_COUNT) {
+            case PARAM_TYPE_INT:
+                params.SetParam(key, AAFwk::Integer::Box(provider.GetInt32()));
+                break;
+            case PARAM_TYPE_F64:
+                params.SetParam(key, AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) /
+                    static_cast<double>(DOUBLE_SCALE)));
+                break;
+            case PARAM_TYPE_STRING:
+                params.SetParam(key, AAFwk::String::Box(provider.GetString()));
+                break;
+            case PARAM_TYPE_BOOL:
+                params.SetParam(key, AAFwk::Boolean::Box(provider.GetBool()));
+                break;
+            default:
+                params.SetParam(key, AAFwk::Integer::Box(provider.GetInt32()));
+                break;
+        }
     }
-    workInfo.SetElement(bundle, ability);
-    workInfo.RequestPersisted(provider.GetBool());
+    workInfo.RequestExtras(params);
+}
+
+void FillNativeWorkInfoConditions(FuzzData &provider, WorkInfo &workInfo)
+{
     if (provider.GetBool()) {
         workInfo.RequestNetworkType(
             static_cast<WorkCondition::Network>(PositiveMod<NETWORK_RANGE>(provider.GetInt32())));
@@ -311,35 +354,24 @@ WorkInfo BuildNativeWorkInfo(FuzzData &provider)
             workInfo.RequestRepeatCycle(interval, PositiveMod<TIMER_CYCLE_SPREAD>(provider.GetInt32()));
         }
     }
-    if (provider.GetBool()) {
-        AAFwk::WantParams params;
-        int32_t count = provider.GetU8() % EXTRA_PARAM_COUNT;
-        for (int32_t i = 0; i < count; ++i) {
-            std::string key = provider.GetString();
-            if (key.empty()) {
-                key = "param" + std::to_string(i);
-            }
-            switch (provider.GetU8() % EXTRA_PARAM_COUNT) {
-                case PARAM_TYPE_INT:
-                    params.SetParam(key, AAFwk::Integer::Box(provider.GetInt32()));
-                    break;
-                case PARAM_TYPE_F64:
-                    params.SetParam(key, AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) /
-                        static_cast<double>(DOUBLE_SCALE)));
-                    break;
-                case PARAM_TYPE_STRING:
-                    params.SetParam(key, AAFwk::String::Box(provider.GetString()));
-                    break;
-                case PARAM_TYPE_BOOL:
-                    params.SetParam(key, AAFwk::Boolean::Box(provider.GetBool()));
-                    break;
-                default:
-                    params.SetParam(key, AAFwk::Integer::Box(provider.GetInt32()));
-                    break;
-            }
-        }
-        workInfo.RequestExtras(params);
+}
+
+WorkInfo BuildNativeWorkInfo(FuzzData &provider)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(MIN_WORK_ID + PositiveMod<ENUM_SPREAD>(provider.GetInt32()));
+    std::string bundle = provider.GetString();
+    std::string ability = provider.GetString();
+    if (bundle.empty()) {
+        bundle = "com.example.fuzz";
     }
+    if (ability.empty()) {
+        ability = "FuzzAbility";
+    }
+    workInfo.SetElement(bundle, ability);
+    workInfo.RequestPersisted(provider.GetBool());
+    FillNativeWorkInfoConditions(provider, workInfo);
+    AddNativeWorkInfoExtras(provider, workInfo);
     return workInfo;
 }
 

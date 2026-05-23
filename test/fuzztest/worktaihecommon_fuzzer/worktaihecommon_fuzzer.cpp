@@ -152,9 +152,8 @@ void FillAniParameters(FuzzData &provider, AniWorkInfo &aniWork)
     aniWork.parameters = taihe::optional<std::map<std::string, AniParameType>>(std::in_place, params);
 }
 
-AniWorkInfo BuildAniWorkInfo(FuzzData &provider, bool forceValidBase = false)
+void FillAniWorkInfoBase(FuzzData &provider, AniWorkInfo &aniWork, bool forceValidBase)
 {
-    AniWorkInfo aniWork;
     aniWork.workId = provider.GetInt32();
     std::string bundle = provider.GetString();
     std::string ability = provider.GetString();
@@ -168,13 +167,16 @@ AniWorkInfo BuildAniWorkInfo(FuzzData &provider, bool forceValidBase = false)
     }
     aniWork.bundleName = bundle;
     aniWork.abilityName = ability;
-
     if (provider.GetBool()) {
         aniWork.isPersisted = taihe::optional<bool>(std::in_place, provider.GetBool());
     }
     if (provider.GetBool()) {
         aniWork.earliestStartTime = taihe::optional<int32_t>(std::in_place, provider.GetInt32());
     }
+}
+
+void FillAniWorkInfoConditions(FuzzData &provider, AniWorkInfo &aniWork)
+{
     if (provider.GetBool()) {
         aniWork.networkType = taihe::optional<AniNetworkType>(
             std::in_place, AniNetworkType::key_t(PositiveMod<NETWORK_RANGE>(provider.GetInt32())));
@@ -209,6 +211,13 @@ AniWorkInfo BuildAniWorkInfo(FuzzData &provider, bool forceValidBase = false)
         aniWork.isDeepIdle = taihe::optional<bool>(std::in_place, provider.GetBool());
         aniWork.idleWaitTime = taihe::optional<int32_t>(std::in_place, provider.GetInt32());
     }
+}
+
+AniWorkInfo BuildAniWorkInfo(FuzzData &provider, bool forceValidBase = false)
+{
+    AniWorkInfo aniWork;
+    FillAniWorkInfoBase(provider, aniWork, forceValidBase);
+    FillAniWorkInfoConditions(provider, aniWork);
     FillAniParameters(provider, aniWork);
     return aniWork;
 }
