@@ -71,7 +71,8 @@ WorkInfo BuildFuzzWorkInfoWithConditions(const uint8_t* data, size_t size, int32
             FuzzInt32(data, size) % NETWORK_TYPE_COUNT));
     }
     if (selector & 0x02) {
-        workInfo.RequestChargerType(static_cast<WorkCondition::Charger>(
+        bool isCharging = (size > OFFSET_CHARGER) && ((data[OFFSET_CHARGER] & 1) != 0);
+        workInfo.RequestChargerType(isCharging, static_cast<WorkCondition::Charger>(
             FuzzInt32(data, size, sizeof(int32_t) * OFFSET_CHARGER) % CHARGER_TYPE_COUNT));
     }
     if (selector & 0x04) {
@@ -90,7 +91,7 @@ WorkInfo BuildFuzzWorkInfoWithConditions(const uint8_t* data, size_t size, int32
             static_cast<uint32_t>(FuzzInt32(data, size, sizeof(int32_t) * OFFSET_REPEAT_CYCLE)));
     }
     if (selector & 0x40) {
-        workInfo.RequestDeepIdle(WorkCondition::DeepIdle::DEEP_IDLE_IN);
+        workInfo.RequestDeepIdle(true);
     }
     return workInfo;
 }
