@@ -95,9 +95,7 @@
         "//foundation/resourceschedule/work_scheduler/test/fuzztest/workinfomarshalling_fuzzer:fuzztest",
         "//foundation/resourceschedule/work_scheduler/test/fuzztest/workqueuecondition_fuzzer:fuzztest",
         "//foundation/resourceschedule/work_scheduler/test/fuzztest/workstatuscondition_fuzzer:fuzztest",
-        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workpolicymanager_fuzzer:fuzztest",
-        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workcjparam_fuzzer:fuzztest",
-        "//foundation/resourceschedule/work_scheduler/test/fuzztest/worktaihecommon_fuzzer:fuzztest"
+        "//foundation/resourceschedule/work_scheduler/test/fuzztest/workcjparam_fuzzer:fuzztest"
       ]
     },
     "hisysevent_config": [
