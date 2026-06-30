@@ -13,18 +13,18 @@
  * limitations under the License.
  */
 
- #include "ability_connect_callback.h"
- #include "background_loader_mgr.h"
- #include "work_sched_hilog.h"
+#include "ability_connect_callback.h"
+#include "background_loader_mgr.h"
+#include "work_sched_hilog.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 void AbilityConnectCallback::OnAbilityConnectDone(const OHOS::AppExecFwk::ElementName& element,
-    const OHOS::sptr<IRemoteObject> remoteObject, int32_t resultCode)
+    const OHOS::sptr<IRemoteObject>& remoteObject, int32_t resultCode)
 {
     const std::string& bundleName = element.GetBundleName();
     WS_HILOGI("bundleName: %{public}s, resultCode: %{public}d", bundleName.c_str(), resultCode);
-    if (resultCode != OHOS::ERR_OK) {
+    if (resultCode != ERR_OK) {
         WS_HLOGE("OnAbilityConnectDone failed: resultCode: %{public}d", resultCode);
         return;
     }
@@ -38,10 +38,10 @@ void AbilityConnectCallback::OnAbilityConnectDone(const OHOS::AppExecFwk::Elemen
     BackgroundLoaderMgr::GetInstance().SendOnstart(remoteObject, bundleName, appIndex_);
 }
 
-void AbilityConnectCallback::OnAbilityDisconnectDone(cosnt OHOS::AppExecFwk::ElementName& element, int32_t resultCode)
+void AbilityConnectCallback::OnAbilityDisconnectDone(const OHOS::AppExecFwk::ElementName& element, int32_t resultCode)
 {
     WS_HILOGI("OnAbilityDisconnectDone: bundleName: %{public}s, appIndex: %{public}d, resultCode: %{public}d",
-        element.GetBundleName.c_str(), appIndex_, resultCode);
+        element.GetBundleName().c_str(), appIndex_, resultCode);
     BackgroundLoaderMgr::GetInstance().RemoveRemoteObject(bundleName_, abilityName_, appIndex_);
 }
 } // namespace WorkScheduler

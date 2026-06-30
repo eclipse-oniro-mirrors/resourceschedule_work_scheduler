@@ -377,7 +377,7 @@ private:
     void DumpTriggerWork(const std::string& uIdStr, const std::string& workIdStr, std::string& result);
     void ReportUserDataSizeEvent();
     void DumpParamRestore(std::string& result);
-    bool CheckPermission(const std::string &permission, int32_t uid);
+    bool CheckPermission(const std::string &permission);
     int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
 
 private:

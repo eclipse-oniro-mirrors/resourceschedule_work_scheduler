@@ -297,20 +297,20 @@ void WorkSchedulerService::LoadBackgroundLoaderFromFile(const char* path, int32_
         WS_HILOGE("no background loader config key");
         return;
     }
-    nlohmann::json backgroundLoadercfg = root[BACKGROUND_LOADER_CONFIG_KEY];
+    nlohmann::json backgroundLoadercfg = root[std::string(BACKGROUND_LOADER_CONFIG_KEY)];
     if (backgroundLoadercfg.empty() || !backgroundLoadercfg.is_object()) {
         WS_HILOGE("background loader config content is empty");
         return;
     }
     if (!backgroundLoaderCfg.contains(std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)) ||
-        !backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUT_COUNT_KEY].is_number_integer() ||
+        !backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)].is_number_integer() ||
         !backgroundLoaderCfg.contains(std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)) ||
-        !backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUTMS_KEY].is_number_integer()) {
+        !backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)].is_number_integer()) {
         WS_HILOGE("backgroundLoaderCfg json is invaild");
         return;
     }
-    maxTimeoutCount = backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUT_COUNT_KEY].get<int32_T>();
-    backgroundLoaderTimeoutMs = backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUTMS_KEY].get<int32_T>();
+    maxTimeoutCount = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)].get<int32_T>();
+    backgroundLoaderTimeoutMs = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)].get<int32_T>();
     return;
 }
 
@@ -511,7 +511,7 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
         return false;
     }
     InitWorkInner();
-    int32_t maxTimeoutCount = MAX_TIME_COUNT;
+    int32_t maxTimeoutCount = BACKGROUND_LOADER_TIMEOUT_COUNT;
     int32_t backgroundLoaderTimeoutMs = BACKGROUND_LOADER_TIMEOUT_MS;
     LoadBackgroundLoaderFromFile(BACKGROUND_LOADER_FILE_PATH, maxTimeoutCount, backgroundLoaderTimeoutMs);
     BackgroundLoaderMgr::GetInstance().Init(maxTimeoutCount, backgroundLoaderTimeoutMs);

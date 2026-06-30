@@ -16,13 +16,16 @@
 #include "ability_connect_callback.h"
 #include "ability_manager_client.h"
 #include "background_loader_mgr.h"
+#include "res_sched_client.h"
 #include "res_sched_json_util.h"
+#include "system_ability_definition.h"
 #include "want.h"
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
 
-extern "C" void ReportDataInProcess(uint32_t resType, int32_t value, const nlohmann::json& payload);
-using namespace OHOS::ResrouceSchedule;
+
+extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
+using namespace OHOS::ResourceSchedule;
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
@@ -58,7 +61,7 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
 
     {
         std::lock_guard<ffrt::mutex> lock(blackListLock_);
-        if (blackLists.find(key) != blackLists_end()) {
+        if (blackLists_.find(key) != blackLists_end()) {
             WS_HILOGE("bundleName: %{public}s is in black list", taskInfo.bundleName_.c_str());
             return E_CHECK_WORKINFO_FAILED;
         }
@@ -160,12 +163,12 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
         WS_HILOGI("task still running, send onstop for bundle %{public}s", bundleName.c_str());
         SendOnStop(taskInfo, static_cast<int32_t>(StopCode::TIMEOUT_ERROR), std::string(TIMEOUR_MESSAGE));
         nlohmann::json payload;
-        payload["bundleName"] = taskInfo.buindleName_;
+        payload["bundleName"] = taskInfo.bundleName_;
         payload["appIndex"] = std::to_string(taskInfo.appIndex_);
-        ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVNET,
+        ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVENT,
             ResType::BackgroundLoaderState::DELETE, payload);
         taskInfo.timeoutCount_++;
-        if (taskInfo.timeoutCount >= maxTimeoutCount_) {
+        if (taskInfo.timeoutCount_ >= maxTimeoutCount_) {
             auto key = GenerateTaskKey(taskInfo.bundleName_, taskInfo.appIndex_);
             std::lock_guard<ffrt::mutex> lock(blackListLock_);
             blackLists_.insert(key);
@@ -182,7 +185,7 @@ void BackgroundLoaderMgr::PostTimeoutTask(const std::string& bundleName,
         bundleName.c_str(), abilityName.c_str(), appIndex);
     ffrt::submit(
         [bundleName, abilityName, appIndex, taskId] () {
-            BackgrondLoader::GetInstance::CheckAndSendOnStop(bundleName, abilityName, appIndex, taskId);
+            BackgroundLoaderMgr::GetInstance()::CheckAndSendOnStop(bundleName, abilityName, appIndex, taskId);
         },
         ffrt::task_attr().delay(backgroundLoaderTimeoutMs_));
 }
@@ -196,7 +199,7 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const std::shared_ptr<Resou
     if (!ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, resData->payload) ||
         !ResCommonUtil::ParseStringParameterFromJson("abilityName", abilityName, resData->payload) ||
         !ResCommonUtil::ParseIntParameterFromJson("appIndex", appIndex, resData->payload) ||
-        !ResCommonUtil::ParseIntParameterFromJson("taskId", taskId, resData->payload) ||) {
+        !ResCommonUtil::ParseIntParameterFromJson("taskId", taskId, resData->payload)) {
         WS_HILOGE("get background loader info fail");
         return;
     }
@@ -226,7 +229,7 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const std::shared_ptr<Resou
         return;
     }
     int32_t ret = AAFwk::AbilityManagerClient::GetInstance()->StartAbilityByCall(providerWant, connect);
-    if (ret == ERR_OK) {
+    if (ret != ERR_OK) {
         WS_HILOGE("StartAbilityByCall falied ret : %{public}d", ret);
         return;
     }
@@ -237,10 +240,10 @@ sptr<IRemoteObject> BackgroundLoaderMgr::GetRemoteObject(const std::string& bund
         const std::string& abilityName, int32_t appIndex)
 {
     std::string key = GenerateTaskKey(bundleName, appIndex);
-    std::lock_guard<ffrt::mutex> lock(abilityMapLock);
+    std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
     auto it = abilityMap_.find(key);
     if (it != abilityMap_.end()) {
-        return it->sencond;
+        return it->second;
     }
     return nullptr;
 }
@@ -266,7 +269,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
         return;
     }
     int32_t ret = remoteObject->sendRequest(AAFwk::IAbilityConnection::ON_ABILITY_CONNECT_DONE, data, reply, option);
-    if (ret == ERR_OK) {
+    if (ret != ERR_OK) {
         WS_HILOGE("SendOnStart: send request failed");
         return;
     }
@@ -277,9 +280,9 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
 bool BackgroundLoaderMgr::GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex, TaskInfo& info)
 {
     std::string key = GenerateTaskKey(bundleName, appIndex);
-    auto it = taskMap.find(key);
-    if (it != taskMap.end()) {
-       info = it.second;
+    auto it = taskMap_.find(key);
+    if (it != taskMap_.end()) {
+       info = it->second;
        return true;
     }
     return false;
@@ -294,7 +297,7 @@ void BackgroundLoaderMgr::RemoveRemoteObject(const std::string& bundleName,
     if (it != abilityMap_.end()) {
         abilityMap_.erase(it);
         WS_HILOGI("Removed object for %{public}s, appIndex: %{public}d", bundleName.c_str(), appIndex);
-    } else if {
+    } else {
         WS_HILOGI("%{public}s, appIndex: %{public}d not found", bundleName.c_str(), appIndex);
     }
 }
@@ -335,22 +338,22 @@ void BackgroundLoaderMgr::SendOnStop(const TaskInfo& taskI
         return;
     }
     int32_t ret = remoteObject->sendRequest(AAFwk::IAbilityConnection::ON_ABILITY_CONNECT_DONE, data, reply, option);
-    if (ret == ERR_OK) {
+    if (ret != ERR_OK) {
         WS_HILOGE("SendOnStop: send request for %{public}s, appIndex: %{public}d failed",
             taskInfo.bundleName_.c_str(), taskInfo.appIndex_);
         return;
     }
-    WS_HILOGE("SendOnStop: send request for %{public}s, appIndex: %{public}d success",
+    WS_HILOGI("SendOnStop: send request for %{public}s, appIndex: %{public}d success",
         taskInfo.bundleName_.c_str(), taskInfo.appIndex_);
 }
 
 void BackgrounderMgr::SaveRemoteObject(const std::string& bundleName,
-    const std::string& abilityName, int32_t appIndex, sptr<IRemoteObject>& remoteObject)
+    const std::string& abilityName, int32_t appIndex, const sptr<IRemoteObject>& remoteObject)
 {
     std::string key = GenerateTaskKey(bundleName, appIndex);
     std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
     abilityMap_[key] = remoteObject;
-    WS_HILOGE("save remote object for %{public}s, appIndex: %{public}d success", bundleName.c_str(), appIndex);
+    WS_HILOGI("save remote object for %{public}s, appIndex: %{public}d success", bundleName.c_str(), appIndex);
 }
 
 }  // namespace WorkScheduler

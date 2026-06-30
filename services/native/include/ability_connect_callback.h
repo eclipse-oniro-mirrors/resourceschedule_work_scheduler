@@ -30,13 +30,13 @@ public:
     void OnAbilityConnectDone(
         const OHOS::AppExecFwk::ElementName& element, const OHOS::sptr<IRemoteObject>& remoteObject,
         int32_t resultCode) override;
-    void OnABilityDisconnectDone(const OHOS::AppexecFwk::ElementName& element, int32_t resultCode) override;
+    void OnAbilityDisconnectDone(const OHOS::AppexecFwk::ElementName& element, int32_t resultCode) override;
 private:
         std::string bundleName_;
         std::string abilityName_;
         int32_t appIndex_;
 };
-} // WorkScheduler
-} // OHOS
+} // namespace WorkScheduler
+} // namespace OHOS
 
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_ABILITY_CONNECT_CALLBACK_H

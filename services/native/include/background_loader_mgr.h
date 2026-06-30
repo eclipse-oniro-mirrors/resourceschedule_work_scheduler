@@ -28,7 +28,7 @@
 #include "single_instance.h"
 #include "ffrt.h"
 #include "iremote_object.h"
-#include "ability_connect_callback_stub.h"
+#include "res_data.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -38,12 +38,20 @@ static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 15000;
 static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
 }
 
-enum class TaskStatus : jint32_t {
+enum class TaskStatus : int32_t {
     NOT_STARTED = 0,
     RUNNING = 1,
     FINISHED = 2
 };
- 
+
+enum StopCode : uint32_t {
+    SUCCESS = 0,
+    SYSTEM_ERROR = 1,
+    PERCEPTIBLE_ERROR = 2,
+    TIMEOUT_ERROR = 3,
+    EXECUTE_ERROR = 4
+};
+
 struct TaskInfo {
     std::string bundleName_ = "";
     std::string abilityName_ = "";
@@ -64,10 +72,9 @@ public:
     ErrCode GetTaskInfo(int32_t taskId, const std::string& bundleName, int32_t appIndex,
         BackgroundLoaderTaskInfo& taskInfo);
     int32_t GetTaskId(const std::string& bundleName, const std::string& abilityName, int32_t appIndex);
-    void HandleBackgroundLoaderTask(const std::string& bundleName, const std::string& abilityName,
-        int32_t appIndex, int32_t taskId);
+    void HandleBackgroundLoaderTask(const std::shared_ptr<ResourceSchedule::ResData>& resData);
     void SaveRemoteObject(const std::string& bundleName,
-        const std::string& abilityName, int32_t appIndex, sptr<IRemoteObject>& remoteObject); 
+        const std::string& abilityName, int32_t appIndex, const sptr<IRemoteObject>& remoteObject); 
     void CheckAndSendOnStop(const std::string& bundleName,
         const std::string& abilityName, int32_t appIndex, int32_t taskId);
     void SendOnStop(const TaskInfo& taskInfo, int32_t stopCode, const std::string& message);
@@ -88,7 +95,7 @@ private:
     std::unordered_map<std::string, sptr<IRemoteObject>> abilityMap_;
     ffrt::mutex blackListLock_;
     std::unordered_set<std::string> blackLists_;
-    int32_t maxTimeoutCount_ = MAX_TIMEOUT_COUNT;
+    int32_t maxTimeoutCount_ = BACKGROUND_LOADER_TIMEOUT_COUNT;
     int32_t backgroundLoaderTimeoutMs_ = BACKGROUND_LOADER_TIMEOUT_MS;
 };
 

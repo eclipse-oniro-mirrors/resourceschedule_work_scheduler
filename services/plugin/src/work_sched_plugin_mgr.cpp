@@ -61,10 +61,6 @@ void WorkSchedPluginMgr::DispatchResource(const std::shared_ptr<ResourceSchedule
         WS_HILOGE("WorkSchedPluginMgr not enable or data is nullptr");
         return;
     }
-
-    if (resData->resType == ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED) {
-        
-    }
     switch (resData->resType) {
         case ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED: {
             BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
