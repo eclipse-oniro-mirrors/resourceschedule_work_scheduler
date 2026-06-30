@@ -21,11 +21,13 @@ using namespace testing::ext;
 using namespace OHOS;
 using namespace OHOS::WorkScheduler;
 
+static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 15000;
+static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
 class AbilityConnectCallbackTest : public testing::Test {
 public:
     void SetUp() override
     {
-        BackgroundLoaderMgr::GetInstance().Init(3, 15000);
+        BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_MS);
     };
     void TearDown() override {};
 };

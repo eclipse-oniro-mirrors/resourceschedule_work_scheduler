@@ -371,7 +371,10 @@ HWTEST_F(BackgroundLoaderMgrTest, UnregisterTask_TaskIdMismatch_001, TestSize.Le
     TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
-    TaskInfo mismatchInfo = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 999 };
+    TaskInfo mismatchInfo = {
+        .bundleName_ = "com.test.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0, .taskId_ = 999 };
     ret = BackgroundLoaderMgr::GetInstance().UnregisterTask(mismatchInfo);
     EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
