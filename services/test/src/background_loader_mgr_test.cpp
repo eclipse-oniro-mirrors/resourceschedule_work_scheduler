@@ -351,14 +351,14 @@ HWTEST_F(BackgroundLoaderMgrTest, Init_WithParams_001, TestSize.Level1)
     EXPECT_TRUE(BackgroundLoaderMgr::GetInstance().isReady_.load());
 }
 
-HWTEST_F(BackgroundLoaderMgrTest, RegisterTask_BlackList_001, TestSize.Level1)
+HWTEST_F(BackgroundLoaderMgrTest, RegisterTask_List_001, TestSize.Level1)
 {
     TaskInfo info = {
-        .bundleName_ = "com.blacklist.bundle",
+        .bundleName_ = "com.list.bundle",
         .abilityName_ = "TestAbility",
         .appIndex_ = 0,
         .taskId_ = 1 };
-    std::string key = "com.blacklist.bundle_0";
+    std::string key = "com.list.bundle_0";
     std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
     BackgroundLoaderMgr::GetInstance().blackLists_.insert(key);
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
