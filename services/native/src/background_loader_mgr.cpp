@@ -237,7 +237,7 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const std::shared_ptr<Resou
 }
 
 sptr<IRemoteObject> BackgroundLoaderMgr::GetRemoteObject(const std::string& bundleName,
-        const std::string& abilityName, int32_t appIndex)
+    const std::string& abilityName, int32_t appIndex)
 {
     std::string key = GenerateTaskKey(bundleName, appIndex);
     std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
@@ -282,8 +282,8 @@ bool BackgroundLoaderMgr::GetInnerTaskInfo(const std::string& bundleName, int32_
     std::string key = GenerateTaskKey(bundleName, appIndex);
     auto it = taskMap_.find(key);
     if (it != taskMap_.end()) {
-       info = it->second;
-       return true;
+        info = it->second;
+        return true;
     }
     return false;
 }

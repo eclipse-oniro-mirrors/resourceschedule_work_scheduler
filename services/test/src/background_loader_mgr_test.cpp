@@ -20,11 +20,13 @@
 using namespace testing::ext;
 using namespace OHOS::WorkScheduler;
 using namespace OHOS;
+static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 15000;
+static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
 class BackgroundLoaderMgrTest : public testing::Test {
 public:
     void SetUp() override
     {
-        BackgroundLoaderMgr::GetInstance().Init(3,15000);
+        BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_MS);
     };
     void TearDown() override {};
 };
@@ -351,7 +353,11 @@ HWTEST_F(BackgroundLoaderMgrTest, Init_WithParams_001, TestSize.Level1)
 
 HWTEST_F(BackgroundLoaderMgrTest, RegisterTask_BlackList_001, TestSize.Level1)
 {
-    TaskInfo info = { .bundleName_ = "com.blacklist.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
+    TaskInfo info = {
+        .bundleName_ = "com.blacklist.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1 };
     std::string key = "com.blacklist.bundle_0";
     std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
     BackgroundLoaderMgr::GetInstance().blackLists_.insert(key);
@@ -390,7 +396,10 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTask_TaskIdMismatch_001, TestSize.Level1
     TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
-    TaskInfo mismatchInfo = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 999 };
+    TaskInfo mismatchInfo = {
+        .bundleName_ = "com.test.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0, .taskId_ = 999 };
     ret = BackgroundLoaderMgr::GetInstance().FinishTask(mismatchInfo);
     EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
@@ -417,13 +426,15 @@ HWTEST_F(BackgroundLoaderMgrTest, GetRemoteObject_001, TestSize.Level1)
 {
     sptr<IRemoteObject> remoteObject = nullptr;
     BackgroundLoaderMgr::GetInstance().SaveRemoteObject("com.test.bundle", "TestAbility", 0, remoteObject);
-    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.test.bundle", "TestAbility", 0);
+    sptr<IRemoteObject> result =
+        BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.test.bundle", "TestAbility", 0);
     EXPECT_EQ(result, nullptr);
 }
 
 HWTEST_F(BackgroundLoaderMgrTest, GetRemoteObject_NotFound_001, TestSize.Level1)
 {
-    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.notexist.bundle", "TestAbility", 0);
+    sptr<IRemoteObject> result =
+        BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.notexist.bundle", "TestAbility", 0);
     EXPECT_EQ(result, nullptr);
 }
 
@@ -432,14 +443,16 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_001, TestSize.Level1)
     sptr<IRemoteObject> remoteObject = nullptr;
     BackgroundLoaderMgr::GetInstance().SaveRemoteObject("com.test.bundle", "TestAbility", 0, remoteObject);
     BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.test.bundle", "TestAbility", 0);
-    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.test.bundle", "TestAbility", 0);
+    sptr<IRemoteObject> result =
+        BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.test.bundle", "TestAbility", 0);
     EXPECT_EQ(result, nullptr);
 }
 
 HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_NotFound_001, TestSize.Level1)
 {
     BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.notexist.bundle", "TestAbility", 0);
-    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.notexist.bundle", "TestAbility", 0);
+    sptr<IRemoteObject> result =
+        BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.notexist.bundle", "TestAbility", 0);
     EXPECT_EQ(result, nullptr);
 }
 

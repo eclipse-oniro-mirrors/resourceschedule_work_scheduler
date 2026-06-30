@@ -58,7 +58,6 @@ HWTEST_F(AbilityConnectCallbackTest, OnAbilityConnectDone_NullRemoteObject_001, 
     callback->OnAbilityConnectDone(element, remoteObject, ERR_OK);
     sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject(bundleName, abilityName, appIndex);
     EXPECT_EQ(result, nullptr);
-
 }
 
 HWTEST_F(AbilityConnectCallbackTest, OnAbilityDisconnectDone_001, TestSize.Level1)

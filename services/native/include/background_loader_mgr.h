@@ -59,7 +59,7 @@ struct TaskInfo {
     int32_t taskId_ = 0;
     TaskStatus status_ = TaskStatus::NOT_STARTED;
     int32_t uid_ = 0;
-    int32_t timeoutCount_ = 0; 
+    int32_t timeoutCount_ = 0;
 };
 
 class BackgroundLoaderMgr {
@@ -74,7 +74,7 @@ public:
     int32_t GetTaskId(const std::string& bundleName, const std::string& abilityName, int32_t appIndex);
     void HandleBackgroundLoaderTask(const std::shared_ptr<ResourceSchedule::ResData>& resData);
     void SaveRemoteObject(const std::string& bundleName,
-        const std::string& abilityName, int32_t appIndex, const sptr<IRemoteObject>& remoteObject); 
+        const std::string& abilityName, int32_t appIndex, const sptr<IRemoteObject>& remoteObject);
     void CheckAndSendOnStop(const std::string& bundleName,
         const std::string& abilityName, int32_t appIndex, int32_t taskId);
     void SendOnStop(const TaskInfo& taskInfo, int32_t stopCode, const std::string& message);
