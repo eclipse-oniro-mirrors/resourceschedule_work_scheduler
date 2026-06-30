@@ -17,7 +17,7 @@
 
 #include <string>
 
-#include "ablity_connect_callback_stub.h"
+#include "ability_connect_callback_stub.h"
 #include "iremote_object.h"
 
 namespace OHOS {
@@ -30,7 +30,7 @@ public:
     void OnAbilityConnectDone(
         const OHOS::AppExecFwk::ElementName& element, const OHOS::sptr<IRemoteObject>& remoteObject,
         int32_t resultCode) override;
-    void OnAbilityDisconnectDone(const OHOS::AppexecFwk::ElementName& element, int32_t resultCode) override;
+    void OnAbilityDisconnectDone(const OHOS::AppExecFwk::ElementName& element, int32_t resultCode) override;
 private:
         std::string bundleName_;
         std::string abilityName_;

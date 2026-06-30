@@ -68,7 +68,7 @@ void WorkSchedPluginMgr::DispatchResource(const std::shared_ptr<ResourceSchedule
             break;
         }
         case ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK: {
-            backgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(resData);
+            BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(resData);
             break;
         }
         default: {

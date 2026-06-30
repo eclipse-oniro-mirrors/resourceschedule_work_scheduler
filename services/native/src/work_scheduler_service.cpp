@@ -297,8 +297,8 @@ void WorkSchedulerService::LoadBackgroundLoaderFromFile(const char* path, int32_
         WS_HILOGE("no background loader config key");
         return;
     }
-    nlohmann::json backgroundLoadercfg = root[std::string(BACKGROUND_LOADER_CONFIG_KEY)];
-    if (backgroundLoadercfg.empty() || !backgroundLoadercfg.is_object()) {
+    nlohmann::json backgroundLoaderCfg = root[std::string(BACKGROUND_LOADER_CONFIG_KEY)];
+    if (backgroundLoaderCfg.empty() || !backgroundLoaderCfg.is_object()) {
         WS_HILOGE("background loader config content is empty");
         return;
     }
@@ -309,8 +309,8 @@ void WorkSchedulerService::LoadBackgroundLoaderFromFile(const char* path, int32_
         WS_HILOGE("backgroundLoaderCfg json is invaild");
         return;
     }
-    maxTimeoutCount = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)].get<int32_T>();
-    backgroundLoaderTimeoutMs = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)].get<int32_T>();
+    maxTimeoutCount = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)].get<int32_t>();
+    backgroundLoaderTimeoutMs = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)].get<int32_t>();
     return;
 }
 

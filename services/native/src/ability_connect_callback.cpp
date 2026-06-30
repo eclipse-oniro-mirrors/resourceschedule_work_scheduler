@@ -25,7 +25,7 @@ void AbilityConnectCallback::OnAbilityConnectDone(const OHOS::AppExecFwk::Elemen
     const std::string& bundleName = element.GetBundleName();
     WS_HILOGI("bundleName: %{public}s, resultCode: %{public}d", bundleName.c_str(), resultCode);
     if (resultCode != ERR_OK) {
-        WS_HLOGE("OnAbilityConnectDone failed: resultCode: %{public}d", resultCode);
+        WS_HILOGE("OnAbilityConnectDone failed: resultCode: %{public}d", resultCode);
         return;
     }
     if (remoteObject == nullptr) {
@@ -35,7 +35,7 @@ void AbilityConnectCallback::OnAbilityConnectDone(const OHOS::AppExecFwk::Elemen
 
     const std::string& abilityName = element.GetAbilityName();
     BackgroundLoaderMgr::GetInstance().SaveRemoteObject(bundleName, abilityName, appIndex_, remoteObject);
-    BackgroundLoaderMgr::GetInstance().SendOnstart(remoteObject, bundleName, appIndex_);
+    BackgroundLoaderMgr::GetInstance().SendOnStart(remoteObject, bundleName, appIndex_);
 }
 
 void AbilityConnectCallback::OnAbilityDisconnectDone(const OHOS::AppExecFwk::ElementName& element, int32_t resultCode)

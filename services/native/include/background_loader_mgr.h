@@ -81,7 +81,7 @@ public:
     void PostTimeoutTask(const std::string& bundleName, const std::string& abilityName, int32_t appIndex,
         int32_t taskId);
     void SendOnStart(const sptr<IRemoteObject>& remoteObject, const std::string& bundleName, int32_t appIndex);
-    void GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex, TaskInfo& info);
+    bool GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex, TaskInfo& info);
     void RemoveRemoteObject(const std::string& bundleName, const std::string& abilityName, int32_t appIndex);
 
 private:
