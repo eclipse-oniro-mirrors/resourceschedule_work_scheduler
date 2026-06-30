@@ -24,7 +24,7 @@ class BackgroundLoaderMgrTest : public testing::Test {
 public:
     void SetUp() override
     {
-        BackgroundLoaderMgr::GetInstance().Init();
+        BackgroundLoaderMgr::GetInstance().Init(3,15000);
     };
     void TearDown() override {};
 };
@@ -339,4 +339,125 @@ HWTEST_F(BackgroundLoaderMgrTest, DifferentAppIndex_001, TestSize.Level1)
     BackgroundLoaderTaskInfo taskInfo2;
     ret = BackgroundLoaderMgr::GetInstance().GetTaskInfo(1, "com.test.bundle", 1, taskInfo2);
     EXPECT_EQ(ret, ERR_OK);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, Init_WithParams_001, TestSize.Level1)
+{
+    BackgroundLoaderMgr::GetInstance().Init(5, 20000);
+    EXPECT_EQ(BackgroundLoaderMgr::GetInstance().maxTimeoutCount_, 5);
+    EXPECT_EQ(BackgroundLoaderMgr::GetInstance().backgroundLoaderTimeoutMs_, 20000);
+    EXPECT_TRUE(BackgroundLoaderMgr::GetInstance().isReady_.load());
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, RegisterTask_BlackList_001, TestSize.Level1)
+{
+    TaskInfo info = { .bundleName_ = "com.blacklist.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
+    std::string key = "com.blacklist.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
+    BackgroundLoaderMgr::GetInstance().blackLists_.insert(key);
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, E_CHECK_WORKINFO_FAILED);
+    BackgroundLoaderMgr::GetInstance().blackLists_.erase(key);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, UnregisterTask_TaskIdMismatch_001, TestSize.Level1)
+{
+    TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    TaskInfo mismatchInfo = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 999 };
+    ret = BackgroundLoaderMgr::GetInstance().UnregisterTask(mismatchInfo);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, FinishTask_SetStatus_001, TestSize.Level1)
+{
+    TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    ret = BackgroundLoaderMgr::GetInstance().FinishTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    std::string key = "com.test.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
+    if (it != BackgroundLoaderMgr::GetInstance().taskMap_.end()) {
+        EXPECT_EQ(it->second.status_, TaskStatus::FINISHED);
+    }
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, FinishTask_TaskIdMismatch_001, TestSize.Level1)
+{
+    TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    TaskInfo mismatchInfo = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 999 };
+    ret = BackgroundLoaderMgr::GetInstance().FinishTask(mismatchInfo);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, GenerateTaskKey_001, TestSize.Level1)
+{
+    std::string key = BackgroundLoaderMgr::GetInstance().GenerateTaskKey("com.test.bundle", 0);
+    EXPECT_EQ(key, "com.test.bundle_0");
+    key = BackgroundLoaderMgr::GetInstance().GenerateTaskKey("com.test.bundle", 1);
+    EXPECT_EQ(key, "com.test.bundle_1");
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, SaveRemoteObject_001, TestSize.Level1)
+{
+    sptr<IRemoteObject> remoteObject = nullptr;
+    BackgroundLoaderMgr::GetInstance().SaveRemoteObject("com.test.bundle", "TestAbility", 0, remoteObject);
+    std::string key = "com.test.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().abilityMapLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().abilityMap_.find(key);
+    EXPECT_NE(it, BackgroundLoaderMgr::GetInstance().abilityMap_.end());
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, GetRemoteObject_001, TestSize.Level1)
+{
+    sptr<IRemoteObject> remoteObject = nullptr;
+    BackgroundLoaderMgr::GetInstance().SaveRemoteObject("com.test.bundle", "TestAbility", 0, remoteObject);
+    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.test.bundle", "TestAbility", 0);
+    EXPECT_EQ(result, nullptr);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, GetRemoteObject_NotFound_001, TestSize.Level1)
+{
+    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.notexist.bundle", "TestAbility", 0);
+    EXPECT_EQ(result, nullptr);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_001, TestSize.Level1)
+{
+    sptr<IRemoteObject> remoteObject = nullptr;
+    BackgroundLoaderMgr::GetInstance().SaveRemoteObject("com.test.bundle", "TestAbility", 0, remoteObject);
+    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.test.bundle", "TestAbility", 0);
+    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.test.bundle", "TestAbility", 0);
+    EXPECT_EQ(result, nullptr);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_NotFound_001, TestSize.Level1)
+{
+    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.notexist.bundle", "TestAbility", 0);
+    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.notexist.bundle", "TestAbility", 0);
+    EXPECT_EQ(result, nullptr);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, GetInnerTaskInfo_001, TestSize.Level1)
+{
+    TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    TaskInfo result;
+    bool found = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.test.bundle", 0, result);
+    EXPECT_TRUE(found);
+    EXPECT_EQ(result.bundleName_, "com.test.bundle");
+    EXPECT_EQ(result.taskId_, 1);
+}
+
+HWTEST_F(BackgroundLoaderMgrTest, GetInnerTaskInfo_NotFound_001, TestSize.Level1)
+{
+    TaskInfo result;
+    bool found = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.notexist.bundle", 0, result);
+    EXPECT_FALSE(found);
 }
