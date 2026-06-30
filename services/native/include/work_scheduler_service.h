@@ -336,8 +336,9 @@ private:
     bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
     void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-    bool VerifyAbilityName(const std::string& bundleName, const std::string& abilityName);
+    bool VerifyAbilityName(const std::string& bundleName, const std::string& abilityName, int32_t uid);
     bool VerifyTaskInfo(const TaskInfo& taskInfo);
+    void LoadBackgroundLoaderFromFile(const char* path, int32_t& maxTimeoutCount, int32_t& backgroundLoaderTimeoutMs);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     void GroupObserverInit();
 #endif
@@ -376,8 +377,8 @@ private:
     void DumpTriggerWork(const std::string& uIdStr, const std::string& workIdStr, std::string& result);
     void ReportUserDataSizeEvent();
     void DumpParamRestore(std::string& result);
-    bool CheckPermission(const std::string &permission);
-    int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex);
+    bool CheckPermission(const std::string &permission, int32_t uid);
+    int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
 
 private:
     std::set<int32_t> whitelist_;

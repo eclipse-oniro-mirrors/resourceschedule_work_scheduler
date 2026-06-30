@@ -13,12 +13,14 @@
  * limitations under the License.
  */
 
+#include "background_loader_mgr.h"
 #include "work_sched_plugin_mgr.h"
 #include "background_task_observer_plugin_adapter.h"
 #include "work_sched_hilog.h"
 #include "plugin_mgr.h"
 #include "res_type.h"
 #include "res_data.h"
+#include "res_sched_json_util.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -37,6 +39,8 @@ void WorkSchedPluginMgr::Init()
     BackgroundTaskObserverPluginAdapter::GetInstance().Init();
     PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK);
     pluginEnable_.store(true);
     WS_HILOGI("WorkSchedPluginMgr init succeed");
 }
@@ -46,6 +50,8 @@ void WorkSchedPluginMgr::Disable()
     BackgroundTaskObserverPluginAdapter::GetInstance().UnInit();
     PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK);
     pluginEnable_.store(false);
 }
 
@@ -57,8 +63,21 @@ void WorkSchedPluginMgr::DispatchResource(const std::shared_ptr<ResourceSchedule
     }
 
     if (resData->resType == ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED) {
-        BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
-            resData->value, resData->payload);
+        
+    }
+    switch (resData->resType) {
+        case ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED: {
+            BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+                resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK: {
+            backgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(resData);
+            break;
+        }
+        default: {
+            return;
+        }
     }
 }
 

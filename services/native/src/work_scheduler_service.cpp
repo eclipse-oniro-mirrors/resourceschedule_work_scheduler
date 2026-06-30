@@ -101,6 +101,9 @@ const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
 const std::string EXEMPTION_BUNDLES_KEY = "work_scheduler_eng_exemption_bundles";
 const std::string MIN_REPEAT_TIME_KEY = "work_scheduler_min_repeat_time";
+const std::string_view BACKGROUND_LOADER_CONFIG_KEY = "background_loader_config";
+const std::string_view BACKGROUND_LOADER_TIMEOUT_COUNT_KEY = "maxTimeoutCount";
+const std::string_view BACKGROUND_LOADER_TIMEOUTMS_KEY = "backgroundLoaderTimeoutMs";
 const std::string_view BACKGROUND_LOADER_PERMISSION = "ohos.permission.KEEP_BACKGROUND_RUNNING";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
@@ -117,6 +120,7 @@ const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persis
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PERSISTED_FILE_NAME = "/persisted_work";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
+const char* BACKGROUND_LOADER_FILE_PATH = "/system/variant/phone/base/etc/backgroundtask/config.json";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
@@ -275,6 +279,39 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
         persistedMap_.emplace(workId, workInfo);
     }
     return workInfos;
+}
+
+void WorkSchedulerService::LoadBackgroundLoaderFromFile(const char* path, int32_t& maxTimeoutCount,
+    int32_t& backgroundLoaderTimeoutMs)
+{
+    if (!path) {
+        WS_HILOGE("open %{public}s failed", path);
+        return;
+    }
+    nlohmann::json root;
+    if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
+        WS_HILOGE("file is empty");
+        return;
+    }
+    if (!root.contains(std::string(BACKGROUND_LOADER_CONFIG_KEY))) {
+        WS_HILOGE("no background loader config key");
+        return;
+    }
+    nlohmann::json backgroundLoadercfg = root[BACKGROUND_LOADER_CONFIG_KEY];
+    if (backgroundLoadercfg.empty() || !backgroundLoadercfg.is_object()) {
+        WS_HILOGE("background loader config content is empty");
+        return;
+    }
+    if (!backgroundLoaderCfg.contains(std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)) ||
+        !backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUT_COUNT_KEY].is_number_integer() ||
+        !backgroundLoaderCfg.contains(std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)) ||
+        !backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUTMS_KEY].is_number_integer()) {
+        WS_HILOGE("backgroundLoaderCfg json is invaild");
+        return;
+    }
+    maxTimeoutCount = backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUT_COUNT_KEY].get<int32_T>();
+    backgroundLoaderTimeoutMs = backgroundLoaderCfg[BACKGROUND_LOADER_TIMEOUTMS_KEY].get<int32_T>();
+    return;
 }
 
 void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<WorkInfo>> &workInfos)
@@ -474,7 +511,10 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
         return false;
     }
     InitWorkInner();
-    BackgroundLoaderMgr::GetInstance().Init();
+    int32_t maxTimeoutCount = MAX_TIME_COUNT;
+    int32_t backgroundLoaderTimeoutMs = BACKGROUND_LOADER_TIMEOUT_MS;
+    LoadBackgroundLoaderFromFile(BACKGROUND_LOADER_FILE_PATH, maxTimeoutCount, backgroundLoaderTimeoutMs);
+    BackgroundLoaderMgr::GetInstance().Init(maxTimeoutCount, backgroundLoaderTimeoutMs);
 
     if (!Publish(wss)) {
         WS_HILOGE("OnStart register to system ability manager failed!");
@@ -1869,7 +1909,8 @@ bool WorkSchedulerService::CheckPermission(const std::string &permission)
     return true;
 }
 
-bool WorkSchedulerService::VerifyAbilityName(const std::string& bundleName, const std::string& abilityName)
+bool WorkSchedulerService::VerifyAbilityName(const std::string& bundleName,
+    const std::string& abilityName, int32_t uid)
 {
     if (bundleName.empty() || abilityName.empty()) {
         WS_HILOGE("bundleName or abilityName invaild");
@@ -1903,7 +1944,7 @@ bool WorkSchedulerService::VerifyAbilityName(const std::string& bundleName, cons
     ElementName elementName;
     elementName.SetBundleName(bundleName);
     want.SetElement(elementName);
-    int32_t userId = WorkSchedUtils::GetUserIdByUid(IPCSkeleton::GetCallingUid());
+    int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
     if (!bundleMgr->QueryAbilityInfos(want, 0, userId, abilityInfos)) {
         WS_HILOGE("QueryAbilityInfos failed for bundle: %{public}s", bundleName.c_str());
         return false;
@@ -1919,7 +1960,7 @@ bool WorkSchedulerService::VerifyAbilityName(const std::string& bundleName, cons
     return false;
 }
 
-int32_t WorkSchedulerService::CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex)
+int32_t WorkSchedulerService::CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid)
 {
     if (!ready_.load()) {
         WS_HILOGE("service is not ready.");
@@ -1928,9 +1969,8 @@ int32_t WorkSchedulerService::CheckPermissionAndTaskInfo(std::string& bundleName
     if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
         return E_PERMISSION_DENIED;
     }
-    int32_t callinguid = IPCSkeleton::GetCallingUid();
-    if (!GetAppIndexAndBundleNameByUid(callinguid, appIndex, bundleName)) {
-        WS_HILOGE("Failed to get bundle for uid %{public}d", callinguid);
+    if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
+        WS_HILOGE("Failed to get bundle for uid %{public}d", uid);
         return E_CHECK_WORKINFO_FAILED;
     }
     return ERR_OK;
@@ -1940,11 +1980,12 @@ int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskI
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex);
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
     }
-    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName())) {
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
         return E_CHECK_WORKINFO_FAILED;
     }
     TaskInfo info = {
@@ -1960,7 +2001,8 @@ int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& tas
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex);
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
     }
@@ -1977,7 +2019,8 @@ int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInf
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex);
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
     }
@@ -1998,7 +2041,8 @@ int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskIn
     }
     std::string bundleName = "";
     int32_t appIndex = -1;
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex);
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
     }

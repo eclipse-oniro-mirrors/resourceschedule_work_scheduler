@@ -164,6 +164,7 @@ ohos_unittest("BackgroundLoaderMgrTest") {
   ]
 
   external_deps = [
+    "ability_runtime:ability_connect_callback_stub",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",
