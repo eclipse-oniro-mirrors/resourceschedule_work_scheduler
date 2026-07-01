@@ -29,6 +29,12 @@ public:
     void TearDown() override {};
 };
 
+/**
+ * @tc.name: OnAbilityConnectDone_ResultCodeError_001
+ * @tc.desc: Test OnAbilityConnectDone ResultCode Error.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
 HWTEST_F(AbilityConnectCallbackTest, OnAbilityConnectDone_ResultCodeError_001, TestSize.Level1)
 {
     std::string bundleName = "com.test.bundle";
@@ -44,6 +50,12 @@ HWTEST_F(AbilityConnectCallbackTest, OnAbilityConnectDone_ResultCodeError_001, T
     EXPECT_EQ(result, nullptr);
 }
 
+/**
+ * @tc.name: OnAbilityConnectDone_NullRemoteObject_001
+ * @tc.desc: Test OnAbilityConnectDone RemoteObject null.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
 HWTEST_F(AbilityConnectCallbackTest, OnAbilityConnectDone_NullRemoteObject_001, TestSize.Level1)
 {
     std::string bundleName = "com.test.bundle2";
@@ -59,6 +71,12 @@ HWTEST_F(AbilityConnectCallbackTest, OnAbilityConnectDone_NullRemoteObject_001, 
     EXPECT_EQ(result, nullptr);
 }
 
+/**
+ * @tc.name: OnAbilityDisconnectDone_001
+ * @tc.desc: Test OnAbilityDisconnectDone.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
 HWTEST_F(AbilityConnectCallbackTest, OnAbilityDisconnectDone_001, TestSize.Level1)
 {
     std::string bundleName = "com.test.bundle";
@@ -73,6 +91,12 @@ HWTEST_F(AbilityConnectCallbackTest, OnAbilityDisconnectDone_001, TestSize.Level
     EXPECT_EQ(result, nullptr);
 }
 
+/**
+ * @tc.name: Constructor_001
+ * @tc.desc: Test AbilityConnectCallback Constructor.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
 HWTEST_F(AbilityConnectCallbackTest, Constructor_001, TestSize.Level1)
 {
     std::string bundleName = "com.test.bundle";
@@ -82,6 +106,12 @@ HWTEST_F(AbilityConnectCallbackTest, Constructor_001, TestSize.Level1)
     EXPECT_NE(callback, nullptr);
 }
 
+/**
+ * @tc.name: Constructor_DifferentAppIndex_001
+ * @tc.desc: Test AbilityConnectCallback Constructor with Different AppIndex.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
 HWTEST_F(AbilityConnectCallbackTest, Constructor_DifferentAppIndex_001, TestSize.Level1)
 {
     sptr<AbilityConnectCallback> callback0 = new AbilityConnectCallback("com.test.bundle", "Ability0", 0);
