@@ -18,11 +18,8 @@
 #include "background_loader_mgr.h"
 
 using namespace testing::ext;
-using namespace OHOS;
-using namespace OHOS::WorkScheduler;
-
-static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 15000;
-static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
+namespace OHOS {
+namespace WorkScheduler {
 class AbilityConnectCallbackTest : public testing::Test {
 public:
     void SetUp() override
@@ -71,7 +68,7 @@ HWTEST_F(AbilityConnectCallbackTest, OnAbilityDisconnectDone_001, TestSize.Level
     AppExecFwk::ElementName element;
     element.SetBundleName(bundleName);
     element.SetAbilityName(abilityName);
-    callback->OnABilityDisconnectDone(element, ERR_OK);
+    callback->OnAbilityDisconnectDone(element, ERR_OK);
     sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject(bundleName, abilityName, appIndex);
     EXPECT_EQ(result, nullptr);
 }
@@ -91,4 +88,6 @@ HWTEST_F(AbilityConnectCallbackTest, Constructor_DifferentAppIndex_001, TestSize
     sptr<AbilityConnectCallback> callback1 = new AbilityConnectCallback("com.test.bundle", "Ability1", 1);
     EXPECT_NE(callback0, nullptr);
     EXPECT_NE(callback1, nullptr);
+}
+}
 }

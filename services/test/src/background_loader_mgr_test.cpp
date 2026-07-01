@@ -18,10 +18,8 @@
 #include "work_sched_errors.h"
 
 using namespace testing::ext;
-using namespace OHOS::WorkScheduler;
-using namespace OHOS;
-static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 15000;
-static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
+namespace OHOS {
+namespace WorkScheduler {
 class BackgroundLoaderMgrTest : public testing::Test {
 public:
     void SetUp() override
@@ -358,12 +356,12 @@ HWTEST_F(BackgroundLoaderMgrTest, Init_WithParams_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: BackgroundLoaderMgr_RegisterTask_001
+ * @tc.name: BackgroundLoaderMgr_RegisterTask_002
  * @tc.desc: Test BackgroundLoaderMgr RegisterTask when bundle is in black list.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(BackgroundLoaderMgrTest, RegisterTask_001, TestSize.Level1)
+HWTEST_F(BackgroundLoaderMgrTest, RegisterTask_002, TestSize.Level1)
 {
     TaskInfo info = {
         .bundleName_ = "com.list.bundle",
@@ -554,4 +552,6 @@ HWTEST_F(BackgroundLoaderMgrTest, GetInnerTaskInfo_NotFound_001, TestSize.Level1
     TaskInfo result;
     bool found = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.notexist.bundle", 0, result);
     EXPECT_FALSE(found);
+}
+}
 }
