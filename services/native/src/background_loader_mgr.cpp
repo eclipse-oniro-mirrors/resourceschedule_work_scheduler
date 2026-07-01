@@ -274,7 +274,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
         return;
     }
     info.status_ = TaskStatus::RUNNING;
-    PostTimeoutTask(info.bundleName_, info.abilityName_, info.appIndex_, info.taskId);
+    PostTimeoutTask(info.bundleName_, info.abilityName_, info.appIndex_, info.taskId_);
 }
 
 bool BackgroundLoaderMgr::GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex, TaskInfo& info)
