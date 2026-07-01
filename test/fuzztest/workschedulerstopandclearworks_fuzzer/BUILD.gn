@@ -68,7 +68,7 @@ ohos_fuzztest("WorkSchedulerStopAndClearWorksFuzzTest") {
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
-    "resource_schedule_service::resschedsvc",
+    "resource_schedule_service:resschedsvc",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
   ]
