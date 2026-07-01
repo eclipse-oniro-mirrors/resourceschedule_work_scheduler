@@ -20,7 +20,6 @@
 #include "plugin_mgr.h"
 #include "res_type.h"
 #include "res_data.h"
-#include "res_sched_json_util.h"
 
 namespace OHOS {
 namespace WorkScheduler {

@@ -32,9 +32,9 @@ public:
         int32_t resultCode) override;
     void OnAbilityDisconnectDone(const OHOS::AppExecFwk::ElementName& element, int32_t resultCode) override;
 private:
-        std::string bundleName_;
-        std::string abilityName_;
-        int32_t appIndex_;
+    std::string bundleName_;
+    std::string abilityName_;
+    int32_t appIndex_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
