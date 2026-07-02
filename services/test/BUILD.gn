@@ -155,6 +155,7 @@ ohos_unittest("BackgroundLoaderMgrTest") {
   ]
   sources = [
     "src/background_loader_mgr_test.cpp",
+    "src/ability_connect_callback_test.cpp",
   ]
 
   deps = [
@@ -164,6 +165,8 @@ ohos_unittest("BackgroundLoaderMgrTest") {
   ]
 
   external_deps = [
+    "ability_runtime:ability_connect_callback_stub",
+    "ability_runtime:ability_manager",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_single",

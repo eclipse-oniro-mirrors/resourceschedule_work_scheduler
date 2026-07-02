@@ -80,7 +80,7 @@ namespace WorkScheduler {
         if (workSchedulerService_->backgroundLoaderMgr_ == nullptr) {
             workSchedulerService_->backgroundLoaderMgr_ = std::make_shared<BackgroundLoaderMgr>();
         }
-        BackgroundLoaderMgr::GetInstance().Init();
+        BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_MS);
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }
