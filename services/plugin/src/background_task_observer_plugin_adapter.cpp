@@ -17,6 +17,7 @@
 #include "res_type.h"
 #include "res_sched_json_util.h"
 #include "work_sched_hilog.h"
+#include "work_sched_config.h"
 
 namespace OHOS {
 namespace WorkScheduler {
