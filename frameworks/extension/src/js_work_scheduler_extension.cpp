@@ -152,10 +152,10 @@ void JsWorkSchedulerExtension::BindContext(napi_env env, napi_value obj)
     }
     napi_coerce_to_native_binding_object(env, contextObj, DetachCallbackFunc,
         AttachWorkSchedulerExtensionContext, workContext, nullptr);
-    WS_HILOGI("JsWorkSchedulerExtension init bind and set property.");
+    WS_HILOGD("JsWorkSchedulerExtension init bind and set property.");
     context->Bind(jsRuntime_, shellContextRef_.get());
     napi_set_named_property(env, obj, "context", contextObj);
-    WS_HILOGI("Set JsWorkSchedulerExtension context pointer is nullptr or not:%{public}d",
+    WS_HILOGD("Set JsWorkSchedulerExtension context pointer is nullptr or not:%{public}d",
         context.get() == nullptr);
 
     napi_status status = napi_wrap(env, contextObj, workContext,

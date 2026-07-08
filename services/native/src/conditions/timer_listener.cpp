@@ -42,7 +42,7 @@ bool TimerListener::Start()
     uint32_t time = workQueueManager_->GetTimeCycle();
     WS_HILOGI("TimerListener start with time = %{public}u.", time);
     auto task = [=]() {
-        WS_HILOGI("begin check repeat work");
+        WS_HILOGD("begin check repeat work");
         workQueueManager_->OnConditionChanged(WorkCondition::Type::TIMER, std::make_shared<
             DetectorValue>(0, 0, 0, std::string()));
     };

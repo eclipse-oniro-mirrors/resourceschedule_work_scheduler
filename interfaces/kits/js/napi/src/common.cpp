@@ -600,10 +600,10 @@ void Common::ReturnCallbackPromise(const napi_env &env, const AsyncWorkData &inf
 
 void Common::HandleErrCode(const napi_env &env, int32_t errCode)
 {
-    WS_HILOGI("HandleErrCode errCode = %{public}d", errCode);
     if (errCode == ERR_OK) {
         return;
     }
+    WS_HILOGE("HandleErrCode errCode = %{public}d", errCode);
     std::string errMsg = FindErrMsg(env, errCode);
     int32_t errCodeInfo = FindErrCode(env, errCode);
     if (errMsg != "") {
@@ -613,10 +613,10 @@ void Common::HandleErrCode(const napi_env &env, int32_t errCode)
 
 void Common::HandleParamErr(const napi_env &env, int32_t errCode)
 {
-    WS_HILOGI("HandleParamErr errCode = %{public}d", errCode);
     if (errCode == ERR_OK) {
         return;
     }
+    WS_HILOGE("HandleParamErr errCode = %{public}d", errCode);
     auto iter = paramErrCodeMsgMap.find(errCode);
     if (iter != paramErrCodeMsgMap.end()) {
         std::string errMessage = "BussinessError 401: Parameter error. ";
