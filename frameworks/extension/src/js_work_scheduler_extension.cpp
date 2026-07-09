@@ -80,7 +80,8 @@ napi_value AttachWorkSchedulerExtensionContext(napi_env env, void *value, void *
     }
     napi_status status = napi_wrap(env, contextObj, workContext,
         [](napi_env env, void *data, void *) {
-            WS_HILOGI("Finalizer for weak_ptr WorkSchedulerExtensionContext is called");
+            WS_HILOGI("AttachWorkSchedulerExtensionContext,"
+                "finalizer for weak_ptr WorkSchedulerExtensionContext is called");
             delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
         }, nullptr, nullptr);
     if (status != napi_ok) {
@@ -160,7 +161,7 @@ void JsWorkSchedulerExtension::BindContext(napi_env env, napi_value obj)
 
     napi_status status = napi_wrap(env, contextObj, workContext,
         [](napi_env env, void* data, void*) {
-            WS_HILOGI("Finalizer for weak_ptr WorkSchedulerExtensionContext is called");
+            WS_HILOGI("BindContext, finalizer for weak_ptr WorkSchedulerExtensionContext is called");
             delete static_cast<std::weak_ptr<WorkSchedulerExtensionContext> *>(data);
         }, nullptr, nullptr);
     if (status != napi_ok) {

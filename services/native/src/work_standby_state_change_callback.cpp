@@ -40,7 +40,7 @@ void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping
     if (!napped && sleeping) {
         WS_HILOGD("Device standby state is sleeping");
     } else {
-        // (1, 0) or (0, 0)
+        // (0, 0)
         WS_HILOGD("Device standby exit sleeping state");
     }
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
@@ -79,7 +79,7 @@ void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::
     uint32_t allowType, bool added)
 {
     if (allowType != DevStandbyMgr::AllowType::WORK_SCHEDULER) {
-        WS_HILOGE("Standby allow list changed, allowType is not WORK_SCHEDULER");
+        WS_HILOGD("Standby allow list changed, allowType is not WORK_SCHEDULER");
         return;
     }
     WS_HILOGI("%{public}s apply allow, added %{public}d", name.c_str(), added);
