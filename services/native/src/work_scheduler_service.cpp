@@ -1427,7 +1427,7 @@ bool WorkSchedulerService::CreateNodeFile()
         WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "fail to close file");
         return false;
     }
-    WS_HILOGI("Resources created successfully.");
+    WS_HILOGD("Resources created successfully.");
     return true;
 }
 

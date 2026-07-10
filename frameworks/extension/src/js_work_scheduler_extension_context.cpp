@@ -53,7 +53,7 @@ public:
 
     napi_value OnStartExtensionAbility(napi_env env, NapiCallbackInfo& info)
     {
-        WS_HILOGI("called");
+        WS_HILOGD("called");
         if (info.argc < ARGC_ONE) {
             WS_HILOGE("invalid argc");
             ThrowTooFewParametersError(env);
@@ -64,7 +64,7 @@ public:
             ThrowInvalidParamError(env, "Parse param want failed, must be a Want.");
             return CreateJsUndefined(env);
         }
-        WS_HILOGI("%{public}s", want.ToString().c_str());
+        WS_HILOGI("OnStartExtensionAbility %{public}s", want.ToString().c_str());
         napi_value lastParam = (info.argc <= ARGC_ONE) ? nullptr : info.argv[ARGC_ONE];
         napi_value result = nullptr;
         std::unique_ptr<NapiAsyncTask> napiAsyncTask = CreateEmptyAsyncTask(env, lastParam, &result);
@@ -77,7 +77,7 @@ public:
             }
             auto innerErrorCode = context->StartServiceExtensionAbility(want);
             if (innerErrorCode == 0) {
-                WS_HILOGI("OK");
+                WS_HILOGI("OnStartExtensionAbility OK");
                 task->Resolve(env, CreateJsUndefined(env));
             } else {
                 WS_HILOGE("failed");
@@ -95,7 +95,7 @@ public:
 
     napi_value OnStopExtensionAbility(napi_env env, NapiCallbackInfo& info)
     {
-        WS_HILOGI("called");
+        WS_HILOGD("called");
         if (info.argc < ARGC_ONE) {
             WS_HILOGE("invalid argc");
             ThrowTooFewParametersError(env);
@@ -106,7 +106,7 @@ public:
             ThrowInvalidParamError(env, "Parse param want failed, must be a Want.");
             return CreateJsUndefined(env);
         }
-        WS_HILOGI("%{public}s", want.ToString().c_str());
+        WS_HILOGI("OnStopExtensionAbility %{public}s", want.ToString().c_str());
         napi_value lastParam = (info.argc <= ARGC_ONE) ? nullptr : info.argv[ARGC_ONE];
         napi_value result = nullptr;
         std::unique_ptr<NapiAsyncTask> napiAsyncTask = CreateEmptyAsyncTask(env, lastParam, &result);
