@@ -663,19 +663,19 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_004, TestSize.Level1)
 
 /**
  * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_ClearBlackList_001
- * @tc.desc: Test HandleAppUninstallEvent clears blacklist entry.
+ * @tc.desc: Test HandleAppUninstallEvent clears  list entry.
  * @tc.type: FUNC
  * @tc.require:
  */
 HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_ClearBlackList_001, TestSize.Level1)
 {
-    std::string key = "com.blacklist.bundle_0";
+    std::string key = "com.list.bundle_0";
     {
         std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
         BackgroundLoaderMgr::GetInstance().blackLists_.insert(key);
     }
     nlohmann::json payload;
-    payload["bundleName"] = "com.blacklist.bundle";
+    payload["bundleName"] = "com.list.bundle";
     payload["appIndex"] = "0";
     BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
         ResType::AppInstallStatus::APP_UNINSTALL, payload);
