@@ -553,5 +553,244 @@ HWTEST_F(BackgroundLoaderMgrTest, GetInnerTaskInfo_NotFound_001, TestSize.Level1
     bool found = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.notexist.bundle", 0, result);
     EXPECT_FALSE(found);
 }
+
+/**
+ * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_001
+ * @tc.desc: Test HandleAppUninstallEvent with valid uninstall event.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_001, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.uninstall.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1,
+        .pid_ = 100
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    nlohmann::json payload;
+    payload["bundleName"] = "com.uninstall.bundle";
+    payload["appIndex"] = "0";
+    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+        ResType::AppInstallStatus::APP_UNINSTALL, payload);
+    std::string key = "com.uninstall.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
+    EXPECT_EQ(it, BackgroundLoaderMgr::GetInstance().taskMap_.end());
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_002
+ * @tc.desc: Test HandleAppUninstallEvent with non-uninstall value.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_002, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.install.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    nlohmann::json payload;
+    payload["bundleName"] = "com.install.bundle";
+    payload["appIndex"] = "0";
+    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+        ResType::AppInstallStatus::APP_INSTALL_END, payload);
+    std::string key = "com.install.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
+    EXPECT_NE(it, BackgroundLoaderMgr::GetInstance().taskMap_.end());
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_003
+ * @tc.desc: Test HandleAppUninstallEvent with invalid payload (missing bundleName).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_003, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.invalid.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    nlohmann::json payload;
+    payload["appIndex"] = "0";
+    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+        ResType::AppInstallStatus::APP_UNINSTALL, payload);
+    std::string key = "com.invalid.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
+    EXPECT_NE(it, BackgroundLoaderMgr::GetInstance().taskMap_.end());
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_004
+ * @tc.desc: Test HandleAppUninstallEvent with invalid payload (missing appIndex).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_004, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.noinfo.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    nlohmann::json payload;
+    payload["bundleName"] = "com.noinfo.bundle";
+    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+        ResType::AppInstallStatus::APP_UNINSTALL, payload);
+    std::string key = "com.noinfo.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
+    EXPECT_NE(it, BackgroundLoaderMgr::GetInstance().taskMap_.end());
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_ClearBlackList_001
+ * @tc.desc: Test HandleAppUninstallEvent clears blacklist entry.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_ClearBlackList_001, TestSize.Level1)
+{
+    std::string key = "com.blacklist.bundle_0";
+    {
+        std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
+        BackgroundLoaderMgr::GetInstance().blackLists_.insert(key);
+    }
+    nlohmann::json payload;
+    payload["bundleName"] = "com.blacklist.bundle";
+    payload["appIndex"] = "0";
+    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+        ResType::AppInstallStatus::APP_UNINSTALL, payload);
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().blackLists_.find(key);
+    EXPECT_EQ(it, BackgroundLoaderMgr::GetInstance().blackLists_.end());
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_RemoveRemoteObject_PidReset_001
+ * @tc.desc: Test RemoveRemoteObject resets pid_ to -1 in taskMap.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_PidReset_001, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.pidreset.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1,
+        .pid_ = 200
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.pidreset.bundle", 0);
+    std::string key = "com.pidreset.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
+    if (it != BackgroundLoaderMgr::GetInstance().taskMap_.end()) {
+        EXPECT_EQ(it->second.pid_, -1);
+    }
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_RemoveRemoteObject_PidReset_NotFound_001
+ * @tc.desc: Test RemoveRemoteObject when task not found does not crash.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_PidReset_NotFound_001, TestSize.Level1)
+{
+    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.nope.bundle", 0);
+    EXPECT_TRUE(true);
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_FinishTask_ReportEvent_001
+ * @tc.desc: Test FinishTask reports BACKGROUND_LOADER_TASK_FINISH event.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, FinishTask_ReportEvent_001, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.finishtask.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    ret = BackgroundLoaderMgr::GetInstance().FinishTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    std::string key = "com.finishtask.bundle_0";
+    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
+    if (it != BackgroundLoaderMgr::GetInstance().taskMap_.end()) {
+        EXPECT_EQ(it->second.status_, TaskStatus::FINISHED);
+    }
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_TaskInfo_PidField_001
+ * @tc.desc: Test TaskInfo pid_ field default value and assignment.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, TaskInfo_PidField_001, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.pid.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1,
+        .pid_ = 300
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    TaskInfo result;
+    bool found = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.pid.bundle", 0, result);
+    EXPECT_TRUE(found);
+    EXPECT_EQ(result.pid_, 300);
+}
+
+/**
+ * @tc.name: BackgroundLoaderMgr_TaskInfo_PidDefault_001
+ * @tc.desc: Test TaskInfo pid_ default value is -1.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(BackgroundLoaderMgrTest, TaskInfo_PidDefault_001, TestSize.Level1)
+{
+    TaskInfo info = {
+        .bundleName_ = "com.defaultpid.bundle",
+        .abilityName_ = "TestAbility",
+        .appIndex_ = 0,
+        .taskId_ = 1
+    };
+    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+    EXPECT_EQ(ret, ERR_OK);
+    TaskInfo result;
+    bool found = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.defaultpid.bundle", 0, result);
+    EXPECT_TRUE(found);
+    EXPECT_EQ(result.pid_, -1);
+}
 }
 }

@@ -76,6 +76,7 @@ void WorkSchedPluginMgr::DispatchResource(const std::shared_ptr<ResourceSchedule
         }
         case ResType::RES_TYPE_APP_INSTALL_UNINSTALL: {
             BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(resData->value, resData->payload);
+            break;
         }
         default: {
             return;
