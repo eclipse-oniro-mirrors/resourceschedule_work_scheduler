@@ -503,7 +503,7 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_001, TestSize.Level1)
 {
     sptr<IRemoteObject> remoteObject = nullptr;
     BackgroundLoaderMgr::GetInstance().SaveRemoteObject("com.test.bundle", "TestAbility", 0, remoteObject);
-    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.test.bundle", "TestAbility", 0);
+    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.test.bundle", 0);
     sptr<IRemoteObject> result =
         BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.test.bundle", "TestAbility", 0);
     EXPECT_EQ(result, nullptr);
@@ -517,7 +517,7 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_001, TestSize.Level1)
  */
 HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_NotFound_001, TestSize.Level1)
 {
-    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.notexist.bundle", "TestAbility", 0);
+    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject("com.notexist.bundle", 0);
     sptr<IRemoteObject> result =
         BackgroundLoaderMgr::GetInstance().GetRemoteObject("com.notexist.bundle", "TestAbility", 0);
     EXPECT_EQ(result, nullptr);

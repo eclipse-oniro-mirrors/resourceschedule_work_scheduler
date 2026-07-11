@@ -1427,7 +1427,7 @@ bool WorkSchedulerService::CreateNodeFile()
         WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "fail to close file");
         return false;
     }
-    WS_HILOGD("Resources created successfully.");
+    WS_HILOGI("Resources created successfully.");
     return true;
 }
 
@@ -1981,6 +1981,7 @@ int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskI
     std::string bundleName = "";
     int32_t appIndex = -1;
     int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t pid = IPCSkeleton::GetCallingPid();
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
@@ -1992,7 +1993,8 @@ int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskI
         .taskId_ = taskInfo.GetTaskId(),
         .bundleName_ = bundleName,
         .appIndex_ = appIndex,
-        .abilityName_ = taskInfo.GetAbilityName()
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
     };
     return BackgroundLoaderMgr::GetInstance().RegisterTask(info);
 }
@@ -2002,6 +2004,7 @@ int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& tas
     std::string bundleName = "";
     int32_t appIndex = -1;
     int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t pid = IPCSkeleton::GetCallingPid();
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
@@ -2010,7 +2013,8 @@ int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& tas
         .taskId_ = taskInfo.GetTaskId(),
         .bundleName_ = bundleName,
         .appIndex_ = appIndex,
-        .abilityName_ = taskInfo.GetAbilityName()
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
     };
     return BackgroundLoaderMgr::GetInstance().UnregisterTask(info);
 }
@@ -2019,6 +2023,7 @@ int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInf
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
+    int32_t pid = IPCSkeleton::GetCallingPid();
     int32_t uid = IPCSkeleton::GetCallingUid();
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
@@ -2028,7 +2033,8 @@ int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInf
         .taskId_ = taskInfo.GetTaskId(),
         .bundleName_ = bundleName,
         .appIndex_ = appIndex,
-        .abilityName_ = taskInfo.GetAbilityName()
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
     };
     return BackgroundLoaderMgr::GetInstance().FinishTask(info);
 }
@@ -2048,5 +2054,6 @@ int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskIn
     }
     return BackgroundLoaderMgr::GetInstance().GetTaskInfo(taskId, bundleName, appIndex, taskInfo);
 }
+
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -42,7 +42,7 @@ void AbilityConnectCallback::OnAbilityDisconnectDone(const OHOS::AppExecFwk::Ele
 {
     WS_HILOGI("OnAbilityDisconnectDone: bundleName: %{public}s, appIndex: %{public}d, resultCode: %{public}d",
         element.GetBundleName().c_str(), appIndex_, resultCode);
-    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject(bundleName_, abilityName_, appIndex_);
+    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject(bundleName_, appIndex_);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
