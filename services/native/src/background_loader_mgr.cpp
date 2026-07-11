@@ -395,12 +395,5 @@ void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann:
     }
 }
 
-void BackgroundLoaderMgr::ClearBackgroundLoaderTask(const std::string& bundleName, int32_t appIndex)
-{
-
-}
-
-
-
 }  // namespace WorkScheduler
 }  // namespace OHOS
