@@ -19,7 +19,7 @@
 #include "res_type.h"
 
 using namespace testing::ext;
-using namespace OHOS::ResourceScheduler
+using namespace OHOS::ResourceScheduler;
 namespace OHOS {
 namespace WorkScheduler {
 class BackgroundLoaderMgrTest : public testing::Test {
