@@ -1427,7 +1427,7 @@ bool WorkSchedulerService::CreateNodeFile()
         WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "fail to close file");
         return false;
     }
-    WS_HILOGI("Resources created successfully.");
+    WS_HILOGD("Resources created successfully.");
     return true;
 }
 
@@ -2054,6 +2054,5 @@ int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskIn
     }
     return BackgroundLoaderMgr::GetInstance().GetTaskInfo(taskId, bundleName, appIndex, taskInfo);
 }
-
 } // namespace WorkScheduler
 } // namespace OHOS
