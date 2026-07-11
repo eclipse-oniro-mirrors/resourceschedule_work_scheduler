@@ -16,8 +16,10 @@
 #include <gtest/gtest.h>
 #include "background_loader_mgr.h"
 #include "work_sched_errors.h"
+#include "res_type.h"
 
 using namespace testing::ext;
+using namespace OHOS::ResourceScheduler
 namespace OHOS {
 namespace WorkScheduler {
 class BackgroundLoaderMgrTest : public testing::Test {
