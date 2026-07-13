@@ -60,6 +60,7 @@ struct TaskInfo {
     TaskStatus status_ = TaskStatus::NOT_STARTED;
     int32_t uid_ = 0;
     int32_t timeoutCount_ = 0;
+    int32_t pid_ = -1;
 };
 
 class BackgroundLoaderMgr {
@@ -82,7 +83,8 @@ public:
         int32_t taskId);
     void SendOnStart(const sptr<IRemoteObject>& remoteObject, const std::string& bundleName, int32_t appIndex);
     bool GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex, TaskInfo& info);
-    void RemoveRemoteObject(const std::string& bundleName, const std::string& abilityName, int32_t appIndex);
+    void RemoveRemoteObject(const std::string& bundleName, int32_t appIndex);
+    void HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload);
 
 private:
     std::string GenerateTaskKey(const std::string& bundleName, int32_t appIndex);
