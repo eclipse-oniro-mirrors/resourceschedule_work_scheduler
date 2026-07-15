@@ -329,6 +329,9 @@ public:
     int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
     bool NeedCreateTimer(int32_t saId, int32_t uid, int32_t time);
     bool HasDeepIdleTime();
+    void UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot);
+    void UpdateCloudConfigEngExemptionBundles(const nlohmann::json &exemptionBundlesRoot);
+    void UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot);
     std::map<int32_t, std::pair<int32_t, int32_t>> GetDeepIdleTimeMap();
 private:
     void RegisterStandbyStateObserver();
@@ -379,6 +382,17 @@ private:
     void DumpParamRestore(std::string& result);
     bool CheckPermission(const std::string &permission);
     int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
+    uint32_t GetMinCheckTime() const;
+    void SetMinCheckTime(const uint32_t minCheckTime);
+    void AddDeepIdleTimeToMap(const int32_t saId, const int32_t deepIdleTime, const int32_t uid);
+    void InsertPreinstalledBundles(const std::string &bundleName);
+    void InsertExemptionBundles(const std::string &exemptionBundleName);
+    std::set<std::string> GetExemptionBundles() const;
+    void SetMinTimeCycle(const uint32_t minTimeCycle);
+    void AddSpecialToMap(const std::string &bundleName, uint32_t time);
+    std::map<std::string, uint32_t> GetSpecialMap() const;
+    void ClearExemptionBundles();
+    void ClearSpecialToMap();
 
 private:
     std::set<int32_t> whitelist_;
@@ -406,11 +420,10 @@ private:
 #endif
     uint32_t minTimeCycle_ = 20 * 60 * 1000;
     uint32_t minCheckTime_ = 0;
-    ffrt::mutex specialMutex_;
     std::map<std::string, uint32_t> specialMap_;
-    ffrt::mutex deepIdleTimeMutex_;
     /* first: saId, second.first: deepIdleTime, second.second: uid */
     std::map<int32_t, std::pair<int32_t, int32_t>> deepIdleTimeMap_ {};
+    mutable ffrt::shared_mutex configMutex_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
