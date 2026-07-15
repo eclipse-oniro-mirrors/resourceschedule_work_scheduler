@@ -1091,7 +1091,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_002, TestSize.Level1)
 {
     std::string bundleName = "com.demo.bundle";
     workSchedulerService_->exemptionBundles_.clear();
-    workSchedulerService_->exemptionBundles_.insert(bundleName);
+    workSchedulerService_->InsertExemptionBundles(bundleName);
     bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
     EXPECT_TRUE(ret);
 }
@@ -1106,7 +1106,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsExemptionBundle_003, TestSize.Level1)
 {
     std::string bundleName = "com.demo.bundle";
     workSchedulerService_->exemptionBundles_.clear();
-    workSchedulerService_->exemptionBundles_.insert("com.demo.bundle1");
+    workSchedulerService_->InsertExemptionBundles("com.demo.bundle1");
     bool ret = workSchedulerService_->IsExemptionBundle(bundleName);
     EXPECT_FALSE(ret);
 }
@@ -1189,7 +1189,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_002, TestSize.Level1)
 {
     workSchedulerService_->preinstalledBundles_.clear();
     std::string bundleName = "com.demo.bundle";
-    workSchedulerService_->preinstalledBundles_.insert(bundleName);
+    workSchedulerService_->InsertPreinstalledBundles(bundleName);
     bool ret = workSchedulerService_->IsPreinstalledBundle(bundleName);
     EXPECT_TRUE(ret);
 }
@@ -1204,7 +1204,7 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_003, TestSize.Level1)
 {
     workSchedulerService_->preinstalledBundles_.clear();
     std::string bundleName = "com.demo.bundle";
-    workSchedulerService_->preinstalledBundles_.insert("com.demo.bundle1");
+    workSchedulerService_->InsertPreinstalledBundles("com.demo.bundle1");
     bool ret = workSchedulerService_->IsPreinstalledBundle(bundleName);
     EXPECT_FALSE(ret);
 }
@@ -1376,6 +1376,23 @@ HWTEST_F(WorkSchedulerServiceTest, HasDeepIdleTime_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: HasDeepIdleTime_002
+ * @tc.desc: Test WorkSchedulerService HasDeepIdleTime.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, HasDeepIdleTime_002, TestSize.Level1)
+{
+    int32_t saId = 1;
+    int32_t time = 1000;
+    int32_t uid = 2;
+    workSchedulerService_->deepIdleTimeMap_.clear();
+    workSchedulerService_->AddDeepIdleTimeToMap(saId, time, uid);
+    bool ret = workSchedulerService_->HasDeepIdleTime();
+    EXPECT_EQ(ret, true);
+}
+
+/**
  * @tc.name: NeedCreateTimer_001
  * @tc.desc: Test WorkSchedulerService NeedCreateTimer.
  * @tc.type: FUNC
@@ -1492,6 +1509,19 @@ HWTEST_F(WorkSchedulerServiceTest, GetTaskInfo_ServiceNotReady_001, TestSize.Lev
     BackgroundLoaderTaskInfo taskInfo;
     int32_t ret = workSchedulerService_->GetTaskInfo(1, taskInfo);
     EXPECT_EQ(ret, E_PERMISSION_DENIED);
+}
+
+/**
+ * @tc.name: GetMinCheckTime_001
+ * @tc.desc: Test WorkSchedulerService GetMinCheckTime.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetMinCheckTime_001, TestSize.Level1)
+{
+    uint32_t minCheckTime = 10 * 60 * 1000;
+    workSchedulerService_->SetMinCheckTime(minCheckTime);
+    EXPECT_EQ(workSchedulerService_->GetMinCheckTime(), minCheckTime);
 }
 }
 }
