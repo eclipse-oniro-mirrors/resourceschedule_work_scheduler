@@ -33,6 +33,7 @@ constexpr std::string_view TIMEOUT_MESSAGE = "timeOut";
 constexpr std::string_view TIMEOUT_TASK_NAME = "BackgroundLoaderTimeout";
 constexpr std::string_view ON_START = "onStart";
 constexpr std::string_view ON_STOP = "onStop";
+constexpr int32_t DEFAULT_INVAL_VALUE = -1;
 }
 IMPLEMENT_SINGLE_INSTANCE(BackgroundLoaderMgr)
 
@@ -121,6 +122,10 @@ ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
         WS_HILOGE("FinishTask failed : task not found");
         return E_WORK_NOT_EXIST_FAILED;
     }
+    nlohmann::json payload;
+    payload["bundleName"] = taskInfo.bundleName_;
+    payload["appIndex"] = std::to_string(taskInfo.appIndex_);
+    ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, 0, payload);
     it->second.status_ = TaskStatus::FINISHED;
     return ERR_OK;
 }
@@ -167,12 +172,14 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
         payload["appIndex"] = std::to_string(taskInfo.appIndex_);
         ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVENT,
             ResType::BackgroundLoaderState::DELETE, payload);
+        ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, 0, payload);
         taskInfo.timeoutCount_++;
         if (taskInfo.timeoutCount_ >= maxTimeoutCount_) {
             auto key = GenerateTaskKey(taskInfo.bundleName_, taskInfo.appIndex_);
             std::lock_guard<ffrt::mutex> lock(blackListLock_);
             blackLists_.insert(key);
         }
+        taskInfo.status_ = TaskStatus::FINISHED;
     } else {
         WS_HILOGI("task already finished for bundle %{public}s", bundleName.c_str());
     }
@@ -228,7 +235,8 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const std::shared_ptr<Resou
         WS_HILOGE("failed to new connection");
         return;
     }
-    int32_t ret = AAFwk::AbilityManagerClient::GetInstance()->StartAbilityByCall(providerWant, connect);
+    int32_t ret = AAFwk::AbilityManagerClient::GetInstance()->StartAbilityByCall(providerWant, connect,
+        nullptr, DEFAULT_INVAL_VALUE, false, true);
     if (ret != ERR_OK) {
         WS_HILOGE("StartAbilityByCall falied ret : %{public}d", ret);
         return;
@@ -288,17 +296,23 @@ bool BackgroundLoaderMgr::GetInnerTaskInfo(const std::string& bundleName, int32_
     return false;
 }
 
-void BackgroundLoaderMgr::RemoveRemoteObject(const std::string& bundleName,
-    const std::string& abilityName, int32_t appIndex)
+void BackgroundLoaderMgr::RemoveRemoteObject(const std::string& bundleName, int32_t appIndex)
 {
     std::string key = GenerateTaskKey(bundleName, appIndex);
-    std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
-    auto it = abilityMap_.find(key);
-    if (it != abilityMap_.end()) {
-        abilityMap_.erase(it);
-        WS_HILOGI("Removed object for %{public}s, appIndex: %{public}d", bundleName.c_str(), appIndex);
-    } else {
-        WS_HILOGI("%{public}s, appIndex: %{public}d not found", bundleName.c_str(), appIndex);
+    {
+        std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
+        auto it = abilityMap_.find(key);
+        if (it != abilityMap_.end()) {
+            abilityMap_.erase(it);
+            WS_HILOGI("Removed object for %{public}s, appIndex: %{public}d", bundleName.c_str(), appIndex);
+        } else {
+            WS_HILOGI("%{public}s, appIndex: %{public}d not found", bundleName.c_str(), appIndex);
+        }
+    }
+    std::lock_guard<ffrt::mutex> lock(taskLock_);
+    auto it = taskMap_.find(key);
+    if (it != taskMap_.end()) {
+        it->second.pid_ = -1;
     }
 }
 
@@ -353,6 +367,32 @@ void BackgroundLoaderMgr::SaveRemoteObject(const std::string& bundleName,
     std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
     abilityMap_[key] = remoteObject;
     WS_HILOGI("save remote object for %{public}s, appIndex: %{public}d success", bundleName.c_str(), appIndex);
+}
+
+void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload)
+{
+    if (value != ResType::AppInstallStatus::APP_UNINSTALL) {
+        return;
+    }
+    std::string bundleName = "";
+    int32_t appIndex = 0;
+    if (!ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, payload) ||
+        !ResCommonUtil::ParseIntParameterFromJson("appIndex", appIndex, payload)) {
+        WS_HILOGE("get app info fail");
+        return;
+    }
+    WS_HILOGI(" %{public}s, appIndex: %{public}d uninstall clear task info", bundleName.c_str(), appIndex);
+    RemoveRemoteObject(bundleName, appIndex);
+    auto key = GenerateTaskKey(bundleName, appIndex);
+    {
+        std::lock_guard<ffrt::mutex> lock(blackListLock_);
+        blackLists_.erase(key);
+    }
+    std::lock_guard<ffrt::mutex> lock(taskLock_);
+    auto it = taskMap_.find(key);
+    if (it != taskMap_.end()) {
+        taskMap_.erase(it);
+    }
 }
 
 }  // namespace WorkScheduler
