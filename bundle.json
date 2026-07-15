@@ -53,7 +53,9 @@
           "resource_schedule_service",
           "runtime_core",
           "ets_frontend",
-          "taihe_ffi_gen"
+          "taihe_ffi_gen",
+          "node",
+          "libuv"
         ]
       },
       "build": {
