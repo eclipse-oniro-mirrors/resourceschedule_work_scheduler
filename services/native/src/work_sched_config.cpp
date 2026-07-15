@@ -165,5 +165,20 @@ bool WorkSchedulerConfig::IsInActiveGroupWhitelist(const std::string &bundleName
     return ResourceSchedule::ResSchedSignatureValidator::GetInstance().CheckSignatureByBundleName(bundleName) ==
            ResourceSchedule::SignatureCheckResult::CHECK_OK;
 }
+
+bool WorkSchedulerConfig::UpdateBgMgrCloudConfig(const nlohmann::json &payload)
+{
+    nlohmann::json workSchedulerParam;
+    if (!CheckCloudConfigParam(payload, workSchedulerParam)) {
+        return false;
+    }
+    // PC延迟任务刷新频率
+    UpdateCloudConfigMinRepeatTime(workSchedulerParam);
+    // 延迟任务超限豁免
+    UpdateCloudConfigEngExemptionBundles(workSchedulerParam);
+    // 延迟任务系统预置应用、延迟任务拉起SA
+    UpdateCloudConfigPrinstalledWorkKey(workSchedulerParam);
+    return true;
+}
 } // WorkScheduler
 } // OHOS
