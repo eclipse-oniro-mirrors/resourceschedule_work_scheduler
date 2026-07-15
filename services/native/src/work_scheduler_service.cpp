@@ -132,6 +132,7 @@ const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
 
 const std::set<std::string> WORK_SCHED_SA_CALLER = {
     "push_manager_service",
+    "resource_schedule_service",
 };
 }
 
@@ -235,8 +236,9 @@ void WorkSchedulerService::InitPreinstalledWork()
             persistedMap_.emplace(workId, work);
         }
     }
-    if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
-        workQueueManager_->SetTimeCycle(minCheckTime_);
+    uint32_t minCheckTime = GetMinCheckTime();
+    if (minCheckTime && minCheckTime < workQueueManager_->GetTimeCycle()) {
+        workQueueManager_->SetTimeCycle(minCheckTime);
     }
 }
 
@@ -340,9 +342,7 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
             continue;
         }
         if (workinfo->IsSA() && workinfo->GetDeepIdleTime() != 0) {
-            std::lock_guard<ffrt::mutex> lock(deepIdleTimeMutex_);
-            deepIdleTimeMap_.emplace(
-                workinfo->GetSaId(), std::pair<int32_t, int32_t>{workinfo->GetDeepIdleTime(), workinfo->GetUid()});
+            AddDeepIdleTimeToMap(workinfo->GetSaId(), workinfo->GetDeepIdleTime(), workinfo->GetUid());
         }
         if (!workinfo->IsSA()) {
             int32_t uid;
@@ -350,7 +350,7 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
                 continue;
             }
             workinfo->RefreshUid(uid);
-            preinstalledBundles_.insert(workinfo->GetBundleName());
+            InsertPreinstalledBundles(workinfo->GetBundleName());
         }
         workinfo->SetPreinstalled(true);
         workInfos.emplace_back(workinfo);
@@ -382,7 +382,7 @@ void WorkSchedulerService::LoadExemptionBundlesFromFile(const char *path)
             WS_HILOGE("Item type error");
         } else {
             WS_HILOGI("bundle name:%{public}s", exemptionBundleName.get<std::string>().c_str());
-            exemptionBundles_.insert(exemptionBundleName.get<std::string>());
+            InsertExemptionBundles(exemptionBundleName.get<std::string>());
         }
     }
 }
@@ -407,7 +407,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         return;
     }
     if (minRepeatTimeRoot.contains("default") && minRepeatTimeRoot["default"].is_number_unsigned()) {
-        minTimeCycle_ = minRepeatTimeRoot["default"].get<uint32_t>();
+        SetMinTimeCycle(minRepeatTimeRoot["default"].get<uint32_t>());
     }
     if (!minRepeatTimeRoot.contains("special")) {
         WS_HILOGE("no special key");
@@ -418,7 +418,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         WS_HILOGE("special content is empty");
         return;
     }
-    minCheckTime_ = workQueueManager_->GetTimeCycle();
+    SetMinCheckTime(workQueueManager_->GetTimeCycle());
     for (const auto &it : specialRoot) {
         if (!it.contains("bundleName") || !it["bundleName"].is_string() ||
             !it.contains("time") || !it["time"].is_number_unsigned()) {
@@ -431,10 +431,11 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
                 it["bundleName"].get<std::string>().c_str(), time, SYS_APP_MIN_REPEAT_TIME);
             continue;
         }
-        if (minCheckTime_ > time) {
-            minCheckTime_ = time;
+        uint32_t minCheckTime = GetMinCheckTime();
+        if (minCheckTime > time) {
+            SetMinCheckTime(time);
         }
-        specialMap_.emplace(it["bundleName"].get<std::string>(), time);
+        AddSpecialToMap(it["bundleName"].get<std::string>(), time);
     }
 }
 
@@ -718,7 +719,7 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         uint32_t time = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER)->uintVal;
         string bundleName = workInfo.GetBundleName();
-        std::lock_guard<ffrt::mutex> lock(specialMutex_);
+        std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
         if (specialMap_.count(bundleName) > 0) {
             if (time < specialMap_.at(bundleName)) {
                 WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, specialMap_.at(bundleName));
@@ -1293,12 +1294,13 @@ std::string WorkSchedulerService::DumpEffiResApplyUid()
 
 std::string WorkSchedulerService::DumpExemptionBundles()
 {
-    if (exemptionBundles_.empty()) {
+    std::set<std::string> exemptionBundles = GetExemptionBundles();
+    if (exemptionBundles.empty()) {
         return "[]";
     }
 
     std::string bundles {""};
-    for (auto &bundle : exemptionBundles_) {
+    for (auto &bundle : exemptionBundles) {
         bundles.append(bundle + " ");
     }
     return bundles;
@@ -1666,11 +1668,8 @@ bool WorkSchedulerService::IsExemptionBundle(const std::string& checkBundleName)
         WS_HILOGE("check exemption bundle error, bundleName is empty");
         return false;
     }
-    auto iter = std::find_if(exemptionBundles_.begin(), exemptionBundles_.end(),
-    [&](const std::string &bundleName) {
-        return checkBundleName == bundleName;
-    });
-    return iter != exemptionBundles_.end();
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
+    return exemptionBundles_.find(checkBundleName) != exemptionBundles_.end();
 }
 
 bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const std::string& action)
@@ -1781,6 +1780,7 @@ bool WorkSchedulerService::IsPreinstalledBundle(const std::string& checkBundleNa
         WS_HILOGE("check preinstalled bundle error, bundleName is empty");
         return false;
     }
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
     return preinstalledBundles_.find(checkBundleName) != preinstalledBundles_.end();
 }
 
@@ -1872,13 +1872,13 @@ void WorkSchedulerService::ReportUserDataSizeEvent()
 
 bool WorkSchedulerService::HasDeepIdleTime()
 {
-    std::lock_guard<ffrt::mutex> lock(deepIdleTimeMutex_);
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
     return !deepIdleTimeMap_.empty();
 }
 
 std::map<int32_t, std::pair<int32_t, int32_t>> WorkSchedulerService::GetDeepIdleTimeMap()
 {
-    std::lock_guard<ffrt::mutex> lock(deepIdleTimeMutex_);
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
     return deepIdleTimeMap_;
 }
 
@@ -2047,6 +2047,172 @@ int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskIn
         return ret;
     }
     return BackgroundLoaderMgr::GetInstance().GetTaskInfo(taskId, bundleName, appIndex, taskInfo);
+}
+
+uint32_t WorkSchedulerService::GetMinCheckTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
+    return minCheckTime_;
+}
+ 
+void WorkSchedulerService::SetMinCheckTime(const uint32_t minCheckTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    minCheckTime_ = minCheckTime;
+}
+ 
+void WorkSchedulerService::AddDeepIdleTimeToMap(const int32_t saId, const int32_t deepIdleTime, const int32_t uid)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    if (deepIdleTimeMap_.count(saId) > 0) {
+        deepIdleTimeMap_.at(saId) = std::pair<int32_t, int32_t>{deepIdleTime, uid};
+    } else {
+        deepIdleTimeMap_.emplace(saId, std::pair<int32_t, int32_t>{deepIdleTime, uid});
+    }
+}
+ 
+void WorkSchedulerService::InsertPreinstalledBundles(const std::string &bundleName)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    preinstalledBundles_.insert(bundleName);
+}
+ 
+void WorkSchedulerService::InsertExemptionBundles(const std::string &exemptionBundleName)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    exemptionBundles_.insert(exemptionBundleName);
+}
+ 
+std::set<std::string> WorkSchedulerService::GetExemptionBundles() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
+    return exemptionBundles_;
+}
+ 
+void WorkSchedulerService::ClearExemptionBundles()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    exemptionBundles_.clear();
+}
+ 
+void WorkSchedulerService::SetMinTimeCycle(const uint32_t minTimeCycle)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    minTimeCycle_ = minTimeCycle;
+}
+ 
+void WorkSchedulerService::AddSpecialToMap(const std::string &bundleName, uint32_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    if (specialMap_.count(bundleName) > 0) {
+        specialMap_.at(bundleName) = time;
+    } else {
+        specialMap_.emplace(bundleName, time);
+    }
+}
+ 
+void WorkSchedulerService::ClearSpecialToMap()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    specialMap_.clear();
+}
+ 
+void WorkSchedulerService::UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    ClearSpecialToMap();
+    uint32_t minCheckTime = workQueueManager_->GetTimeCycle();
+    for (const auto &it : specialRoot) {
+        if (!it.is_object() || !it.contains("bundleName") || !it["bundleName"].is_string() ||
+            !it.contains("time") || !it["time"].is_number_unsigned()) {
+            WS_HILOGE("special content is error");
+            continue;
+        }
+        uint32_t time = it["time"].get<uint32_t>();
+        std::string bundleName = it["bundleName"].get<std::string>();
+        if (time < SYS_APP_MIN_REPEAT_TIME) {
+            WS_HILOGE("bundleName: %{public}s set time: %{public}d not available, must more than %{public}d",
+                bundleName.c_str(), time, SYS_APP_MIN_REPEAT_TIME);
+            continue;
+        }
+        if (minCheckTime > time) {
+            SetMinCheckTime(time);
+        }
+        WS_HILOGI("cloud config min repeat time app name: %{public}s, time %{public}d.", bundleName.c_str(), time);
+        AddSpecialToMap(bundleName, time);
+    }
+    uint32_t checkTime = GetMinCheckTime();
+    if (checkTime && checkTime < workQueueManager_->GetTimeCycle()) {
+        workQueueManager_->SetTimeCycle(checkTime);
+    }
+}
+ 
+void WorkSchedulerService::UpdateCloudConfigEngExemptionBundles(const nlohmann::json &exemptionBundlesRoot)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    ClearExemptionBundles();
+    for (const auto &exemptionBundleName : exemptionBundlesRoot) {
+        if (exemptionBundleName.empty() || !exemptionBundleName.is_string()) {
+            WS_HILOGE("Item type error");
+        } else {
+            std::string bundleName = exemptionBundleName.get<std::string>();
+            WS_HILOGI("cloud config eng exemption bundle name: %{public}s", bundleName.c_str());
+            InsertExemptionBundles(bundleName);
+        }
+    }
+}
+ 
+void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    list<shared_ptr<WorkInfo>> workInfos {};
+    for (const auto &[key, workJson] : preinstalledWorksRoot.items()) {
+        shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
+        if (!workinfo->ParseFromJson(workJson)) {
+            WS_HILOGE("LoadWorksFromFile failed, parseFromJson error");
+            continue;
+        }
+        if (workinfo->IsSA() && workinfo->GetDeepIdleTime() != 0) {
+            WS_HILOGI("cloud config deepidle time saId: %{public}d, deepidle time: %{public}d, uid: %{public}d",
+                workinfo->GetSaId(), workinfo->GetDeepIdleTime(), workinfo->GetUid());
+                AddDeepIdleTimeToMap(workinfo->GetSaId(), workinfo->GetDeepIdleTime(), workinfo->GetUid());
+        }
+        if (!workinfo->IsSA()) {
+            int32_t uid;
+            std::string bundleName = workinfo->GetBundleName();
+            if (!GetUidByBundleName(bundleName, uid)) {
+                continue;
+            }
+            workinfo->RefreshUid(uid);
+            WS_HILOGI("cloud config preinstall bundle name: %{public}s", bundleName.c_str());
+            InsertPreinstalledBundles(bundleName);
+        }
+        workinfo->SetPreinstalled(true);
+        workInfos.emplace_back(workinfo);
+    }
+    for (auto work : workInfos) {
+        if (work == nullptr) {
+            WS_HILOGE("work is null.");
+            continue;
+        }
+        StopWorkForInner(*work, true);
+        time_t baseTime;
+        (void)time(&baseTime);
+        work->RequestBaseTime(baseTime);
+        AddWorkInner(*work);
+        if (work->IsPersisted()) {
+            string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
+            std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
+            WS_HILOGI("cloud config preinstall workId: %{public}s", workId.c_str());
+            persistedMap_.emplace(workId, work);
+        }
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS
