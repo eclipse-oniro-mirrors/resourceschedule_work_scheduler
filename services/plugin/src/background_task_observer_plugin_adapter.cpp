@@ -17,6 +17,8 @@
 #include "res_type.h"
 #include "res_sched_json_util.h"
 #include "work_sched_hilog.h"
+#include "work_sched_config.h"
+#include "system_ability_definition.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -73,6 +75,22 @@ void BackgroundTaskObserverPluginAdapter::OnEfficiencyResourcesStateChanged(
         default:
             WS_HILOGE("OnEfficiencyResourcesStateChanged failed, unknown stateType: %{public}d", stateType);
             break;
+    }
+}
+
+void BackgroundTaskObserverPluginAdapter::HandleCloudConfigUpdateEvent(int32_t stateType,
+    const nlohmann::json &payload)
+{
+    if (stateType == SUSPEND_MANAGER_SYSTEM_ABILITY_ID) {
+        auto ret = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+        if (!ret) {
+            WS_HILOGE("suspend manager cloud config update fail.");
+        }
+    } else if (stateType == BACKGROUND_TASK_MANAGER_SERVICE_ID) {
+        bool ret = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateBgMgrCloudConfig(payload);
+        if (!ret) {
+            WS_HILOGE("background task cloud config update fail.");
+        }
     }
 }
 

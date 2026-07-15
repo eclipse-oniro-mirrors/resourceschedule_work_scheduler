@@ -41,6 +41,8 @@ void WorkSchedPluginMgr::Init()
     PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK);
     PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_APP_INSTALL_UNINSTALL);
     pluginEnable_.store(true);
     WS_HILOGI("WorkSchedPluginMgr init succeed");
@@ -53,6 +55,8 @@ void WorkSchedPluginMgr::Disable()
         ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED);
     PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE);
     PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_APP_INSTALL_UNINSTALL);
     pluginEnable_.store(false);
@@ -74,9 +78,13 @@ void WorkSchedPluginMgr::DispatchResource(const std::shared_ptr<ResourceSchedule
             BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(resData);
             break;
         }
+        case ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE: {
+            BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(
+                resData->value, resData->payload);
+            break;
+        }
         case ResType::RES_TYPE_APP_INSTALL_UNINSTALL: {
             BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(resData->value, resData->payload);
-            break;
         }
         default: {
             return;

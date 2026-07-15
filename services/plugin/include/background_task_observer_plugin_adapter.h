@@ -29,6 +29,7 @@ public:
     void Init();
     void UnInit();
     void OnEfficiencyResourcesStateChanged(int32_t stateType, const nlohmann::json& payload);
+    void HandleCloudConfigUpdateEvent(int32_t stateType, const nlohmann::json &payload);
     
 private:
     std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> UnmarshallingResourceCallbackInfo(
