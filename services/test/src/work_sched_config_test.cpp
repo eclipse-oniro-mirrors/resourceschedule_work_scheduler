@@ -83,5 +83,58 @@ HWTEST_F(WorkSchedConfigTest, IsInActiveGroupWhitelist_CheckSignature, TestSize.
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->activeGroupWhitelist_.insert("invalid_bundle");
     EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("invalid_bundle"));
 }
+
+/**
+ * @tc.name: InitActiveGroupWhitelist_002
+ * @tc.desc: test active_group_whitelist
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedConfigTest, InitActiveGroupWhitelist_002, TestSize.Level2)
+{
+    nlohmann::json payload;
+    auto result = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_FALSE(result);
+
+    payload = nlohmann::json::object();
+    auto result1 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_FALSE(result1);
+
+    auto params = nlohmann::json::array();
+    payload["params"] = params;
+    auto result2 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_FALSE(result2);
+
+    auto workSchedulerParam = nlohmann::json::object();
+    payload["params"] = workSchedulerParam;
+    auto result3 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_FALSE(result3);
+
+    auto workSchedulerArrayParam = nlohmann::json::array();
+    workSchedulerParam["work_scheduler"] = workSchedulerArrayParam;
+    payload["params"] = workSchedulerParam;
+    auto result4 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_FALSE(result4);
+
+    auto workSchedulerObjectParam = nlohmann::json::object();
+    workSchedulerParam["work_scheduler"] = workSchedulerObjectParam;
+    payload["params"] = workSchedulerParam;
+    auto result5 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_FALSE(result5);
+
+    auto activeListObjectParam = nlohmann::json::object();
+    workSchedulerObjectParam["active_group_whitelist"] = activeListObjectParam;
+    workSchedulerParam["work_scheduler"] = workSchedulerObjectParam;
+    payload["params"] = workSchedulerParam;
+    auto result6 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_FALSE(result6);
+
+    auto activeListArrayParam = nlohmann::json::array();
+    activeListArrayParam.push_back("com.ohos.demo");
+    workSchedulerObjectParam["active_group_whitelist"] = activeListArrayParam;
+    workSchedulerParam["work_scheduler"] = workSchedulerObjectParam;
+    payload["params"] = workSchedulerParam;
+    auto result7 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
+    EXPECT_TRUE(result7);
+}
 }
 }
