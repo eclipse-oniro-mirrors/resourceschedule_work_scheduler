@@ -14,6 +14,7 @@
  */
 
 #include <unistd.h>
+#include <string>
 #include "work_scheduler_connection.h"
 #include "work_sched_data_manager.h"
 
@@ -72,6 +73,21 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
 void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int32_t resultCode)
 {
     WS_HILOGI("On ability disconnect done.");
+    if (workInfo_ == nullptr) {
+        return;
+    }
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    std::shared_ptr<WorkStatus> workStatus = service->GetWorkPolicyManager()->FindWorkStatus(*workInfo_,
+        workInfo_->GetUid());
+    std::string workId = "u" + std::to_string(workInfo_->GetUid()) + "_" + std::to_string(workInfo_->GetWorkId());
+    if (service->CheckPreinstalledWorkId(workId)) {
+        service->RemovePreinstalledWorkId(workId);
+        service->RemovePreinstalledBundles(workInfo_->GetBundleName());
+        service->StopWorkInner(workStatus, workInfo_->GetUid(), true, false);
+        if (workInfo_->IsPersisted()) {
+            service->RemovePersistedMap(workId);
+        }
+    }
 }
 
 bool WorkSchedulerConnection::IsConnected()
