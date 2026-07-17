@@ -332,6 +332,10 @@ public:
     void UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot);
     void UpdateCloudConfigEngExemptionBundles(const nlohmann::json &exemptionBundlesRoot);
     void UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot);
+    bool CheckPreinstalledWorkId(const std::string &workId);
+    void RemovePreinstalledWorkId(const std::string &workId);
+    void RemovePersistedMap(const std::string &workId);
+    void RemovePreinstalledBundles(const std::string &bundleName);
     std::map<int32_t, std::pair<int32_t, int32_t>> GetDeepIdleTimeMap();
 private:
     void RegisterStandbyStateObserver();
@@ -385,6 +389,7 @@ private:
     uint32_t GetMinCheckTime() const;
     void SetMinCheckTime(const uint32_t minCheckTime);
     void AddDeepIdleTimeToMap(const int32_t saId, const int32_t deepIdleTime, const int32_t uid);
+    void RemoveDeepIdleTimeToMap(const int32_t saId);
     void InsertPreinstalledBundles(const std::string &bundleName);
     void InsertExemptionBundles(const std::string &exemptionBundleName);
     std::set<std::string> GetExemptionBundles() const;
@@ -393,6 +398,10 @@ private:
     std::map<std::string, uint32_t> GetSpecialMap() const;
     void ClearExemptionBundles();
     void ClearSpecialToMap();
+    void DeleteSaWork(std::shared_ptr<WorkInfo> workinfo);
+    void DeleteAppWork(std::shared_ptr<WorkInfo> workinfo);
+    void InsertPreinstalledWorkId(const std::string &workId);
+    bool CheckCloudConfigPrinstallDelete(const nlohmann::json &workJson);
 
 private:
     std::set<int32_t> whitelist_;
@@ -412,6 +421,7 @@ private:
     std::atomic<bool> checkBundle_ {true};
     std::set<std::string> exemptionBundles_;
     std::set<std::string> preinstalledBundles_;
+    std::set<std::string> deletePreinstalledWorkId_;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif
