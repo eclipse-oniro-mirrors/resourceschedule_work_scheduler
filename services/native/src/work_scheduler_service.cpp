@@ -2276,13 +2276,13 @@ void WorkSchedulerService::StopCloudConfigWork(const std::string &workId, std::s
         WS_HILOGE("workId or workInfo is null");
         return;
     }
+    if (!CheckPreinstalledWorkId(workId)) {
+        return;
+    }
     std::shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(*workInfo,
         workInfo->GetUid());
     if (workStatus == nullptr) {
         WS_HILOGE("workStatus is nullptr");
-        return;
-    }
-    if (!CheckPreinstalledWorkId(workId)) {
         return;
     }
     StopWorkInner(workStatus, workinfo->GetUid(), true, false);
