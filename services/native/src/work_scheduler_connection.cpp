@@ -74,20 +74,16 @@ void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementN
 {
     WS_HILOGI("On ability disconnect done.");
     if (workInfo_ == nullptr) {
+        WS_HILOGE("workInfo_ is null");
         return;
     }
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    std::shared_ptr<WorkStatus> workStatus = service->GetWorkPolicyManager()->FindWorkStatus(*workInfo_,
-        workInfo_->GetUid());
-    std::string workId = "u" + std::to_string(workInfo_->GetUid()) + "_" + std::to_string(workInfo_->GetWorkId());
-    if (service->CheckPreinstalledWorkId(workId)) {
-        service->RemovePreinstalledWorkId(workId);
-        service->RemovePreinstalledBundles(workInfo_->GetBundleName());
-        service->StopWorkInner(workStatus, workInfo_->GetUid(), true, false);
-        if (workInfo_->IsPersisted()) {
-            service->RemovePersistedMap(workId);
-        }
+    if (service == nullptr) {
+        WS_HILOGE("service is null");
+        return;
     }
+    std::string workId = "u" + std::to_string(workInfo_->GetUid()) + "_" + std::to_string(workInfo_->GetWorkId());
+    service->StopCloudConfigWork(workId, workInfo_);
 }
 
 bool WorkSchedulerConnection::IsConnected()

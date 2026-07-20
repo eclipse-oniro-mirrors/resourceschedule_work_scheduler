@@ -2208,7 +2208,7 @@ void WorkSchedulerService::UpdateCloudConfigEngExemptionBundles(const nlohmann::
     }
 }
 
-bool WorkSchedulerService::CheckCloudConfigPrinstallDelete(const nlohmann::json &workJson)
+bool WorkSchedulerService::CheckCloudConfigPreinstallDelete(const nlohmann::json &workJson)
 {
     if (workJson.is_null() || workJson.empty()) {
         WS_HILOGE("workinfo json is empty");
@@ -2270,6 +2270,30 @@ void WorkSchedulerService::DeleteAppWork(std::shared_ptr<WorkInfo> workinfo)
     }
 }
 
+void WorkSchedulerService::StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> &workInfo);
+{
+    if (workId == "" || workInfo == nullptr) {
+        WS_HILOGE("workId or workInfo is null");
+        return;
+    }
+    std::shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(*workInfo,
+        workInfo->GetUid());
+    if (workStatus == nullptr) {
+        WS_HILOGE("workStatus is nullptr");
+        return;
+    }
+    if (!CheckPreinstalledWorkId(workId)) {
+        return;
+    }
+    StopWorkInner(workStatus, workinfo->GetUid(), true, false);
+    WS_HILOGI("stop could config task, workId: %{public}s", workId.c_str());
+    RemovePreinstalledWorkId(workId);
+    RemovePreinstalledBundles(workInfo->GetBundleName());
+    if (workInfo->IsPersisted()) {
+        RemovePersistedMap(workId);
+    }
+}
+
 void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot)
 {
     if (!ready_.load()) {
@@ -2282,7 +2306,7 @@ void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::j
             WS_HILOGE("LoadWorksFromFile failed, parseFromJson error");
             continue;
         }
-        if (CheckCloudConfigPrinstallDelete(workJson)) {
+        if (CheckCloudConfigPreinstallDelete(workJson)) {
             DeleteSaWork(workinfo);
             DeleteAppWork(workinfo);
             continue;
@@ -2306,10 +2330,6 @@ void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::j
         workInfos.emplace_back(workinfo);
     }
     for (auto work : workInfos) {
-        if (work == nullptr) {
-            WS_HILOGE("work is null.");
-            continue;
-        }
         StopWorkForInner(*work, true);
         time_t baseTime;
         (void)time(&baseTime);
