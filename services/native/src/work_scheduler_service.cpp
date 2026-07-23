@@ -2281,7 +2281,7 @@ void WorkSchedulerService::DeleteAppWork(std::shared_ptr<WorkInfo> workinfo)
     }
 }
 
-void WorkSchedulerService::StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> &workInfo);
+void WorkSchedulerService::StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> workInfo)
 {
     if (workId == "" || workInfo == nullptr) {
         WS_HILOGE("workId or workInfo is null");
