@@ -82,7 +82,7 @@ void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementN
         WS_HILOGE("service is null");
         return;
     }
-    std::string workId = "u" + std::to_string(workInfo_->GetUid()) + "_" + std::to_string(workInfo_->GetWorkId());
+    std::string workId = WorkStatus::MakeWorkId(workInfo_->GetWorkId(), workInfo_->GetUid());
     service->StopCloudConfigWork(workId, workInfo_);
 }
 

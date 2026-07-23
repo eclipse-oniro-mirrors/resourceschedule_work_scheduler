@@ -2149,7 +2149,7 @@ void WorkSchedulerService::RemovePreinstalledWorkId(const std::string &workId)
 
 bool WorkSchedulerService::CheckPreinstalledWorkId(const std::string &workId)
 {
-    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
     return deletePreinstalledWorkId_.count(workId) > 0;
 }
 
@@ -2215,6 +2215,7 @@ bool WorkSchedulerService::CheckCloudConfigPreinstallDelete(const nlohmann::json
         return false;
     }
     if (!workJson.is_object()) {
+        WS_HILOGE("workinfo json is not object");
         return false;
     }
     return workJson.contains("delete");
@@ -2223,24 +2224,31 @@ bool WorkSchedulerService::CheckCloudConfigPreinstallDelete(const nlohmann::json
 void WorkSchedulerService::DeleteSaWork(std::shared_ptr<WorkInfo> workinfo)
 {
     if (workinfo == nullptr || !workinfo->IsSA()) {
+        WS_HILOGE("workinfo json is nullptr or not sa");
+        return;
+    }
+    if (workPolicyManager_ == nullptr) {
+        WS_HILOGE("workPolicyManager_ is null");
         return;
     }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workinfo->GetUid(), workinfo->GetWorkId());
     if (workStatus == nullptr || !workStatus->workInfo_->IsPreinstalled()) {
+        WS_HILOGE("workStatus is nullptr or not preinstalled");
         return;
     }
     RemoveDeepIdleTimeToMap(workinfo->GetSaId());
     StopWorkInner(workStatus, workinfo->GetUid(), true, false);
+    std::string workId = WorkStatus::MakeWorkId(workinfo->GetWorkId(), workinfo->GetUid());
+    WS_HILOGI("stop could config sa task, workId: %{public}s", workId.c_str());
     if (workStatus->workInfo_->IsPersisted()) {
-        string workId = "u" + to_string(workinfo->GetUid()) + "_" + to_string(workinfo->GetWorkId());
-        std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
-        persistedMap_.erase(workId);
+        RemovePersistedMap(workId);
     }
 }
 
 void WorkSchedulerService::DeleteAppWork(std::shared_ptr<WorkInfo> workinfo)
 {
     if (workinfo == nullptr || workinfo->IsSA()) {
+        WS_HILOGE("workinfo json is nullptr or sa");
         return;
     }
     int32_t uid;
@@ -2249,19 +2257,22 @@ void WorkSchedulerService::DeleteAppWork(std::shared_ptr<WorkInfo> workinfo)
         return;
     }
     workinfo->RefreshUid(uid);
+    if (workPolicyManager_ == nullptr) {
+        WS_HILOGE("workPolicyManager_ is null");
+        return;
+    }
     shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workinfo->GetUid(), workinfo->GetWorkId());
     if (workStatus == nullptr || !workStatus->workInfo_->IsPreinstalled()) {
         return;
     }
-    string workId = "u" + to_string(workStatus->workInfo_->GetUid()) + "_" +
-        to_string(workStatus->workInfo_->GetWorkId());
+    std::string workId = WorkStatus::MakeWorkId(workinfo->GetWorkId(), workinfo->GetUid());
     if (workStatus->GetStatus() == WorkStatus::Status::WAIT_CONDITION) {
         // 任务处于非运行，非就绪太，可直接停止删除
         RemovePreinstalledBundles(bundleName);
         StopWorkInner(workStatus, workinfo->GetUid(), true, false);
+        WS_HILOGI("stop could config app task, workId: %{public}s", workId.c_str());
         if (workStatus->workInfo_->IsPersisted()) {
-            std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
-            persistedMap_.erase(workId);
+            RemovePersistedMap(workId);
         }
     } else if (workStatus->GetStatus() == WorkStatus::Status::CONDITION_READY ||
         workStatus->GetStatus() == WorkStatus::Status::RUNNING) {
@@ -2279,10 +2290,15 @@ void WorkSchedulerService::StopCloudConfigWork(const std::string &workId, std::s
     if (!CheckPreinstalledWorkId(workId)) {
         return;
     }
-    std::shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(*workInfo,
-        workInfo->GetUid());
+    if (workPolicyManager_ == nullptr) {
+        WS_HILOGE("workPolicyManager_ is null");
+        RemovePreinstalledWorkId(workId);
+        return;
+    }
+    std::shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(*workInfo, workInfo->GetUid());
     if (workStatus == nullptr) {
         WS_HILOGE("workStatus is nullptr");
+        RemovePreinstalledWorkId(workId);
         return;
     }
     StopWorkInner(workStatus, workinfo->GetUid(), true, false);
@@ -2336,7 +2352,7 @@ void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::j
         work->RequestBaseTime(baseTime);
         AddWorkInner(*work);
         if (work->IsPersisted()) {
-            string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
+            std::string workId = WorkStatus::MakeWorkId(work->GetWorkId(), work->GetUid());
             std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
             WS_HILOGI("cloud config preinstall workId: %{public}s", workId.c_str());
             persistedMap_.emplace(workId, work);

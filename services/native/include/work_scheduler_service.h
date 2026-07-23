@@ -332,7 +332,7 @@ public:
     void UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot);
     void UpdateCloudConfigEngExemptionBundles(const nlohmann::json &exemptionBundlesRoot);
     void UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot);
-    void StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> &workInfo);
+    void StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> workInfo);
     std::map<int32_t, std::pair<int32_t, int32_t>> GetDeepIdleTimeMap();
 private:
     void RegisterStandbyStateObserver();
