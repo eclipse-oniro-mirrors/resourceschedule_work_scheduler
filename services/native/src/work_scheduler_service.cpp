@@ -2301,7 +2301,7 @@ void WorkSchedulerService::StopCloudConfigWork(const std::string &workId, std::s
         RemovePreinstalledWorkId(workId);
         return;
     }
-    StopWorkInner(workStatus, workinfo->GetUid(), true, false);
+    StopWorkInner(workStatus, workInfo->GetUid(), true, false);
     WS_HILOGI("stop could config task, workId: %{public}s", workId.c_str());
     RemovePreinstalledWorkId(workId);
     RemovePreinstalledBundles(workInfo->GetBundleName());
