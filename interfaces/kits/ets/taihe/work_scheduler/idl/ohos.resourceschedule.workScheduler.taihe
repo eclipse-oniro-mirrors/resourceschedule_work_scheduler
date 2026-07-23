@@ -104,16 +104,22 @@ function StartWork(work: WorkInfo): void;
 
 function StopWork(work: WorkInfo, needCancel: Optional<bool>): void;
 
-@gen_async("getWorkStatus")
-@gen_promise("getWorkStatus")
+@rename("getWorkStatus")
+@async function GetWorkStatusAsync(workId: i32): WorkInfo;
+@rename("getWorkStatus")
+@promise function GetWorkStatusPromise(workId: i32): WorkInfo;
 function GetWorkStatusSync(workId: i32): WorkInfo;
 
-@gen_async("obtainAllWorks")
-@gen_promise("obtainAllWorks")
+@rename("obtainAllWorks")
+@async function ObtainAllWorksAsync(): Array<WorkInfo>;
+@rename("obtainAllWorks")
+@promise function ObtainAllWorksPromise(): Array<WorkInfo>;
 function ObtainAllWorksSync(): Array<WorkInfo>;
 
 function StopAndClearWorks(): void;
 
-@gen_async("isLastWorkTimeOut")
-@gen_promise("isLastWorkTimeOut")
+@rename("isLastWorkTimeOut")
+@async function IsLastWorkTimeOutAsync(workId: i32): bool;
+@rename("isLastWorkTimeOut")
+@promise function IsLastWorkTimeOutPromise(workId: i32): bool;
 function IsLastWorkTimeOutSync(workId: i32): bool;
