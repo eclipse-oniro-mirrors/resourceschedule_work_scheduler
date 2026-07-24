@@ -1523,5 +1523,194 @@ HWTEST_F(WorkSchedulerServiceTest, GetMinCheckTime_001, TestSize.Level1)
     workSchedulerService_->SetMinCheckTime(minCheckTime);
     EXPECT_EQ(workSchedulerService_->GetMinCheckTime(), minCheckTime);
 }
+
+/**
+ * @tc.name: UpdateCloudConfigMinRepeatTime_001
+ * @tc.desc: Test WorkSchedulerService UpdateCloudConfigMinRepeatTime.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateCloudConfigMinRepeatTime_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearSpecialToMap();
+    std::string bundleName = "com.ohos.demo";
+    uint32_t time = 2000;
+    workSchedulerService_->AddSpecialToMap(bundleName, time);
+    workSchedulerService_->ready_ = false;
+    auto specialRoot = nlohmann::json::array();
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot);
+    EXPECT_FALSE(workSchedulerService_->specialMap_.empty());
+
+    workSchedulerService_->ready_ = true;
+    auto special = nlohmann::json::array();
+    specialRoot.push_back(special);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+
+    auto specialRoot2 = nlohmann::json::array();
+    auto special2 = nlohmann::json::object();
+    specialRoot2.push_back(special2);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot2);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+
+    special2["bundleName"] = 1;
+    specialRoot2.push_back(special2);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot2);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+
+    special2["bundleName"] = bundleName;
+    specialRoot2.push_back(special2);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot2);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+
+    special2["time"] = -1;
+    specialRoot2.push_back(special2);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot2);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+
+    special2["time"] = time;
+    specialRoot2.push_back(special2);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot2);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+
+    special2["time"] = time;
+    specialRoot2.push_back(special2);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot2);
+    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+
+    time = 12000000;
+    special2["time"] = time;
+    specialRoot2.push_back(special2);
+    workSchedulerService_->UpdateCloudConfigMinRepeatTime(specialRoot2);
+    EXPECT_FALSE(workSchedulerService_->specialMap_.empty());
+}
+
+/**
+ * @tc.name: UpdateCloudConfigEngExemptionBundles_001
+ * @tc.desc: Test WorkSchedulerService UpdateCloudConfigEngExemptionBundles.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateCloudConfigEngExemptionBundles_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExemptionBundles();
+    std::string bundleName = "com.ohos.demo";
+    workSchedulerService_->InsertExemptionBundles(bundleName);
+    workSchedulerService_->ready_ = false;
+    auto root = nlohmann::json::array();
+    workSchedulerService_->UpdateCloudConfigEngExemptionBundles(root);
+    EXPECT_FALSE(workSchedulerService_->exemptionBundles_.empty());
+
+    workSchedulerService_->ready_ = true;
+    workSchedulerService_->UpdateCloudConfigEngExemptionBundles(root);
+    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
+
+    root.push_back(1);
+    workSchedulerService_->UpdateCloudConfigEngExemptionBundles(root);
+    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
+
+    auto root2 = nlohmann::json::array();
+    root2.push_back(bundleName);
+    workSchedulerService_->UpdateCloudConfigEngExemptionBundles(root2);
+    EXPECT_FALSE(workSchedulerService_->exemptionBundles_.empty());
+}
+
+/**
+ * @tc.name: CheckCloudConfigPreinstallDelete_001
+ * @tc.desc: Test WorkSchedulerService CheckCloudConfigPreinstallDelete.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckCloudConfigPreinstallDelete_001, TestSize.Level1)
+{
+    nlohmann::json root;
+    EXPECT_FALSE(workSchedulerService_->CheckCloudConfigPreinstallDelete(root));
+    
+    auto root2 = nlohmann::json::array();
+    EXPECT_FALSE(workSchedulerService_->CheckCloudConfigPreinstallDelete(root2));
+
+    auto root3 = nlohmann::json::object();
+    EXPECT_FALSE(workSchedulerService_->CheckCloudConfigPreinstallDelete(root3));
+
+    root3["delete"] = true;
+    EXPECT_TRUE(workSchedulerService_->CheckCloudConfigPreinstallDelete(root3));
+}
+
+/**
+ * @tc.name: DeleteSaWork_001
+ * @tc.desc: Test WorkSchedulerService DeleteSaWork.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, DeleteSaWork_001, TestSize.Level1)
+{
+    workSchedulerService_->deepIdleTimeMap_.clear();
+    int32_t saId = 9999;
+    int32_t deepIdleTime = 300000;
+    int32_t uid = 1;
+    workSchedulerService_->AddDeepIdleTimeToMap(saId, deepIdleTime, uid);
+    workSchedulerService_->DeleteSaWork(nullptr);
+    EXPECT_TRUE(workSchedulerService_->HasDeepIdleTime());
+
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->RefreshSaId(0);
+    workSchedulerService_->DeleteSaWork(workInfo);
+    EXPECT_TRUE(workSchedulerService_->HasDeepIdleTime());
+
+    workInfo->RefreshSaId(saId);
+    workSchedulerService_->DeleteSaWork(workInfo);
+    EXPECT_TRUE(workSchedulerService_->HasDeepIdleTime());
+}
+
+/**
+ * @tc.name: DeleteAppWork_001
+ * @tc.desc: Test WorkSchedulerService DeleteAppWork.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_001, TestSize.Level1)
+{
+    int32_t saId = 9999;
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->RefreshSaId(saId);
+    std::string workId = "u" + std::to_string(workInfo->GetUid()) + "_" + std::to_string(workInfo->GetWorkId());
+    workSchedulerService_->DeleteAppWork(nullptr);
+    EXPECT_FALSE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+
+    workSchedulerService_->InsertPreinstalledWorkId(workId);
+    workSchedulerService_->DeleteAppWork(workInfo);
+    EXPECT_TRUE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+
+    workInfo->RefreshSaId(0);
+    workSchedulerService_->DeleteAppWork(workInfo);
+    EXPECT_TRUE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+}
+
+/**
+ * @tc.name: StopCloudConfigWork_001
+ * @tc.desc: Test WorkSchedulerService StopCloudConfigWork.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_001, TestSize.Level1)
+{
+    std::string workId = "";
+    workSchedulerService_->StopCloudConfigWork(workId, nullptr);
+    EXPECT_FALSE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+
+    workId = "u1_1";
+    workSchedulerService_->InsertPreinstalledWorkId(workId);
+    workSchedulerService_->StopCloudConfigWork(workId, nullptr);
+    EXPECT_TRUE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workSchedulerService_->RemovePreinstalledWorkId(workId);
+    workSchedulerService_->StopCloudConfigWork(workId, workInfo);
+    EXPECT_FALSE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+
+    workSchedulerService_->InsertPreinstalledWorkId(workId);
+    workSchedulerService_->StopCloudConfigWork(workId, workInfo);
+    EXPECT_TRUE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+}
 }
 }

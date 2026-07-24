@@ -14,6 +14,7 @@
  */
 
 #include <unistd.h>
+#include <string>
 #include "work_scheduler_connection.h"
 #include "work_sched_data_manager.h"
 
@@ -72,6 +73,17 @@ void WorkSchedulerConnection::OnAbilityConnectDone(
 void WorkSchedulerConnection::OnAbilityDisconnectDone(const AppExecFwk::ElementName &element, int32_t resultCode)
 {
     WS_HILOGI("On ability disconnect done.");
+    if (workInfo_ == nullptr) {
+        WS_HILOGE("workInfo_ is null");
+        return;
+    }
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service == nullptr) {
+        WS_HILOGE("service is null");
+        return;
+    }
+    std::string workId = WorkStatus::MakeWorkId(workInfo_->GetWorkId(), workInfo_->GetUid());
+    service->StopCloudConfigWork(workId, workInfo_);
 }
 
 bool WorkSchedulerConnection::IsConnected()
