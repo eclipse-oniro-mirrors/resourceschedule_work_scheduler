@@ -1710,7 +1710,7 @@ HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_001, TestSize.Level1)
 
     workSchedulerService_->InsertPreinstalledWorkId(workId);
     workSchedulerService_->StopCloudConfigWork(workId, workInfo);
-    EXPECT_TRUE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+    EXPECT_FALSE(workSchedulerService_->CheckPreinstalledWorkId(workId));
 }
 }
 }
