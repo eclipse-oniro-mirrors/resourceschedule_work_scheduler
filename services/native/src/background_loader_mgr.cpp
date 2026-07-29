@@ -143,7 +143,7 @@ ErrCode BackgroundLoaderMgr::GetTaskInfo(int32_t taskId, const std::string& bund
     std::lock_guard<ffrt::mutex> lock(taskLock_);
     std::string key = GenerateTaskKey(bundleName, appIndex);
     auto it = taskMap_.find(key);
-    if (it != taskMap_.end() && it->second.taskId_ != taskId) { 
+    if (it != taskMap_.end() && it->second.taskId_ != taskId) {
         TaskInfo& info = it->second;
         BackgroundLoaderTaskInfo newInfo(info.taskId_, info.abilityName_);
         taskInfo = newInfo;
