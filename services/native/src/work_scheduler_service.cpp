@@ -2193,7 +2193,7 @@ void WorkSchedulerService::UpdateCloudConfigMinRepeatTime(const nlohmann::json &
             minCheckTime_ = newMinCheckTime;
         }
         if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
-            workQueueManager_->SetTimeCycle(checkTime);
+            workQueueManager_->SetTimeCycle(minCheckTime_);
         }
     }
 }
