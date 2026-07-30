@@ -2164,7 +2164,8 @@ void WorkSchedulerService::UpdateCloudConfigMinRepeatTime(const nlohmann::json &
     if (!ready_.load()) {
         return;
     }
-    ClearSpecialToMap();
+    std::map<std::string, uint32_t> newSpecialToMap {};
+    uint32_t newMinCheckTime = 0;
     uint32_t minCheckTime = workQueueManager_->GetTimeCycle();
     for (const auto &it : specialRoot) {
         if (!it.is_object() || !it.contains("bundleName") || !it["bundleName"].is_string() ||
@@ -2180,14 +2181,20 @@ void WorkSchedulerService::UpdateCloudConfigMinRepeatTime(const nlohmann::json &
             continue;
         }
         if (minCheckTime > time) {
-            SetMinCheckTime(time);
+            newMinCheckTime = time;
         }
         WS_HILOGI("cloud config min repeat time app name: %{public}s, time %{public}d.", bundleName.c_str(), time);
-        AddSpecialToMap(bundleName, time);
+        newSpecialToMap.emplace(bundleName, time);
     }
-    uint32_t checkTime = GetMinCheckTime();
-    if (checkTime && checkTime < workQueueManager_->GetTimeCycle()) {
-        workQueueManager_->SetTimeCycle(checkTime);
+    {
+        std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+        specialMap_ = std::move(newSpecialToMap);
+        if (newMinCheckTime != 0) {
+            minCheckTime_ = newMinCheckTime;
+        }
+        if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
+            workQueueManager_->SetTimeCycle(checkTime);
+        }
     }
 }
  
@@ -2196,15 +2203,19 @@ void WorkSchedulerService::UpdateCloudConfigEngExemptionBundles(const nlohmann::
     if (!ready_.load()) {
         return;
     }
-    ClearExemptionBundles();
+    std::set<std::string> newExemptionBundles {};
     for (const auto &exemptionBundleName : exemptionBundlesRoot) {
         if (exemptionBundleName.empty() || !exemptionBundleName.is_string()) {
             WS_HILOGE("Item type error");
         } else {
             std::string bundleName = exemptionBundleName.get<std::string>();
             WS_HILOGI("cloud config eng exemption bundle name: %{public}s", bundleName.c_str());
-            InsertExemptionBundles(bundleName);
+            newExemptionBundles.insert(bundleName);
         }
+    }
+    {
+        std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+        exemptionBundles_ = std::move(newExemptionBundles);
     }
 }
 
@@ -2316,10 +2327,11 @@ void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::j
         return;
     }
     list<shared_ptr<WorkInfo>> workInfos {};
+    std::set<std::string> newBundles;
+    std::map<int32_t, std::pair<int32_t, int32_t>> newDeepIdleMap;
     for (const auto &[key, workJson] : preinstalledWorksRoot.items()) {
         shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
         if (!workinfo->ParseFromJson(workJson)) {
-            WS_HILOGE("LoadWorksFromFile failed, parseFromJson error");
             continue;
         }
         if (CheckCloudConfigPreinstallDelete(workJson)) {
@@ -2330,7 +2342,7 @@ void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::j
         if (workinfo->IsSA() && workinfo->GetDeepIdleTime() != 0) {
             WS_HILOGI("cloud config deepidle time saId: %{public}d, deepidle time: %{public}d, uid: %{public}d",
                 workinfo->GetSaId(), workinfo->GetDeepIdleTime(), workinfo->GetUid());
-                AddDeepIdleTimeToMap(workinfo->GetSaId(), workinfo->GetDeepIdleTime(), workinfo->GetUid());
+                newDeepIdleMap[workinfo->GetSaId()] = {workinfo->GetDeepIdleTime(), workinfo->GetUid()};
         }
         if (!workinfo->IsSA()) {
             int32_t uid;
@@ -2340,11 +2352,29 @@ void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::j
             }
             workinfo->RefreshUid(uid);
             WS_HILOGI("cloud config preinstall bundle name: %{public}s", bundleName.c_str());
-            InsertPreinstalledBundles(bundleName);
+            newBundles.insert(bundleName);
         }
         workinfo->SetPreinstalled(true);
         workInfos.emplace_back(workinfo);
     }
+    {
+        std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+        for (auto &bundlename : newBundles) {
+            preinstalledBundles_.insert(bundlename);
+        }
+        for (auto &[saId, deepIdle] : newDeepIdleMap) {
+            if (deepIdleTimeMap_.count(saId) > 0) {
+                deepIdleTimeMap_.at(saId) = std::pair<int32_t, int32_t>{deepIdle.first, deepIdle.second};
+            } else {
+                deepIdleTimeMap_.emplace(saId, std::pair<int32_t, int32_t>{deepIdle.first, deepIdle.second});
+            }
+        }
+    }
+    ReStartCloudConfigPreinstalledWork(workInfos);
+}
+
+void WorkSchedulerService::ReStartCloudConfigPreinstalledWork(std::list<std::shared_ptr<WorkInfo>> &workInfos)
+{
     for (auto work : workInfos) {
         StopWorkForInner(*work, true);
         time_t baseTime;
