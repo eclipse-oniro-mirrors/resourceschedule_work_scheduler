@@ -1144,11 +1144,29 @@ int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>
 
 void WorkSchedulerService::DumpProcessForUserMode(std::vector<std::string> &argsInStr, std::string &result)
 {
+    if (argsInStr.size() == 0 || argsInStr[0] == "-h") {
+        DumpUsageForUserMode(result);
+        return;
+    }
+
     if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-t") {
         DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-s") {
         DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     }
+}
+
+void WorkSchedulerService::DumpUsageForUserMode(std::string &result)
+{
+    result.append("usage: workscheduler dump [<options>]\n")
+        .append("    -h: show the help.\n");
+    DumpCommonUsage(result);
+}
+
+void WorkSchedulerService::DumpCommonUsage(std::string &result)
+{
+    result.append("    -t (bundleName) (abilityName): trigger the bundleName all works.\n")
+        .append("    -s (saId) (uId): load or report sa.\n");
 }
 
 void WorkSchedulerService::DumpUsage(std::string &result)
@@ -1159,7 +1177,6 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -r: restore dump command settings.\n")
         .append("    -d event info: show the event info.\n")
         .append("    -d (eventType) (TypeValue): publish the event.\n")
-        .append("    -t (bundleName) (abilityName): trigger the bundleName all works.\n")
         .append("    -f (uId) (workId): trigger the work.\n")
         .append("    -x (uid) (option): pause or resume the work.\n")
         .append("    -memory (number): set the available memory.\n")
@@ -1168,8 +1185,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
-        .append("    -s (saId) (uId): load or report sa.\n")
         .append("    -thermalLevel (number): set the thermal level.\n");
+    DumpCommonUsage(result);
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
