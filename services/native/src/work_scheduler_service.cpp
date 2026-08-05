@@ -2009,6 +2009,9 @@ int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& tas
     if (ret != ERR_OK) {
         return ret;
     }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
+    }
     TaskInfo info = {
         .taskId_ = taskInfo.GetTaskId(),
         .bundleName_ = bundleName,
@@ -2028,6 +2031,9 @@ int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInf
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
+    }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
     }
     TaskInfo info = {
         .taskId_ = taskInfo.GetTaskId(),
