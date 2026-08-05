@@ -132,7 +132,6 @@ const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
 
 const std::set<std::string> WORK_SCHED_SA_CALLER = {
     "push_manager_service",
-    "resource_schedule_service",
 };
 }
 
