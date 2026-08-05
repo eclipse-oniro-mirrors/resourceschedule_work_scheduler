@@ -28,7 +28,7 @@ public:
 
     /**
      * @brief Marshalling.
-     * 
+     *
      * @param parcel The parcel.
      * @return True if success,else false.
      */
@@ -44,21 +44,21 @@ public:
 
     /**
      * @brief Get uid.
-     * 
+     *
      * @return The uid.
      */
     int32_t GetUid() const;
 
     /**
      * @brief Get workId.
-     * 
+     *
      * @return The workId.
      */
     int32_t GetWorkId() const;
 
     /**
      * @brief Get interval.
-     * 
+     *
      * @return The interval.
      */
     int32_t GetInterval() const;
@@ -80,14 +80,14 @@ public:
 
     /**
      * @brief Parse to json str.
-     * 
+     *
      * @return Result.
      */
     std::string ParseToJsonStr();
 
     /**
      * @brief Parse from json.
-     * 
+     *
      * @param value The value.
      * @return True if success,else false.
      */
