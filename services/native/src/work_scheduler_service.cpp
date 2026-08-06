@@ -2421,7 +2421,7 @@ void WorkSchedulerService::UpdateWorkForCloudConfig(std::shared_ptr<WorkInfo> wo
         WS_HILOGE("workStatus is nullptr");
         return;
     }
-    std::string workId = WorkStatus::MakeWorkId(work->GetWorkId(), uid);
+    std::string workId = WorkStatus::MakeWorkId(workInfo->GetWorkId(), uid);
     WS_HILOGI("UpdateWorkForCloudConfig workId: %{public}s", workId.c_str());
     StopWorkInner(workStatus, uid, true, false);
     if (workStatus->persisted_) {
