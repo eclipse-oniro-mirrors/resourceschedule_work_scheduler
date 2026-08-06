@@ -77,6 +77,9 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
             ResType::BackgroundLoaderState::ADD, payload);
         taskMap_[key] = taskInfo;
         taskMap_[key].status_ == TaskStatus::NOT_STARTED;
+    } else if (taskMap_[key].taskId_ != taskInfo.taskId_) {
+        // 任务存在且taskId不同的情况下仅刷新taskId
+        taskMap_[key].taskId_ = taskInfo.taskId_;
     }
     return ERR_OK;
 }
