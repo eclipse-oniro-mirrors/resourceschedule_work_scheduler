@@ -536,7 +536,7 @@ HWTEST_F(BackgroundLoaderMgrTest, GetInnerTaskInfo_001, TestSize.Level1)
     TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
-    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.test.bundle", 0, result);
+    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.test.bundle", 0);
     EXPECT_TRUE(result != nullptr);
     EXPECT_EQ(result->bundleName_, "com.test.bundle");
     EXPECT_EQ(result->taskId_, 1);
@@ -550,7 +550,7 @@ HWTEST_F(BackgroundLoaderMgrTest, GetInnerTaskInfo_001, TestSize.Level1)
  */
 HWTEST_F(BackgroundLoaderMgrTest, GetInnerTaskInfo_NotFound_001, TestSize.Level1)
 {
-    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.notexist.bundle", 0, result);
+    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.notexist.bundle", 0);
     EXPECT_FALSE(result != nullptr);
 }
 
@@ -765,7 +765,7 @@ HWTEST_F(BackgroundLoaderMgrTest, TaskInfo_PidField_001, TestSize.Level1)
     };
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
-    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.pid.bundle", 0, result);
+    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.pid.bundle", 0);
     EXPECT_TRUE(result != nullptr);
     EXPECT_EQ(result->pid_, 300);
 }
@@ -786,7 +786,7 @@ HWTEST_F(BackgroundLoaderMgrTest, TaskInfo_PidDefault_001, TestSize.Level1)
     };
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
-    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.defaultpid.bundle", 0, result);
+    TaskInfo* result = BackgroundLoaderMgr::GetInstance().GetInnerTaskInfo("com.defaultpid.bundle", 0);
     EXPECT_TRUE(result != nullptr);
     EXPECT_EQ(result->pid_, -1);
 }
