@@ -122,8 +122,8 @@ ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
     std::lock_guard<ffrt::mutex> lock(taskLock_);
     std::string key = GenerateTaskKey(taskInfo.bundleName_, taskInfo.appIndex_);
     auto it = taskMap_.find(key);
-    if (it == taskMap_.end() || it->second.taskId_ != taskInfo.taskId_
-        || it->second.status_ != TaskStatus::FINISHED) {
+    if (it == taskMap_.end() || it->second.taskId_ != taskInfo.taskId_ ||
+        it->second.status_ != TaskStatus::FINISHED) {
         WS_HILOGE("FinishTask failed : task not found or status not correct");
         return E_WORK_NOT_EXIST_FAILED;
     }
@@ -179,8 +179,9 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
             if (taskInfo->timeoutCount_ >= maxTimeoutCount_) {
                 taskInfo->status_ = TaskStatus::UNREGISIERED;
                 shouldAddToBlackList = true;
+            } else {
+                askInfo->status_ = TaskStatus::FINISHED;
             }
-            taskInfo->status_ = TaskStatus::FINISHED;
         } else {
             WS_HILOGI("task already finished for bundle %{public}s", bundleName.c_str());
             return;
