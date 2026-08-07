@@ -406,6 +406,7 @@ private:
     void RemovePreinstalledBundles(const std::string &bundleName);
     void RemoveDeepIdleTimeToMap(const int32_t saId);
     void ReStartCloudConfigPreinstalledWork(std::list<std::shared_ptr<WorkInfo>> &workInfos);
+    void UpdateWorkForCloudConfig(std::shared_ptr<WorkInfo> workInfo);
 
 private:
     std::set<int32_t> whitelist_;

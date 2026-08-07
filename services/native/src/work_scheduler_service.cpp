@@ -132,7 +132,6 @@ const std::set<std::string> WORK_SCHED_NATIVE_OPERATE_CALLER = {
 
 const std::set<std::string> WORK_SCHED_SA_CALLER = {
     "push_manager_service",
-    "resource_schedule_service",
 };
 }
 
@@ -2393,7 +2392,7 @@ void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::j
 void WorkSchedulerService::ReStartCloudConfigPreinstalledWork(std::list<std::shared_ptr<WorkInfo>> &workInfos)
 {
     for (auto work : workInfos) {
-        StopWorkForInner(*work, true);
+        UpdateWorkForCloudConfig(work);
         time_t baseTime;
         (void)time(&baseTime);
         work->RequestBaseTime(baseTime);
@@ -2404,6 +2403,30 @@ void WorkSchedulerService::ReStartCloudConfigPreinstalledWork(std::list<std::sha
             WS_HILOGI("cloud config preinstall workId: %{public}s", workId.c_str());
             persistedMap_.emplace(workId, work);
         }
+    }
+}
+
+void WorkSchedulerService::UpdateWorkForCloudConfig(std::shared_ptr<WorkInfo> workInfo)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    if (!CheckCallingToken()) {
+        WS_HILOGE("UpdateWorkForCloudConfig not allowed.");
+        return;
+    }
+    int32_t uid = workInfo->GetUid();
+    std::shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(uid, workInfo->GetWorkId());
+    if (workStatus == nullptr) {
+        WS_HILOGE("workStatus is nullptr");
+        return;
+    }
+    std::string workId = WorkStatus::MakeWorkId(workInfo->GetWorkId(), uid);
+    WS_HILOGI("UpdateWorkForCloudConfig workId: %{public}s", workId.c_str());
+    StopWorkInner(workStatus, uid, true, false);
+    if (workStatus->persisted_) {
+        RemovePersistedMap(workId);
+        RefreshPersistedWorks();
     }
 }
 } // namespace WorkScheduler
