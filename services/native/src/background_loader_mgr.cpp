@@ -180,7 +180,7 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
                 taskInfo->status_ = TaskStatus::UNREGISIERED;
                 shouldAddToBlackList = true;
             } else {
-                askInfo->status_ = TaskStatus::FINISHED;
+                taskInfo->status_ = TaskStatus::FINISHED;
             }
         } else {
             WS_HILOGI("task already finished for bundle %{public}s", bundleName.c_str());
