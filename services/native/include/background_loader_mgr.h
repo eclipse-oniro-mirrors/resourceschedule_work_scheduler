@@ -39,6 +39,7 @@ static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
 }
 
 enum class TaskStatus : int32_t {
+    UNREGISIERED = -1,
     NOT_STARTED = 0,
     RUNNING = 1,
     FINISHED = 2
@@ -82,7 +83,7 @@ public:
     void PostTimeoutTask(const std::string& bundleName, const std::string& abilityName, int32_t appIndex,
         int32_t taskId);
     void SendOnStart(const sptr<IRemoteObject>& remoteObject, const std::string& bundleName, int32_t appIndex);
-    bool GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex, TaskInfo& info);
+    TaskInfo* GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex);
     void RemoveRemoteObject(const std::string& bundleName, int32_t appIndex);
     void HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload);
 
