@@ -15,6 +15,7 @@
 
 sequenceable work_info..OHOS.WorkScheduler.WorkInfo;
 sequenceable background_loader_task_info..OHOS.WorkScheduler.BackgroundLoaderTaskInfo;
+sequenceable frequency_info..OHOS.WorkScheduler.FrequencyInfo;
 interface OHOS.WorkScheduler.IWorkSchedService {
     void StartWork([in] WorkInfo workInfo);
     void StartWorkForInner([in] WorkInfo workInfo);
@@ -35,4 +36,6 @@ interface OHOS.WorkScheduler.IWorkSchedService {
     void UnregisterTask([in] BackgroundLoaderTaskInfo taskInfo);
     void FinishTask([in] BackgroundLoaderTaskInfo taskInfo);
     void GetTaskInfo([in] int taskId, [out] BackgroundLoaderTaskInfo taskInfo);
+    void SetExecFrequency([in] FrequencyInfo frequencyInfo);
+    void ResetExecFrequency([in] FrequencyInfo frequencyInfo);
 }

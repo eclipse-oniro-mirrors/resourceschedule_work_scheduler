@@ -178,6 +178,23 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     ErrCode GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo);
+
+    /**
+     * @brief Set exec frequency for work.
+     *
+     * @param frequencyInfo The info of frequency.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode SetExecFrequency(const FrequencyInfo& frequencyInfo);
+
+    /**
+     * @brief Reset exec frequency for work.
+     *
+     * @param frequencyInfo The info of frequency.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode ResetExecFrequency(const FrequencyInfo& frequencyInfo);
+
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

@@ -114,7 +114,7 @@ bool FrequencyInfo::ParseFromJson(const nlohmann::json &value)
     return true;
 }
 
-std::string FrequencyInfo::ParseToJsonStr()
+std::string FrequencyInfo::ParseToJsonStr() const
 {
     nlohmann::json root;
     root["uid"] = uid_;

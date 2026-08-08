@@ -328,5 +328,27 @@ ErrCode WorkSchedulerSrvClient::GetTaskInfo(int32_t taskId, BackgroundLoaderTask
     }
     return iWorkSchedService_->GetTaskInfo(taskId, taskInfo);
 }
+
+ErrCode SetExecFrequency(const FrequencyInfo& frequencyInfo)
+{
+    WS_HILOGD("Set exec frequency");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->SetExecFrequency(taskId, taskInfo);
+}
+
+ErrCode WorkSchedulerSrvClient::ResetExecFrequency(const FrequencyInfo& frequencyInfo);
+{
+    WS_HILOGD("Reset exec frequency");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->ResetExecFrequency(taskId, taskInfo);
+}
 } // namespace WorkScheduler
 } // namespace OHOS

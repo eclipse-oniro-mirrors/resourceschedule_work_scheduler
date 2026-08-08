@@ -16,7 +16,7 @@
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_FREQUENCY_INFO_H
 
 #include "parcel.h"
-#include #include "nlohmann/json.hpp
+#include "nlohmann/json.hpp"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -38,7 +38,7 @@ public:
      * @brief Unmarshalling.
      *
      * @param parcel The parcel.
-     * @return Read.
+     * @return FrequencyInfo.
      */
     static FrequencyInfo* Unmarshalling(Parcel &parcel);
 
@@ -83,7 +83,7 @@ public:
      *
      * @return Result.
      */
-    std::string ParseToJsonStr();
+    std::string ParseToJsonStr() const;
 
     /**
      * @brief Parse from json.
