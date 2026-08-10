@@ -12,8 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
- #include "ohos.resourceschedule.backgroundLoader.ani.hpp"
+#include "ohos.resourceschedule.backgroundLoader.ani.hpp"
 
 #if __has_include(<ani.h>)
 #include <ani.h>
