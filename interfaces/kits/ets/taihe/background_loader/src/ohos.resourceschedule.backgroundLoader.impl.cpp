@@ -71,11 +71,11 @@ void FinishTask(const ::ohos::resourceschedule::backgroundLoader::TaskInfo& task
         WS_HILOGE("GetTaskInfoPromise fail: %{public}s", errMsg.c_str());
         set_business_error(Common::FindErrCode(errCode), errMsg);
     }
-    ::ohos::resourceschedule::backgroundLoader::TaskInfo taskInfo(info.taskId, info.abilityName);
+    ::ohos::resourceschedule::backgroundLoader::TaskInfo taskInfo{info.GetTaskId(), ::taihe::string(info.GetAbilityName())};
     return taskInfo;
 }
 
 TH_EXPORT_CPP_API_RegisterTask(RegisterTask);
 TH_EXPORT_CPP_API_UnregisterTask(UnregisterTask);
 TH_EXPORT_CPP_API_FinishTask(FinishTask);
-TH_EXPORT_CPP_API_GetTaskInfoforPromise(GetTaskInfoPromise);
+TH_EXPORT_CPP_API_GetTaskInfoPromise(GetTaskInfoPromise);

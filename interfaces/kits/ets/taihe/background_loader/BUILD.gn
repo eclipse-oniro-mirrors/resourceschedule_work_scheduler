@@ -51,7 +51,7 @@ taihe_shared_library("backgroundloader_ani") {
   include_dirs = [
     "${worksched_utils_path}/include",
     "${worksched_frameworks_path}/include",
-    "${worksched_taihe_path}/include",
+    "${worksched_taihe_path}/work_scheduler/include",
     "${work_scheduler_taihe_generated_file_path}/include",
   ]
 
@@ -63,7 +63,7 @@ taihe_shared_library("backgroundloader_ani") {
 
   deps = [
     ":run_taihe",
-    "${worksched_taihe_path}/work_scheduler::run_taihe",
+    "${worksched_taihe_path}/work_scheduler:run_taihe",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
   ]
