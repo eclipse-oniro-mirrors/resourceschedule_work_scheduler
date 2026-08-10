@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,6 +23,7 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 #include "work_info.h"
+#include "frequency_info.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -208,6 +209,15 @@ public:
      * @param errCode The error code.
      */
     static int32_t FindErrCode(const napi_env &env, int32_t errCodeIn);
+    /**
+     * @brief Get the info of frequency.
+     *
+     * @param env The env.
+     * @param objValue The obj value.
+     * @param errCode frequencyInfo the info of frequency.
+     * @return True if success,else false
+     */
+    static bool GetFrequencyInfo(napi_env &env, napi_value objValue, FrequencyInfo &frequencyInfo);
 
 private:
     static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);

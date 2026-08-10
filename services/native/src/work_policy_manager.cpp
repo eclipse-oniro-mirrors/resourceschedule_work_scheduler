@@ -376,6 +376,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             service->StopAndClearWorksByUid(detectorVal->intVal);
             int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
             DelayedSingleton<DataManager>::GetInstance()->ClearGroup(detectorVal->strVal, userId);
+            service->ResetExecFrequencyWhenAppRemove(uid);
             break;
         }
         default: {}
@@ -1062,7 +1063,7 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
     }
     constexpr int32_t MAX_DELAY_SECOND = 120;
     constexpr int32_t MILLISECOND = 1000;
-    int64_t seed = static_cast<int64_t>(WorkStatus::getOppositeTime())
+    int64_t seed = static_cast<int64_t>(topWork->getOppositeTime())
         + static_cast<int64_t>(getpid()) + static_cast<int64_t>(gettid());
     srand(static_cast<uint32_t>(seed));
     int32_t delay = rand() % MAX_DELAY_SECOND + 1;

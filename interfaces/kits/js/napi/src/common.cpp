@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -654,6 +654,32 @@ int32_t Common::FindErrCode(const napi_env &env, int32_t errCodeIn)
         return E_PARAM_ERROR;
     }
     return errCodeIn > THRESHOLD ? errCodeIn / OFFSET : errCodeIn;
+}
+
+bool Common::GetFrequencyInfo(napi_env &env, napi_value objValue, FrequencyInfo &frequencyInfo)
+{
+    int32_t uid = GetIntProperty(env, objValue, "uid", E_uid_ERR);
+    if (uid == UNSET_INT_PARAM || uid <= 0) {
+        WS_HILOGE("uid is invalid, failed.");
+        HandleErrCode(env, E_UID);
+        return false;
+    }
+    int32_t workId = GetIntProperty(env, objValue, "workId", E_WORKID_ERR);
+    if (workId == UNSET_INT_PARAM || workId <= 0) {
+        WS_HILOGE("work id is invalid, failed.");
+        HandleErrCode(env, E_WORKID_ERROR);
+        return false;
+    }
+    int64_t interval = static_cast<int64_t>(GetIntProperty(env, objValue, "workId", E_INTERVAL_ERR));
+    if (interval == UNSET_INT_PARAM) {
+        WS_HILOGE("interval is invalid, failed.");
+        HandleErrCode(env, E_INTERVAL_ERROR);
+        return false;
+    }
+    frequencyInfo.SetWorkId(workId);
+    frequencyInfo.SetUid(uid);
+    frequencyInfo.SetInterval(interval);
+    return true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
