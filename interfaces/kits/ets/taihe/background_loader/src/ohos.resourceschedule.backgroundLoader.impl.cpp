@@ -71,7 +71,8 @@ void FinishTask(const ::ohos::resourceschedule::backgroundLoader::TaskInfo& task
         WS_HILOGE("GetTaskInfoPromise fail: %{public}s", errMsg.c_str());
         set_business_error(Common::FindErrCode(errCode), errMsg);
     }
-    ::ohos::resourceschedule::backgroundLoader::TaskInfo taskInfo{info.GetTaskId(), ::taihe::string(info.GetAbilityName())};
+    ::ohos::resourceschedule::backgroundLoader::TaskInfo taskInfo{info.GetTaskId(),
+        ::taihe::string(info.GetAbilityName())};
     return taskInfo;
 }
 
