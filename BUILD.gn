@@ -21,6 +21,7 @@ group("fwk_group_work_scheduler_all") {
       "${worksched_frameworks_path}/extension:workschedextension",
       "${worksched_interfaces_path}/kits/cj:cj_work_scheduler_ffi",
       "${worksched_taihe_path}/work_scheduler:work_scheduler_taihe",
+      "${worksched_taihe_path}/work_scheduler:background_loader_taihe",
       "${worksched_taihe_path}/work_scheduler_extension:workschedulerextension_ani",
       "${worksched_interfaces_path}/kits/js:workscheduler",
       "${worksched_interfaces_path}/kits/js:backgroundloader_napi",
