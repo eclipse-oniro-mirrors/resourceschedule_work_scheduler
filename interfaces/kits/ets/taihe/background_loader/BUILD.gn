@@ -22,7 +22,8 @@ copy_taihe_idl("copy_backgroundLoader") {
 
 subsystem_name = "resourceschedule"
 part_name = "work_scheduler"
-taihe_generated_file_path = "$taihe_file_path/out/$subsystem_name/$part_name"
+taihe_generated_file_path = "$taihe_file_path/out/$subsystem_name/$part_name/background_loader"
+work_scheduler_taihe_generated_file_path = "$taihe_file_path/out/$subsystem_name/$part_name/"
 
 ohos_taihe("run_taihe") {
   taihe_generated_file_path = "$taihe_generated_file_path"
@@ -50,19 +51,25 @@ taihe_shared_library("backgroundloader_ani") {
   include_dirs = [
     "${worksched_utils_path}/include",
     "${worksched_frameworks_path}/include",
+    "${worksched_taihe_path}/work_scheduler/include",
+    "${work_scheduler_taihe_generated_file_path}/include",
   ]
 
   sources += [
+    "src/ani_constructor.cpp",
     "src/ohos.resourceschedule.backgroundLoader.impl.cpp",
+    "${worksched_taihe_path}/work_scheduler/src/common.cpp",
   ]
 
   deps = [
     ":run_taihe",
+    "${worksched_taihe_path}/work_scheduler:run_taihe",
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
   ]
 
   external_deps = [
+    "ability_base:want",
     "c_utils:utils",
     "hilog:libhilog",
     "ipc:ipc_core",
