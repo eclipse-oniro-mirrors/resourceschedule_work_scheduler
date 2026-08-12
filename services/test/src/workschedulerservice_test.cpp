@@ -14,6 +14,9 @@
  */
 
 #include <functional>
+#include <cstdio>
+#include <sys/stat.h>
+#include <unisted.h>
 #include <gtest/gtest.h>
 #include "timer.h"
 #define private public
@@ -49,6 +52,8 @@
 #include "work_sched_hilog.h"
 #include "work_policy_manager.h"
 #include "background_loader_task_info.h"
+#include "work_sched_constants.h"
+#include "frequency_info.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
 namespace OHOS {
@@ -140,6 +145,8 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)  { return 0; }
     int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) { return 0; }
     int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)  { return 0; }
+    int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo)  { return 0; }
+    int32_t ResetExecFrequency(const FrequencyInfo& frequencyInfo)  { return 0; }
 };
 /**
  * @tc.name: onStart_001
@@ -1711,6 +1718,347 @@ HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_001, TestSize.Level1)
     workSchedulerService_->InsertPreinstalledWorkId(workId);
     workSchedulerService_->StopCloudConfigWork(workId, workInfo);
     EXPECT_FALSE(workSchedulerService_->CheckPreinstalledWorkId(workId));
+}
+
+// ======================== SetExecFrequency Tests ========================
+
+/**
+ * @tc.name: SetExecFrequency_001
+ * @tc.desc: Test SetExecFrequency service not ready.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetExecFrequency_001, TestSize.Level1)
+{
+    workSchedulerService_->ready = false;
+    FrequencyInfo info;
+    int32_t ret = workSchedulerService_->SetExecFrequency(info);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+    workSchedulerService_->ready = true;
+}
+
+
+// ======================== ResetExecFrequency Tests ========================
+
+/**
+ * @tc.name: ResetExecFrequency_001
+ * @tc.desc: Test ResetExecFrequency service not ready.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequency_001, TestSize.Level1)
+{
+    workSchedulerService_->ready = false;
+    FrequencyInfo info;
+    int32_t ret = workSchedulerService_->ResetExecFrequency(info);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+    workSchedulerService_->ready = true;
+}
+
+// ======================== GetExecFrequency Tests ========================
+
+/**
+ * @tc.name: GetExecFrequency_001
+ * @tc.desc: Test GetExecFrequency when no frequency is set.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    FrequencyInfo info;
+    int64_t result = workSchedulerService_->GetExecFrequency(100);
+    EXPECT_EQ(ret, INVALID_VALUE);
+}
+
+/**
+ * @tc.name: GetExecFrequency_002
+ * @tc.desc: Test GetExecFrequency after setting frequency.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_002, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    FrequencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(100);
+    freqInfo.SetInterval(86400000);
+    workSchedulerService_->SetExecFrequencyInner(1001, freqInfo);
+    int64_t result = workSchedulerService_->GetExecFrequency(100);
+    EXPECT_EQ(result, 86400000);
+    workSchedulerService_->ClearExexFrequency();
+}
+
+// ======================== ResetExecFrequencyByUid Tests ========================
+
+/**
+ * @tc.name: ResetExecFrequencyByUid_001
+ * @tc.desc: Test ResetExecFrequencyByUid.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    FrequencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(200);
+    freqInfo.SetInterval(86400000);
+    workSchedulerService_->SetExecFrequencyInner(1001, freqInfo);
+
+    bool ret = workSchedulerService_->ResetExecFrequencyByUid(200);
+    EXPECT_TRUE(ret);
+
+    auto result = workSchedulerService_->GetExecFrequency(200);
+    EXPECT_EQ(result, INVALID_VALUE);
+    workSchedulerService_->ClearExexFrequency();
+}
+
+/**
+ * @tc.name: ResetExecFrequencyByUid_002
+ * @tc.desc: Test ResetExecFrequencyByUid.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_002, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    bool ret = workSchedulerService_->ResetExecFrequencyByUid(999);
+    EXPECT_FALSE(ret);
+}
+
+// ======================== ClearExecFrequency Tests ========================
+
+/**
+ * @tc.name: ClearExecFrequency_001
+ * @tc.desc: Test ClearExecFrequency.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, ClearExecFrequency_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    requencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(100);
+    freqInfo.SetInterval(86400000);
+    workSchedulerService_->SetExecFrequencyInner(1001, freqInfo);
+
+    auto result = workSchedulerService_->GetExecFrequency(100);
+    EXPECT_NE(result, INVALID_VALUE);
+
+    workSchedulerService_->ClearExexFrequency(100);
+    EXPECT_EQ(result, INVALID_VALUE);
+}
+
+// ======================== FrequencyMap JSON Tests ========================
+
+/**
+ * @tc.name: FrequencyMap_ParseToJson_001
+ * @tc.desc: Test FrequencyMap parse to json.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, FrequencyMap_ParseToJson_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    requencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(100);
+    freqInfo.SetInterval(86400000);
+    workSchedulerService_->SetExecFrequencyInner(1001, freqInfo);
+
+    std::string jsonStr = workSchedulerService_->ParseFrequencyMapToJsonStr();
+    EXPECT_FALSE(jsonStr.empty());
+
+    nlohmann::json root = nlohmann::json::parse(jsonStr);
+    EXPECT_TRUE(root.contains("frequency_infos"));
+    workSchedulerService_->ClearExexFrequency();
+}
+
+/**
+ * @tc.name: FrequencyMap_ParseToJson_002
+ * @tc.desc: Test FrequencyMap parse to json when empty.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, FrequencyMap_ParseToJson_002, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    std::string jsonStr = workSchedulerService_->ParseFrequencyMapToJsonStr();
+    EXPECT_FALSE(jsonStr.empty());
+
+    nlohmann::json root = nlohmann::json::parse(jsonStr);
+    EXPECT_TRUE(root.contains("frequency_infos"));
+    EXPECT_TRUE(root["frequency_infos"].empty());
+}
+
+// ======================== ResetExecFrequencyWhenAppRemove Tests ========================
+
+/**
+ * @tc.name: ResetExecFrequencyWhenAppRemove_001
+ * @tc.desc: Test ResetExecFrequencyWhenAppRemove removes frequency for uid.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyWhenAppRemove_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExexFrequency();
+    requencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(300);
+    freqInfo.SetInterval(86400000);
+    workSchedulerService_->SetExecFrequencyInner(1001, freqInfo);
+
+    auto result = workSchedulerService_->GetExecFrequency(300);
+    EXPECT_NE(result, INVALID_VALUE);
+
+    workSchedulerService_->ResetExecFrequencyWhenAppRemove(300);
+
+    result = workSchedulerService_->GetExecFrequency(300);
+    EXPECT_EQ(result, INVALID_VALUE);
+    workSchedulerService_->ClearExexFrequency();
+}
+
+// ======================== DumpAppGroup Edge Tests ========================
+
+/**
+ * @tc.name: DumpAppGroup_Params_001
+ * @tc.desc: Test DumpAppGroup with invalid group (0).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_001, TestSize.Level1)
+{
+    WorkStatus::ClearDumpAppGroup(1000);
+    std::vector<std::string> argsInstr;
+    std:string result;
+    argsInstr.push_back("-group");
+    argsInstr.push_back("1000");
+    argsInstr.push_back("0");
+    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
+    EXCEPT_FALSE(result.empty());
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), INVALID_VALUE);
+}
+
+/**
+ * @tc.name: DumpAppGroup_Params_002
+ * @tc.desc: Test DumpAppGroup with negative group.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_002, TestSize.Level1)
+{
+    WorkStatus::ClearDumpAppGroup(1000);
+    std::vector<std::string> argsInstr;
+    std:string result;
+    argsInstr.push_back("-group");
+    argsInstr.push_back("1000");
+    argsInstr.push_back("-5");
+    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
+    EXCEPT_FALSE(result.empty());
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), INVALID_VALUE);
+}
+
+/**
+ * @tc.name: DumpAppGroup_Params_003
+ * @tc.desc: Test DumpAppGroup with INVALID_VALUE group (clears group).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_003, TestSize.Level1)
+{
+    WorkStatus::AddDumpAppGroup(1000, 20);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), 20);
+
+    std::vector<std::string> argsInstr;
+    std:string result;
+    argsInstr.push_back("-group");
+    argsInstr.push_back("1000");
+    argsInstr.push_back(std::to_string(INVALID_VALUE));
+    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), INVALID_VALUE);
+    WorkStatus::ClearDumpAppGroup(1000);
+}
+
+/**
+ * @tc.name: DumpAppGroup_Params_004
+ * @tc.desc: Test DumpAppGroup with valid group sets app group.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_004, TestSize.Level1)
+{
+    WorkStatus::ClearDumpAppGroup(1000);
+    std::vector<std::string> argsInstr;
+    std:string result;
+    argsInstr.push_back("-group");
+    argsInstr.push_back("1000");
+    argsInstr.push_back(10);
+    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), 10);
+    WorkStatus::ClearDumpAppGroup(1000);
+}
+
+// ======================== InitPresistedInfos Tests ========================
+
+/**
+ * @tc.name: InitPresistedInfos_002
+ * @tc.desc: Test InitPresistedInfos when file exists but has no frequency_infos key.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, InitPresistedInfos_002, TestSize.Level1)
+{
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/persisted_info";
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp fopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << dirPath;
+    }
+    const char* jsonContent = "{\"other_key\": []}"
+    fputs(jsonContent, fp);
+    fclose(fp);
+
+    workSchedulerService_->ClearExecFrequency();
+    workSchedulerService_->InitPresistedInfos();
+    auto result = workSchedulerService_->GetExecFrequency(100);
+    EXPECT_EQ(result, INVALID_VALUE);
+    workSchedulerService_->ClearExecFrequency();
+    remove(filePath);
+}
+
+/**
+ * @tc.name: InitPresistedInfos_003
+ * @tc.desc: Test InitPresistedInfos when file exists with empty frequency_infos.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedulerServiceTest, InitPresistedInfos_003, TestSize.Level1)
+{
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/persisted_info";
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp fopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << dirPath;
+    }
+    const char* jsonContent = "{\"frquency_infos\": []}"
+    fputs(jsonContent, fp);
+    fclose(fp);
+
+    workSchedulerService_->ClearExecFrequency();
+    workSchedulerService_->InitPresistedInfos();
+    auto result = workSchedulerService_->GetExecFrequency(100);
+    EXPECT_EQ(result, INVALID_VALUE);
+    workSchedulerService_->ClearExecFrequency();
+    remove(filePath);
 }
 }
 }

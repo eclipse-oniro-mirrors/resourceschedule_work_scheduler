@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,10 +17,12 @@
 #include <gtest/gtest.h>
 
 #include "work_status.h"
+#include "work_scheduler_service"
 #include "work_condition.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_hilog.h"
 #include "work_info.h"
+#include "frequency_info.h"
 
 using namespace testing::ext;
 
@@ -1224,6 +1226,257 @@ HWTEST_F(WorkStatusTest, IsDebugTask_001, TestSize.Level1)
     EXPECT_FALSE(workStatus_->IsDebugTask());
     workStatus_->SetDebugTask(true);
     EXPECT_TRUE(workStatus_->IsDebugTask());
+}
+
+// ======================== GetDumpAppGroup Tests ========================
+
+/**
+ * @tc.name: GetDumpAppGroup_001
+ * @tc.desc: Test GetDumpAppGroup with non-existent uid.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, GetDumpAppGroup_001, TestSize.Level1)
+{
+    int32_t uid = 999;
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), INVALID_VALUE);
+}
+
+/**
+ * @tc.name: GetDumpAppGroup_002
+ * @tc.desc: Test GetDumpAppGroup after AddDumpAppGroup.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, GetDumpAppGroup_002, TestSize.Level1)
+{
+    int32_t uid = 100;
+     WorkStatus::AddDumpAppGroup(uid, 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 10);
+    WorkStatus::ClearDumpAppGroup(uid);
+}
+
+// ======================== AddDumpAppGroup Tests ========================
+
+/**
+ * @tc.name: ClearDumpAppGroup_001
+ * @tc.desc: Test ClearDumpAppGroup removes the entry.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, ClearDumpAppGroup_001, TestSize.Level1)
+{
+    int32_t uid = 200;
+     WorkStatus::AddDumpAppGroup(uid, 20);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 20);
+    WorkStatus::ClearDumpAppGroup(uid);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), INVALID_VALUE);
+}
+
+/**
+ * @tc.name: ClearDumpAppGroup_002
+ * @tc.desc: Test ClearDumpAppGroup on non-existent uid.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, ClearDumpAppGroup_002, TestSize.Level1)
+{
+    int32_t uid = 888;
+    WorkStatus::ClearDumpAppGroup(uid);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), INVALID_VALUE);
+}
+
+// ======================== AddDumpAppGroup Tests ========================
+
+/**
+ * @tc.name: AddDumpAppGroup_001
+ * @tc.desc: Test AddDumpAppGroup adds new entry.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, AddDumpAppGroup_001, TestSize.Level1)
+{
+    int32_t uid = 300;
+    WorkStatus::ClearDumpAppGroup(uid);
+    WorkStatus::AddDumpAppGroup(uid, 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 10);
+    WorkStatus::ClearDumpAppGroup(uid);
+}
+
+/**
+ * @tc.name: AddDumpAppGroup_002
+ * @tc.desc: Test AddDumpAppGroup updates existing new entry.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, AddDumpAppGroup_002, TestSize.Level1)
+{
+    int32_t uid = 400;
+    WorkStatus::AddDumpAppGroup(uid, 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 10);
+    WorkStatus::AddDumpAppGroup(uid, 20);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 20);
+    WorkStatus::ClearDumpAppGroup(uid);
+}
+
+/**
+ * @tc.name: AddDumpAppGroup_003
+ * @tc.desc: Test AddDumpAppGroup with multiple uids.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, AddDumpAppGroup_003, TestSize.Level1)
+{
+    int32_t uid1 = 500;
+    int32_t uid2 = 600;
+    WorkStatus::AddDumpAppGroup(uid1, 10);
+    WorkStatus::AddDumpAppGroup(uid2, 20);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid1), 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid2), 10);
+    WorkStatus::ClearDumpAppGroup(uid1);
+    WorkStatus::ClearDumpAppGroup(uid2);
+}
+
+// ======================== HandleMinInterval Tests ========================
+
+/**
+ * @tc.name: HandleMinInterval_001
+ * @tc.desc: Test AddDumpAppGroup when no exec frequency is set.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExexFrequency();
+    int32_t uid = 100;
+    auto result = service->GetExecFrequency(uid);
+    EXPECT_EQ(result, INVALID_VALUE);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = 30 * 60 * 1000;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, interval);
+    service->ClearExexFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_002
+ * @tc.desc: Test AddDumpAppGroup when exec frequency is set and interval is larger then exec frequency.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExexFrequency();
+    int32_t uid = 100;
+    FrequnencyInfo freqInfo = FrequnencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(uid);
+    freqInfo.SetInterval(86400000);
+    service->SetExecFrequencyInner(1001, freqInfo);
+
+    auto result = service->GetExecFrequency(uid);
+    EXPECT_NE(result, INVALID_VALUE);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = 7 * 24 * 60 * 60 * 1000;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, 86400000);
+    service->ClearExexFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_003
+ * @tc.desc: Test AddDumpAppGroup when exec frequency is set and group is > 40 (group check removed).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_003, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExexFrequency();
+    int32_t uid = 100;
+    FrequnencyInfo freqInfo = FrequnencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(uid);
+    freqInfo.SetInterval(86400000);
+    service->SetExecFrequencyInner(1001, freqInfo);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = 30 * 60 * 1000;
+    int32_t group = 50;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, interval);
+    service->ClearExexFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_004
+ * @tc.desc: Test AddDumpAppGroup when interval is negative (returns exec frequency).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_004, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExexFrequency();
+    int32_t uid = 100;
+    FrequnencyInfo freqInfo = FrequnencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(uid);
+    freqInfo.SetInterval(86400000);
+    service->SetExecFrequencyInner(1001, freqInfo);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = -1;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, interval);
+    service->ClearExexFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_005
+ * @tc.desc: Test AddDumpAppGroup when interval is negative and no exec frequency is set.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_005, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExexFrequency();
+    int32_t uid = 100;
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = -1;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, -1);
+    service->ClearExexFrequency();
 }
 }
 }
