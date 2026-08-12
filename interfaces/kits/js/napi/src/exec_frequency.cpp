@@ -38,7 +38,7 @@ napi_value SetExecFrequency(napi_env env, napi_callback_info info)
         return Common::NapiGetNull(env);
     }
     if (!Common::MatchValueType(env, argv[PARAM_INDEX], napi_object)) {
-        Common::HandleErrCode(env, E_FREQUENCY_INFO_ERROR);
+        Common::HandleErrCode(env, E_FREQUENCY_INFO_TYPE_ERROR);
         return Common::NapiGetNull(env);
     }
 
