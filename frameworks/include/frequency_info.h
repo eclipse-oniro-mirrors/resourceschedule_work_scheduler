@@ -28,11 +28,11 @@ public:
     ~FrequencyInfo() override;
 
     /**
-     * @brief Marshalling.
-     *
-     * @param parcel The parcel.
-     * @return True if success,else false.
-     */
+    * @brief Marshalling.
+    *
+    * @param parcel The parcel.
+    * @return True if success,else false.
+    */
     bool Marshalling(Parcel &parcel) const override;
     /**
      * @brief Unmarshalling.

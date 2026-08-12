@@ -340,7 +340,7 @@ ErrCode WorkSchedulerSrvClient::SetExecFrequency(const FrequencyInfo& frequencyI
     return iWorkSchedService_->SetExecFrequency(frequencyInfo);
 }
 
-ErrCode WorkSchedulerSrvClient::ResetExecFrequency(const int32_t uid);
+ErrCode WorkSchedulerSrvClient::ResetExecFrequency(const int32_t uid)
 {
     WS_HILOGD("Reset exec frequency");
     std::lock_guard<std::mutex> lock(mutex_);

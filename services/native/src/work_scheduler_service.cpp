@@ -2558,7 +2558,7 @@ int32_t WorkSchedulerService::ResetExecFrequency(const int32_t uid)
     int32_t callingUid = IPCSkeleton::GetCallingUid();
     if (GetExecFrequency(uid, callingUid) == -1) {
         WS_HILOGE("uid: %{public}d is invalid, not set exec frequency.", uid);
-        return E_UID_EEROR;
+        return E_UID_ERROR;
     }
     bool isRefresh = ResetExecFrequencyByCallingUid(callingUid, uid);
     if (isRefresh) {
@@ -2569,7 +2569,7 @@ int32_t WorkSchedulerService::ResetExecFrequency(const int32_t uid)
 
 void WorkSchedulerService::SetExecFrequencyInner(int32_t callingUid, const FrequencyInfo& frequencyInfo)
 {
-    WS_HILOGI("callingUid: %{public}d setExecFrequency, uid: %{public}ld, interval: %{public}d, workId: %{public}d",
+    WS_HILOGI("callingUid: %{public}d setExecFrequency, uid: %{public}d, interval: %{public}ld, workId: %{public}d",
         callingUid, frequencyInfo.GetUid(), frequencyInfo.GetInterval(), frequencyInfo.GetWorkId());
     std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
     auto it = frequencyMap_.find(callingUid);
@@ -2621,14 +2621,14 @@ bool WorkSchedulerService::ResetExecFrequencyByCallingUid(int32_t callingUid, in
 
 bool WorkSchedulerService::ResetExecFrequencyByUid(int32_t uid)
 {
-    bool isReFresh = false;
+    bool isRefresh = false;
     std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
     auto it = frequencyMap_.find(uid);
     if (it != frequencyMap_.end()) {
         WS_HILOGI("reset uid: %{public}d set all frequency info", uid);
-        isReFresh = true;
+        isRefresh = true;
         frequencyMap_.erase(uid);
-        return isReFresh;
+        return isRefresh;
     }
 
     for (auto it = frequencyMap_.begin(); it != frequencyMap_.end();) {
@@ -2641,7 +2641,7 @@ bool WorkSchedulerService::ResetExecFrequencyByUid(int32_t uid)
         auto item = callingUidSetFrequencyMap.find(uid);
         if (item != callingUidSetFrequencyMap.end()) {
             WS_HILOGI("reset uid: %{public}d frequency info", uid);
-            isReFresh = true;
+            isRefresh = true;
             callingUidSetFrequencyMap.erase(uid);
             if (callingUidSetFrequencyMap.empty()) {
                 it = frequencyMap_.erase(it);
@@ -2650,7 +2650,7 @@ bool WorkSchedulerService::ResetExecFrequencyByUid(int32_t uid)
         }
         ++it;
     }
-    return isReFresh;
+    return isRefresh;
 }
 
 void WorkSchedulerService::ResetExecFrequencyWhenAppRemove(int32_t uid)
@@ -2691,7 +2691,7 @@ void WorkSchedulerService::InitPersistedInfos()
         }
         for (const auto &[key, frequencyJson] : callingUidSetFrequencyRoot.items()) {
             FrequencyInfo frequencyInfo = FrequencyInfo();
-            if (!frequencyInfo.ParseFromJson(frequencyInfo)) {
+            if (!frequencyInfo.ParseFromJson(frequencyJson)) {
                 WS_HILOGE("ReadFrequencyInfo failed, parseFromJson error");
                 continue;
             }

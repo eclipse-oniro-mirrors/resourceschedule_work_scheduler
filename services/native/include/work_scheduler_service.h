@@ -336,7 +336,7 @@ public:
     void StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> workInfo);
     std::map<int32_t, std::pair<int32_t, int32_t>> GetDeepIdleTimeMap();
     int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo) override;
-    int32_t ResetExecFrequency(const FrequencyInfo& frequencyInfo) override;
+    int32_t ResetExecFrequency(const int32_t uid) override;
     void ResetExecFrequencyWhenAppRemove(int32_t uid);
     int64_t GetExecFrequency(int32_t uid, int32_t callingUid = -1);
 private:
@@ -420,7 +420,7 @@ private:
     std::string ParseFrequencyMapToJsonStr();
     void RefreshPersistedInfos();
     bool CreateNodePersistedInfoFile();
-    void DumpTwoParamsSet(std::vector<std::string> &argsInstr, std::string &result);
+    void DumpTwoParamsSet(std::vector<std::string> &argsInStr, std::string &result);
     void DumpAppGroup(const std::string& bundleName, const std::string& groupStr, std::string& result);
 
 private:

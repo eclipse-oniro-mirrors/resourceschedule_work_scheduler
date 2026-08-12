@@ -145,8 +145,8 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)  { return 0; }
     int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) { return 0; }
     int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)  { return 0; }
-    int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo)  { return 0; }
-    int32_t ResetExecFrequency(const int32_t uid)  { return 0; }
+    int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo) { return 0; }
+    int32_t ResetExecFrequency(const int32_t uid) { return 0; }
 };
 /**
  * @tc.name: onStart_001
@@ -1683,7 +1683,7 @@ HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_001, TestSize.Level1)
     std::string workId = "u" + std::to_string(workInfo->GetUid()) + "_" + std::to_string(workInfo->GetWorkId());
     workSchedulerService_->DeleteAppWork(nullptr);
     EXPECT_FALSE(workSchedulerService_->CheckPreinstalledWorkId(workId));
-
+    
     workSchedulerService_->InsertPreinstalledWorkId(workId);
     workSchedulerService_->DeleteAppWork(workInfo);
     EXPECT_TRUE(workSchedulerService_->CheckPreinstalledWorkId(workId));
@@ -2018,7 +2018,7 @@ HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_002, TestSize.Level1)
     if (fp == nullptr) {
         GTEST_SKIP() << "Cannot write file: " << filePath;
     }
-    const char* jsonContent = "{\"other_key\": []}";
+    const char* jsonContent = "{\"other_key\":[]}";
     fputs(jsonContent, fp);
     fclose(fp);
 
@@ -2047,7 +2047,7 @@ HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_003, TestSize.Level1)
     if (fp == nullptr) {
         GTEST_SKIP() << "Cannot write file: " << filePath;
     }
-    const char* jsonContent = "{\"frequency_infos\": {}}";
+    const char* jsonContent = "{\"frequency_infos\":{}}";
     fputs(jsonContent, fp);
     fclose(fp);
 

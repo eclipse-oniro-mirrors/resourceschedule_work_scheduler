@@ -172,12 +172,12 @@ HWTEST_F(FrequencyInfoTest, ParseFromJson_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: FrequencyInfo_ParseFromJson_Nullnput_001
+ * @tc.name: FrequencyInfo_ParseFromJson_NullInput_001
  * @tc.desc: Test FrequencyInfo ParseFromJson with null json.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(FrequencyInfoTest, ParseFromJson_Nullnput_001, TestSize.Level1)
+HWTEST_F(FrequencyInfoTest, ParseFromJson_NullInput_001, TestSize.Level1)
 {
     nlohmann::json nullJson;
     FrequencyInfo info;

@@ -1367,7 +1367,7 @@ HWTEST_F(WorkStatusTest, HandleMinInterval_001, TestSize.Level1)
 
 /**
  * @tc.name: HandleMinInterval_002
- * @tc.desc: Test HandleMinInterval when exec frequency is set and interval is larger then exec frequency.
+ * @tc.desc: Test HandleMinInterval when exec frequency is set and interval is larger than exec frequency.
  * @tc.type: FUNC
  * @tc.require:
  */
