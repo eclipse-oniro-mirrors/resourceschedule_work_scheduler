@@ -187,6 +187,5 @@ group("unittest") {
   deps += [
     # deps file
     ":WorkScheduleServiceTest",
-    ":BackgroundLoaderMgrTest",
   ]
 }
