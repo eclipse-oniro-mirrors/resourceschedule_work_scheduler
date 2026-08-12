@@ -123,7 +123,7 @@ ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
     std::string key = GenerateTaskKey(taskInfo.bundleName_, taskInfo.appIndex_);
     auto it = taskMap_.find(key);
     if (it == taskMap_.end() || it->second.taskId_ != taskInfo.taskId_ ||
-        it->second.status_ != TaskStatus::RUNNING) {
+        it->second.status_ != TaskStatus::RUNNING) { 
         WS_HILOGE("FinishTask failed : task not found or status not correct");
         return E_WORK_NOT_EXIST_FAILED;
     }
