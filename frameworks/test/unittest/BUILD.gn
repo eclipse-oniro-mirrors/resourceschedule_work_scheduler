@@ -117,7 +117,6 @@ ohos_unittest("FrequencyInfoTest") {
     "-Dprivate=public",
     "-Dprotected=public",
   ]
-
   sources = [
     "src/frequency_info_test.cpp",
   ]

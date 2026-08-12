@@ -12,8 +12,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_EXEC_FREQUENCY_H
-#define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_EXEC_FREQUENCY_H
+#ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_EXEC_FREQUENCY
+#define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_EXEC_FREQUENCY
 
 #include "napi/native_api.h"
 
@@ -22,6 +22,6 @@ namespace WorkScheduler {
     napi_value SetExecFrequency(napi_env env, napi_callback_info info);
 
     napi_value ResetExecFrequency(napi_env env, napi_callback_info info);
-} // namespace WorkScheduler
-} // namespace OHOS
-#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_EXEC_FREQUENCY_H
+}
+}
+#endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_INTERFACES_KITS_NAPI_INCLUDE_EXEC_FREQUENCY

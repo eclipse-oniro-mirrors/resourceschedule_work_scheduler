@@ -183,18 +183,17 @@ public:
      * @brief Set exec frequency for work.
      *
      * @param frequencyInfo The info of frequency.
-     * @return ErrCode ERR_OK on success, others on failure
+     * @return ErrCode ERR_OK on success, others on failure.
      */
     ErrCode SetExecFrequency(const FrequencyInfo& frequencyInfo);
 
     /**
      * @brief Reset exec frequency for work.
      *
-     * @param frequencyInfo The info of frequency.
-     * @return ErrCode ERR_OK on success, others on failure
+     * @param uid The uid.
+     * @return ErrCode ERR_OK on success, others on failure.
      */
-    ErrCode ResetExecFrequency(const FrequencyInfo& frequencyInfo);
-
+    ErrCode ResetExecFrequency(const int32_t uid);
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

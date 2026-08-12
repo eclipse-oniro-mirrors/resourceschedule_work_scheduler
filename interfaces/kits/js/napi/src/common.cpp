@@ -656,21 +656,21 @@ int32_t Common::FindErrCode(const napi_env &env, int32_t errCodeIn)
     return errCodeIn > THRESHOLD ? errCodeIn / OFFSET : errCodeIn;
 }
 
-bool Common::GetFrequencyInfo(napi_env &env, napi_value objValue, FrequencyInfo &frequencyInfo)
+bool Common::GetFrequencyInfo(napi_env env, napi_value objValue, FrequencyInfo &frequencyInfo)
 {
-    int32_t uid = GetIntProperty(env, objValue, "uid", E_uid_ERR);
+    int32_t uid = GetIntProperty(env, objValue, "uid", E_UID_ERROR);
     if (uid == UNSET_INT_PARAM || uid <= 0) {
         WS_HILOGE("uid is invalid, failed.");
-        HandleErrCode(env, E_UID);
+        HandleErrCode(env, E_UID_ERROR);
         return false;
     }
-    int32_t workId = GetIntProperty(env, objValue, "workId", E_WORKID_ERR);
+    int32_t workId = GetIntProperty(env, objValue, "workId", E_WORKID_ERROR);
     if (workId == UNSET_INT_PARAM || workId <= 0) {
-        WS_HILOGE("work id is invalid, failed.");
+        WS_HILOGE("Work id is invalid, failed.");
         HandleErrCode(env, E_WORKID_ERROR);
         return false;
     }
-    int64_t interval = static_cast<int64_t>(GetIntProperty(env, objValue, "workId", E_INTERVAL_ERR));
+    int64_t interval = static_cast<int64_t>(GetIntProperty(env, objValue, "interval", E_INTERVAL_ERROR));
     if (interval == UNSET_INT_PARAM) {
         WS_HILOGE("interval is invalid, failed.");
         HandleErrCode(env, E_INTERVAL_ERROR);

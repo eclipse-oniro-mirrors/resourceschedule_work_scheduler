@@ -16,7 +16,7 @@
 #include <functional>
 #include <cstdio>
 #include <sys/stat.h>
-#include <unisted.h>
+#include <unistd.h>
 #include <gtest/gtest.h>
 #include "timer.h"
 #define private public
@@ -146,7 +146,7 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) { return 0; }
     int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)  { return 0; }
     int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo)  { return 0; }
-    int32_t ResetExecFrequency(const FrequencyInfo& frequencyInfo)  { return 0; }
+    int32_t ResetExecFrequency(const int32_t uid)  { return 0; }
 };
 /**
  * @tc.name: onStart_001
@@ -1730,13 +1730,12 @@ HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, SetExecFrequency_001, TestSize.Level1)
 {
-    workSchedulerService_->ready = false;
+    workSchedulerService_->ready_ = false;
     FrequencyInfo info;
     int32_t ret = workSchedulerService_->SetExecFrequency(info);
     EXPECT_EQ(ret, E_SERVICE_NOT_READY);
-    workSchedulerService_->ready = true;
+    workSchedulerService_->ready_ = true;
 }
-
 
 // ======================== ResetExecFrequency Tests ========================
 
@@ -1748,11 +1747,11 @@ HWTEST_F(WorkSchedulerServiceTest, SetExecFrequency_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequency_001, TestSize.Level1)
 {
-    workSchedulerService_->ready = false;
-    FrequencyInfo info;
-    int32_t ret = workSchedulerService_->ResetExecFrequency(info);
+    workSchedulerService_->ready_ = false;
+    int32_t uid = 1;
+    int32_t ret = workSchedulerService_->ResetExecFrequency(uid);
     EXPECT_EQ(ret, E_SERVICE_NOT_READY);
-    workSchedulerService_->ready = true;
+    workSchedulerService_->ready_ = true;
 }
 
 // ======================== GetExecFrequency Tests ========================
@@ -1765,10 +1764,9 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequency_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_001, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
-    FrequencyInfo info;
+    workSchedulerService_->ClearExecFrequency();
     int64_t result = workSchedulerService_->GetExecFrequency(100);
-    EXPECT_EQ(ret, INVALID_VALUE);
+    EXPECT_EQ(result, INVALID_VALUE);
 }
 
 /**
@@ -1779,7 +1777,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_002, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
     FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(100);
@@ -1787,7 +1785,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_002, TestSize.Level1)
     workSchedulerService_->SetExecFrequencyInner(1001, freqInfo);
     int64_t result = workSchedulerService_->GetExecFrequency(100);
     EXPECT_EQ(result, 86400000);
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
 }
 
 // ======================== ResetExecFrequencyByUid Tests ========================
@@ -1800,7 +1798,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_002, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_001, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
     FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(200);
@@ -1809,21 +1807,20 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_001, TestSize.Level1)
 
     bool ret = workSchedulerService_->ResetExecFrequencyByUid(200);
     EXPECT_TRUE(ret);
-
     auto result = workSchedulerService_->GetExecFrequency(200);
     EXPECT_EQ(result, INVALID_VALUE);
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
 }
 
 /**
  * @tc.name: ResetExecFrequencyByUid_002
- * @tc.desc: Test ResetExecFrequencyByUid.
+ * @tc.desc: Test ResetExecFrequencyByUid when uid not set.
  * @tc.type: FUNC
  * @tc.require:
  */
 HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_002, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
     bool ret = workSchedulerService_->ResetExecFrequencyByUid(999);
     EXPECT_FALSE(ret);
 }
@@ -1838,8 +1835,8 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_002, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, ClearExecFrequency_001, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
-    requencyInfo freqInfo = FrequencyInfo();
+    workSchedulerService_->ClearExecFrequency();
+    FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(100);
     freqInfo.SetInterval(86400000);
@@ -1848,7 +1845,8 @@ HWTEST_F(WorkSchedulerServiceTest, ClearExecFrequency_001, TestSize.Level1)
     auto result = workSchedulerService_->GetExecFrequency(100);
     EXPECT_NE(result, INVALID_VALUE);
 
-    workSchedulerService_->ClearExexFrequency(100);
+    workSchedulerService_->ClearExecFrequency();
+    result = workSchedulerService_->GetExecFrequency(100);
     EXPECT_EQ(result, INVALID_VALUE);
 }
 
@@ -1862,8 +1860,8 @@ HWTEST_F(WorkSchedulerServiceTest, ClearExecFrequency_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, FrequencyMap_ParseToJson_001, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
-    requencyInfo freqInfo = FrequencyInfo();
+    workSchedulerService_->ClearExecFrequency();
+    FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(100);
     freqInfo.SetInterval(86400000);
@@ -1874,7 +1872,7 @@ HWTEST_F(WorkSchedulerServiceTest, FrequencyMap_ParseToJson_001, TestSize.Level1
 
     nlohmann::json root = nlohmann::json::parse(jsonStr);
     EXPECT_TRUE(root.contains("frequency_infos"));
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
 }
 
 /**
@@ -1885,7 +1883,7 @@ HWTEST_F(WorkSchedulerServiceTest, FrequencyMap_ParseToJson_001, TestSize.Level1
  */
 HWTEST_F(WorkSchedulerServiceTest, FrequencyMap_ParseToJson_002, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
     std::string jsonStr = workSchedulerService_->ParseFrequencyMapToJsonStr();
     EXPECT_FALSE(jsonStr.empty());
 
@@ -1904,8 +1902,8 @@ HWTEST_F(WorkSchedulerServiceTest, FrequencyMap_ParseToJson_002, TestSize.Level1
  */
 HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyWhenAppRemove_001, TestSize.Level1)
 {
-    workSchedulerService_->ClearExexFrequency();
-    requencyInfo freqInfo = FrequencyInfo();
+    workSchedulerService_->ClearExecFrequency();
+    FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(300);
     freqInfo.SetInterval(86400000);
@@ -1918,10 +1916,10 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyWhenAppRemove_001, TestSize
 
     result = workSchedulerService_->GetExecFrequency(300);
     EXPECT_EQ(result, INVALID_VALUE);
-    workSchedulerService_->ClearExexFrequency();
+    workSchedulerService_->ClearExecFrequency();
 }
 
-// ======================== DumpAppGroup Edge Tests ========================
+// ======================== DumpAppGroup Edge Cases ========================
 
 /**
  * @tc.name: DumpAppGroup_Params_001
@@ -1932,13 +1930,13 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyWhenAppRemove_001, TestSize
 HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_001, TestSize.Level1)
 {
     WorkStatus::ClearDumpAppGroup(1000);
-    std::vector<std::string> argsInstr;
-    std:string result;
-    argsInstr.push_back("-group");
-    argsInstr.push_back("1000");
-    argsInstr.push_back("0");
-    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
-    EXCEPT_FALSE(result.empty());
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-group");
+    argsInStr.push_back("1000");
+    argsInStr.push_back("0");
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
+    EXPECT_FALSE(result.empty());
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), INVALID_VALUE);
 }
 
@@ -1951,13 +1949,13 @@ HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_002, TestSize.Level1)
 {
     WorkStatus::ClearDumpAppGroup(1000);
-    std::vector<std::string> argsInstr;
-    std:string result;
-    argsInstr.push_back("-group");
-    argsInstr.push_back("1000");
-    argsInstr.push_back("-5");
-    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
-    EXCEPT_FALSE(result.empty());
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-group");
+    argsInStr.push_back("1000");
+    argsInStr.push_back("-5");
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
+    EXPECT_FALSE(result.empty());
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), INVALID_VALUE);
 }
 
@@ -1972,12 +1970,12 @@ HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_003, TestSize.Level1)
     WorkStatus::AddDumpAppGroup(1000, 20);
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), 20);
 
-    std::vector<std::string> argsInstr;
-    std:string result;
-    argsInstr.push_back("-group");
-    argsInstr.push_back("1000");
-    argsInstr.push_back(std::to_string(INVALID_VALUE));
-    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-group");
+    argsInStr.push_back("1000");
+    argsInStr.push_back(std::to_string(INVALID_VALUE));
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), INVALID_VALUE);
     WorkStatus::ClearDumpAppGroup(1000);
 }
@@ -1991,41 +1989,41 @@ HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_003, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpAppGroup_Params_004, TestSize.Level1)
 {
     WorkStatus::ClearDumpAppGroup(1000);
-    std::vector<std::string> argsInstr;
-    std:string result;
-    argsInstr.push_back("-group");
-    argsInstr.push_back("1000");
-    argsInstr.push_back(10);
-    workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
+    std::vector<std::string> argsInStr;
+    std::string result;
+    argsInStr.push_back("-group");
+    argsInStr.push_back("1000");
+    argsInStr.push_back("10");
+    workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(1000), 10);
     WorkStatus::ClearDumpAppGroup(1000);
 }
 
-// ======================== InitPresistedInfos Tests ========================
+// ======================== InitPersistedInfos Tests ========================
 
 /**
- * @tc.name: InitPresistedInfos_002
- * @tc.desc: Test InitPresistedInfos when file exists but has no frequency_infos key.
+ * @tc.name: InitPersistedInfos_002
+ * @tc.desc: Test InitPersistedInfos when file exists but has no frequency_infos key.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(WorkSchedulerServiceTest, InitPresistedInfos_002, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_002, TestSize.Level1)
 {
     const char* dirPath = "/data/service/el1/public/WorkScheduler";
     const char* filePath = "/data/service/el1/public/WorkScheduler/persisted_info";
     if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
         GTEST_SKIP() << "Cannot create directory: " << dirPath;
     }
-    FILE* fp fopen(filePath, "w");
+    FILE* fp = fopen(filePath, "w");
     if (fp == nullptr) {
-        GTEST_SKIP() << "Cannot write file: " << dirPath;
+        GTEST_SKIP() << "Cannot write file: " << filePath;
     }
-    const char* jsonContent = "{\"other_key\": []}"
+    const char* jsonContent = "{\"other_key\": []}";
     fputs(jsonContent, fp);
     fclose(fp);
 
     workSchedulerService_->ClearExecFrequency();
-    workSchedulerService_->InitPresistedInfos();
+    workSchedulerService_->InitPersistedInfos();
     auto result = workSchedulerService_->GetExecFrequency(100);
     EXPECT_EQ(result, INVALID_VALUE);
     workSchedulerService_->ClearExecFrequency();
@@ -2033,28 +2031,28 @@ HWTEST_F(WorkSchedulerServiceTest, InitPresistedInfos_002, TestSize.Level1)
 }
 
 /**
- * @tc.name: InitPresistedInfos_003
- * @tc.desc: Test InitPresistedInfos when file exists with empty frequency_infos.
+ * @tc.name: InitPersistedInfos_003
+ * @tc.desc: Test InitPersistedInfos when file exists with empty frequency_infos.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(WorkSchedulerServiceTest, InitPresistedInfos_003, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_003, TestSize.Level1)
 {
     const char* dirPath = "/data/service/el1/public/WorkScheduler";
     const char* filePath = "/data/service/el1/public/WorkScheduler/persisted_info";
     if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
         GTEST_SKIP() << "Cannot create directory: " << dirPath;
     }
-    FILE* fp fopen(filePath, "w");
+    FILE* fp = fopen(filePath, "w");
     if (fp == nullptr) {
-        GTEST_SKIP() << "Cannot write file: " << dirPath;
+        GTEST_SKIP() << "Cannot write file: " << filePath;
     }
-    const char* jsonContent = "{\"frquency_infos\": []}"
+    const char* jsonContent = "{\"frequency_infos\": {}}";
     fputs(jsonContent, fp);
     fclose(fp);
 
     workSchedulerService_->ClearExecFrequency();
-    workSchedulerService_->InitPresistedInfos();
+    workSchedulerService_->InitPersistedInfos();
     auto result = workSchedulerService_->GetExecFrequency(100);
     EXPECT_EQ(result, INVALID_VALUE);
     workSchedulerService_->ClearExecFrequency();

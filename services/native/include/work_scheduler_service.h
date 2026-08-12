@@ -338,7 +338,7 @@ public:
     int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo) override;
     int32_t ResetExecFrequency(const FrequencyInfo& frequencyInfo) override;
     void ResetExecFrequencyWhenAppRemove(int32_t uid);
-    int64_t GetExecFrequency(int32_t uid);
+    int64_t GetExecFrequency(int32_t uid, int32_t callingUid = -1);
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -419,9 +419,9 @@ private:
     bool ResetExecFrequencyByUid(int32_t uid);
     std::string ParseFrequencyMapToJsonStr();
     void RefreshPersistedInfos();
-    bool CreatNodePersistedInfoFile();
+    bool CreateNodePersistedInfoFile();
     void DumpTwoParamsSet(std::vector<std::string> &argsInstr, std::string &result);
-    void DumpAppGroup(const std::string& uidStr, const std::string& groupStr, std::string& result);
+    void DumpAppGroup(const std::string& bundleName, const std::string& groupStr, std::string& result);
 
 private:
     std::set<int32_t> whitelist_;
@@ -455,6 +455,7 @@ private:
     std::map<int32_t, std::pair<int32_t, int32_t>> deepIdleTimeMap_ {};
     mutable ffrt::shared_mutex configMutex_;
     ffrt::mutex frequencyMutex_;
+    /* eg: {callingUid : {uid : frequencyInfo}} */
     std::map<int32_t, std::map<int32_t, FrequencyInfo>> frequencyMap_{};
 };
 } // namespace WorkScheduler

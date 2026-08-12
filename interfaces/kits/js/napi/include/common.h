@@ -214,10 +214,10 @@ public:
      *
      * @param env The env.
      * @param objValue The obj value.
-     * @param errCode frequencyInfo the info of frequency.
+     * @param frequencyInfo The info of frequency.
      * @return True if success,else false
      */
-    static bool GetFrequencyInfo(napi_env &env, napi_value objValue, FrequencyInfo &frequencyInfo);
+    static bool GetFrequencyInfo(napi_env env, napi_value objValue, FrequencyInfo &frequencyInfo);
 
 private:
     static bool GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workInfo);

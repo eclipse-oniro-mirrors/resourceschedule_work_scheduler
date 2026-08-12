@@ -20,14 +20,15 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+
 FrequencyInfo::FrequencyInfo() {}
 
-FrequencyInfo(const FrequencyInfo& frequencyInfo)
-    : uid_(frequencyInfo.workId), workId_(frequencyInfo.uid), interval_(frequencyInfo.interval) {}
+FrequencyInfo::FrequencyInfo(const FrequencyInfo& frequencyInfo)
+    : uid_(frequencyInfo.uid_), workId_(frequencyInfo.workId_), interval_(frequencyInfo.interval_) {}
 
 FrequencyInfo::~FrequencyInfo() {}
 
-bool FrequencyInfo::Marshalling(Parcel & parcel) const
+bool FrequencyInfo::Marshalling(Parcel &parcel) const
 {
     bool ret = parcel.WriteInt32(workId_);
     ret = ret && parcel.WriteInt32(uid_);
@@ -35,7 +36,7 @@ bool FrequencyInfo::Marshalling(Parcel & parcel) const
     return ret;
 }
 
-FrequencyInfo* FrequencyInfo::Unmarshalling(Parcel & parcel)
+FrequencyInfo* FrequencyInfo::Unmarshalling(Parcel &parcel)
 {
     auto read = new (std::nothrow) FrequencyInfo();
     if (read == nullptr) {
@@ -53,7 +54,7 @@ FrequencyInfo* FrequencyInfo::Unmarshalling(Parcel & parcel)
         return nullptr;
     }
     if (!parcel.ReadInt64(read->interval_)) {
-        WS_HILOGE("Failed to read the interval");
+        WS_HILOGE("Failed to read the frequency");
         delete read;
         return nullptr;
     }
@@ -70,7 +71,7 @@ int32_t FrequencyInfo::GetWorkId() const
     return workId_;
 }
 
-int64_t FrequencyInfo::getInterval() const
+int64_t FrequencyInfo::GetInterval() const
 {
     return interval_;
 }
@@ -92,8 +93,8 @@ void FrequencyInfo::SetInterval(int64_t interval)
 
 bool FrequencyInfo::ParseFromJson(const nlohmann::json &value)
 {
-    if (value.is_null() || value.empty() || !value.is_object) {
-        WS_HILOGE("frequencyInfo json is empty or not object");
+    if (value.is_null() || value.empty() || !value.is_object()) {
+        WS_HILOGE("frequencyInfo json is empty");
         return false;
     }
     if (!value.contains("workId") || !value["workId"].is_number_integer()) {

@@ -248,6 +248,7 @@ private:
     static int32_t GetDumpAppGroup(int32_t uid);
     static ffrt::mutex dumpAppGroupMutex_;
     static std::map<int32_t, int32_t> dumpAppGroupMap_;
+};
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // WORK_SCHED_SERVICES_WORK_STATUS_H

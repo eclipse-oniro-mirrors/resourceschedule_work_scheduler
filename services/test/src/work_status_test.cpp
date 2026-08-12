@@ -17,7 +17,7 @@
 #include <gtest/gtest.h>
 
 #include "work_status.h"
-#include "work_scheduler_service"
+#include "work_scheduler_service.h"
 #include "work_condition.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_hilog.h"
@@ -1251,12 +1251,12 @@ HWTEST_F(WorkStatusTest, GetDumpAppGroup_001, TestSize.Level1)
 HWTEST_F(WorkStatusTest, GetDumpAppGroup_002, TestSize.Level1)
 {
     int32_t uid = 100;
-     WorkStatus::AddDumpAppGroup(uid, 10);
+    WorkStatus::AddDumpAppGroup(uid, 10);
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 10);
     WorkStatus::ClearDumpAppGroup(uid);
 }
 
-// ======================== AddDumpAppGroup Tests ========================
+// ======================== ClearDumpAppGroup Tests ========================
 
 /**
  * @tc.name: ClearDumpAppGroup_001
@@ -1267,7 +1267,7 @@ HWTEST_F(WorkStatusTest, GetDumpAppGroup_002, TestSize.Level1)
 HWTEST_F(WorkStatusTest, ClearDumpAppGroup_001, TestSize.Level1)
 {
     int32_t uid = 200;
-     WorkStatus::AddDumpAppGroup(uid, 20);
+    WorkStatus::AddDumpAppGroup(uid, 20);
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 20);
     WorkStatus::ClearDumpAppGroup(uid);
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), INVALID_VALUE);
@@ -1305,7 +1305,7 @@ HWTEST_F(WorkStatusTest, AddDumpAppGroup_001, TestSize.Level1)
 
 /**
  * @tc.name: AddDumpAppGroup_002
- * @tc.desc: Test AddDumpAppGroup updates existing new entry.
+ * @tc.desc: Test AddDumpAppGroup updates existing entry.
  * @tc.type: FUNC
  * @tc.require:
  */
@@ -1332,7 +1332,7 @@ HWTEST_F(WorkStatusTest, AddDumpAppGroup_003, TestSize.Level1)
     WorkStatus::AddDumpAppGroup(uid1, 10);
     WorkStatus::AddDumpAppGroup(uid2, 20);
     EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid1), 10);
-    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid2), 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid2), 20);
     WorkStatus::ClearDumpAppGroup(uid1);
     WorkStatus::ClearDumpAppGroup(uid2);
 }
@@ -1341,14 +1341,14 @@ HWTEST_F(WorkStatusTest, AddDumpAppGroup_003, TestSize.Level1)
 
 /**
  * @tc.name: HandleMinInterval_001
- * @tc.desc: Test AddDumpAppGroup when no exec frequency is set.
+ * @tc.desc: Test HandleMinInterval when no exec frequency is set.
  * @tc.type: FUNC
  * @tc.require:
  */
 HWTEST_F(WorkStatusTest, HandleMinInterval_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
     int32_t uid = 100;
     auto result = service->GetExecFrequency(uid);
     EXPECT_EQ(result, INVALID_VALUE);
@@ -1362,21 +1362,21 @@ HWTEST_F(WorkStatusTest, HandleMinInterval_001, TestSize.Level1)
     int32_t group = 10;
     int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
     EXPECT_EQ(resultInterval, interval);
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
 }
 
 /**
  * @tc.name: HandleMinInterval_002
- * @tc.desc: Test AddDumpAppGroup when exec frequency is set and interval is larger then exec frequency.
+ * @tc.desc: Test HandleMinInterval when exec frequency is set and interval is larger then exec frequency.
  * @tc.type: FUNC
  * @tc.require:
  */
 HWTEST_F(WorkStatusTest, HandleMinInterval_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
     int32_t uid = 100;
-    FrequnencyInfo freqInfo = FrequnencyInfo();
+    FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(uid);
     freqInfo.SetInterval(86400000);
@@ -1394,21 +1394,21 @@ HWTEST_F(WorkStatusTest, HandleMinInterval_002, TestSize.Level1)
     int32_t group = 10;
     int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
     EXPECT_EQ(resultInterval, 86400000);
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
 }
 
 /**
  * @tc.name: HandleMinInterval_003
- * @tc.desc: Test AddDumpAppGroup when exec frequency is set and group is > 40 (group check removed).
+ * @tc.desc: Test HandleMinInterval when exec frequency is set and group is > 40 (group check removed).
  * @tc.type: FUNC
  * @tc.require:
  */
 HWTEST_F(WorkStatusTest, HandleMinInterval_003, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
     int32_t uid = 100;
-    FrequnencyInfo freqInfo = FrequnencyInfo();
+    FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(uid);
     freqInfo.SetInterval(86400000);
@@ -1423,21 +1423,21 @@ HWTEST_F(WorkStatusTest, HandleMinInterval_003, TestSize.Level1)
     int32_t group = 50;
     int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
     EXPECT_EQ(resultInterval, interval);
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
 }
 
 /**
  * @tc.name: HandleMinInterval_004
- * @tc.desc: Test AddDumpAppGroup when interval is negative (returns exec frequency).
+ * @tc.desc: Test HandleMinInterval when interval is negative (returns exec frequency).
  * @tc.type: FUNC
  * @tc.require:
  */
 HWTEST_F(WorkStatusTest, HandleMinInterval_004, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
     int32_t uid = 100;
-    FrequnencyInfo freqInfo = FrequnencyInfo();
+    FrequencyInfo freqInfo = FrequencyInfo();
     freqInfo.SetWorkId(1);
     freqInfo.SetUid(uid);
     freqInfo.SetInterval(86400000);
@@ -1451,20 +1451,20 @@ HWTEST_F(WorkStatusTest, HandleMinInterval_004, TestSize.Level1)
     int64_t interval = -1;
     int32_t group = 10;
     int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
-    EXPECT_EQ(resultInterval, interval);
-    service->ClearExexFrequency();
+    EXPECT_EQ(resultInterval, 86400000);
+    service->ClearExecFrequency();
 }
 
 /**
  * @tc.name: HandleMinInterval_005
- * @tc.desc: Test AddDumpAppGroup when interval is negative and no exec frequency is set.
+ * @tc.desc: Test HandleMinInterval when interval is negative and no exec frequency is set.
  * @tc.type: FUNC
  * @tc.require:
  */
 HWTEST_F(WorkStatusTest, HandleMinInterval_005, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
     int32_t uid = 100;
 
     WorkInfo workInfo = WorkInfo();
@@ -1476,7 +1476,7 @@ HWTEST_F(WorkStatusTest, HandleMinInterval_005, TestSize.Level1)
     int32_t group = 10;
     int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
     EXPECT_EQ(resultInterval, -1);
-    service->ClearExexFrequency();
+    service->ClearExecFrequency();
 }
 }
 }

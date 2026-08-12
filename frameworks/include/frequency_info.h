@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_FREQUENCY_INFO_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_FREQUENCY_INFO_H
 
@@ -33,7 +34,6 @@ public:
      * @return True if success,else false.
      */
     bool Marshalling(Parcel &parcel) const override;
-
     /**
      * @brief Unmarshalling.
      *
@@ -41,57 +41,49 @@ public:
      * @return FrequencyInfo.
      */
     static FrequencyInfo* Unmarshalling(Parcel &parcel);
-
     /**
      * @brief Get uid.
      *
      * @return The uid.
      */
     int32_t GetUid() const;
-
     /**
      * @brief Get workId.
      *
      * @return The workId.
      */
     int32_t GetWorkId() const;
-
     /**
      * @brief Get interval.
      *
      * @return The interval.
      */
-    int32_t GetInterval() const;
-
+    int64_t GetInterval() const;
     /**
      * @brief Set the uid of target application.
      */
     void SetUid(int32_t uid);
-
     /**
      * @brief Set the work id.
      */
     void SetWorkId(int32_t workId);
-
     /**
      * @brief Set the execution interval.
      */
-    void SetInterval(int32_t interval);
-
+    void SetInterval(int64_t interval);
     /**
      * @brief Parse to json str.
      *
      * @return Result.
      */
     std::string ParseToJsonStr() const;
-
     /**
      * @brief Parse from json.
      *
      * @param value The value.
      * @return True if success,else false.
      */
-    bool ParseFromJson(const nlohmann:json &value);
+    bool ParseFromJson(const nlohmann::json &value);
 private:
     int32_t uid_{-1};
     int32_t workId_{-1};
