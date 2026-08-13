@@ -2528,7 +2528,7 @@ int32_t WorkSchedulerService::SetExecFrequency(const FrequencyInfo& frequencyInf
     }
     if (frequencyInfo.GetInterval() < SET_INTERVAL_LOWER ||
         frequencyInfo.GetInterval() >= static_cast<int64_t>(INT_MAX)) {
-        WS_HILOGE("interval is invalid. interval: %{public}ld", frequencyInfo.GetInterval());
+        WS_HILOGE("interval is invalid. interval: %{public}lld", static_cast<long long>(frequencyInfo.GetInterval()));
         return E_INTERVAL_ERROR;
     }
 
@@ -2569,8 +2569,9 @@ int32_t WorkSchedulerService::ResetExecFrequency(const int32_t uid)
 
 void WorkSchedulerService::SetExecFrequencyInner(int32_t callingUid, const FrequencyInfo& frequencyInfo)
 {
-    WS_HILOGI("callingUid: %{public}d setExecFrequency, uid: %{public}d, interval: %{public}ld, workId: %{public}d",
-        callingUid, frequencyInfo.GetUid(), frequencyInfo.GetInterval(), frequencyInfo.GetWorkId());
+    WS_HILOGI("callingUid: %{public}d setExecFrequency, uid: %{public}d, interval: %{public}lld, workId: %{public}d",
+        callingUid, frequencyInfo.GetUid(), static_cast<long long>(frequencyInfo.GetInterval()),
+        frequencyInfo.GetWorkId());
     std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
     auto it = frequencyMap_.find(callingUid);
     if (it != frequencyMap_.end()) {
