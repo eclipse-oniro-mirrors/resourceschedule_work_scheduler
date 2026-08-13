@@ -118,7 +118,7 @@ const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const int32_t TIME_OUT = 4;
 const uint32_t SYS_APP_MIN_REPEAT_TIME = 5 * 60 * 1000;
-constexpr int64_t SET_INTERVAL_lOWER = 2 * 60 * 60 * 1000;
+constexpr int64_t SET_INTERVAL_LOWER = 2 * 60 * 60 * 1000;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PERSISTED_FILE_NAME = "/persisted_work";
@@ -2526,7 +2526,7 @@ int32_t WorkSchedulerService::SetExecFrequency(const FrequencyInfo& frequencyInf
         WS_HILOGE("workId: %{public}d is invalid. the workId task does not exist", frequencyInfo.GetWorkId());
         return E_WORKID_ERROR;
     }
-    if (frequencyInfo.GetInterval() < SET_INTERVAL_lOWER ||
+    if (frequencyInfo.GetInterval() < SET_INTERVAL_LOWER ||
         frequencyInfo.GetInterval() >= static_cast<int64_t>(INT_MAX)) {
         WS_HILOGE("interval is invalid. interval: %{public}ld", frequencyInfo.GetInterval());
         return E_INTERVAL_ERROR;
