@@ -40,7 +40,7 @@ enum {
     // inner error code
     E_INNER_ERR,
     E_GROUP_CHANGE_NOT_MATCH_HAP,
-    E_PAEAM_NUMBER_ERROR = 970000601,
+    E_PARAM_NUMBER_ERROR = 970000601,
     E_FREQUENCY_INFO_TYPE_ERROR,
     E_UID_ERROR,
     E_WORKID_ERROR,
@@ -85,10 +85,10 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
     {E_PERMISSION_DENIED, "Permission denied."},
     {E_NOT_SYSTEM_APP, "Not system app."},
-    {E_PAEAM_NUMBER_ERROR, "The param number error."},
+    {E_PARAM_NUMBER_ERROR, "The param number error."},
     {E_FREQUENCY_INFO_TYPE_ERROR, "The type of frequencyInfo must be {key: value} object."},
-    {E_UID_ERROR, "The uid is invalid, the application has not apply a task work."},
-    {E_WORKID_ERROR, "The work id is invalid, the task with workId dose not exist."},
+    {E_UID_ERROR, "The uid is invalid, the uid does not exist."},
+    {E_WORKID_ERROR, "The work id is invalid, the task with workId does not exist."},
     {E_INTERVAL_ERROR, "The interval out of range, must be greater than or equal to 7200000 and less than INT_MAX."},
 };
 
