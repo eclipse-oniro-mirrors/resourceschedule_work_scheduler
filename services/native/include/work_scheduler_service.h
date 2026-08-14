@@ -36,6 +36,7 @@
 #include "work_standby_state_change_callback.h"
 #include "background_loader_mgr.h"
 #include "background_loader_task_info.h"
+#include "frequency_info.h"
 #include "ffrt.h"
 
 namespace OHOS {
@@ -334,6 +335,10 @@ public:
     void UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot);
     void StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> workInfo);
     std::map<int32_t, std::pair<int32_t, int32_t>> GetDeepIdleTimeMap();
+    int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo) override;
+    int32_t ResetExecFrequency(const int32_t uid) override;
+    void ResetExecFrequencyWhenAppRemove(int32_t uid);
+    int64_t GetExecFrequency(int32_t uid, int32_t callingUid = -1);
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
@@ -407,6 +412,16 @@ private:
     void RemoveDeepIdleTimeToMap(const int32_t saId);
     void ReStartCloudConfigPreinstalledWork(std::list<std::shared_ptr<WorkInfo>> &workInfos);
     void UpdateWorkForCloudConfig(std::shared_ptr<WorkInfo> workInfo);
+    void InitPersistedInfos();
+    void SetExecFrequencyInner(int32_t callingUid, const FrequencyInfo& frequencyInfo);
+    void ClearExecFrequency();
+    bool ResetExecFrequencyByCallingUid(int32_t callingUid, int32_t uid);
+    bool ResetExecFrequencyByUid(int32_t uid);
+    std::string ParseFrequencyMapToJsonStr();
+    void RefreshPersistedInfos();
+    bool CreateNodePersistedInfoFile();
+    void DumpTwoParamsSet(std::vector<std::string> &argsInStr, std::string &result);
+    void DumpAppGroup(const std::string& bundleName, const std::string& groupStr, std::string& result);
 
 private:
     std::set<int32_t> whitelist_;
@@ -439,6 +454,9 @@ private:
     /* first: saId, second.first: deepIdleTime, second.second: uid */
     std::map<int32_t, std::pair<int32_t, int32_t>> deepIdleTimeMap_ {};
     mutable ffrt::shared_mutex configMutex_;
+    ffrt::mutex frequencyMutex_;
+    /* eg: {callingUid : {uid : frequencyInfo}} */
+    std::map<int32_t, std::map<int32_t, FrequencyInfo>> frequencyMap_{};
 };
 } // namespace WorkScheduler
 } // namespace OHOS

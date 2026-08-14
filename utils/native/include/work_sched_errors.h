@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -24,6 +24,7 @@ const int OFFSET = 100;
 const int THRESHOLD = 1000;
 enum {
     E_PERMISSION_DENIED = 201,
+    E_NOT_SYSTEM_APP = 202,
     E_PARAM_ERROR = 401,
     E_MEMORY_OPERATION_FAILED = 970000101,
     E_PARCEL_OPERATION_FAILED = 970000201,
@@ -39,6 +40,11 @@ enum {
     // inner error code
     E_INNER_ERR,
     E_GROUP_CHANGE_NOT_MATCH_HAP,
+    E_PARAM_NUMBER_ERROR = 970000601,
+    E_FREQUENCY_INFO_TYPE_ERROR,
+    E_UID_ERROR,
+    E_WORKID_ERROR,
+    E_INTERVAL_ERROR,
 };
 
 enum ParamError {
@@ -77,6 +83,13 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_INVALID_PROCESS_NAME, "Pause or resume verify failed. caller process name invaild."},
     {E_PARAM_INVAILD_UID, "GetWork failed. The param uid invaild."},
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
+    {E_PERMISSION_DENIED, "Permission denied."},
+    {E_NOT_SYSTEM_APP, "Not system app."},
+    {E_PARAM_NUMBER_ERROR, "The param number error."},
+    {E_FREQUENCY_INFO_TYPE_ERROR, "The type of frequencyInfo must be {key: value} object."},
+    {E_UID_ERROR, "The uid is invalid, the uid does not exist."},
+    {E_WORKID_ERROR, "The work id is invalid, the task with workId does not exist."},
+    {E_INTERVAL_ERROR, "The interval out of range, must be greater than or equal to 7200000 and less than INT_MAX."},
 };
 
 const inline std::map<int32_t, std::string> paramErrCodeMsgMap = {
