@@ -24,7 +24,7 @@ WorkSchedulerExtensionContext::WorkSchedulerExtensionContext() {}
 WorkSchedulerExtensionContext::~WorkSchedulerExtensionContext() {}
 ErrCode WorkSchedulerExtensionContext::StartServiceExtensionAbility(const AAFwk::Want &want, int32_t accountId) const
 {
-    WS_HILOGI("begin");
+    WS_HILOGI("StartServiceExtensionAbility begin");
     ErrCode err = OHOS::AAFwk::AbilityManagerClient::GetInstance()->StartExtensionAbility(
         want, token_, accountId, AppExecFwk::ExtensionAbilityType::SERVICE);
     if (err != ERR_OK) {
@@ -35,7 +35,7 @@ ErrCode WorkSchedulerExtensionContext::StartServiceExtensionAbility(const AAFwk:
 
 ErrCode WorkSchedulerExtensionContext::StopServiceExtensionAbility(const AAFwk::Want& want, int32_t accountId) const
 {
-    WS_HILOGI("begin");
+    WS_HILOGI("StopServiceExtensionAbility begin");
     ErrCode err = AAFwk::AbilityManagerClient::GetInstance()->StopExtensionAbility(
         want, token_, accountId, AppExecFwk::ExtensionAbilityType::SERVICE);
     if (err != ERR_OK) {

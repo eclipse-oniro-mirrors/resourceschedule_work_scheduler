@@ -54,7 +54,7 @@ int32_t PowerModePolicy::GetPolicyMaxRunning(WorkSchedSystemPolicy& systemPolicy
     auto charge = BatterySrvClient::GetInstance().GetChargingStatus();
     if (charge == BatteryChargeState::CHARGE_STATE_NONE || charge == BatteryChargeState::CHARGE_STATE_DISABLE) {
         res = COUNT_POWER_MODE_CRUCIAL;
-        WS_HILOGI("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
+        WS_HILOGD("charge: %{public}d, power mode: %{public}d, PolicyRes: %{public}d", charge, mode, res);
     }
 #endif
     WS_HILOGD("power mode: %{public}d, PolicyRes: %{public}d", mode, res);

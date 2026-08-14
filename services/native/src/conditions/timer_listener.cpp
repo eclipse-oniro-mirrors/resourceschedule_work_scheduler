@@ -40,7 +40,7 @@ bool TimerListener::Start()
         return false;
     }
     uint32_t time = workQueueManager_->GetTimeCycle();
-    WS_HILOGI("TimerListener start with time = %{public}u.", time);
+    WS_HILOGD("TimerListener start with time = %{public}u.", time);
     auto task = [=]() {
         WS_HILOGI("begin check repeat work");
         workQueueManager_->OnConditionChanged(WorkCondition::Type::TIMER, std::make_shared<
