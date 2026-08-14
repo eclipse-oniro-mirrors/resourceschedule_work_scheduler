@@ -606,7 +606,7 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
     if (itMap == GroupConst::GROUP_INTERVAL_MAP.end()) {
         WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
             group, bundleName_.c_str());
-        minInterval_ = HandleMinInterval(INVALID_VALUE, group);;
+        minInterval_ = HandleMinInterval(INVALID_VALUE, group);
         return;
     }
     if (IsMailApp() && group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE) {
@@ -614,7 +614,7 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
         WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
             minInterval_, group, bundleName_.c_str());
     } else {
-        minInterval_ = minInterval_ = HandleMinInterval(itMap->second, group);;
+        minInterval_ = minInterval_ = HandleMinInterval(itMap->second, group);
         WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
             minInterval_, group, bundleName_.c_str());
     }
