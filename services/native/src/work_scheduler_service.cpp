@@ -103,7 +103,7 @@ const std::string EXEMPTION_BUNDLES_KEY = "work_scheduler_eng_exemption_bundles"
 const std::string MIN_REPEAT_TIME_KEY = "work_scheduler_min_repeat_time";
 const std::string_view FREQUENCY_INFOS_KEY = "frequency_infos";
 const std::string_view SET_WORK_SCHEDULER_PROPERTY = "ohos.permission.SET_WORK_SCHEDULER_PROPERTY";
-const std::string_view SET_WORK_SCHEDULER_PROPERTY = "com.huawei.hmos.calendar";
+const std::string_view CALENDAR_BUNDLE_NAME = "com.huawei.hmos.calendar";
 const std::string_view BACKGROUND_LOADER_CONFIG_KEY = "background_loader_config";
 const std::string_view BACKGROUND_LOADER_TIMEOUT_COUNT_KEY = "maxTimeoutCount";
 const std::string_view BACKGROUND_LOADER_TIMEOUTMS_KEY = "backgroundLoaderTimeoutMs";
@@ -2426,6 +2426,7 @@ bool WorkSchedulerService::IsCalendarApp()
     Security::AccessToken::AccessTokenKit::GetHapTokenInfo(tokenId, callerInfo);
     std::string callerName = callerInfo.bundleName;
     WS_HILOGI("callerName: %{public}s", callerName.c_str());
+    return callerName = CALENDAR_BUNDLE_NAME;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

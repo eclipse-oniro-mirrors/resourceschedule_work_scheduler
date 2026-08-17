@@ -36,4 +36,6 @@ interface OHOS.WorkScheduler.IWorkSchedService {
     void UnregisterTask([in] BackgroundLoaderTaskInfo taskInfo);
     void FinishTask([in] BackgroundLoaderTaskInfo taskInfo);
     void GetTaskInfo([in] int taskId, [out] BackgroundLoaderTaskInfo taskInfo);
+    void SetExecFrequency([in] FrequencyInfo frequencyInfo);
+    void ResetExecFrequency([in] int uid);
 }
