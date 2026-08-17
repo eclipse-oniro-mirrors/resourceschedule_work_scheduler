@@ -2426,7 +2426,7 @@ bool WorkSchedulerService::IsCalendarApp()
     Security::AccessToken::AccessTokenKit::GetHapTokenInfo(tokenId, callerInfo);
     std::string callerName = callerInfo.bundleName;
     WS_HILOGI("callerName: %{public}s", callerName.c_str());
-    return callerName = CALENDAR_BUNDLE_NAME;
+    return callerName == CALENDAR_BUNDLE_NAME;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
