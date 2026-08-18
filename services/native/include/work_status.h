@@ -46,7 +46,9 @@ public:
      * @return Workid and uid.
      */
     static std::string MakeWorkId(int32_t workId, int32_t uid);
-    static time_t getOppositeTime();
+    time_t getOppositeTime();
+    static void ClearDumpAppGroup(int32_t uid);
+    static void AddDumpAppGroup(int32_t uid, int32_t group);
 
     std::string workId_;
     std::string bundleName_;
@@ -242,6 +244,10 @@ private:
     bool IsConditionReady();
     bool IsStandbyExemption();
     bool CheckEarliestStartTime();
+    int64_t HandleMinInterval(int64_t interval, int32_t group);
+    static int32_t GetDumpAppGroup(int32_t uid);
+    static ffrt::mutex dumpAppGroupMutex_;
+    static std::map<int32_t, int32_t> dumpAppGroupMap_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

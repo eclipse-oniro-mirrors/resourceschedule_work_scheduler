@@ -55,6 +55,8 @@ const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
 const string DELIMITER = ",";
 ffrt::mutex WorkStatus::s_uid_last_time_mutex;
+ffrt::mutex WorkStatus::dumpAppGroupMutex_;
+std::map<int32_t, int32_t> WorkStatus::dumpAppGroupMap_;
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 namespace GroupConst {
@@ -116,6 +118,11 @@ time_t WorkStatus::getOppositeTime()
     time_t result;
     sptr<MiscServices::TimeServiceClient> timer = MiscServices::TimeServiceClient::GetInstance();
     result = static_cast<time_t>(timer->GetBootTimeMs());
+    int32_t dumpAppGroup = GetDumpAppGroup(uid_);
+    if (dumpAppGroup > 0) {
+        result = static_cast<time_t>(timer->GetWallTimeMs());
+        WS_HILOGD("uid: %{public}d set group: %{public}d.", uid_, dumpAppGroup);
+    }
     return result;
 }
 
@@ -543,6 +550,11 @@ bool WorkStatus::IsMailApp()
 bool WorkStatus::SetMinInterval()
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    int32_t dumpAppGroup = GetDumpAppGroup(uid_);
+    if (dumpAppGroup > 0) {
+        WS_HILOGD("app %{public}s, set group is: %{public}d.", bundleName_.c_str(), dumpAppGroup);
+        return SetMinIntervalByGroup(dumpAppGroup);
+    }
     int32_t group = 0;
     if (workInfo_->IsCallBySystemApp()) {
         WS_HILOGD("system app %{public}s, default group is active.", bundleName_.c_str());
@@ -594,7 +606,7 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
     if (itMap == GroupConst::GROUP_INTERVAL_MAP.end()) {
         WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
             group, bundleName_.c_str());
-        minInterval_ = -1;
+        minInterval_ = HandleMinInterval(INVALID_VALUE, group);
         return;
     }
     if (IsMailApp() && group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE) {
@@ -602,7 +614,7 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
         WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
             minInterval_, group, bundleName_.c_str());
     } else {
-        minInterval_ = itMap->second;
+        minInterval_ = minInterval_ = HandleMinInterval(itMap->second, group);
         WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
             minInterval_, group, bundleName_.c_str());
     }
@@ -613,24 +625,24 @@ void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
     if (IsMailApp()) {
         auto itMap = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.find(group);
         if (itMap != GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = itMap->second;
+            minInterval_ = HandleMinInterval(itMap->second, group);
             WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
                 minInterval_, group, bundleName_.c_str());
         } else {
             WS_HILOGE("query mail app group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
-            minInterval_ = -1;
+            minInterval_ = HandleMinInterval(INVALID_VALUE, group);
         }
     } else {
         auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
         if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
             WS_HILOGD("SetMinIntervalWhenNotCharging not mailApp. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
-            minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
+            minInterval_ = HandleMinInterval(itMap->second, group);
         } else {
             WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
-            minInterval_ = -1;
+            minInterval_ = HandleMinInterval(INVALID_VALUE, group);
         }
     }
 }
@@ -902,6 +914,50 @@ void WorkStatus::SetDebugTask(bool debugTask)
 bool WorkStatus::IsDebugTask()
 {
     return debugTask_.load();
+}
+
+int64_t WorkStatus::HandleMinInterval(int64_t interval, int32_t group)
+{
+    int64_t result = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetExecFrequency(uid_);
+    if (result < 0) {
+        return interval;
+    }
+
+    WS_HILOGI("HandleMinInterval interval: %{public}" PRId64
+        " group: %{public}d, uid: %{public}d, set interval: %{public}" PRId64,
+        interval, group, uid_, result);
+    if (interval < 0) {
+        return result;
+    }
+    int64_t minInterval = interval;
+    minInterval = minInterval < result ? minInterval : result;
+    return minInterval;
+}
+
+int32_t WorkStatus::GetDumpAppGroup(int32_t uid)
+{
+    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    if (dumpAppGroupMap_.count(uid) > 0) {
+        return dumpAppGroupMap_.at(uid);
+    } else {
+        return INVALID_VALUE;
+    }
+}
+
+void WorkStatus::ClearDumpAppGroup(int32_t uid)
+{
+    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    dumpAppGroupMap_.erase(uid);
+}
+
+void WorkStatus::AddDumpAppGroup(int32_t uid, int32_t group)
+{
+    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    if (dumpAppGroupMap_.count(uid) > 0) {
+        dumpAppGroupMap_[uid] = group;
+    } else {
+        dumpAppGroupMap_.emplace(uid, group);
+    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

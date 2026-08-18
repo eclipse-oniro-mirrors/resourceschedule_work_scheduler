@@ -49,6 +49,7 @@ ohos_shared_library("workschedclient") {
     "${worksched_frameworks_path}/src/work_info.cpp",
     "${worksched_frameworks_path}/src/workscheduler_srv_client.cpp",
     "${worksched_frameworks_path}/src/background_loader_task_info.cpp",
+    "${worksched_frameworks_path}/src/frequency_info.cpp",
   ]
   sources += filter_include(output_values, [ "*_proxy.cpp" ])
 

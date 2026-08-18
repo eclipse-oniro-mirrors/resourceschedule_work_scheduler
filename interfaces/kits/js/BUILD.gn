@@ -39,6 +39,7 @@ ohos_shared_library("workscheduler") {
   sources = [
     "${worksched_root_path}/interfaces/kits/js/napi/src/common.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/common_want.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/src/exec_frequency.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/get_work_status.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/init.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/src/is_last_work_time_out.cpp",

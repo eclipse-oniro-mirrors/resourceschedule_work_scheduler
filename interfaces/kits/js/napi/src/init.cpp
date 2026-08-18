@@ -27,6 +27,7 @@
 #include "work_sched_hilog.h"
 #include "common.h"
 #include "work_sched_constants.h"
+#include "exec_frequency.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -49,6 +50,8 @@ napi_value InitApi(napi_env env, napi_value exports)
         DECLARE_NAPI_FUNCTION("obtainAllWorks", ObtainAllWorks),
         DECLARE_NAPI_FUNCTION("stopAndClearWorks", StopAndClearWorks),
         DECLARE_NAPI_FUNCTION("isLastWorkTimeOut", IsLastWorkTimeOut),
+        DECLARE_NAPI_FUNCTION("setExecFrequency", SetExecFrequency),
+        DECLARE_NAPI_FUNCTION("resetExecFrequency", ResetExecFrequency),
     };
 
     NAPI_CALL(env, napi_define_properties(env, exports, sizeof(desc) / sizeof(desc[0]), desc));
