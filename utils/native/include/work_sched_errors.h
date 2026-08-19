@@ -87,7 +87,7 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_NOT_SYSTEM_APP, "Not system app."},
     {E_PARAM_NUMBER_ERROR, "The param number error."},
     {E_FREQUENCY_INFO_TYPE_ERROR, "The type of frequencyInfo must be {key: value} object."},
-    {E_UID_ERROR, "The uid is invalid, the uid does not exist."},
+    {E_UID_ERROR, "The uid is invalid."},
     {E_WORKID_ERROR, "The work id is invalid, the task with workId does not exist."},
     {E_INTERVAL_ERROR, "The interval out of range, must be greater than or equal to 7200000 and less than INT_MAX."},
 };
