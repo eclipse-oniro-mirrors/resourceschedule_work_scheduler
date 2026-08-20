@@ -193,7 +193,7 @@ public:
      * @param env The env.
      * @param errCode The error code.
      */
-    static void HandleIntErrCode(const napi_env &env, int32_t errCode); 
+    static void HandleIntErrCode(const napi_env &env, int32_t errCode);
     /**
      * @brief Handle param error code and throw param error.
      *
