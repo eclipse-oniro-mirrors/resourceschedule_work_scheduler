@@ -31,5 +31,7 @@ group("fuzztest") {
     "backgroundloaderunregistertask_fuzzer:fuzztest",
     "backgroundloaderfinishtask_fuzzer:fuzztest",
     "backgroundloadergettaskinfo_fuzzer:fuzztest",
+    "workschedulersetexecfrequency_fuzzer:fuzztest",
+    "workschedulerresetexecfrequency_fuzzer:fuzztest",
   ]
 }
