@@ -117,7 +117,6 @@ namespace WorkScheduler {
             workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
         }
         SetFrequencyData();
-        GetNativeToken(PUSH_SERVICE_NAME);
         workSchedulerService_->OnRemoteRequest(code, dataMessageParcel, reply, option);
         workSchedulerService_->OnStop();
         return true;

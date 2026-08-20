@@ -22,7 +22,6 @@
 #include "work_policy_manager.h"
 #include "frequency_info.h"
 
-
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
