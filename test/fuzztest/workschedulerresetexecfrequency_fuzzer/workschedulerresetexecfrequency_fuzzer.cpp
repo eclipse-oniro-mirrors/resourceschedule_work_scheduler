@@ -22,14 +22,12 @@
 #include "work_policy_manager.h"
 #include "frequency_info.h"
 
-
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
     const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
-    const std::string PUSH_SERVICE_NAME = "push_manager_service";
 
     bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
     {
@@ -50,18 +48,18 @@ namespace WorkScheduler {
         workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
         workSchedulerService_->workQueueManager_->AddWork(workStatus);
 
-        std::vector<std::string> argsInstr;
+        std::vector<std::string> argsInStr;
         std::string result;
-        argsInstr.push_back("-group");
-        argsInstr.push_back("101");
-        argsInstr.push_back("-1");
-        workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
-        argsInstr.clear();
+        argsInStr.push_back("-group");
+        argsInStr.push_back("101");
+        argsInStr.push_back("-1");
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
+        argsInStr.clear();
         result.clear();
-        argsInstr.push_back("-group");
-        argsInstr.push_back("101");
-        argsInstr.push_back("10");
-        workSchedulerService_->DumpProcessForEngMode(argsInstr, result);
+        argsInStr.push_back("-group");
+        argsInStr.push_back("101");
+        argsInStr.push_back("10");
+        workSchedulerService_->DumpProcessForEngMode(argsInStr, result);
         workStatus->SetMinInterval();
     }
 
@@ -101,7 +99,7 @@ namespace WorkScheduler {
         MessageParcel reply;
         MessageOption option;
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-        uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_SET_EXEC_FREQUENCY);
+        uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_RESET_EXEC_FREQUENCY);
 
         int32_t uid = 100;
         if (!dataMessageParcel.WriteInt32(uid)) {

@@ -21,7 +21,6 @@
 #include "work_queue_manager.h"
 #include "work_policy_manager.h"
 #include "frequency_info.h"
-#include "work_status.h"
 
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
@@ -30,7 +29,6 @@ namespace OHOS {
 namespace WorkScheduler {
     const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
-    const std::string PUSH_SERVICE_NAME = "push_manager_service";
 
     bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
     {
@@ -39,6 +37,8 @@ namespace WorkScheduler {
 
     void SetExecFrequencyInner()
     {
+        workSchedulerService_->ClearExecFrequency();
+
         int32_t callingUid1 = 100;
         int32_t workId = 1;
         int64_t time1 = 20 * 60 * 1000;
