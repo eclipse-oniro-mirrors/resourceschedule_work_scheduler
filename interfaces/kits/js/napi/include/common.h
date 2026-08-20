@@ -188,6 +188,13 @@ public:
      */
     static void HandleErrCode(const napi_env &env, int32_t errCode);
     /**
+     * @brief Handle int error code and throw error.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    void Common::HandleIntErrCode(const napi_env &env, int32_t errCode)
+    /**
      * @brief Handle param error code and throw param error.
      *
      * @param env The env.
