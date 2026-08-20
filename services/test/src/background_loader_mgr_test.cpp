@@ -734,7 +734,6 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTask_ReportEvent_001, TestSize.Level1)
     EXPECT_EQ(ret, ERR_OK);
     ret = BackgroundLoaderMgr::GetInstance().FinishTask(info);
     EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
-    }
 }
 
 /**
