@@ -19,6 +19,7 @@
 #include <set>
 #include <mutex>
 #include "singleton.h"
+#include "nlohmann/json.hpp"
  
 namespace OHOS {
 namespace WorkScheduler {
@@ -26,8 +27,15 @@ class WorkSchedulerConfig : public DelayedSingleton<WorkSchedulerConfig> {
 public:
     void InitActiveGroupWhitelist(const std::string &configData);
     bool IsInActiveGroupWhitelist(const std::string &bundleName);
+    bool UpdateSusMgrCloudConfig(const nlohmann::json &payload);
+    bool UpdateBgMgrCloudConfig(const nlohmann::json &payload);
  
 private:
+    bool CheckCloudConfigParam(const nlohmann::json &payload, nlohmann::json &workSchedulerParam);
+    void UpdateCloudConfigMinRepeatTime(const nlohmann::json &root);
+    void UpdateCloudConfigEngExemptionBundles(const nlohmann::json &root);
+    void UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &root);
+
     std::mutex configMutex_;
     std::set<std::string> activeGroupWhitelist_ {};
 };

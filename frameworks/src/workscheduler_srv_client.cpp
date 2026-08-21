@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,6 +21,7 @@
 
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
+#include "background_loader_task_info.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -282,6 +283,72 @@ ErrCode WorkSchedulerSrvClient::StopWorkForSA(int32_t saId)
         return code;
     }
     return iWorkSchedService_->StopWorkForSA(saId);
+}
+
+ErrCode WorkSchedulerSrvClient::RegisterTask(BackgroundLoaderTaskInfo& taskInfo)
+{
+    WS_HILOGD("Register background_loader task");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->RegisterTask(taskInfo);
+}
+
+ErrCode WorkSchedulerSrvClient::UnregisterTask(BackgroundLoaderTaskInfo& taskInfo)
+{
+    WS_HILOGD("Unregister background_loader task");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->UnregisterTask(taskInfo);
+}
+
+ErrCode WorkSchedulerSrvClient::FinishTask(BackgroundLoaderTaskInfo& taskInfo)
+{
+    WS_HILOGD("Finish background_loader task");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->FinishTask(taskInfo);
+}
+
+ErrCode WorkSchedulerSrvClient::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
+{
+    WS_HILOGD("Get background_loader task info");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->GetTaskInfo(taskId, taskInfo);
+}
+
+ErrCode WorkSchedulerSrvClient::SetExecFrequency(const FrequencyInfo& frequencyInfo)
+{
+    WS_HILOGD("Set exec frequency");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->SetExecFrequency(frequencyInfo);
+}
+
+ErrCode WorkSchedulerSrvClient::ResetExecFrequency(const int32_t uid)
+{
+    WS_HILOGD("Reset exec frequency");
+    std::lock_guard<std::mutex> lock(mutex_);
+    ErrCode code = Connect();
+    if (code != ERR_OK) {
+        return code;
+    }
+    return iWorkSchedService_->ResetExecFrequency(uid);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -376,6 +376,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             service->StopAndClearWorksByUid(detectorVal->intVal);
             int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
             DelayedSingleton<DataManager>::GetInstance()->ClearGroup(detectorVal->strVal, userId);
+            service->ResetExecFrequencyWhenAppRemove(uid);
             break;
         }
         default: {}
@@ -821,6 +822,7 @@ void WorkPolicyManager::TriggerIdeWork()
         return;
     }
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
+    topWork->SetDebugTask(true);
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
         WS_HILOGI("TriggerIdeWork ok");
@@ -831,6 +833,7 @@ void WorkPolicyManager::TriggerIdeWork()
     } else {
         WS_HILOGE("TriggerIdeWork error");
         topWork->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+        topWork->SetDebugTask(false);
         ideDebugList.clear();
         return;
     }
@@ -1060,7 +1063,7 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
     }
     constexpr int32_t MAX_DELAY_SECOND = 120;
     constexpr int32_t MILLISECOND = 1000;
-    int64_t seed = static_cast<int64_t>(WorkStatus::getOppositeTime())
+    int64_t seed = static_cast<int64_t>(topWork->getOppositeTime())
         + static_cast<int64_t>(getpid()) + static_cast<int64_t>(gettid());
     srand(static_cast<uint32_t>(seed));
     int32_t delay = rand() % MAX_DELAY_SECOND + 1;

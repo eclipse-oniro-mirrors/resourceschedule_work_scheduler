@@ -65,7 +65,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
         queueMap_.at(it.first)->Push(workStatus);
     }
     if (WorkSchedUtils::IsSystemApp()) {
-        WS_HILOGI("Is system app, default group is active.");
+        WS_HILOGD("Is system app, default group is active.");
         workStatus->workInfo_->SetCallBySystemApp(true);
     }
     return true;
@@ -241,7 +241,7 @@ void WorkQueueManager::OnConditionChanged(WorkCondition::Type conditionType,
             it->MarkStatus(WorkStatus::Status::CONDITION_READY);
             if (it->workInfo_->IsCallBySystemApp()) {
                 it->workInfo_->SetTriggerType(conditionType);
-                WS_HILOGI("set trigger type for readyWork, WorkId:%{public}s, bundleName:%{public}s, type:%{public}d",
+                WS_HILOGD("set trigger type for readyWork, WorkId:%{public}s, bundleName:%{public}s, type:%{public}d",
                     it->workId_.c_str(), it->bundleName_.c_str(), conditionType);
             }
         }

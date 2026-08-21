@@ -31,5 +31,9 @@ group("fuzztest") {
     "workschedulerstopandcancelwork_fuzzer:fuzztest",
     "workschedulerstopandclearworks_fuzzer:fuzztest",
     "workschedulerstopwork_fuzzer:fuzztest",
+    "backgroundloaderregistertask_fuzzer:fuzztest",
+    "backgroundloaderunregistertask_fuzzer:fuzztest",
+    "backgroundloaderfinishtask_fuzzer:fuzztest",
+    "backgroundloadergettaskinfo_fuzzer:fuzztest",
   ]
 }

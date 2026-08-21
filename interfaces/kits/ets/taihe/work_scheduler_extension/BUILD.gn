@@ -10,11 +10,11 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
- 
+
 import("//build/config/components/ets_frontend/ets2abc_config.gni")
 import("//build/ohos.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
- 
+
 ohos_shared_library("work_scheduler_extension_ani") {
   branch_protector_ret = "pac_ret"
   shlib_type = "ani"
@@ -23,7 +23,7 @@ ohos_shared_library("work_scheduler_extension_ani") {
     cfi_cross_dso = true
     debug = false
   }
- 
+
   cflags_cc = [
     "-fdata-sections",
     "-ffunction-sections",
@@ -31,7 +31,7 @@ ohos_shared_library("work_scheduler_extension_ani") {
     "-fstack-protector-strong",
     "-Os",
   ]
- 
+
   include_dirs = [
     "${worksched_utils_path}/include",
     "${worksched_frameworks_path}/include",
@@ -46,13 +46,13 @@ ohos_shared_library("work_scheduler_extension_ani") {
     "src/ani_work_scheduler_extension.cpp",
     "src/ani_work_scheduler_extension_context.cpp",
   ]
- 
+
   deps = [
     "${worksched_frameworks_path}:workschedclient",
     "${worksched_utils_path}:workschedutils",
     "${worksched_zidl_path}:workschedservice_zidl_stub",
   ]
- 
+
   external_deps = [
     "ability_base:want",
     "ability_runtime:ability_context_native",
@@ -66,11 +66,13 @@ ohos_shared_library("work_scheduler_extension_ani") {
     "hilog:libhilog",
     "ipc:ipc_core",
     "ipc:ipc_napi",
+    "libuv:uv",
     "napi:ace_napi",
+    "node:node_header_notice",
     "runtime_core:ani",
     "runtime_core:ani_helpers",
   ]
- 
+
   subsystem_name = "resourceschedule"
   innerapi_tags = [ "platformsdk" ]
   part_name = "${worksched_native_part_name}"
@@ -81,11 +83,11 @@ generate_static_abc("workscheduler_extension_context_abc") {
   files = [ "./ets/application/WorkSchedulerExtensionContext.ets" ]
   dst_file = "$target_out_dir/workscheduler_extension_context_abc.abc"
   out_puts = [ "$target_out_dir/workscheduler_extension_context_abc.abc" ]
- 
+
   is_boot_abc = "True"
   device_dst_file = "/system/framework/workscheduler_extension_context_abc.abc"
 }
- 
+
 ohos_prebuilt_etc("workscheduler_extension_context_etc") {
   source = "$target_out_dir/workscheduler_extension_context_abc.abc"
   module_install_dir = "framework"
@@ -93,17 +95,17 @@ ohos_prebuilt_etc("workscheduler_extension_context_etc") {
   subsystem_name = "resourceschedule"
   deps = [ ":workscheduler_extension_context_abc" ]
 }
- 
+
 generate_static_abc("workscheduler_extension_ability_abc") {
   base_url = "./ets"
   files = [ "./ets/@ohos.WorkSchedulerExtensionAbility.ets" ]
   dst_file = "$target_out_dir/workscheduler_extension_ability_abc.abc"
   out_puts = [ "$target_out_dir/workscheduler_extension_ability_abc.abc" ]
- 
+
   is_boot_abc = "True"
   device_dst_file = "/system/framework/workscheduler_extension_ability_abc.abc"
 }
- 
+
 ohos_prebuilt_etc("workscheduler_extension_ability_etc") {
   source = "$target_out_dir/workscheduler_extension_ability_abc.abc"
   module_install_dir = "framework"
@@ -111,7 +113,7 @@ ohos_prebuilt_etc("workscheduler_extension_ability_etc") {
   subsystem_name = "resourceschedule"
   deps = [ ":workscheduler_extension_ability_abc" ]
 }
- 
+
 group("workschedulerextension_ani") {
   deps = [
     ":work_scheduler_extension_ani",

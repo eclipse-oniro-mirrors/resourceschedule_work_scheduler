@@ -21,24 +21,24 @@ namespace OHOS {
 namespace WorkScheduler {
 ErrCode WorkSchedulerStubImp::OnWorkStart(const WorkInfo& workInfo)
 {
-    WS_HILOGI("begin.");
+    WS_HILOGD("begin.");
     auto extension = extension_.lock();
     WorkInfo workInfo_ = workInfo;
     if (extension != nullptr) {
         extension->OnWorkStart(workInfo_);
-        WS_HILOGI("end successfully.");
+        WS_HILOGD("end successfully.");
     }
     return ERR_OK;
 }
 
 ErrCode WorkSchedulerStubImp::OnWorkStop(const WorkInfo& workInfo)
 {
-    WS_HILOGI("begin.");
+    WS_HILOGD("begin.");
     auto extension = extension_.lock();
     WorkInfo workInfo_ = workInfo;
     if (extension != nullptr) {
         extension->OnWorkStop(workInfo_);
-        WS_HILOGI("end successfully.");
+        WS_HILOGD("end successfully.");
     }
     return ERR_OK;
 }

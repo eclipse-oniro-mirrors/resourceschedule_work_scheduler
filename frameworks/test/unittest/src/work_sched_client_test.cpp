@@ -286,5 +286,57 @@ HWTEST_F(WorkSchedClientTest, WorkSchedClientTest_018, TestSize.Level0)
     auto ret = WorkSchedulerSrvClient::GetInstance().StopWorkForInner(workInfo);
     EXPECT_NE(ret, ERR_OK);
 }
+
+/**
+ * @tc.name: WorkSchedClient_RegisterTask_001
+ * @tc.desc: Test WorkSchedulerSrvClient RegisterTask.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedClientTest, RegisterTask_001, TestSize.Level1)
+{
+    BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().RegisterTask(taskInfo);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+}
+
+/**
+ * @tc.name: WorkSchedClient_UnregisterTask_001
+ * @tc.desc: Test WorkSchedulerSrvClient UnregisterTask.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedClientTest, UnregisterTask_001, TestSize.Level1)
+{
+    BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().UnregisterTask(taskInfo);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+}
+
+/**
+ * @tc.name: WorkSchedClient_FinishTask_001
+ * @tc.desc: Test WorkSchedulerSrvClient FinishTask.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedClientTest, FinishTask_001, TestSize.Level1)
+{
+    BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().FinishTask(taskInfo);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+}
+
+/**
+ * @tc.name: WorkSchedClient_GetTaskInfo_001
+ * @tc.desc: Test WorkSchedulerSrvClient GetTaskInfo.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkSchedClientTest, GetTaskInfo_001, TestSize.Level1)
+{
+    BackgroundLoaderTaskInfo taskInfo;
+    ErrCode ret = WorkSchedulerSrvClient::GetInstance().GetTaskInfo(1, taskInfo);
+    EXPECT_EQ(ret, E_PERMISSION_DENIED);
+}
 }  // namespace WorkScheduler
 }  // namespace OHOS

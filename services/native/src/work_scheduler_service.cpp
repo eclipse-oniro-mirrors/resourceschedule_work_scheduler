@@ -65,6 +65,7 @@
 #include "scheduler_bg_task_subscriber.h"
 #include "background_task_mgr_helper.h"
 #include "resource_type.h"
+#include "work_sched_plugin_mgr.h"
 #endif
 #include "work_datashare_helper.h"
 #include "work_scheduler_connection.h"
@@ -79,6 +80,8 @@
 #include "work_sched_config.h"
 #include "work_sched_constants.h"
 #include "work_sched_hisysevent_report.h"
+#include "background_loader_mgr.h"
+#include "want.h"
 
 extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
 
@@ -98,6 +101,12 @@ const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 const std::string PRINSTALLED_WORKS_KEY = "work_scheduler_preinstalled_works";
 const std::string EXEMPTION_BUNDLES_KEY = "work_scheduler_eng_exemption_bundles";
 const std::string MIN_REPEAT_TIME_KEY = "work_scheduler_min_repeat_time";
+const std::string_view FREQUENCY_INFOS_KEY = "frequency_infos";
+const std::string_view BACKGROUND_LOADER_CONFIG_KEY = "background_loader_config";
+const std::string_view BACKGROUND_LOADER_TIMEOUT_COUNT_KEY = "maxTimeoutCount";
+const std::string_view BACKGROUND_LOADER_TIMEOUTMS_KEY = "backgroundLoaderTimeoutMs";
+const std::string_view BACKGROUND_LOADER_PERMISSION = "ohos.permission.KEEP_BACKGROUND_RUNNING";
+const std::string_view SET_WORK_SCHEDULER_PROPERTY = "ohos.permission.SET_WORK_SCHEDULER_PROPERTY";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
 const bool G_REGISTER_RESULT = SystemAbility::MakeAndRegisterAbility(wss);
@@ -109,10 +118,14 @@ const int32_t DUMP_PARAM_INDEX = 1;
 const int32_t DUMP_VALUE_INDEX = 2;
 const int32_t TIME_OUT = 4;
 const uint32_t SYS_APP_MIN_REPEAT_TIME = 5 * 60 * 1000;
+constexpr int64_t SET_INTERVAL_LOWER = 2 * 60 * 60 * 1000;
 const char* PERSISTED_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_work";
 const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 const char* PERSISTED_FILE_NAME = "/persisted_work";
 const char* PREINSTALLED_FILE_PATH = "etc/backgroundtask/config.json";
+const char* BACKGROUND_LOADER_FILE_PATH = "/system/variant/phone/base/etc/backgroundtask/config.json";
+const char* PERSISTED_INFO_FILE_NAME = "/persisted_info";
+const char* PERSISTED_INFO_FILE_PATH = "/data/service/el1/public/WorkScheduler/persisted_info";
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 static int g_hasGroupObserver = -1;
 #endif
@@ -214,7 +227,6 @@ void WorkSchedulerService::InitPersistedWork()
 void WorkSchedulerService::InitPreinstalledWork()
 {
     WS_HILOGD("init preinstalled work");
-    std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
     list<shared_ptr<WorkInfo>> preinstalledWorks = ReadPreinstalledWorks();
     for (auto work : preinstalledWorks) {
         WS_HILOGI("preinstalled workinfo id %{public}s, isSa:%{public}d", work->GetBriefInfo().c_str(), work->IsSA());
@@ -224,11 +236,13 @@ void WorkSchedulerService::InitPreinstalledWork()
         AddWorkInner(*work);
         if (work->IsPersisted()) {
             string workId = "u" + to_string(work->GetUid()) + "_" + to_string(work->GetWorkId());
+            std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
             persistedMap_.emplace(workId, work);
         }
     }
-    if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
-        workQueueManager_->SetTimeCycle(minCheckTime_);
+    uint32_t minCheckTime = GetMinCheckTime();
+    if (minCheckTime && minCheckTime < workQueueManager_->GetTimeCycle()) {
+        workQueueManager_->SetTimeCycle(minCheckTime);
     }
 }
 
@@ -236,6 +250,7 @@ void WorkSchedulerService::InitWorkInner()
 {
     InitPreinstalledWork();
     InitPersistedWork();
+    InitPersistedInfos();
 }
 
 list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
@@ -273,6 +288,39 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
     return workInfos;
 }
 
+void WorkSchedulerService::LoadBackgroundLoaderFromFile(const char* path, int32_t& maxTimeoutCount,
+    int32_t& backgroundLoaderTimeoutMs)
+{
+    if (!path) {
+        WS_HILOGE("open %{public}s failed", path);
+        return;
+    }
+    nlohmann::json root;
+    if (!GetJsonFromFile(path, root) || root.is_null() || root.empty()) {
+        WS_HILOGE("file is empty");
+        return;
+    }
+    if (!root.contains(std::string(BACKGROUND_LOADER_CONFIG_KEY))) {
+        WS_HILOGE("no background loader config key");
+        return;
+    }
+    nlohmann::json backgroundLoaderCfg = root[std::string(BACKGROUND_LOADER_CONFIG_KEY)];
+    if (backgroundLoaderCfg.empty() || !backgroundLoaderCfg.is_object()) {
+        WS_HILOGE("background loader config content is empty");
+        return;
+    }
+    if (!backgroundLoaderCfg.contains(std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)) ||
+        !backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)].is_number_integer() ||
+        !backgroundLoaderCfg.contains(std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)) ||
+        !backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)].is_number_integer()) {
+        WS_HILOGE("backgroundLoaderCfg json is invaild");
+        return;
+    }
+    maxTimeoutCount = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUT_COUNT_KEY)].get<int32_t>();
+    backgroundLoaderTimeoutMs = backgroundLoaderCfg[std::string(BACKGROUND_LOADER_TIMEOUTMS_KEY)].get<int32_t>();
+    return;
+}
+
 void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<WorkInfo>> &workInfos)
 {
     if (!path) {
@@ -299,9 +347,7 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
             continue;
         }
         if (workinfo->IsSA() && workinfo->GetDeepIdleTime() != 0) {
-            std::lock_guard<ffrt::mutex> lock(deepIdleTimeMutex_);
-            deepIdleTimeMap_.emplace(
-                workinfo->GetSaId(), std::pair<int32_t, int32_t>{workinfo->GetDeepIdleTime(), workinfo->GetUid()});
+            AddDeepIdleTimeToMap(workinfo->GetSaId(), workinfo->GetDeepIdleTime(), workinfo->GetUid());
         }
         if (!workinfo->IsSA()) {
             int32_t uid;
@@ -309,7 +355,7 @@ void WorkSchedulerService::LoadWorksFromFile(const char *path, list<shared_ptr<W
                 continue;
             }
             workinfo->RefreshUid(uid);
-            preinstalledBundles_.insert(workinfo->GetBundleName());
+            InsertPreinstalledBundles(workinfo->GetBundleName());
         }
         workinfo->SetPreinstalled(true);
         workInfos.emplace_back(workinfo);
@@ -341,7 +387,7 @@ void WorkSchedulerService::LoadExemptionBundlesFromFile(const char *path)
             WS_HILOGE("Item type error");
         } else {
             WS_HILOGI("bundle name:%{public}s", exemptionBundleName.get<std::string>().c_str());
-            exemptionBundles_.insert(exemptionBundleName.get<std::string>());
+            InsertExemptionBundles(exemptionBundleName.get<std::string>());
         }
     }
 }
@@ -366,7 +412,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         return;
     }
     if (minRepeatTimeRoot.contains("default") && minRepeatTimeRoot["default"].is_number_unsigned()) {
-        minTimeCycle_ = minRepeatTimeRoot["default"].get<uint32_t>();
+        SetMinTimeCycle(minRepeatTimeRoot["default"].get<uint32_t>());
     }
     if (!minRepeatTimeRoot.contains("special")) {
         WS_HILOGE("no special key");
@@ -377,7 +423,7 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
         WS_HILOGE("special content is empty");
         return;
     }
-    minCheckTime_ = workQueueManager_->GetTimeCycle();
+    SetMinCheckTime(workQueueManager_->GetTimeCycle());
     for (const auto &it : specialRoot) {
         if (!it.contains("bundleName") || !it["bundleName"].is_string() ||
             !it.contains("time") || !it["time"].is_number_unsigned()) {
@@ -390,10 +436,11 @@ void WorkSchedulerService::LoadMinRepeatTimeFromFile(const char *path)
                 it["bundleName"].get<std::string>().c_str(), time, SYS_APP_MIN_REPEAT_TIME);
             continue;
         }
-        if (minCheckTime_ > time) {
-            minCheckTime_ = time;
+        uint32_t minCheckTime = GetMinCheckTime();
+        if (minCheckTime > time) {
+            SetMinCheckTime(time);
         }
-        specialMap_.emplace(it["bundleName"].get<std::string>(), time);
+        AddSpecialToMap(it["bundleName"].get<std::string>(), time);
     }
 }
 
@@ -451,13 +498,6 @@ void WorkSchedulerService::OnStop()
     DevStandbyMgr::StandbyServiceClient::GetInstance().UnsubscribeStandbyCallback(standbyStateObserver_);
     standbyStateObserver_ = nullptr;
 #endif
-#ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
-    ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::UnsubscribeBackgroundTask(*subscriber_);
-    if (ret != ERR_OK) {
-        WS_HILOGE("unscribe bgtask failed.");
-        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_STOP, "unsubscribe background task failed");
-    }
-#endif
     eventRunner_.reset();
     handler_.reset();
     ready_.store(false);
@@ -477,6 +517,11 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
         return false;
     }
     InitWorkInner();
+    int32_t maxTimeoutCount = BACKGROUND_LOADER_TIMEOUT_COUNT;
+    int32_t backgroundLoaderTimeoutMs = BACKGROUND_LOADER_TIMEOUT_MS;
+    LoadBackgroundLoaderFromFile(BACKGROUND_LOADER_FILE_PATH, maxTimeoutCount, backgroundLoaderTimeoutMs);
+    BackgroundLoaderMgr::GetInstance().Init(maxTimeoutCount, backgroundLoaderTimeoutMs);
+
     if (!Publish(wss)) {
         WS_HILOGE("OnStart register to system ability manager failed!");
         WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "register to system ability manager failed");
@@ -484,27 +529,20 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
     }
     checkBundle_.store(true);
     ready_.store(true);
-    WS_HILOGI("start init background task subscriber!");
-    if (!InitBgTaskSubscriber()) {
-        WS_HILOGE("subscribe background task failed!");
+    WS_HILOGI("start init workSched plugin!");
+    if (!InitWorkSchedPluginMgr()) {
+        WS_HILOGE("init workSched plugin failed!");
         return false;
     }
     WS_HILOGI("init success.");
     return true;
 }
 
-bool WorkSchedulerService::InitBgTaskSubscriber()
+bool WorkSchedulerService::InitWorkSchedPluginMgr()
 {
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
-    subscriber_ = make_shared<SchedulerBgTaskSubscriber>();
-    ErrCode ret = BackgroundTaskMgr::BackgroundTaskMgrHelper::SubscribeBackgroundTask(*subscriber_);
-    if (ret != ERR_OK) {
-        WS_HILOGE("SubscribeBackgroundTask failed.");
-        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "subscribe background task failed");
-        return false;
-    }
     this->QueryResAppliedUid();
-    WS_HILOGD("subscribe background TASK success!");
+    WS_HILOGD("WorkSchedPluginMgr init success!");
 #endif
     return true;
 }
@@ -686,7 +724,7 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     if (workInfo.GetConditionMap()->count(WorkCondition::Type::TIMER) > 0) {
         uint32_t time = workInfo.GetConditionMap()->at(WorkCondition::Type::TIMER)->uintVal;
         string bundleName = workInfo.GetBundleName();
-        std::lock_guard<ffrt::mutex> lock(specialMutex_);
+        std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
         if (specialMap_.count(bundleName) > 0) {
             if (time < specialMap_.at(bundleName)) {
                 WS_HILOGE("fail, set time:%{public}u must more than %{public}u", time, specialMap_.at(bundleName));
@@ -1053,22 +1091,7 @@ void WorkSchedulerService::DumpProcessForEngMode(std::vector<std::string> &argsI
             DumpParamSet(argsInStr[DUMP_OPTION], argsInStr[DUMP_PARAM_INDEX], result);
             break;
         case DUMP_VALUE_INDEX + 1:
-            if (argsInStr[DUMP_OPTION] == "-d") {
-                EventPublisher eventPublisher;
-                eventPublisher.Dump(result, argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX]);
-            } else if (argsInStr[DUMP_OPTION] == "-t") {
-                DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
-            } else if (argsInStr[DUMP_OPTION] == "-x") {
-                DumpRunningWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
-            } else if (argsInStr[DUMP_OPTION] == "-s") {
-                DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
-            } else if (argsInStr[DUMP_OPTION] == "-g") {
-                DumpGetWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
-            } else if (argsInStr[DUMP_OPTION] == "-f") {
-                DumpTriggerWork(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
-            } else {
-                result.append("Error params.");
-            }
+            DumpTwoParamsSet(argsInStr, result);
             break;
         default:
             result.append("Error params.");
@@ -1111,11 +1134,29 @@ int32_t WorkSchedulerService::Dump(int32_t fd, const std::vector<std::u16string>
 
 void WorkSchedulerService::DumpProcessForUserMode(std::vector<std::string> &argsInStr, std::string &result)
 {
+    if (argsInStr.size() == 0 || argsInStr[0] == "-h") {
+        DumpUsageForUserMode(result);
+        return;
+    }
+
     if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-t") {
         DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else if (argsInStr.size() == (DUMP_VALUE_INDEX + 1) && argsInStr[DUMP_OPTION] == "-s") {
         DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     }
+}
+
+void WorkSchedulerService::DumpUsageForUserMode(std::string &result)
+{
+    result.append("usage: workscheduler dump [<options>]\n")
+        .append("    -h: show the help.\n");
+    DumpCommonUsage(result);
+}
+
+void WorkSchedulerService::DumpCommonUsage(std::string &result)
+{
+    result.append("    -t (bundleName) (abilityName): trigger the bundleName all works.\n")
+        .append("    -s (saId) (uId): load or report sa.\n");
 }
 
 void WorkSchedulerService::DumpUsage(std::string &result)
@@ -1126,7 +1167,6 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -r: restore dump command settings.\n")
         .append("    -d event info: show the event info.\n")
         .append("    -d (eventType) (TypeValue): publish the event.\n")
-        .append("    -t (bundleName) (abilityName): trigger the bundleName all works.\n")
         .append("    -f (uId) (workId): trigger the work.\n")
         .append("    -x (uid) (option): pause or resume the work.\n")
         .append("    -memory (number): set the available memory.\n")
@@ -1135,8 +1175,9 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -min_interval (number): set min interval time, set 0 means close test mode.\n")
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
-        .append("    -s (saId) (uId): load or report sa.\n")
-        .append("    -thermalLevel (number): set the thermal level.\n");
+        .append("    -thermalLevel (number): set the thermal level.\n")
+        .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n");
+    DumpCommonUsage(result);
 }
 
 void WorkSchedulerService::DumpAllInfo(std::string &result)
@@ -1261,12 +1302,13 @@ std::string WorkSchedulerService::DumpEffiResApplyUid()
 
 std::string WorkSchedulerService::DumpExemptionBundles()
 {
-    if (exemptionBundles_.empty()) {
+    std::set<std::string> exemptionBundles = GetExemptionBundles();
+    if (exemptionBundles.empty()) {
         return "[]";
     }
 
     std::string bundles {""};
-    for (auto &bundle : exemptionBundles_) {
+    for (auto &bundle : exemptionBundles) {
         bundles.append(bundle + " ");
     }
     return bundles;
@@ -1395,7 +1437,7 @@ bool WorkSchedulerService::CreateNodeFile()
         WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "fail to close file");
         return false;
     }
-    WS_HILOGI("Resources created successfully.");
+    WS_HILOGD("Resources created successfully.");
     return true;
 }
 
@@ -1634,11 +1676,8 @@ bool WorkSchedulerService::IsExemptionBundle(const std::string& checkBundleName)
         WS_HILOGE("check exemption bundle error, bundleName is empty");
         return false;
     }
-    auto iter = std::find_if(exemptionBundles_.begin(), exemptionBundles_.end(),
-    [&](const std::string &bundleName) {
-        return checkBundleName == bundleName;
-    });
-    return iter != exemptionBundles_.end();
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
+    return exemptionBundles_.find(checkBundleName) != exemptionBundles_.end();
 }
 
 bool WorkSchedulerService::LoadSa(std::shared_ptr<WorkStatus> workStatus, const std::string& action)
@@ -1749,6 +1788,7 @@ bool WorkSchedulerService::IsPreinstalledBundle(const std::string& checkBundleNa
         WS_HILOGE("check preinstalled bundle error, bundleName is empty");
         return false;
     }
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
     return preinstalledBundles_.find(checkBundleName) != preinstalledBundles_.end();
 }
 
@@ -1840,13 +1880,13 @@ void WorkSchedulerService::ReportUserDataSizeEvent()
 
 bool WorkSchedulerService::HasDeepIdleTime()
 {
-    std::lock_guard<ffrt::mutex> lock(deepIdleTimeMutex_);
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
     return !deepIdleTimeMap_.empty();
 }
 
 std::map<int32_t, std::pair<int32_t, int32_t>> WorkSchedulerService::GetDeepIdleTimeMap()
 {
-    std::lock_guard<ffrt::mutex> lock(deepIdleTimeMutex_);
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
     return deepIdleTimeMap_;
 }
 
@@ -1864,6 +1904,905 @@ bool WorkSchedulerService::NeedCreateTimer(int32_t saId, int32_t uid, int32_t ti
     }
     double nextTime = intervalTime - lastTime;
     return nextTime < time;
+}
+
+bool WorkSchedulerService::CheckPermission(const std::string &permission)
+{
+    Security::AccessToken::AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(callerToken, permission);
+    if (ret != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+        WS_HILOGE("CheckPermission failed");
+        return false;
+    }
+    return true;
+}
+
+bool WorkSchedulerService::VerifyAbilityName(const std::string& bundleName,
+    const std::string& abilityName, int32_t uid)
+{
+    if (bundleName.empty() || abilityName.empty()) {
+        WS_HILOGE("bundleName or abilityName invaild");
+        return false;
+    }
+
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        WS_HILOGE("fail to get system ability mgr.");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::WORK_CHECK, "fail to get system ability manager");
+        return false;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        WS_HILOGE("fail to get bundle manager remoteObject.");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::WORK_CHECK, "fail to get bundle manager remoteObject");
+        return false;
+    }
+    sptr<IBundleMgr> bundleMgr = iface_cast<IBundleMgr>(remoteObject);
+    if (!bundleMgr) {
+        WS_HILOGE("fail to get bundle manager proxy.");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::WORK_CHECK, "fail to get bundle manager proxy");
+        return false;
+    }
+
+    std::vector<AbilityInfo> abilityInfos;
+    Want want;
+    want.SetAction(Want::ACTION_HOME);
+    want.AddEntity(Want::ENTITY_HOME);
+    ElementName elementName;
+    elementName.SetBundleName(bundleName);
+    want.SetElement(elementName);
+    int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
+    if (!bundleMgr->QueryAbilityInfos(want, 0, userId, abilityInfos)) {
+        WS_HILOGE("QueryAbilityInfos failed for bundle: %{public}s", bundleName.c_str());
+        return false;
+    }
+
+    for (const auto& ability : abilityInfos) {
+        if (ability.bundleName == bundleName && ability.name == abilityName && ability.enabled) {
+            WS_HILOGI("found ability %{public}s in bundle: %{public}s", abilityName.c_str(), bundleName.c_str());
+            return true;
+        }
+    }
+    WS_HILOGE("bundle: %{public}s not found or not enable", bundleName.c_str());
+    return false;
+}
+
+int32_t WorkSchedulerService::CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid)
+{
+    if (!ready_.load()) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
+        WS_HILOGE("Failed to get bundle for uid %{public}d", uid);
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    return ERR_OK;
+}
+
+int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    TaskInfo info = {
+        .taskId_ = taskInfo.GetTaskId(),
+        .bundleName_ = bundleName,
+        .appIndex_ = appIndex,
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
+    };
+    return BackgroundLoaderMgr::GetInstance().RegisterTask(info);
+}
+
+int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    TaskInfo info = {
+        .taskId_ = taskInfo.GetTaskId(),
+        .bundleName_ = bundleName,
+        .appIndex_ = appIndex,
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
+    };
+    return BackgroundLoaderMgr::GetInstance().UnregisterTask(info);
+}
+    
+int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    int32_t pid = IPCSkeleton::GetCallingPid();
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    TaskInfo info = {
+        .taskId_ = taskInfo.GetTaskId(),
+        .bundleName_ = bundleName,
+        .appIndex_ = appIndex,
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
+    };
+    return BackgroundLoaderMgr::GetInstance().FinishTask(info);
+}
+
+int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!ready_.load()) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    return BackgroundLoaderMgr::GetInstance().GetTaskInfo(taskId, bundleName, appIndex, taskInfo);
+}
+
+uint32_t WorkSchedulerService::GetMinCheckTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
+    return minCheckTime_;
+}
+ 
+void WorkSchedulerService::SetMinCheckTime(const uint32_t minCheckTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    minCheckTime_ = minCheckTime;
+}
+ 
+void WorkSchedulerService::AddDeepIdleTimeToMap(const int32_t saId, const int32_t deepIdleTime, const int32_t uid)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    if (deepIdleTimeMap_.count(saId) > 0) {
+        deepIdleTimeMap_.at(saId) = std::pair<int32_t, int32_t>{deepIdleTime, uid};
+    } else {
+        deepIdleTimeMap_.emplace(saId, std::pair<int32_t, int32_t>{deepIdleTime, uid});
+    }
+}
+
+void WorkSchedulerService::RemoveDeepIdleTimeToMap(const int32_t saId)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    deepIdleTimeMap_.erase(saId);
+}
+
+void WorkSchedulerService::InsertPreinstalledBundles(const std::string &bundleName)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    preinstalledBundles_.insert(bundleName);
+}
+
+void WorkSchedulerService::RemovePreinstalledBundles(const std::string &bundleName)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    preinstalledBundles_.erase(bundleName);
+}
+
+void WorkSchedulerService::InsertExemptionBundles(const std::string &exemptionBundleName)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    exemptionBundles_.insert(exemptionBundleName);
+}
+ 
+std::set<std::string> WorkSchedulerService::GetExemptionBundles() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
+    return exemptionBundles_;
+}
+ 
+void WorkSchedulerService::ClearExemptionBundles()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    exemptionBundles_.clear();
+}
+ 
+void WorkSchedulerService::SetMinTimeCycle(const uint32_t minTimeCycle)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    minTimeCycle_ = minTimeCycle;
+}
+ 
+void WorkSchedulerService::AddSpecialToMap(const std::string &bundleName, uint32_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    if (specialMap_.count(bundleName) > 0) {
+        specialMap_.at(bundleName) = time;
+    } else {
+        specialMap_.emplace(bundleName, time);
+    }
+}
+ 
+void WorkSchedulerService::ClearSpecialToMap()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    specialMap_.clear();
+}
+
+void WorkSchedulerService::InsertPreinstalledWorkId(const std::string &workId)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    deletePreinstalledWorkId_.insert(workId);
+}
+
+void WorkSchedulerService::RemovePreinstalledWorkId(const std::string &workId)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+    deletePreinstalledWorkId_.erase(workId);
+}
+
+bool WorkSchedulerService::CheckPreinstalledWorkId(const std::string &workId)
+{
+    std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
+    return deletePreinstalledWorkId_.count(workId) > 0;
+}
+
+void WorkSchedulerService::RemovePersistedMap(const std::string &workId)
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
+    persistedMap_.erase(workId);
+}
+ 
+void WorkSchedulerService::UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    std::map<std::string, uint32_t> newSpecialToMap {};
+    uint32_t newMinCheckTime = 0;
+    uint32_t minCheckTime = workQueueManager_->GetTimeCycle();
+    for (const auto &it : specialRoot) {
+        if (!it.is_object() || !it.contains("bundleName") || !it["bundleName"].is_string() ||
+            !it.contains("time") || !it["time"].is_number_unsigned()) {
+            WS_HILOGE("special content is error");
+            continue;
+        }
+        uint32_t time = it["time"].get<uint32_t>();
+        std::string bundleName = it["bundleName"].get<std::string>();
+        if (time < SYS_APP_MIN_REPEAT_TIME) {
+            WS_HILOGE("bundleName: %{public}s set time: %{public}d not available, must more than %{public}d",
+                bundleName.c_str(), time, SYS_APP_MIN_REPEAT_TIME);
+            continue;
+        }
+        if (minCheckTime > time) {
+            newMinCheckTime = time;
+        }
+        WS_HILOGI("cloud config min repeat time app name: %{public}s, time %{public}d.", bundleName.c_str(), time);
+        newSpecialToMap.emplace(bundleName, time);
+    }
+    {
+        std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+        specialMap_ = std::move(newSpecialToMap);
+        if (newMinCheckTime != 0) {
+            minCheckTime_ = newMinCheckTime;
+        }
+        if (minCheckTime_ && minCheckTime_ < workQueueManager_->GetTimeCycle()) {
+            workQueueManager_->SetTimeCycle(minCheckTime_);
+        }
+    }
+}
+ 
+void WorkSchedulerService::UpdateCloudConfigEngExemptionBundles(const nlohmann::json &exemptionBundlesRoot)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    std::set<std::string> newExemptionBundles {};
+    for (const auto &exemptionBundleName : exemptionBundlesRoot) {
+        if (exemptionBundleName.empty() || !exemptionBundleName.is_string()) {
+            WS_HILOGE("Item type error");
+        } else {
+            std::string bundleName = exemptionBundleName.get<std::string>();
+            WS_HILOGI("cloud config eng exemption bundle name: %{public}s", bundleName.c_str());
+            newExemptionBundles.insert(bundleName);
+        }
+    }
+    {
+        std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+        exemptionBundles_ = std::move(newExemptionBundles);
+    }
+}
+
+bool WorkSchedulerService::CheckCloudConfigPreinstallDelete(const nlohmann::json &workJson)
+{
+    if (workJson.is_null() || workJson.empty()) {
+        WS_HILOGE("workinfo json is empty");
+        return false;
+    }
+    if (!workJson.is_object()) {
+        WS_HILOGE("workinfo json is not object");
+        return false;
+    }
+    return workJson.contains("delete");
+}
+
+void WorkSchedulerService::DeleteSaWork(std::shared_ptr<WorkInfo> workinfo)
+{
+    if (workinfo == nullptr || !workinfo->IsSA()) {
+        WS_HILOGE("workinfo json is nullptr or not sa");
+        return;
+    }
+    if (workPolicyManager_ == nullptr) {
+        WS_HILOGE("workPolicyManager_ is null");
+        return;
+    }
+    shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workinfo->GetUid(), workinfo->GetWorkId());
+    if (workStatus == nullptr || !workStatus->workInfo_->IsPreinstalled()) {
+        WS_HILOGE("workStatus is nullptr or not preinstalled");
+        return;
+    }
+    RemoveDeepIdleTimeToMap(workinfo->GetSaId());
+    StopWorkInner(workStatus, workinfo->GetUid(), true, false);
+    std::string workId = WorkStatus::MakeWorkId(workinfo->GetWorkId(), workinfo->GetUid());
+    WS_HILOGI("stop could config sa task, workId: %{public}s", workId.c_str());
+    if (workStatus->workInfo_->IsPersisted()) {
+        RemovePersistedMap(workId);
+    }
+}
+
+void WorkSchedulerService::DeleteAppWork(std::shared_ptr<WorkInfo> workinfo)
+{
+    if (workinfo == nullptr || workinfo->IsSA()) {
+        WS_HILOGE("workinfo json is nullptr or sa");
+        return;
+    }
+    int32_t uid;
+    std::string bundleName = workinfo->GetBundleName();
+    if (!GetUidByBundleName(bundleName, uid)) {
+        return;
+    }
+    workinfo->RefreshUid(uid);
+    if (workPolicyManager_ == nullptr) {
+        WS_HILOGE("workPolicyManager_ is null");
+        return;
+    }
+    shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(workinfo->GetUid(), workinfo->GetWorkId());
+    if (workStatus == nullptr || !workStatus->workInfo_->IsPreinstalled()) {
+        return;
+    }
+    std::string workId = WorkStatus::MakeWorkId(workinfo->GetWorkId(), workinfo->GetUid());
+    if (workStatus->GetStatus() == WorkStatus::Status::WAIT_CONDITION) {
+        // 任务处于非运行，非就绪太，可直接停止删除
+        RemovePreinstalledBundles(bundleName);
+        StopWorkInner(workStatus, workinfo->GetUid(), true, false);
+        WS_HILOGI("stop could config app task, workId: %{public}s", workId.c_str());
+        if (workStatus->workInfo_->IsPersisted()) {
+            RemovePersistedMap(workId);
+        }
+    } else if (workStatus->GetStatus() == WorkStatus::Status::CONDITION_READY ||
+        workStatus->GetStatus() == WorkStatus::Status::RUNNING) {
+        // 处于运行态、或准备运行态，则等待结束后，在停止并删除任务
+        InsertPreinstalledWorkId(workId);
+    }
+}
+
+void WorkSchedulerService::StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> workInfo)
+{
+    if (workId == "" || workInfo == nullptr) {
+        WS_HILOGE("workId or workInfo is null");
+        return;
+    }
+    if (!CheckPreinstalledWorkId(workId)) {
+        return;
+    }
+    if (workPolicyManager_ == nullptr) {
+        WS_HILOGE("workPolicyManager_ is null");
+        RemovePreinstalledWorkId(workId);
+        return;
+    }
+    std::shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(*workInfo, workInfo->GetUid());
+    if (workStatus == nullptr) {
+        WS_HILOGE("workStatus is nullptr");
+        RemovePreinstalledWorkId(workId);
+        return;
+    }
+    StopWorkInner(workStatus, workInfo->GetUid(), true, false);
+    WS_HILOGI("stop could config task, workId: %{public}s", workId.c_str());
+    RemovePreinstalledWorkId(workId);
+    RemovePreinstalledBundles(workInfo->GetBundleName());
+    if (workInfo->IsPersisted()) {
+        RemovePersistedMap(workId);
+    }
+}
+
+void WorkSchedulerService::UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    list<shared_ptr<WorkInfo>> workInfos {};
+    std::set<std::string> newBundles;
+    std::map<int32_t, std::pair<int32_t, int32_t>> newDeepIdleMap;
+    for (const auto &[key, workJson] : preinstalledWorksRoot.items()) {
+        shared_ptr<WorkInfo> workinfo = make_shared<WorkInfo>();
+        if (!workinfo->ParseFromJson(workJson)) {
+            continue;
+        }
+        if (CheckCloudConfigPreinstallDelete(workJson)) {
+            DeleteSaWork(workinfo);
+            DeleteAppWork(workinfo);
+            continue;
+        }
+        if (workinfo->IsSA() && workinfo->GetDeepIdleTime() != 0) {
+            WS_HILOGI("cloud config deepidle time saId: %{public}d, deepidle time: %{public}d, uid: %{public}d",
+                workinfo->GetSaId(), workinfo->GetDeepIdleTime(), workinfo->GetUid());
+                newDeepIdleMap[workinfo->GetSaId()] = {workinfo->GetDeepIdleTime(), workinfo->GetUid()};
+        }
+        if (!workinfo->IsSA()) {
+            int32_t uid;
+            std::string bundleName = workinfo->GetBundleName();
+            if (!GetUidByBundleName(bundleName, uid)) {
+                continue;
+            }
+            workinfo->RefreshUid(uid);
+            WS_HILOGI("cloud config preinstall bundle name: %{public}s", bundleName.c_str());
+            newBundles.insert(bundleName);
+        }
+        workinfo->SetPreinstalled(true);
+        workInfos.emplace_back(workinfo);
+    }
+    {
+        std::unique_lock<ffrt::shared_mutex> lock(configMutex_);
+        for (auto &bundlename : newBundles) {
+            preinstalledBundles_.insert(bundlename);
+        }
+        for (auto &[saId, deepIdle] : newDeepIdleMap) {
+            if (deepIdleTimeMap_.count(saId) > 0) {
+                deepIdleTimeMap_.at(saId) = std::pair<int32_t, int32_t>{deepIdle.first, deepIdle.second};
+            } else {
+                deepIdleTimeMap_.emplace(saId, std::pair<int32_t, int32_t>{deepIdle.first, deepIdle.second});
+            }
+        }
+    }
+    ReStartCloudConfigPreinstalledWork(workInfos);
+}
+
+void WorkSchedulerService::ReStartCloudConfigPreinstalledWork(std::list<std::shared_ptr<WorkInfo>> &workInfos)
+{
+    for (auto work : workInfos) {
+        UpdateWorkForCloudConfig(work);
+        time_t baseTime;
+        (void)time(&baseTime);
+        work->RequestBaseTime(baseTime);
+        AddWorkInner(*work);
+        if (work->IsPersisted()) {
+            std::string workId = WorkStatus::MakeWorkId(work->GetWorkId(), work->GetUid());
+            std::lock_guard<ffrt::recursive_mutex> lock(mutex_);
+            WS_HILOGI("cloud config preinstall workId: %{public}s", workId.c_str());
+            persistedMap_.emplace(workId, work);
+        }
+    }
+}
+
+void WorkSchedulerService::UpdateWorkForCloudConfig(std::shared_ptr<WorkInfo> workInfo)
+{
+    if (!ready_.load()) {
+        return;
+    }
+    if (!CheckCallingToken()) {
+        WS_HILOGE("UpdateWorkForCloudConfig not allowed.");
+        return;
+    }
+    int32_t uid = workInfo->GetUid();
+    std::shared_ptr<WorkStatus> workStatus = workPolicyManager_->FindWorkStatus(uid, workInfo->GetWorkId());
+    if (workStatus == nullptr) {
+        WS_HILOGE("workStatus is nullptr");
+        return;
+    }
+    std::string workId = WorkStatus::MakeWorkId(workInfo->GetWorkId(), uid);
+    WS_HILOGI("UpdateWorkForCloudConfig workId: %{public}s", workId.c_str());
+    StopWorkInner(workStatus, uid, true, false);
+    if (workStatus->persisted_) {
+        RemovePersistedMap(workId);
+        RefreshPersistedWorks();
+    }
+}
+
+void WorkSchedulerService::DumpTwoParamsSet(std::vector<std::string> &argsInStr, std::string &result)
+{
+    if (argsInStr[DUMP_OPTION] == "-d") {
+        EventPublisher eventPublisher;
+        eventPublisher.Dump(result, argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX]);
+    } else if (argsInStr[DUMP_OPTION] == "-t") {
+        DumpProcessWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-x") {
+        DumpRunningWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-s") {
+        DumpLoadSaWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-g") {
+        DumpGetWorks(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-f") {
+        DumpTriggerWork(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-group") {
+        DumpAppGroup(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else {
+        result.append("Error params.");
+    }
+}
+
+void WorkSchedulerService::DumpAppGroup(const std::string& uidStr, const std::string& groupStr, std::string& result)
+{
+    if (uidStr.empty() || groupStr.empty()) {
+        result.append("param error");
+        return;
+    }
+    int32_t uid = std::atoi(uidStr.c_str());
+    int32_t group = std::atoi(groupStr.c_str());
+    if (group == INVALID_VALUE) {
+        WS_HILOGE("uid: %{public}d add dump app group: %{public}d, group is invalid", uid, group);
+        WorkStatus::ClearDumpAppGroup(uid);
+        return;
+    }
+    if (group <= 0) {
+        result.append("group param error");
+        return;
+    }
+    WorkStatus::AddDumpAppGroup(uid, group);
+    WS_HILOGD("uid: %{public}d add dump app group", uid);
+    result.append("set group success.");
+}
+
+int64_t WorkSchedulerService::GetExecFrequency(int32_t uid, int32_t callingUid)
+{
+    int64_t interval = INVALID_VALUE;
+    std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
+    if (callingUid > 0) {
+        auto it = frequencyMap_.find(callingUid);
+        if (it != frequencyMap_.end()) {
+            auto &callingUidSetFrequencyMap = it->second;
+            auto item = callingUidSetFrequencyMap.find(uid);
+            if (item != callingUidSetFrequencyMap.end()) {
+                WS_HILOGI("callingUid: %{public}d, uid: %{public}d is set exec frequency", callingUid, uid);
+                interval = item->second.GetInterval();
+            }
+        }
+        return interval;
+    }
+
+    for (const auto &it : frequencyMap_) {
+        auto &callingUidSetFrequencyMap = it.second;
+        if (callingUidSetFrequencyMap.empty()) {
+            WS_HILOGE("callingUidSetFrequencyMap info is empty");
+            continue;
+        }
+        auto item = callingUidSetFrequencyMap.find(uid);
+        if (item != callingUidSetFrequencyMap.end()) {
+            WS_HILOGI("uid: %{public}d is set exec frequency", uid);
+            if (interval == INVALID_VALUE) {
+                interval = item->second.GetInterval();
+            } else {
+                interval = item->second.GetInterval() < interval ? item->second.GetInterval() : interval;
+            }
+        }
+    }
+    return interval;
+}
+
+int32_t WorkSchedulerService::SetExecFrequency(const FrequencyInfo& frequencyInfo)
+{
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::SetExecFrequency");
+    if (!ready_.load()) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!WorkSchedUtils::IsSystemApp()) {
+        WS_HILOGE("calling app is not systemApp.");
+        return E_NOT_SYSTEM_APP;
+    }
+    // 校验权限
+    if (!CheckPermission(std::string(SET_WORK_SCHEDULER_PROPERTY))) {
+        WS_HILOGE("SetExecFrequency not allowed.");
+        return E_PERMISSION_DENIED;
+    }
+    if (!workPolicyManager_->FindWork(frequencyInfo.GetUid())) {
+        WS_HILOGE("uid: %{public}d is invalid, not apply work.", frequencyInfo.GetUid());
+        return E_UID_ERROR;
+    }
+    if (workPolicyManager_->FindWorkStatus(frequencyInfo.GetUid(), frequencyInfo.GetWorkId()) == nullptr) {
+        WS_HILOGE("workId: %{public}d is invalid. the workId task does not exist", frequencyInfo.GetWorkId());
+        return E_WORKID_ERROR;
+    }
+    if (frequencyInfo.GetInterval() < SET_INTERVAL_LOWER ||
+        frequencyInfo.GetInterval() >= static_cast<int64_t>(INT_MAX)) {
+        WS_HILOGE("interval is invalid. interval: %{public}lld", static_cast<long long>(frequencyInfo.GetInterval()));
+        return E_INTERVAL_ERROR;
+    }
+
+    int32_t callingUid = IPCSkeleton::GetCallingUid();
+    SetExecFrequencyInner(callingUid, frequencyInfo);
+    // 刷新持久化数据
+    RefreshPersistedInfos();
+    return ERR_OK;
+}
+
+int32_t WorkSchedulerService::ResetExecFrequency(const int32_t uid)
+{
+    HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::ResetExecFrequency");
+    if (!ready_.load()) {
+        WS_HILOGE("service is not ready.");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!WorkSchedUtils::IsSystemApp()) {
+        WS_HILOGE("calling app is not systemApp.");
+        return E_NOT_SYSTEM_APP;
+    }
+    // 校验权限
+    if (!CheckPermission(std::string(SET_WORK_SCHEDULER_PROPERTY))) {
+        WS_HILOGE("ResetExecFrequency not allowed.");
+        return E_PERMISSION_DENIED;
+    }
+    int32_t callingUid = IPCSkeleton::GetCallingUid();
+    if (GetExecFrequency(uid, callingUid) == -1) {
+        WS_HILOGE("uid: %{public}d is invalid, not set exec frequency.", uid);
+        return E_UID_ERROR;
+    }
+    bool isRefresh = ResetExecFrequencyByCallingUid(callingUid, uid);
+    if (isRefresh) {
+        RefreshPersistedInfos();
+    }
+    return ERR_OK;
+}
+
+void WorkSchedulerService::SetExecFrequencyInner(int32_t callingUid, const FrequencyInfo& frequencyInfo)
+{
+    WS_HILOGI("callingUid: %{public}d setExecFrequency, uid: %{public}d, interval: %{public}lld, workId: %{public}d",
+        callingUid, frequencyInfo.GetUid(), static_cast<long long>(frequencyInfo.GetInterval()),
+        frequencyInfo.GetWorkId());
+    std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
+    auto it = frequencyMap_.find(callingUid);
+    if (it != frequencyMap_.end()) {
+        auto &callingUidSetFrequencyMap = it->second;
+        auto item = callingUidSetFrequencyMap.find(frequencyInfo.GetUid());
+        if (item != callingUidSetFrequencyMap.end()) {
+            WS_HILOGD("callingUid: %{public}d update exec frequency", callingUid);
+            item->second = frequencyInfo;
+        } else {
+            WS_HILOGD("callingUid: %{public}d set exec frequency", callingUid);
+            callingUidSetFrequencyMap.emplace(frequencyInfo.GetUid(), frequencyInfo);
+        }
+    } else {
+        WS_HILOGD("callingUid: %{public}d set exec frequency", callingUid);
+        frequencyMap_[callingUid][frequencyInfo.GetUid()] = frequencyInfo;
+    }
+}
+
+void WorkSchedulerService::ClearExecFrequency()
+{
+    WS_HILOGI("clear frequency map.");
+    std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
+    frequencyMap_.clear();
+}
+
+bool WorkSchedulerService::ResetExecFrequencyByCallingUid(int32_t callingUid, int32_t uid)
+{
+    bool isReset = false;
+    std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
+    auto it = frequencyMap_.find(callingUid);
+    if (it == frequencyMap_.end()) {
+        WS_HILOGE("callingUid: %{public}d did not set frequency", callingUid);
+        return isReset;
+    }
+    auto &callingUidSetFrequencyMap = it->second;
+    auto frequencyInfoItem = callingUidSetFrequencyMap.find(uid);
+    if (frequencyInfoItem != callingUidSetFrequencyMap.end()) {
+        WS_HILOGI("reset uid: %{public}d from frequency map by callingUid: %{public}d",
+            uid, callingUid);
+        callingUidSetFrequencyMap.erase(frequencyInfoItem);
+        isReset = true;
+    }
+    if (callingUidSetFrequencyMap.empty()) {
+        frequencyMap_.erase(callingUid);
+    }
+    return isReset;
+}
+
+bool WorkSchedulerService::ResetExecFrequencyByUid(int32_t uid)
+{
+    bool isRefresh = false;
+    std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
+    auto it = frequencyMap_.find(uid);
+    if (it != frequencyMap_.end()) {
+        WS_HILOGI("reset uid: %{public}d set all frequency info", uid);
+        isRefresh = true;
+        frequencyMap_.erase(uid);
+        return isRefresh;
+    }
+
+    for (auto it = frequencyMap_.begin(); it != frequencyMap_.end();) {
+        auto &callingUidSetFrequencyMap = it->second;
+        if (callingUidSetFrequencyMap.empty()) {
+            WS_HILOGE("callingUidSetFrequencyMap info is empty");
+            ++it;
+            continue;
+        }
+        auto item = callingUidSetFrequencyMap.find(uid);
+        if (item != callingUidSetFrequencyMap.end()) {
+            WS_HILOGI("reset uid: %{public}d frequency info", uid);
+            isRefresh = true;
+            callingUidSetFrequencyMap.erase(uid);
+            if (callingUidSetFrequencyMap.empty()) {
+                it = frequencyMap_.erase(it);
+                continue;
+            }
+        }
+        ++it;
+    }
+    return isRefresh;
+}
+
+void WorkSchedulerService::ResetExecFrequencyWhenAppRemove(int32_t uid)
+{
+    bool isRefresh = ResetExecFrequencyByUid(uid);
+    if (isRefresh) {
+        RefreshPersistedInfos();
+    }
+}
+
+void WorkSchedulerService::InitPersistedInfos()
+{
+    nlohmann::json root;
+    if (!GetJsonFromFile(PERSISTED_INFO_FILE_PATH, root) || root.is_null() || root.empty()) {
+        WS_HILOGE("ReadPersistedInfo failed, root is empty or not an object");
+        return;
+    }
+    if (!root.contains(FREQUENCY_INFOS_KEY)) {
+        WS_HILOGE("no frequency_infos key");
+        return;
+    }
+    nlohmann::json &frequencyInfosRoot = root[FREQUENCY_INFOS_KEY];
+    if (frequencyInfosRoot.empty() || !frequencyInfosRoot.is_object()) {
+        WS_HILOGE("frequency_infos content is empty");
+        return;
+    }
+    for (const auto &[callingUidString, callingUidSetFrequencyRoot] : frequencyInfosRoot.items()) {
+        if (callingUidSetFrequencyRoot.empty() || !callingUidSetFrequencyRoot.is_object()) {
+            WS_HILOGE("callingUidSetFrequencyRoot content is empty, callingUid: %{public}s", callingUidString.c_str());
+            continue;
+        }
+        int32_t appIndex;
+        string bundleName;
+        int32_t callingUid = std::atoi(callingUidString.c_str());
+        if (!GetAppIndexAndBundleNameByUid(callingUid, appIndex, bundleName)) {
+            WS_HILOGE("the app uid: %{public}d dose not exist", callingUid);
+            continue;
+        }
+        for (const auto &[key, frequencyJson] : callingUidSetFrequencyRoot.items()) {
+            FrequencyInfo frequencyInfo = FrequencyInfo();
+            if (!frequencyInfo.ParseFromJson(frequencyJson)) {
+                WS_HILOGE("ReadFrequencyInfo failed, parseFromJson error");
+                continue;
+            }
+            if (!workPolicyManager_->FindWork(frequencyInfo.GetUid())) {
+                WS_HILOGE("uid: %{public}d is invalid, not apply work.", frequencyInfo.GetUid());
+                continue;
+            }
+            if (workPolicyManager_->FindWorkStatus(frequencyInfo.GetUid(), frequencyInfo.GetWorkId()) == nullptr) {
+                WS_HILOGE("workId: %{public}d is invalid. the workId task does not exist", frequencyInfo.GetWorkId());
+                continue;
+            }
+            SetExecFrequencyInner(callingUid, frequencyInfo);
+        }
+    }
+    RefreshPersistedInfos();
+}
+
+std::string WorkSchedulerService::ParseFrequencyMapToJsonStr()
+{
+    nlohmann::json root = nlohmann::json::object();
+    nlohmann::json frequencyRoot = nlohmann::json::object();
+    std::lock_guard<ffrt::mutex> lock(frequencyMutex_);
+    for (const auto &it : frequencyMap_) {
+        auto &callingUidSetFrequencyMap = it.second;
+        if (callingUidSetFrequencyMap.empty()) {
+            WS_HILOGE("callingUidSetFrequencyMap info is empty");
+            continue;
+        }
+        nlohmann::json callingUidSetFrequencyRoot = nlohmann::json::object();
+        for (const auto &item : callingUidSetFrequencyMap) {
+            std::string data = item.second.ParseToJsonStr();
+            nlohmann::json frequencyJson = nlohmann::json::parse(data, nullptr, false);
+            if (!frequencyJson.is_discarded()) {
+                std::string frequencyKey = std::to_string(item.first);
+                callingUidSetFrequencyRoot[frequencyKey] = frequencyJson;
+            }
+        }
+        std::string callingUidKey = std::to_string(it.first);
+        frequencyRoot[callingUidKey] = callingUidSetFrequencyRoot;
+    }
+    root[FREQUENCY_INFOS_KEY] = frequencyRoot;
+    return root.dump(JSON_INDENT_WIDTH, ' ', false, nlohmann::json::error_handler_t::replace);
+}
+
+void WorkSchedulerService::RefreshPersistedInfos()
+{
+    std::string result = ParseFrequencyMapToJsonStr();
+    WS_HILOGD("ParseFrequencyMapToJsonStr result: %{public}s", result.c_str());
+    if (!CreateNodePersistedInfoFile()) {
+        WS_HILOGE("Create node resources failed");
+        return;
+    }
+    ofstream fout;
+    std::string realPath;
+    if (!WorkSchedUtils::ConvertFullPath(PERSISTED_INFO_FILE_PATH, realPath)) {
+        WS_HILOGE("Get persisted info real path failed");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "get persisted info real path failed");
+        return;
+    }
+    WS_HILOGD("Refresh persisted infos path %{private}s", realPath.c_str());
+    fout.open(realPath, ios::out);
+    fout << result.c_str() << endl;
+    fout.close();
+    ReportUserDataSizeEvent();
+    WS_HILOGD("Refresh persisted infos success");
+}
+
+bool WorkSchedulerService::CreateNodePersistedInfoFile()
+{
+    // 1. 创建目录失败且文件不存在
+    if (mkdir(PERSISTED_PATH, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) != 0 && errno != EEXIST) {
+        WS_HILOGE("Create directory failed: %{private}s, errno: %{public}s", PERSISTED_PATH, strerror(errno));
+        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "fail to create directory");
+        return false;
+    }
+
+    std::string realPath;
+    if (!WorkSchedUtils::ConvertFullPath(PERSISTED_PATH, realPath)) {
+        WS_HILOGE("Get real dir path failed");
+        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "get real dir path failed");
+        return false;
+    }
+
+    std::string filePath = realPath + PERSISTED_INFO_FILE_NAME;
+    // 2. 目录存在创建文件
+    FILE *file = fopen(filePath.c_str(), "w+");
+    if (file == nullptr) {
+        if (errno == EEXIST) {
+            WS_HILOGD("File already exists: %{private}s", filePath.c_str());
+            return true;
+        }
+        WS_HILOGE("Fail to open file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
+        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "fail to open file");
+        return false;
+    }
+
+    // 3. 确保文件关闭成功
+    if (fclose(file) != 0) {
+        WS_HILOGE("Fail to close file: %{private}s, errno: %{public}s", filePath.c_str(), strerror(errno));
+        WorkSchedUtil::HiSysEventException(EventErrorCode::SERVICE_INIT, "fail to close file");
+        return false;
+    }
+    WS_HILOGD("Resources created successfully.");
+    return true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

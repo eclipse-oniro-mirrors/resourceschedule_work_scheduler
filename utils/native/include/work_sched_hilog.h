@@ -36,7 +36,7 @@
     "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
 #define WS_HILOGI(fmt, ...)            \
     ((void)HILOG_IMPL(LOG_CORE, LOG_INFO, WORKSCHEDULER_MGR_LOG_DOMAIN, WORKSCHEDULER_MGR_LOG_TAG, \
-    "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
+    fmt, ##__VA_ARGS__))
 #define WS_HILOGD(fmt, ...)            \
     ((void)HILOG_IMPL(LOG_CORE, LOG_DEBUG, WORKSCHEDULER_MGR_LOG_DOMAIN, WORKSCHEDULER_MGR_LOG_TAG, \
     "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))

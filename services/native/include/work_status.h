@@ -46,7 +46,9 @@ public:
      * @return Workid and uid.
      */
     static std::string MakeWorkId(int32_t workId, int32_t uid);
-    static time_t getOppositeTime();
+    time_t getOppositeTime();
+    static void ClearDumpAppGroup(int32_t uid);
+    static void AddDumpAppGroup(int32_t uid, int32_t group);
 
     std::string workId_;
     std::string bundleName_;
@@ -217,6 +219,8 @@ public:
     void SetTimeout(bool timeout);
     bool IsSpecial();
     double TimeUntilLast();
+    bool IsDebugTask();
+    void SetDebugTask(bool debugTask);
 private:
     Status currentStatus_;
     time_t baseTime_;
@@ -227,6 +231,7 @@ private:
     static std::map<int32_t, time_t> s_uid_last_time_map;
     std::string conditionStatus_;
     std::atomic<bool> timeout_ {false};
+    std::atomic<bool> debugTask_ {false};
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
@@ -239,6 +244,10 @@ private:
     bool IsConditionReady();
     bool IsStandbyExemption();
     bool CheckEarliestStartTime();
+    int64_t HandleMinInterval(int64_t interval, int32_t group);
+    static int32_t GetDumpAppGroup(int32_t uid);
+    static ffrt::mutex dumpAppGroupMutex_;
+    static std::map<int32_t, int32_t> dumpAppGroupMap_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
