@@ -101,7 +101,7 @@ namespace WorkScheduler {
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_RESET_EXEC_FREQUENCY);
 
-        int32_t uid = 100;
+        int32_t uid = static_cast<int32_t>(data[0]);
         if (!dataMessageParcel.WriteInt32(uid)) {
             return false;
         }

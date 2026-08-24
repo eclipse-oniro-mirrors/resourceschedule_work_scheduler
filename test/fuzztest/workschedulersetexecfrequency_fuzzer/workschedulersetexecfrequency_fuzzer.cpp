@@ -72,10 +72,13 @@ namespace WorkScheduler {
         workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
         uint32_t code = static_cast<int32_t>(IWorkSchedServiceIpcCode::COMMAND_SET_EXEC_FREQUENCY);
 
+        int32_t uid = static_cast<int32_t>(data[0]);
+        int32_t workId = static_cast<int32_t>(data[0]);
+        int64_t interval = static_cast<int64_t>(data[0]);
         FrequencyInfo freqInfo;
-        freqInfo.SetUid(1);
-        freqInfo.SetWorkId(1);
-        freqInfo.SetInterval(1);
+        freqInfo.SetUid(uid);
+        freqInfo.SetWorkId(workId);
+        freqInfo.SetInterval(interval);
         if (!dataMessageParcel.WriteParcelable(&freqInfo)) {
             return false;
         }
