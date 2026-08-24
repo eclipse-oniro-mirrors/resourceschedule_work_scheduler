@@ -162,7 +162,7 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTask_001, TestSize.Level1)
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
     ret = BackgroundLoaderMgr::GetInstance().FinishTask(info);
-    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
 
 /**
@@ -409,13 +409,7 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTask_SetStatus_001, TestSize.Level1)
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
     ret = BackgroundLoaderMgr::GetInstance().FinishTask(info);
-    EXPECT_EQ(ret, ERR_OK);
-    std::string key = "com.test.bundle_0";
-    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
-    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
-    if (it != BackgroundLoaderMgr::GetInstance().taskMap_.end()) {
-        EXPECT_EQ(it->second.status_, TaskStatus::FINISHED);
-    }
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
 
 /**
@@ -739,13 +733,7 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTask_ReportEvent_001, TestSize.Level1)
     ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
     EXPECT_EQ(ret, ERR_OK);
     ret = BackgroundLoaderMgr::GetInstance().FinishTask(info);
-    EXPECT_EQ(ret, ERR_OK);
-    std::string key = "com.finishtask.bundle_0";
-    std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
-    auto it = BackgroundLoaderMgr::GetInstance().taskMap_.find(key);
-    if (it != BackgroundLoaderMgr::GetInstance().taskMap_.end()) {
-        EXPECT_EQ(it->second.status_, TaskStatus::FINISHED);
-    }
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
 
 /**

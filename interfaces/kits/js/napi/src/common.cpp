@@ -611,6 +611,19 @@ void Common::HandleErrCode(const napi_env &env, int32_t errCode)
     }
 }
 
+void Common::HandleIntErrCode(const napi_env &env, int32_t errCode)
+{
+    if (errCode == ERR_OK) {
+        return;
+    }
+    WS_HILOGE("HandleErrCode errCode = %{public}d", errCode);
+    std::string errMsg = FindErrMsg(env, errCode);
+    int32_t errCodeInfo = FindErrCode(env, errCode);
+    if (errMsg != "") {
+        napi_throw_business_error(env, errCodeInfo, errMsg.c_str());
+    }
+}
+
 void Common::HandleParamErr(const napi_env &env, int32_t errCode)
 {
     if (errCode == ERR_OK) {
