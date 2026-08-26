@@ -28,7 +28,6 @@
 #include "single_instance.h"
 #include "ffrt.h"
 #include "iremote_object.h"
-#include "res_data.h"
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -74,7 +73,7 @@ public:
     ErrCode GetTaskInfo(int32_t taskId, const std::string& bundleName, int32_t appIndex,
         BackgroundLoaderTaskInfo& taskInfo);
     int32_t GetTaskId(const std::string& bundleName, const std::string& abilityName, int32_t appIndex);
-    void HandleBackgroundLoaderTask(const std::shared_ptr<ResourceSchedule::ResData>& resData);
+    void HandleBackgroundLoaderTask(const nlohmann::json& payload);
     void SaveRemoteObject(const std::string& bundleName,
         const std::string& abilityName, int32_t appIndex, const sptr<IRemoteObject>& remoteObject);
     void CheckAndSendOnStop(const std::string& bundleName,

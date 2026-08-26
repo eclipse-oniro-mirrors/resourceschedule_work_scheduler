@@ -75,7 +75,7 @@ void WorkSchedPluginMgr::DispatchResource(const std::shared_ptr<ResourceSchedule
             break;
         }
         case ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK: {
-            BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(resData);
+            BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(resData->payload);
             break;
         }
         case ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE: {

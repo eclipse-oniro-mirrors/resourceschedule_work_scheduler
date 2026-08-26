@@ -76,7 +76,7 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
         ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVENT,
             ResType::BackgroundLoaderState::ADD, payload);
         taskMap_[key] = taskInfo;
-        taskMap_[key].status_ == TaskStatus::NOT_STARTED;
+        taskMap_[key].status_ = TaskStatus::NOT_STARTED;
     } else if (taskMap_[key].taskId_ != taskInfo.taskId_) {
         // 任务存在且taskId不同的情况下仅刷新taskId
         taskMap_[key].taskId_ = taskInfo.taskId_;
@@ -96,7 +96,8 @@ ErrCode BackgroundLoaderMgr::UnregisterTask(const TaskInfo& taskInfo)
     std::lock_guard<ffrt::mutex> lock(taskLock_);
     std::string key = GenerateTaskKey(taskInfo.bundleName_, taskInfo.appIndex_);
     auto it = taskMap_.find(key);
-    if (it == taskMap_.end() || it->second.taskId_ != taskInfo.taskId_) {
+    if (it == taskMap_.end() || it->second.taskId_ != taskInfo.taskId_ ||
+        it->second.status_ == TaskStatus::UNREGISIERED) {
         WS_HILOGE("UnregisterTask failed : task not found");
         return E_WORK_NOT_EXIST_FAILED;
     }
@@ -215,16 +216,16 @@ void BackgroundLoaderMgr::PostTimeoutTask(const std::string& bundleName,
         ffrt::task_attr().delay(backgroundLoaderTimeoutMs_));
 }
 
-void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const std::shared_ptr<ResourceSchedule::ResData>& resData)
+void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& payload)
 {
     int32_t appIndex = 0;
     int32_t  taskId = 0;
     std::string abilityName = "";
     std::string bundleName = "";
-    if (!ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, resData->payload) ||
-        !ResCommonUtil::ParseStringParameterFromJson("abilityName", abilityName, resData->payload) ||
-        !ResCommonUtil::ParseIntParameterFromJson("appIndex", appIndex, resData->payload) ||
-        !ResCommonUtil::ParseIntParameterFromJson("taskId", taskId, resData->payload)) {
+    if (!ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, payload) ||
+        !ResCommonUtil::ParseStringParameterFromJson("abilityName", abilityName, payload) ||
+        !ResCommonUtil::ParseIntParameterFromJson("appIndex", appIndex, payload) ||
+        !ResCommonUtil::ParseIntParameterFromJson("taskId", taskId, payload)) {
         WS_HILOGE("get background loader info fail");
         return;
     }
