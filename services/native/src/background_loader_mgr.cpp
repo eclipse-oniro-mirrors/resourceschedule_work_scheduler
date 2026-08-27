@@ -224,8 +224,7 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
     std::string bundleName = "";
     if (!ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, payload) ||
         !ResCommonUtil::ParseStringParameterFromJson("abilityName", abilityName, payload) ||
-        !ResCommonUtil::ParseIntParameterFromJson("appIndex", appIndex, payload) ||
-        !ResCommonUtil::ParseIntParameterFromJson("taskId", taskId, payload)) {
+        !ResCommonUtil::ParseIntParameterFromJson("appIndex", appIndex, payload)) {
         WS_HILOGE("get background loader info fail");
         return;
     }

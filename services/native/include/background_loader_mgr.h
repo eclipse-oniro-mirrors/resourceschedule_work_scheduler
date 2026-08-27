@@ -28,6 +28,7 @@
 #include "single_instance.h"
 #include "ffrt.h"
 #include "iremote_object.h"
+#include "nlohmann/json.hpp"
 
 namespace OHOS {
 namespace WorkScheduler {
