@@ -86,8 +86,16 @@ public:
     TaskInfo* GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex);
     void RemoveRemoteObject(const std::string& bundleName, int32_t appIndex);
     void HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload);
+    ErrCode RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid);
+    ErrCode UnregisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid);
+    ErrCode FinishTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid);
+    ErrCode GetTaskInfoWithCheck(int32_t taskId, int32_t uid, BackgroundLoaderTaskInfo& taskInfo);
 
 private:
+    bool CheckPermission(const std::string& permission);
+    int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
+    bool VerifyAbilityName(const std::string& bundleName, const std::string& abilityName, int32_t uid);
+    bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t& appIndex, std::string& bundleName);
     std::string GenerateTaskKey(const std::string& bundleName, int32_t appIndex);
     sptr<IRemoteObject> GetRemoteObject(const std::string& bundleName, const std::string& abilityName,
         int32_t appIndex);

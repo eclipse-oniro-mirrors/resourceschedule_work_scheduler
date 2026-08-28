@@ -22,6 +22,12 @@
 #include "want.h"
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
+#include "accesstoken_kit.h"
+#include "bundle_mgr_proxy.h"
+#include "if_system_ability_manager.h"
+#include "ipc_skeleton.h"
+#include "iservice_registry.h"
+#include "work_sched_utils.h"
 
 
 extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
@@ -33,6 +39,10 @@ constexpr std::string_view TIMEOUT_MESSAGE = "timeOut";
 constexpr std::string_view TIMEOUT_TASK_NAME = "BackgroundLoaderTimeout";
 constexpr std::string_view ON_START = "onStart";
 constexpr std::string_view ON_STOP = "onStop";
+constexpr std::string_view BACKGROUND_LOADER_PERMISSION = "ohos.permission.KEEP_BACKGROUND_RUNNING";
+constexpr std::string_view BACKGROUND_LOADER_CONFIG_KEY = "background_loader_config";
+constexpr std::string_view BACKGROUND_LOADER_TIMEOUT_COUNT_KEY = "maxTimeoutCount";
+constexpr std::string_view BACKGROUND_LOADER_TIMEOUTMS_KEY = "backgroundLoaderTimeoutMs";
 constexpr int32_t DEFAULT_INVAL_VALUE = -1;
 }
 IMPLEMENT_SINGLE_INSTANCE(BackgroundLoaderMgr)
@@ -410,6 +420,179 @@ void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann:
     if (it != taskMap_.end()) {
         taskMap_.erase(it);
     }
+}
+
+
+bool BackgroundLoaderMgr::CheckPermission(const std::string& permission)
+{
+    Security::AccessToken::AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
+    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(callerToken, permission);
+    if (ret != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
+        WS_HILOGE("CheckPermission failed");
+        return false;
+    }
+    return true;
+}
+
+bool BackgroundLoaderMgr::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t& appIndex, std::string& bundleName)
+{
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        WS_HILOGE("fail to get system ability mgr.");
+        return false;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        WS_HILOGE("fail to get bundle manager proxy.");
+        return false;
+    }
+    sptr<IBundleMgr> bundleMgr = iface_cast<IBundleMgr>(remoteObject);
+    ErrCode ret = bundleMgr->GetNameAndIndexForUid(uid, bundleName, appIndex);
+    if (ret == ERR_OK) {
+        WS_HILOGD("appIndex = %{public}d", appIndex);
+        return true;
+    }
+    WS_HILOGE("fail to get app index.");
+    return false;
+}
+
+int32_t BackgroundLoaderMgr::CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid)
+{
+    if (!isReady_.load()) {
+        WS_HILOGE("BackgroundLoaderMgr service is not ready");
+        return E_SERVICE_NOT_READY;
+    }
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
+        WS_HILOGE("Failed to get bundle for uid %{public}d", uid);
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    return ERR_OK;
+}
+
+bool BackgroundLoaderMgr::VerifyAbilityName(const std::string& bundleName,
+    const std::string& abilityName, int32_t uid)
+{
+    if (bundleName.empty() || abilityName.empty()) {
+        WS_HILOGE("bundleName or abilityName invaild");
+        return false;
+    }
+
+    sptr<ISystemAbilityManager> systemAbilityManager =
+        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (!systemAbilityManager) {
+        WS_HILOGE("fail to get system ability mgr.");
+        return false;
+    }
+    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
+    if (!remoteObject) {
+        WS_HILOGE("fail to get bundle manager remoteObject.");
+        return false;
+    }
+    sptr<IBundleMgr> bundleMgr = iface_cast<IBundleMgr>(remoteObject);
+    if (!bundleMgr) {
+        WS_HILOGE("fail to get bundle manager proxy.");
+        return false;
+    }
+
+    std::vector<AbilityInfo> abilityInfos;
+    Want want;
+    want.SetAction(Want::ACTION_HOME);
+    want.AddEntity(Want::ENTITY_HOME);
+    ElementName elementName;
+    elementName.SetBundleName(bundleName);
+    want.SetElement(elementName);
+    int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
+    if (!bundleMgr->QueryAbilityInfos(want, 0, userId, abilityInfos)) {
+        WS_HILOGE("QueryAbilityInfos failed for bundle: %{public}s", bundleName.c_str());
+        return false;
+    }
+
+    for (const auto& ability : abilityInfos) {
+        if (ability.bundleName == bundleName && ability.name == abilityName && ability.enabled) {
+            WS_HILOGI("found ability %{public}s in bundle: %{public}s", abilityName.c_str(), bundleName.c_str());
+            return true;
+        }
+    }
+    WS_HILOGE("bundle: %{public}s not found or not enable", bundleName.c_str());
+    return false;
+}
+
+ErrCode BackgroundLoaderMgr::RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid)
+{
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    TaskInfo info = {
+        .taskId_ = taskInfo.GetTaskId(),
+        .bundleName_ = bundleName,
+        .appIndex_ = appIndex,
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
+    };
+    return RegisterTask(info);
+}
+
+ErrCode BackgroundLoaderMgr::UnregisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid)
+{
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    TaskInfo info = {
+        .taskId_ = taskInfo.GetTaskId(),
+        .bundleName_ = bundleName,
+        .appIndex_ = appIndex,
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
+    };
+    return UnregisterTask(info);
+}
+
+ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid)
+{
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
+        return E_CHECK_WORKINFO_FAILED;
+    }
+    TaskInfo info = {
+        .taskId_ = taskInfo.GetTaskId(),
+        .bundleName_ = bundleName,
+        .appIndex_ = appIndex,
+        .abilityName_ = taskInfo.GetAbilityName(),
+        .pid_ = pid
+    };
+    return FinishTask(info);
+}
+
+ErrCode BackgroundLoaderMgr::GetTaskInfoWithCheck(int32_t taskId, int32_t uid, BackgroundLoaderTaskInfo& taskInfo)
+{
+    std::string bundleName = "";
+    int32_t appIndex = -1;
+    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
+    if (ret != ERR_OK) {
+        return ret;
+    }
+    return GetTaskInfo(taskId, bundleName, appIndex, taskInfo);
 }
 
 }  // namespace WorkScheduler
