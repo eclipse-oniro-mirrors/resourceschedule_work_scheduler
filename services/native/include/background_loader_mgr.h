@@ -92,7 +92,6 @@ public:
     ErrCode GetTaskInfoWithCheck(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo);
 
 private:
-    bool CheckPermission(const std::string& permission);
     int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
     bool VerifyAbilityName(const std::string& bundleName, const std::string& abilityName, int32_t uid);
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t& appIndex, std::string& bundleName);

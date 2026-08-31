@@ -105,6 +105,7 @@ const std::string_view FREQUENCY_INFOS_KEY = "frequency_infos";
 const std::string_view BACKGROUND_LOADER_CONFIG_KEY = "background_loader_config";
 const std::string_view BACKGROUND_LOADER_TIMEOUT_COUNT_KEY = "maxTimeoutCount";
 const std::string_view BACKGROUND_LOADER_TIMEOUTMS_KEY = "backgroundLoaderTimeoutMs";
+const std::string_view BACKGROUND_LOADER_PERMISSION = "ohos.permission.KEEP_BACKGROUND_RUNNING";
 const std::string_view SET_WORK_SCHEDULER_PROPERTY = "ohos.permission.SET_WORK_SCHEDULER_PROPERTY";
 auto instance = DelayedSingleton<WorkSchedulerService>::GetInstance();
 auto wss = instance.get();
@@ -1918,21 +1919,33 @@ bool WorkSchedulerService::CheckPermission(const std::string &permission)
 
 int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
 {
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
     return BackgroundLoaderMgr::GetInstance().RegisterTaskWithCheck(taskInfo);
 }
 
 int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)
 {
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
     return BackgroundLoaderMgr::GetInstance().UnregisterTaskWithCheck(taskInfo);
 }
     
 int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInfo)
 {
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
     return BackgroundLoaderMgr::GetInstance().FinishTaskWithCheck(taskInfo);
 }
 
 int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
 {
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
     return BackgroundLoaderMgr::GetInstance().GetTaskInfoWithCheck(taskId, taskInfo);
 }
 

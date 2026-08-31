@@ -39,7 +39,6 @@ constexpr std::string_view TIMEOUT_MESSAGE = "timeOut";
 constexpr std::string_view TIMEOUT_TASK_NAME = "BackgroundLoaderTimeout";
 constexpr std::string_view ON_START = "onStart";
 constexpr std::string_view ON_STOP = "onStop";
-constexpr std::string_view BACKGROUND_LOADER_PERMISSION = "ohos.permission.KEEP_BACKGROUND_RUNNING";
 constexpr std::string_view BACKGROUND_LOADER_CONFIG_KEY = "background_loader_config";
 constexpr std::string_view BACKGROUND_LOADER_TIMEOUT_COUNT_KEY = "maxTimeoutCount";
 constexpr std::string_view BACKGROUND_LOADER_TIMEOUTMS_KEY = "backgroundLoaderTimeoutMs";
@@ -423,17 +422,6 @@ void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann:
 }
 
 
-bool BackgroundLoaderMgr::CheckPermission(const std::string& permission)
-{
-    Security::AccessToken::AccessTokenID callerToken = IPCSkeleton::GetCallingTokenID();
-    int32_t ret = Security::AccessToken::AccessTokenKit::VerifyAccessToken(callerToken, permission);
-    if (ret != Security::AccessToken::PermissionState::PERMISSION_GRANTED) {
-        WS_HILOGE("CheckPermission failed");
-        return false;
-    }
-    return true;
-}
-
 bool BackgroundLoaderMgr::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t& appIndex, std::string& bundleName)
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
@@ -462,9 +450,6 @@ int32_t BackgroundLoaderMgr::CheckPermissionAndTaskInfo(std::string& bundleName,
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
-    }
-    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
-        return E_PERMISSION_DENIED;
     }
     if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
         WS_HILOGE("Failed to get bundle for uid %{public}d", uid);
