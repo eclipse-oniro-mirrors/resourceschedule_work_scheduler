@@ -278,7 +278,7 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
         }
         if (appIndex != workInfo->GetAppIndex() || bundleName != workInfo->GetBundleName()) {
             WS_HILOGE("appIndex or bundleName is invalid, appIndex: %{public}d, bundleName: %{public}s",
-                workInfo->GetAppIndex(), workInfo->GetBundleName());
+                workInfo->GetAppIndex(), workInfo->GetBundleName().c_str());
             continue;
         }
         workInfos.emplace_back(workInfo);
