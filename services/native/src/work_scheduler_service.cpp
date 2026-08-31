@@ -1916,12 +1916,8 @@ bool WorkSchedulerService::CheckPermission(const std::string &permission)
     return true;
 }
 
-
-
 int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
 {
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
     return BackgroundLoaderMgr::GetInstance().RegisterTaskWithCheck(taskInfo, uid, pid);
 }
 

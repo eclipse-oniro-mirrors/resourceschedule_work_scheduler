@@ -86,10 +86,10 @@ public:
     TaskInfo* GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex);
     void RemoveRemoteObject(const std::string& bundleName, int32_t appIndex);
     void HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload);
-    ErrCode RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid);
-    ErrCode UnregisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid);
-    ErrCode FinishTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid);
-    ErrCode GetTaskInfoWithCheck(int32_t taskId, int32_t uid, BackgroundLoaderTaskInfo& taskInfo);
+    ErrCode RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo);
+    ErrCode UnregisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo);
+    ErrCode FinishTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo);
+    ErrCode GetTaskInfoWithCheck(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo);
 
 private:
     bool CheckPermission(const std::string& permission);

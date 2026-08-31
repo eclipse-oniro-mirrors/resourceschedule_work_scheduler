@@ -521,10 +521,12 @@ bool BackgroundLoaderMgr::VerifyAbilityName(const std::string& bundleName,
     return false;
 }
 
-ErrCode BackgroundLoaderMgr::RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid)
+ErrCode BackgroundLoaderMgr::RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo)
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t pid = IPCSkeleton::GetCallingPid();
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
@@ -542,10 +544,12 @@ ErrCode BackgroundLoaderMgr::RegisterTaskWithCheck(const BackgroundLoaderTaskInf
     return RegisterTask(info);
 }
 
-ErrCode BackgroundLoaderMgr::UnregisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid)
+ErrCode BackgroundLoaderMgr::UnregisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo)
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t pid = IPCSkeleton::GetCallingPid();
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
@@ -563,10 +567,12 @@ ErrCode BackgroundLoaderMgr::UnregisterTaskWithCheck(const BackgroundLoaderTaskI
     return UnregisterTask(info);
 }
 
-ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo, int32_t uid, int32_t pid)
+ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo)
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
+    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t pid = IPCSkeleton::GetCallingPid();
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
@@ -584,10 +590,11 @@ ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo&
     return FinishTask(info);
 }
 
-ErrCode BackgroundLoaderMgr::GetTaskInfoWithCheck(int32_t taskId, int32_t uid, BackgroundLoaderTaskInfo& taskInfo)
+ErrCode BackgroundLoaderMgr::GetTaskInfoWithCheck(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
 {
     std::string bundleName = "";
     int32_t appIndex = -1;
+    int32_t uid = IPCSkeleton::GetCallingUid();
     auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
     if (ret != ERR_OK) {
         return ret;
