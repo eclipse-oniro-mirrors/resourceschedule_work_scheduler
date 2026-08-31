@@ -1918,27 +1918,22 @@ bool WorkSchedulerService::CheckPermission(const std::string &permission)
 
 int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
 {
-    return BackgroundLoaderMgr::GetInstance().RegisterTaskWithCheck(taskInfo, uid, pid);
+    return BackgroundLoaderMgr::GetInstance().RegisterTaskWithCheck(taskInfo);
 }
 
 int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)
 {
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    return BackgroundLoaderMgr::GetInstance().UnregisterTaskWithCheck(taskInfo, uid, pid);
+    return BackgroundLoaderMgr::GetInstance().UnregisterTaskWithCheck(taskInfo);
 }
     
 int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInfo)
 {
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    return BackgroundLoaderMgr::GetInstance().FinishTaskWithCheck(taskInfo, uid, pid);
+    return BackgroundLoaderMgr::GetInstance().FinishTaskWithCheck(taskInfo);
 }
 
 int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
 {
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    return BackgroundLoaderMgr::GetInstance().GetTaskInfoWithCheck(taskId, uid, taskInfo);
+    return BackgroundLoaderMgr::GetInstance().GetTaskInfoWithCheck(taskId, taskInfo);
 }
 
 uint32_t WorkSchedulerService::GetMinCheckTime() const
