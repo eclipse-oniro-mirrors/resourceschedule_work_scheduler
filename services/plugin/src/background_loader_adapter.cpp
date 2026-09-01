@@ -22,6 +22,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 using namespace OHOS::ResourceSchedule;
+IMPLEMENT_SINGLE_INSTANCE(BackgroundLoaderAdapter)
 
 void BackgroundLoaderAdapter::DispatchResource(const std::shared_ptr<ResourceSchedule::ResData>& resData)
 {
