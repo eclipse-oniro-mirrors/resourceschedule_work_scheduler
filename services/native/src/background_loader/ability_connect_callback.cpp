@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#include "ability_connect_callback.h"
-#include "background_loader_mgr.h"
+#include "background_loader/ability_connect_callback.h"
+#include "background_loader/background_loader_mgr.h"
 #include "work_sched_hilog.h"
 
 namespace OHOS {

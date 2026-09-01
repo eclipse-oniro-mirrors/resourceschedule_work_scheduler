@@ -34,7 +34,7 @@
 #include "work_event_handler.h"
 #include "singleton.h"
 #include "work_standby_state_change_callback.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 #include "background_loader_task_info.h"
 #include "frequency_info.h"
 #include "ffrt.h"
@@ -324,10 +324,6 @@ public:
      */
     int32_t StopWorkForSA(int32_t saId) override;
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
-    int32_t RegisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
     bool NeedCreateTimer(int32_t saId, int32_t uid, int32_t time);
     bool HasDeepIdleTime();
     void UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot);
@@ -455,6 +451,13 @@ private:
     ffrt::mutex frequencyMutex_;
     /* eg: {callingUid : {uid : frequencyInfo}} */
     std::map<int32_t, std::map<int32_t, FrequencyInfo>> frequencyMap_{};
+
+public:
+    // backgroundloader interfaces
+    int32_t RegisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

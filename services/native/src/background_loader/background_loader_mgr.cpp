@@ -13,16 +13,15 @@
  * limitations under the License.
  */
 
-#include "ability_connect_callback.h"
+#include "background_loader/ability_connect_callback.h"
 #include "ability_manager_client.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 #include "res_sched_client.h"
 #include "res_sched_json_util.h"
 #include "system_ability_definition.h"
 #include "want.h"
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
-#include "accesstoken_kit.h"
 #include "bundle_mgr_proxy.h"
 #include "if_system_ability_manager.h"
 #include "ipc_skeleton.h"
@@ -32,6 +31,7 @@
 
 extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
 using namespace OHOS::ResourceSchedule;
+using namespace OHOS::AppExecFwk;
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
@@ -484,9 +484,9 @@ bool BackgroundLoaderMgr::VerifyAbilityName(const std::string& bundleName,
     }
 
     std::vector<AbilityInfo> abilityInfos;
-    Want want;
-    want.SetAction(Want::ACTION_HOME);
-    want.AddEntity(Want::ENTITY_HOME);
+    OHOS::AAFwk::Want want;
+    want.SetAction(OHOS::AAFwk::Want::ACTION_HOME);
+    want.AddEntity(OHOS::AAFwk::Want::ENTITY_HOME);
     ElementName elementName;
     elementName.SetBundleName(bundleName);
     want.SetElement(elementName);

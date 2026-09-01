@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "background_loader_mgr.h"
+#include "background_loader_adapter.h"
 #include "work_sched_plugin_mgr.h"
 #include "background_task_observer_plugin_adapter.h"
 #include "work_sched_hilog.h"
@@ -68,23 +68,17 @@ void WorkSchedPluginMgr::DispatchResource(const std::shared_ptr<ResourceSchedule
         WS_HILOGE("WorkSchedPluginMgr not enable or data is nullptr");
         return;
     }
+    BackgroundLoaderAdapter::GetInstance().DispatchResource(resData);
     switch (resData->resType) {
         case ResType::RES_TYPE_EFFICIENCY_RESOURCES_STATE_CHANGED: {
             BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
                 resData->value, resData->payload);
             break;
         }
-        case ResType::RES_TYPE_START_BACKGROUND_LOADER_TASK: {
-            BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(resData->payload);
-            break;
-        }
         case ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE: {
             BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(
                 resData->value, resData->payload);
             break;
-        }
-        case ResType::RES_TYPE_APP_INSTALL_UNINSTALL: {
-            BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(resData->value, resData->payload);
         }
         default: {
             return;

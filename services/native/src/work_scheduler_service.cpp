@@ -80,7 +80,7 @@
 #include "work_sched_config.h"
 #include "work_sched_constants.h"
 #include "work_sched_hisysevent_report.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 #include "want.h"
 
 extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
@@ -1917,38 +1917,6 @@ bool WorkSchedulerService::CheckPermission(const std::string &permission)
     return true;
 }
 
-int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
-{
-    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
-        return E_PERMISSION_DENIED;
-    }
-    return BackgroundLoaderMgr::GetInstance().RegisterTaskWithCheck(taskInfo);
-}
-
-int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)
-{
-    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
-        return E_PERMISSION_DENIED;
-    }
-    return BackgroundLoaderMgr::GetInstance().UnregisterTaskWithCheck(taskInfo);
-}
-    
-int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInfo)
-{
-    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
-        return E_PERMISSION_DENIED;
-    }
-    return BackgroundLoaderMgr::GetInstance().FinishTaskWithCheck(taskInfo);
-}
-
-int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
-{
-    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
-        return E_PERMISSION_DENIED;
-    }
-    return BackgroundLoaderMgr::GetInstance().GetTaskInfoWithCheck(taskId, taskInfo);
-}
-
 uint32_t WorkSchedulerService::GetMinCheckTime() const
 {
     std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
@@ -2683,6 +2651,39 @@ bool WorkSchedulerService::CreateNodePersistedInfoFile()
     }
     WS_HILOGD("Resources created successfully.");
     return true;
+}
+
+// backgroundloader interfaces
+int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().RegisterTaskWithCheck(taskInfo);
+}
+
+int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().UnregisterTaskWithCheck(taskInfo);
+}
+
+int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().FinishTaskWithCheck(taskInfo);
+}
+
+int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().GetTaskInfoWithCheck(taskId, taskInfo);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
