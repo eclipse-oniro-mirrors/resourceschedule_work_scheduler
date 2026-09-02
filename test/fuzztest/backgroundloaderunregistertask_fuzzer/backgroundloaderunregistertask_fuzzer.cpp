@@ -25,7 +25,7 @@
 #include "work_bundle_group_change_callback.h"
 #include "work_conn_manager.h"
 #include "background_loader_task_info.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
