@@ -270,6 +270,17 @@ list<shared_ptr<WorkInfo>> WorkSchedulerService::ReadPersistedWorks()
             WS_HILOGE("ReadPersistedWorks failed, parseFromJson error");
             continue;
         }
+        int32_t appIndex;
+        string bundleName;
+        if (!GetAppIndexAndBundleNameByUid(workInfo->GetUid(), appIndex, bundleName)) {
+            WS_HILOGE("uid %{public}d is invalid", workInfo->GetUid());
+            continue;
+        }
+        if (appIndex != workInfo->GetAppIndex() || bundleName != workInfo->GetBundleName()) {
+            WS_HILOGE("appIndex or bundleName is invalid, appIndex: %{public}d, bundleName: %{public}s",
+                workInfo->GetAppIndex(), workInfo->GetBundleName().c_str());
+            continue;
+        }
         workInfos.emplace_back(workInfo);
         WS_HILOGI("find one persisted work %{public}s", workInfo->GetBriefInfo().c_str());
         auto iter = std::find_if(persistedMap_.begin(), persistedMap_.end(), [&](const auto &pair) {
@@ -818,7 +829,7 @@ int32_t WorkSchedulerService::StartWorkForInner(const WorkInfo& workInfo)
     if (!GetUidByBundleName(workInfo_.GetBundleName(), uid)) {
         return E_INVALID_PROCESS_NAME;
     }
-    int32_t ret = StartWorkInner(workInfo, uid);
+    int32_t ret = StartWorkInner(workInfo_, uid);
     CancelTimer(timerId);
     return ret;
 }
