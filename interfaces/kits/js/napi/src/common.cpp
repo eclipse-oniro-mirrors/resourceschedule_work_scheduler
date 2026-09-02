@@ -674,19 +674,19 @@ bool Common::GetFrequencyInfo(napi_env env, napi_value objValue, FrequencyInfo &
     int32_t uid = GetIntProperty(env, objValue, "uid", E_UID_ERROR);
     if (uid == UNSET_INT_PARAM || uid <= 0) {
         WS_HILOGE("uid is invalid, failed.");
-        HandleErrCode(env, E_UID_ERROR);
+        HandleIntErrCode(env, E_UID_ERROR);
         return false;
     }
     int32_t workId = GetIntProperty(env, objValue, "workId", E_WORKID_ERROR);
     if (workId == UNSET_INT_PARAM || workId <= 0) {
         WS_HILOGE("Work id is invalid, failed.");
-        HandleErrCode(env, E_WORKID_ERROR);
+        HandleIntErrCode(env, E_WORKID_ERROR);
         return false;
     }
     int64_t interval = static_cast<int64_t>(GetIntProperty(env, objValue, "interval", E_INTERVAL_ERROR));
     if (interval == UNSET_INT_PARAM) {
         WS_HILOGE("interval is invalid, failed.");
-        HandleErrCode(env, E_INTERVAL_ERROR);
+        HandleIntErrCode(env, E_INTERVAL_ERROR);
         return false;
     }
     frequencyInfo.SetWorkId(workId);
