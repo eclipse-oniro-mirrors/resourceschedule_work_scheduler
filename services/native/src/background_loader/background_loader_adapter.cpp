@@ -14,7 +14,7 @@
  */
 
 #include "background_loader/background_loader_mgr.h"
-#include "background_loader_adapter.h"
+#include "background_loader/background_loader_adapter.h"
 #include "res_type.h"
 #include "res_data.h"
 #include "work_sched_hilog.h"

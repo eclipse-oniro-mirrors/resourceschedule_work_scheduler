@@ -75,7 +75,7 @@ ohos_shared_library("workschedservice") {
     "native/src/work_status.cpp",
     "plugin/src/work_sched_plugin_mgr.cpp",
     "plugin/src/background_task_observer_plugin_adapter.cpp",
-    "plugin/src/background_loader_adapter.cpp",
+    "native/src/background_loader/background_loader_adapter.cpp",
   ]
 
   configs = [ ":worksched_private_config" ]
@@ -202,7 +202,7 @@ ohos_static_library("workschedservice_static") {
     "native/src/work_status.cpp",
     "plugin/src/work_sched_plugin_mgr.cpp",
     "plugin/src/background_task_observer_plugin_adapter.cpp",
-    "plugin/src/background_loader_adapter.cpp",
+    "native/src/background_loader/background_loader_adapter.cpp",
   ]
 
   configs = [ ":worksched_private_config" ]

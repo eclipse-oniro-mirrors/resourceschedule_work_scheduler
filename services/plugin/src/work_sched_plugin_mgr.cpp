@@ -13,7 +13,7 @@
  * limitations under the License.
  */
 
-#include "background_loader_adapter.h"
+#include "background_loader/background_loader_adapter.h"
 #include "work_sched_plugin_mgr.h"
 #include "background_task_observer_plugin_adapter.h"
 #include "work_sched_hilog.h"
