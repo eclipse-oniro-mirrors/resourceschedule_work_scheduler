@@ -54,7 +54,5 @@ HWTEST_F(EventPublisherTest, publishEvent_001, TestSize.Level3)
     eventPublisher_->PublishEvent(result, eventType, eventValue);
     EXPECT_EQ(result, std::string("dump -d need right params."));
 }
-
-}
 }
 }
