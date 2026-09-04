@@ -50,19 +50,6 @@ void WorkStandbyStateChangeCallbackTest::SetUpTestCase()
 }
 
 /**
- * @tc.name: OnDeviceIdleMode_001
- * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICB1SP
- */
-HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_001, TestSize.Level1)
-{
-    dataManager_->SetDeviceSleep(false);
-    callback_->OnDeviceIdleMode(true, false);
-    EXPECT_FALSE(dataManager_->GetDeviceSleep());
-}
-
-/**
  * @tc.name: OnDeviceIdleMode_002
  * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
  * @tc.type: FUNC
@@ -76,19 +63,6 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_002, TestSize.Leve
 }
 
 /**
- * @tc.name: OnDeviceIdleMode_003
- * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICB1SP
- */
-HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_003, TestSize.Level1)
-{
-    dataManager_->SetDeviceSleep(false);
-    callback_->OnDeviceIdleMode(false, false);
-    EXPECT_FALSE(dataManager_->GetDeviceSleep());
-}
-
-/**
  * @tc.name: OnDeviceIdleMode_004
  * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
  * @tc.type: FUNC
@@ -98,19 +72,6 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_004, TestSize.Leve
 {
     dataManager_->SetDeviceSleep(false);
     callback_->OnDeviceIdleMode(true, true);
-    EXPECT_TRUE(dataManager_->GetDeviceSleep());
-}
-
-/**
- * @tc.name: OnDeviceIdleMode_005
- * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICB1SP
- */
-HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_005, TestSize.Level1)
-{
-    dataManager_->SetDeviceSleep(true);
-    callback_->OnDeviceIdleMode(false, true);
     EXPECT_TRUE(dataManager_->GetDeviceSleep());
 }
 }

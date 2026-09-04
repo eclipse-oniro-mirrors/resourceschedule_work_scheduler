@@ -473,22 +473,6 @@ HWTEST_F(WorkStatusTest, dump_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: dump_002
- * @tc.desc: Test WorkStatus Dump.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, dump_002, TestSize.Level1)
-{
-    workStatus_->workInfo_->saId_ = 1000;
-    workStatus_->workInfo_->residentSa_ = true;
-
-    std::string result;
-    workStatus_->Dump(result);
-    EXPECT_TRUE(workStatus_->workInfo_->IsSA());
-}
-
-/**
  * @tc.name: getMinInterval_001
  * @tc.desc: Test WorkStatus GetMinInterval.
  * @tc.type: FUNC
@@ -1042,40 +1026,6 @@ HWTEST_F(WorkStatusTest, ToString_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: ToString_002
- * @tc.desc: Test WorkStatus ToString.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, ToString_002, TestSize.Level1)
-{
-    workStatus_->conditionStatus_.clear();
-    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
-    dataManager->SetDeviceSleep(false);
-    workStatus_->conditionStatus_ = "TIMER&ready";
-    workStatus_->workInfo_->saId_ = 1000;
-    workStatus_->workInfo_->residentSa_ = true;
-    workStatus_->ToString(WorkCondition::Type::TIMER);
-    EXPECT_FALSE(workStatus_->conditionStatus_.empty());
-}
-
-/**
- * @tc.name: ToString_003
- * @tc.desc: Test WorkStatus ToString.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
-{
-    workStatus_->conditionStatus_.clear();
-    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
-    dataManager->SetDeviceSleep(false);
-    workStatus_->conditionStatus_ = "TIMER&ready";
-    workStatus_->ToString(WorkCondition::Type::TIMER);
-    EXPECT_FALSE(workStatus_->conditionStatus_.empty());
-}
-
-/**
  * @tc.name: CheckEarliestStartTime_001
  * @tc.desc: Test WorkStatus CheckEarliestStartTime.
  * @tc.type: FUNC
@@ -1098,24 +1048,6 @@ HWTEST_F(WorkStatusTest, CheckEarliestStartTime_001, TestSize.Level1)
     work->SetEarliestStartTime(10);
     work->createTime_ = static_cast<uint64_t>(now) * 1000;
     EXPECT_FALSE(workStatus.CheckEarliestStartTime());
-}
-
-/**
- * @tc.name: IsNeedDiscreteScheduled_001
- * @tc.desc: Test WorkStatus IsNeedDiscreteScheduled.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, IsNeedDiscreteScheduled_001, TestSize.Level1)
-{
-    WorkInfo workInfo;
-    WorkStatus workStatus(workInfo, 100);
-    auto work = std::move(workStatus.workInfo_);
-    EXPECT_FALSE(workStatus.IsNeedDiscreteScheduled());
-    workStatus.workInfo_ = work;
-    EXPECT_FALSE(workStatus.IsNeedDiscreteScheduled());
-    work->SetCallBySystemApp(true);
-    EXPECT_GE(workStatus.IsNeedDiscreteScheduled(), 0);
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE

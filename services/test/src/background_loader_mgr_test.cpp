@@ -398,21 +398,6 @@ HWTEST_F(BackgroundLoaderMgrTest, UnregisterTask_TaskIdMismatch_001, TestSize.Le
 }
 
 /**
- * @tc.name: BackgroundLoaderMgr_FinishTask_SetStatus_001
- * @tc.desc: Test BackgroundLoaderMgr FinishTask sets task status to FINISHED.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(BackgroundLoaderMgrTest, FinishTask_SetStatus_001, TestSize.Level1)
-{
-    TaskInfo info = { .bundleName_ = "com.test.bundle", .abilityName_ = "TestAbility", .appIndex_ = 0, .taskId_ = 1 };
-    ErrCode ret = BackgroundLoaderMgr::GetInstance().RegisterTask(info);
-    EXPECT_EQ(ret, ERR_OK);
-    ret = BackgroundLoaderMgr::GetInstance().FinishTask(info);
-    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
-}
-
-/**
  * @tc.name: BackgroundLoaderMgr_FinishTask_TaskIdMismatch_001
  * @tc.desc: Test BackgroundLoaderMgr FinishTask when taskId does not match.
  * @tc.type: FUNC

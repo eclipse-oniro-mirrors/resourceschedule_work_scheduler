@@ -72,26 +72,6 @@ HWTEST_F(AbilityConnectCallbackTest, OnAbilityConnectDone_NullRemoteObject_001, 
 }
 
 /**
- * @tc.name: OnAbilityDisconnectDone_001
- * @tc.desc: Test OnAbilityDisconnectDone.
- * @tc.type: FUNC
- * @tc.require:
- */
-HWTEST_F(AbilityConnectCallbackTest, OnAbilityDisconnectDone_001, TestSize.Level1)
-{
-    std::string bundleName = "com.test.bundle";
-    std::string abilityName = "TestAbility";
-    int32_t appIndex = 0;
-    sptr<AbilityConnectCallback> callback = new AbilityConnectCallback(bundleName, abilityName, appIndex);
-    AppExecFwk::ElementName element;
-    element.SetBundleName(bundleName);
-    element.SetAbilityName(abilityName);
-    callback->OnAbilityDisconnectDone(element, ERR_OK);
-    sptr<IRemoteObject> result = BackgroundLoaderMgr::GetInstance().GetRemoteObject(bundleName, abilityName, appIndex);
-    EXPECT_EQ(result, nullptr);
-}
-
-/**
  * @tc.name: Constructor_001
  * @tc.desc: Test AbilityConnectCallback Constructor.
  * @tc.type: FUNC

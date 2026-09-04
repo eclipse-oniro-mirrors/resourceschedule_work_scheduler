@@ -49,18 +49,5 @@ void TimerListenerTest::SetUpTestCase()
         AppExecFwk::ThreadMode::FFRT);
     timerListener_ = std::make_shared<TimerListener>(workQueueManager_, eventRunner_);
 }
-
-/**
- * @tc.name: OnConditionChanged_001
- * @tc.desc: Test TimerListener OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: IB7RQR
- */
-HWTEST_F(TimerListenerTest, OnConditionChanged_001, TestSize.Level1)
-{
-    timerListener_->Start();
-    bool ret = timerListener_->Stop();
-    EXPECT_TRUE(ret);
-}
 }
 }

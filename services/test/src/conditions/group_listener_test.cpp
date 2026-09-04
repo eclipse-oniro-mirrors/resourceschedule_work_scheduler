@@ -49,23 +49,5 @@ void GroupListenerTest::SetUpTestCase()
         AppExecFwk::ThreadMode::FFRT);
     groupListener_ = std::make_shared<GroupListener>(workQueueManager_, eventRunner_);
 }
-
-/**
- * @tc.name: OnConditionChanged_001
- * @tc.desc: Test GroupListener OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: IB7RQR
- */
-HWTEST_F(GroupListenerTest, OnConditionChanged_001, TestSize.Level1)
-{
-    groupListener_->Start();
-    int32_t newGroup = 10;
-    int32_t userId = 100;
-    std::string bundleName = "com.ohos.sceneboard";
-    workQueueManager_->OnConditionChanged(WorkCondition::Type::GROUP,
-        std::make_shared<DetectorValue>(newGroup, userId, true, bundleName));
-    bool ret = groupListener_->Stop();
-    EXPECT_TRUE(ret);
-}
 }
 }

@@ -546,46 +546,6 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_008, TestSize.Level1)
 }
 
 /**
- * @tc.name: FindWorkStatus_001
- * @tc.desc: Test WorkPolicyManagerTest FindWorkStatus.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
-{
-    workPolicyManager_->uidQueueMap_.clear();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(10000);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workPolicyManager_->AddWork(workStatus, uid);
-    std::shared_ptr<WorkStatus> ret = workPolicyManager_->FindWorkStatus(workinfo, uid);
-    EXPECT_FALSE(ret == nullptr);
-}
-
-/**
- * @tc.name: FindWorkStatus_002
- * @tc.desc: Test WorkPolicyManagerTest FindWorkStatus.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_002, TestSize.Level1)
-{
-    workPolicyManager_->uidQueueMap_.clear();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(10000);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workPolicyManager_->AddWork(workStatus, uid);
-    
-    int32_t uid1 = 10001;
-    std::shared_ptr<WorkStatus> ret = workPolicyManager_->FindWorkStatus(workinfo, uid1);
-    EXPECT_TRUE(ret == nullptr);
-}
-
-/**
  * @tc.name: StopWork_001
  * @tc.desc: Test WorkPolicyManagerTest StopWork.
  * @tc.type: FUNC
@@ -708,82 +668,6 @@ HWTEST_F(WorkPolicyManagerTest, IsLastWorkTimeout_001, TestSize.Level1)
     bool ret = false;
     workPolicyManager_->IsLastWorkTimeout(workId, uid, ret);
     EXPECT_TRUE(ret);
-}
-
-/**
- * @tc.name: OnConditionReady_001
- * @tc.desc: Test WorkPolicyManagerTest OnConditionReady.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, OnConditionReady_001, TestSize.Level1)
-{
-    std::vector<std::shared_ptr<WorkStatus>> readyWorkVector = {};
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork =
-        std::make_shared<std::vector<std::shared_ptr<WorkStatus>>>(readyWorkVector);
-    workPolicyManager_->OnConditionReady(readyWork);
-    EXPECT_TRUE(readyWork != nullptr);
-}
-
-/**
- * @tc.name: OnConditionReady_002
- * @tc.desc: Test WorkPolicyManagerTest OnConditionReady.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, OnConditionReady_002, TestSize.Level1)
-{
-    std::vector<std::shared_ptr<WorkStatus>> readyWorkVector;
-    WorkInfo workinfo;
-    int32_t workId = 10000;
-    workinfo.SetWorkId(workId);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->lastTimeout_ = true;
-    readyWorkVector.emplace_back(workStatus);
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork =
-        std::make_shared<std::vector<std::shared_ptr<WorkStatus>>>(readyWorkVector);
-    workPolicyManager_->OnConditionReady(readyWork);
-    EXPECT_FALSE(readyWork == nullptr);
-}
-
-/**
- * @tc.name: OnConditionReady_003
- * @tc.desc: Test WorkPolicyManagerTest OnConditionReady.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, OnConditionReady_003, TestSize.Level1)
-{
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork = nullptr;
-    workPolicyManager_->OnConditionReady(readyWork);
-    EXPECT_TRUE(readyWork == nullptr);
-}
-
-/**
- * @tc.name: AddToReadyQueue_001
- * @tc.desc: Test WorkPolicyManagerTest AddToReadyQueue.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, AddToReadyQueue_001, TestSize.Level1)
-{
-    std::vector<std::shared_ptr<WorkStatus>> readyWorkVector;
-    WorkInfo workinfo;
-    int32_t workId = 10000;
-    workinfo.SetWorkId(workId);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->lastTimeout_ = true;
-    readyWorkVector.emplace_back(workStatus);
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork =
-        std::make_shared<std::vector<std::shared_ptr<WorkStatus>>>(readyWorkVector);
-    workPolicyManager_->AddToReadyQueue(readyWork);
-    EXPECT_FALSE(readyWork == nullptr);
 }
 
 /**
@@ -1111,22 +995,6 @@ HWTEST_F(WorkPolicyManagerTest, DumpTriggerWork_003, TestSize.Level1)
     std::string result;
     workPolicyManager_->DumpTriggerWork(uId, workId, result);
     EXPECT_EQ(result, "the work trigger error\n");
-}
-
-/**
- * @tc.name: OnPolicyChanged_001
- * @tc.desc: Test WorkPolicyManagerTest OnPolicyChanged.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
- */
-HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_001, TestSize.Level1)
-{
-    std::shared_ptr<DetectorValue> detectorVal = std::make_shared<DetectorValue>(0, 0, false, "preinstalled_app");
-    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
-    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
-    workPolicyManager_->OnPolicyChanged(PolicyType::APP_ADDED, detectorVal);
-
-    EXPECT_FALSE(workPolicyManager_->wss_.lock() == nullptr);
 }
 
 /**

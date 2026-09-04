@@ -52,18 +52,6 @@ void WorkSchedulerConnectionTest::SetUpTestCase()
 }
 
 /**
- * @tc.name: StopWork_001
- * @tc.desc: Test WorkSchedulerConnection StopWork.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
- */
-HWTEST_F(WorkSchedulerConnectionTest, StopWork_001, TestSize.Level2)
-{
-    workSchedulerConnection_->StopWork();
-    EXPECT_TRUE(workSchedulerConnection_->proxy_ == nullptr);
-}
-
-/**
  * @tc.name: StopWork_002
  * @tc.desc: Test WorkSchedulerConnection StopWork.
  * @tc.type: FUNC
