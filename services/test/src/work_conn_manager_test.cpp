@@ -98,4 +98,3 @@ HWTEST_F(WorkConnManagerTest, StopWork_001, TestSize.Level2)
 
 }
 }
-}

@@ -55,3 +55,4 @@ HWTEST_F(WatchdogTest, watchdog_001, TestSize.Level3)
     EXPECT_EQ(result, false);
 }
 }
+}
