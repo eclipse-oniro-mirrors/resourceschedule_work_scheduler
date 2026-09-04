@@ -60,8 +60,10 @@ std::string BackgroundLoaderMgr::GenerateTaskKey(const std::string& bundleName, 
 
 ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
 {
-    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
-        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
+    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, "
+        "appIndex: %{public}d",
+        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(),
+        taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
@@ -94,8 +96,10 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
 
 ErrCode BackgroundLoaderMgr::UnregisterTask(const TaskInfo& taskInfo)
 {
-    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
-        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
+    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, "
+        "appIndex: %{public}d",
+        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(),
+        taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
@@ -121,8 +125,10 @@ ErrCode BackgroundLoaderMgr::UnregisterTask(const TaskInfo& taskInfo)
 
 ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
 {
-    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
-        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
+    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, "
+        "appIndex: %{public}d",
+        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(),
+        taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
@@ -238,7 +244,8 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
         WS_HILOGE("get background loader info fail");
         return;
     }
-    WS_HILOGI("[%{public}s:%{public}d] bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d, taskId: %{public}d",
+    WS_HILOGI("[%{public}s:%{public}d] bundleName: %{public}s, abilityName: %{public}s, "
+        "appIndex: %{public}d, taskId: %{public}d",
         __FUNCTION__, __LINE__, bundleName.c_str(), abilityName.c_str(), appIndex, taskId);
     std::string key = GenerateTaskKey(bundleName, appIndex);
     {
