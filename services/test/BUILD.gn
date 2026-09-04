@@ -154,8 +154,8 @@ ohos_unittest("BackgroundLoaderMgrTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "src/background_loader_mgr_test.cpp",
-    "src/ability_connect_callback_test.cpp",
+    "src/background_loader/background_loader_mgr_test.cpp",
+    "src/background_loader/ability_connect_callback_test.cpp",
   ]
 
   deps = [

@@ -28,7 +28,6 @@
 #include "iservice_registry.h"
 #include "work_sched_utils.h"
 
-
 extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
 using namespace OHOS::ResourceSchedule;
 using namespace OHOS::AppExecFwk;
@@ -48,7 +47,7 @@ IMPLEMENT_SINGLE_INSTANCE(BackgroundLoaderMgr)
 
 void BackgroundLoaderMgr::Init(int32_t maxTimeoutCount, int32_t backgroundLoaderTimeoutMs)
 {
-    WS_HILOGI("BackgroundLoaderMgr init");
+    WS_HILOGI("[%{public}s:%{public}d] BackgroundLoaderMgr init", __FUNCTION__, __LINE__);
     maxTimeoutCount_ = maxTimeoutCount;
     backgroundLoaderTimeoutMs_ = backgroundLoaderTimeoutMs;
     isReady_.store(true);
@@ -61,8 +60,8 @@ std::string BackgroundLoaderMgr::GenerateTaskKey(const std::string& bundleName, 
 
 ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
 {
-    WS_HILOGI("taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
-        taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
+    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
+        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
@@ -95,8 +94,8 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
 
 ErrCode BackgroundLoaderMgr::UnregisterTask(const TaskInfo& taskInfo)
 {
-    WS_HILOGI("taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
-        taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
+    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
+        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
@@ -122,8 +121,8 @@ ErrCode BackgroundLoaderMgr::UnregisterTask(const TaskInfo& taskInfo)
 
 ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
 {
-    WS_HILOGI("taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
-        taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
+    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
+        __FUNCTION__, __LINE__, taskInfo.taskId_, taskInfo.bundleName_.c_str(), taskInfo.abilityName_.c_str(), taskInfo.appIndex_);
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
@@ -148,8 +147,8 @@ ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
 ErrCode BackgroundLoaderMgr::GetTaskInfo(int32_t taskId, const std::string& bundleName, int32_t appIndex,
     BackgroundLoaderTaskInfo& taskInfo)
 {
-    WS_HILOGI("taskId: %{public}d, bundleName: %{public}s, appIndex: %{public}d",
-        taskId, bundleName.c_str(), appIndex);
+    WS_HILOGI("[%{public}s:%{public}d] taskId: %{public}d, bundleName: %{public}s, appIndex: %{public}d",
+        __FUNCTION__, __LINE__, taskId, bundleName.c_str(), appIndex);
     if (!isReady_.load()) {
         WS_HILOGE("BackgroundLoaderMgr service is not ready");
         return E_SERVICE_NOT_READY;
@@ -183,7 +182,8 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
         }
 
         if (taskInfo->status_ == TaskStatus::RUNNING) {
-            WS_HILOGI("task still running, send onstop for bundle %{public}s", bundleName.c_str());
+            WS_HILOGI("[%{public}s:%{public}d] task still running, send onstop for bundle %{public}s",
+                __FUNCTION__, __LINE__, bundleName.c_str());
             taskInfoCopy = *taskInfo;
             taskInfo->timeoutCount_++;
             if (taskInfo->timeoutCount_ >= maxTimeoutCount_) {
@@ -193,7 +193,8 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
                 taskInfo->status_ = TaskStatus::FINISHED;
             }
         } else {
-            WS_HILOGI("task already finished for bundle %{public}s", bundleName.c_str());
+            WS_HILOGI("[%{public}s:%{public}d] task already finished for bundle %{public}s",
+                __FUNCTION__, __LINE__, bundleName.c_str());
             return;
         }
     }
@@ -216,8 +217,8 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
 void BackgroundLoaderMgr::PostTimeoutTask(const std::string& bundleName,
     const std::string& abilityName, int32_t appIndex, int32_t taskId)
 {
-    WS_HILOGI("bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
-        bundleName.c_str(), abilityName.c_str(), appIndex);
+    WS_HILOGI("[%{public}s:%{public}d] bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d",
+        __FUNCTION__, __LINE__, bundleName.c_str(), abilityName.c_str(), appIndex);
     ffrt::submit(
         [bundleName, abilityName, appIndex, taskId] () {
             BackgroundLoaderMgr::GetInstance().CheckAndSendOnStop(bundleName, abilityName, appIndex, taskId);
@@ -237,8 +238,8 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
         WS_HILOGE("get background loader info fail");
         return;
     }
-    WS_HILOGI("bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d, taskId: %{public}d",
-        bundleName.c_str(), abilityName.c_str(), appIndex, taskId);
+    WS_HILOGI("[%{public}s:%{public}d] bundleName: %{public}s, abilityName: %{public}s, appIndex: %{public}d, taskId: %{public}d",
+        __FUNCTION__, __LINE__, bundleName.c_str(), abilityName.c_str(), appIndex, taskId);
     std::string key = GenerateTaskKey(bundleName, appIndex);
     {
         std::lock_guard<ffrt::mutex> lock(blackListLock_);
@@ -250,7 +251,8 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
     OHOS::sptr<IRemoteObject> remoteObject = GetRemoteObject(bundleName, abilityName, appIndex);
     if (remoteObject != nullptr) {
         SendOnStart(remoteObject, bundleName, appIndex);
-        WS_HILOGI("send request to existing remoteObject success");
+        WS_HILOGI("[%{public}s:%{public}d] send request to existing remoteObject success",
+            __FUNCTION__, __LINE__);
         return;
     }
 
@@ -268,7 +270,8 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
         WS_HILOGE("StartAbilityByCall falied ret : %{public}d", ret);
         return;
     }
-    WS_HILOGI("StartAbilityByCall success for %{public}s", bundleName.c_str());
+    WS_HILOGI("[%{public}s:%{public}d] StartAbilityByCall success for %{public}s",
+        __FUNCTION__, __LINE__, bundleName.c_str());
 }
 
 sptr<IRemoteObject> BackgroundLoaderMgr::GetRemoteObject(const std::string& bundleName,
@@ -330,9 +333,11 @@ void BackgroundLoaderMgr::RemoveRemoteObject(const std::string& bundleName, int3
         auto it = abilityMap_.find(key);
         if (it != abilityMap_.end()) {
             abilityMap_.erase(it);
-            WS_HILOGI("Removed object for %{public}s, appIndex: %{public}d", bundleName.c_str(), appIndex);
+            WS_HILOGI("[%{public}s:%{public}d] Removed object for %{public}s, appIndex: %{public}d",
+                __FUNCTION__, __LINE__, bundleName.c_str(), appIndex);
         } else {
-            WS_HILOGI("%{public}s, appIndex: %{public}d not found", bundleName.c_str(), appIndex);
+            WS_HILOGI("[%{public}s:%{public}d] %{public}s, appIndex: %{public}d not found",
+                __FUNCTION__, __LINE__, bundleName.c_str(), appIndex);
         }
     }
     std::lock_guard<ffrt::mutex> lock(taskLock_);
@@ -392,7 +397,8 @@ void BackgroundLoaderMgr::SaveRemoteObject(const std::string& bundleName,
     std::string key = GenerateTaskKey(bundleName, appIndex);
     std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
     abilityMap_[key] = remoteObject;
-    WS_HILOGI("save remote object for %{public}s, appIndex: %{public}d success", bundleName.c_str(), appIndex);
+    WS_HILOGI("[%{public}s:%{public}d] save remote object for %{public}s, appIndex: %{public}d success",
+        __FUNCTION__, __LINE__, bundleName.c_str(), appIndex);
 }
 
 void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload)
@@ -407,7 +413,8 @@ void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann:
         WS_HILOGE("get app info fail");
         return;
     }
-    WS_HILOGI(" %{public}s, appIndex: %{public}d uninstall clear task info", bundleName.c_str(), appIndex);
+    WS_HILOGI("[%{public}s:%{public}d] %{public}s, appIndex: %{public}d uninstall clear task info",
+        __FUNCTION__, __LINE__, bundleName.c_str(), appIndex);
     RemoveRemoteObject(bundleName, appIndex);
     auto key = GenerateTaskKey(bundleName, appIndex);
     {
@@ -420,7 +427,6 @@ void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann:
         taskMap_.erase(it);
     }
 }
-
 
 bool BackgroundLoaderMgr::GetAppIndexAndBundleNameByUid(int32_t uid, int32_t& appIndex, std::string& bundleName)
 {
@@ -498,7 +504,8 @@ bool BackgroundLoaderMgr::VerifyAbilityName(const std::string& bundleName,
 
     for (const auto& ability : abilityInfos) {
         if (ability.bundleName == bundleName && ability.name == abilityName && ability.enabled) {
-            WS_HILOGI("found ability %{public}s in bundle: %{public}s", abilityName.c_str(), bundleName.c_str());
+            WS_HILOGI("[%{public}s:%{public}d] found ability %{public}s in bundle: %{public}s",
+                __FUNCTION__, __LINE__, abilityName.c_str(), bundleName.c_str());
             return true;
         }
     }
