@@ -51,6 +51,8 @@
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
 #include "work_policy_manager.h"
+#include "work_queue_manager.h"
+#include "work_conn_manager.h"
 #include "background_loader_task_info.h"
 #include "work_sched_constants.h"
 #include "frequency_info.h"
@@ -110,8 +112,39 @@ class WorkSchedulerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
     static void TearDownTestCase() {}
-    void SetUp() {}
-    void TearDown() {}
+    void SetUp()
+    {
+        auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        if (service != nullptr) {
+            if (service->handler_ == nullptr) {
+                if (!service->eventRunner_) {
+                    service->eventRunner_ = AppExecFwk::EventRunner::Create(
+                        "WorkSchedulerService", AppExecFwk::ThreadMode::FFRT);
+                }
+                if (service->eventRunner_ != nullptr) {
+                    service->handler_ = std::make_shared<WorkEventHandler>(
+                        service->eventRunner_, service);
+                }
+            }
+            if (service->workPolicyManager_ == nullptr) {
+                service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+            }
+            if (service->workPolicyManager_->workConnManager_ == nullptr) {
+                service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+            }
+            if (service->workQueueManager_ == nullptr) {
+                service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+            }
+        }
+    }
+    void TearDown()
+    {
+        auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        if (service != nullptr) {
+            service->handler_.reset();
+            service->eventRunner_.reset();
+        }
+    }
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 

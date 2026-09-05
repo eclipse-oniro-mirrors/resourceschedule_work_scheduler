@@ -15,12 +15,15 @@
 
 #include <functional>
 #include <gtest/gtest.h>
-
+#define private public
 #include "work_info.h"
 #include "work_scheduler_connection.h"
 #include "work_sched_hilog.h"
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
+#include "work_scheduler_service.h"
+#include "work_policy_manager.h"
+#include "work_conn_manager.h"
 
 using namespace testing::ext;
 using namespace std;
@@ -34,7 +37,7 @@ class WorkSchedulerConnectionTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase() {}
-    void SetUp() {}
+    void SetUp() {};
     void TearDown() {}
     static std::shared_ptr<WorkSchedulerConnection> workSchedulerConnection_;
 };
@@ -49,6 +52,19 @@ void WorkSchedulerConnectionTest::SetUpTestCase()
     workInfo->abilityName_ = "unittestAbility";
 
     workSchedulerConnection_ = std::make_shared<WorkSchedulerConnection>(workInfo);
+}
+
+void WorkSchedulerConnectionTest::SetUp()
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service != nullptr) {
+        if (service->workPolicyManager_ == nullptr) {
+            service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+        }
+        if (service->workPolicyManager_->workConnManager_ == nullptr) {
+            service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+        }
+    }
 }
 
 /**
