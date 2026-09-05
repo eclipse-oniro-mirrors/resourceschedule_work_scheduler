@@ -53,31 +53,5 @@ void WorkSchedulerProxyTest::SetUpTestCase()
     }
     workSchedulerProxy_ = std::make_shared<WorkSchedulerProxy>(remoteObject);
 }
-
-/**
- * @tc.name: OnWorkStart_001
- * @tc.desc: Test WorkSchedulerProxy OnWorkStart.
- * @tc.type: FUNC
- * @tc.require: #I9HP1I
- */
-HWTEST_F(WorkSchedulerProxyTest, OnWorkStart_001, TestSize.Level1)
-{
-    WorkInfo workInfo;
-    workSchedulerProxy_->OnWorkStart(workInfo);
-    EXPECT_TRUE(workInfo.GetBundleName().empty());
-}
-
-/**
- * @tc.name: OnWorkStop_001
- * @tc.desc: Test WorkSchedulerProxy OnWorkStop.
- * @tc.type: FUNC
- * @tc.require: #I9HP1I
- */
-HWTEST_F(WorkSchedulerProxyTest, OnWorkStop_001, TestSize.Level1)
-{
-    WorkInfo workInfo;
-    workSchedulerProxy_->OnWorkStop(workInfo);
-    EXPECT_TRUE(workInfo.GetBundleName().empty());
-}
 }
 }

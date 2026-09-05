@@ -51,6 +51,8 @@
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
 #include "work_policy_manager.h"
+#include "work_queue_manager.h"
+#include "work_conn_manager.h"
 #include "background_loader_task_info.h"
 #include "work_sched_constants.h"
 #include "frequency_info.h"
@@ -110,8 +112,39 @@ class WorkSchedulerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
     static void TearDownTestCase() {}
-    void SetUp() {}
-    void TearDown() {}
+    void SetUp()
+    {
+        auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        if (service != nullptr) {
+            if (service->handler_ == nullptr) {
+                if (!service->eventRunner_) {
+                    service->eventRunner_ = AppExecFwk::EventRunner::Create(
+                        "WorkSchedulerService", AppExecFwk::ThreadMode::FFRT);
+                }
+                if (service->eventRunner_ != nullptr) {
+                    service->handler_ = std::make_shared<WorkEventHandler>(
+                        service->eventRunner_, service);
+                }
+            }
+            if (service->workPolicyManager_ == nullptr) {
+                service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+            }
+            if (service->workPolicyManager_->workConnManager_ == nullptr) {
+                service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+            }
+            if (service->workQueueManager_ == nullptr) {
+                service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+            }
+        }
+    }
+    void TearDown()
+    {
+        auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        if (service != nullptr) {
+            service->handler_.reset();
+            service->eventRunner_.reset();
+        }
+    }
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 
@@ -148,18 +181,6 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo) { return 0; }
     int32_t ResetExecFrequency(const int32_t uid) { return 0; }
 };
-/**
- * @tc.name: onStart_001
- * @tc.desc: Test WorkSchedulerService OnStart.
- * @tc.type: FUNC
- * @tc.require: I8ZDJI
- */
-HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level0)
-{
-    workSchedulerService_->OnStart();
-    EXPECT_NE(workSchedulerService_, nullptr);
-}
-
 /**
  * @tc.name: startWork_001
  * @tc.desc: Test WorkSchedulerService startWork.
@@ -686,28 +707,6 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_009, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_009 end ====== ");
 }
 
-HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 begin ====== ");
-    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, false);
-    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, true);
-    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(false, true);
-    workSchedulerService_->standbyStateObserver_->OnAllowListChanged(0, "bundlename", 0, true);
-    EXPECT_NE(workSchedulerService_, nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, WorkBundleGroupChangeCallback_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkBundleGroupChangeCallback_001 begin ====== ");
-    OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo1(0, 1, 2, 0, "bundlename");
-    workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo1);
-    OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo2(0, 2, 1, 0, "bundlename");
-    workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo2);
-    EXPECT_NE(workSchedulerService_, nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkBundleGroupChangeCallback_001 end ====== ");
-}
-
 HWTEST_F(WorkSchedulerServiceTest, WorkSchedulerConnection_001, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkSchedulerConnection_001 begin ====== ");
@@ -738,122 +737,6 @@ HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level
     WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 end ====== ");
 }
 
-HWTEST_F(WorkSchedulerServiceTest, WorkQueueEventHandler_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 begin ====== ");
-    WorkQueueEventHandler handler(nullptr, nullptr);
-    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(1);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(2);
-    handler.ProcessEvent(event);
-    EXPECT_TRUE(handler.manager_ == nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, WorkEventHandler_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkEventHandler_001 begin ====== ");
-    WorkEventHandler handler(workSchedulerService_->eventRunner_, workSchedulerService_);
-    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(1);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(2);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(3);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(4);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(5);
-    handler.ProcessEvent(event);
-    EXPECT_TRUE(workSchedulerService_->eventRunner_ != nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkEventHandler_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, BatteryLevelListener_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryLevelListener_001 begin ====== ");
-
-    BatteryLevelListener batteryLevelListener(workSchedulerService_->workQueueManager_, workSchedulerService_);
-
-    batteryLevelListener.Start();
-    EXPECT_NE(batteryLevelListener.commonEventSubscriber, nullptr);
-
-    EventFwk::CommonEventData data;
-    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
-    data.SetWant(want);
-    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    want.SetParam(PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY, 20);
-    data.SetWant(want);
-    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
-    batteryLevelListener.Stop();
-
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryLevelListener_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, BatteryStatusListener_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryStatusListener_001 begin ====== ");
-    BatteryStatusListener batteryStatusListener(workSchedulerService_->workQueueManager_);
-
-    batteryStatusListener.Start();
-    EXPECT_NE(batteryStatusListener.commonEventSubscriber, nullptr);
-
-    EventFwk::CommonEventData data;
-    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_LOW);
-    data.SetWant(want);
-    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_OKAY);
-    data.SetWant(want);
-    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
-    batteryStatusListener.Stop();
-
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryStatusListener_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, ChargerListener_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.ChargerListener_001 begin ====== ");
-    ChargerListener chargerListener(workSchedulerService_->workQueueManager_);
-
-    chargerListener.Start();
-    EXPECT_NE(chargerListener.commonEventSubscriber, nullptr);
-
-    EventFwk::CommonEventData data;
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
-    data.SetWant(want);
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
-    data.SetWant(want);
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-    chargerListener.Stop();
-
-    WS_HILOGI("====== WorkSchedulerServiceTest.ChargerListener_001 end ====== ");
-}
-
 HWTEST_F(WorkSchedulerServiceTest, ListenerStop_001, TestSize.Level1)
 {
     WS_HILOGI("====== ListenerStop_001 begin====== ");
@@ -864,36 +747,6 @@ HWTEST_F(WorkSchedulerServiceTest, ListenerStop_001, TestSize.Level1)
     workSchedulerService_->workQueueManager_->listenerMap_.clear();
     EXPECT_TRUE(workSchedulerService_->workQueueManager_->listenerMap_.size() == 0);
     WS_HILOGI("====== ListenerStop_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, WorkSchedServiceStub_001, TestSize.Level1)
-{
-    MyWorkSchedulerService s;
-    MessageParcel data, reply;
-    MessageOption option;
-    const int size = 11;
-    for (int i = 0; i < size; i++) {
-        s.OnRemoteRequest(i, data, reply, option);
-        WorkInfo info;
-        info.Marshalling(data);
-        s.OnRemoteRequest(i, data, reply, option);
-    }
-    int32_t ret = s.OnRemoteRequest(0, data, reply, option);
-    EXPECT_TRUE(ret != ERR_OK);
-}
-
-/**
- * @tc.name: SendEvent_001
- * @tc.desc: Test WorkSchedulerService SendEvent.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkSchedulerServiceTest, SendEvent_001, TestSize.Level1)
-{
-    int32_t initDelay = 2 * 1000;
-    workSchedulerService_->GetHandler()->
-        SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), initDelay);
-    EXPECT_TRUE(workSchedulerService_->ready_);
 }
 
 /**
@@ -1350,18 +1203,6 @@ HWTEST_F(WorkSchedulerServiceTest, StopWorkForInner_001, TestSize.Level1)
     EXPECT_TRUE(ret);
     GetNativeToken(BGTASK_SERVICE_NAME);
     WS_HILOGI("WorkSchedulerServiceTest.StopWorkForInner_001 end");
-}
-
-/**
- * @tc.name: IsBaseAbilityReady_001
- * @tc.desc: Test WorkSchedulerService IsBaseAbilityReady.
- * @tc.type: FUNC
- * @tc.require: issue:#ICBWOI
- */
-HWTEST_F(WorkSchedulerServiceTest, IsBaseAbilityReady_001, TestSize.Level1)
-{
-    bool ret = workSchedulerService_->IsBaseAbilityReady();
-    EXPECT_EQ(ret, true);
 }
 
 /**

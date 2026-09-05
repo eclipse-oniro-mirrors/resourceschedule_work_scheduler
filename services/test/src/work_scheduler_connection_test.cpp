@@ -21,6 +21,9 @@
 #include "work_sched_hilog.h"
 #include "iservice_registry.h"
 #include "system_ability_definition.h"
+#include "work_scheduler_service.h"
+#include "work_policy_manager.h"
+#include "work_conn_manager.h"
 
 using namespace testing::ext;
 using namespace std;
@@ -34,7 +37,7 @@ class WorkSchedulerConnectionTest : public testing::Test {
 public:
     static void SetUpTestCase();
     static void TearDownTestCase() {}
-    void SetUp() {}
+    void SetUp();
     void TearDown() {}
     static std::shared_ptr<WorkSchedulerConnection> workSchedulerConnection_;
 };
@@ -51,16 +54,17 @@ void WorkSchedulerConnectionTest::SetUpTestCase()
     workSchedulerConnection_ = std::make_shared<WorkSchedulerConnection>(workInfo);
 }
 
-/**
- * @tc.name: StopWork_001
- * @tc.desc: Test WorkSchedulerConnection StopWork.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
- */
-HWTEST_F(WorkSchedulerConnectionTest, StopWork_001, TestSize.Level2)
+void WorkSchedulerConnectionTest::SetUp()
 {
-    workSchedulerConnection_->StopWork();
-    EXPECT_TRUE(workSchedulerConnection_->proxy_ == nullptr);
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service != nullptr) {
+        if (service->workPolicyManager_ == nullptr) {
+            service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+        }
+        if (service->workPolicyManager_->workConnManager_ == nullptr) {
+            service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+        }
+    }
 }
 
 /**

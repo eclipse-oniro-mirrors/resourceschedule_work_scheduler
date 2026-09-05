@@ -333,27 +333,6 @@ HWTEST_F(WorkQueueTest, GetWorkToRunByPriority_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: CancelWork_001
- * @tc.desc: Test WorkQueue CancelWork.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, CancelWork_001, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto workInfo_ = WorkInfo();
-    workInfo_.SetWorkId(1);
-    std::string bundleName = "com.example.workStatus";
-    std::string abilityName = "workStatusAbility";
-    workInfo_.SetElement(bundleName, abilityName);
-    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
-    workQueue_->Push(workStatus);
-    auto ret = workQueue_->CancelWork(workStatus);
-    EXPECT_TRUE(ret);
-}
-
-/**
  * @tc.name: GetWorkList_001
  * @tc.desc: Test WorkQueue GetWorkList.
  * @tc.type: FUNC

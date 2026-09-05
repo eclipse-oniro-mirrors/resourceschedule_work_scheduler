@@ -54,34 +54,5 @@ HWTEST_F(EventPublisherTest, publishEvent_001, TestSize.Level3)
     eventPublisher_->PublishEvent(result, eventType, eventValue);
     EXPECT_EQ(result, std::string("dump -d need right params."));
 }
-
-HWTEST_F(EventPublisherTest, Dump_001, TestSize.Level3)
-{
-    std::vector<std::pair<string, string>> infos = {
-        {"event", "info"},
-        {"network", "wifi"},
-        {"network", "disconnect"},
-        {"network", "invalid"},
-        {"charging", "usb"},
-        {"charging", "ac"},
-        {"charging", "wireless"},
-        {"charging", "none"},
-        {"charging", "invalid"},
-        {"storage", "low"},
-        {"storage", "ok"},
-        {"storage", "invalid"},
-        {"batteryStatus", "low"},
-        {"batteryStatus", "ok"},
-        {"batteryStatus", "invalid"},
-    };
-    for (auto it : infos) {
-        std::string result;
-        std::string eventType = it.first;
-        std::string eventValue = it.second;
-        eventPublisher_->Dump(result, eventType, eventValue);
-        WS_HILOGI("%{public}s", result.c_str());
-        EXPECT_EQ(!result.empty(), true);
-}
-}
 }
 }

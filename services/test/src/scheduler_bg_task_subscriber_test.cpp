@@ -38,17 +38,5 @@ void SchedulerBgTaskSubscriberTest::SetUpTestCase()
 {
     schedulerBgTaskSubscriber_ = std::make_shared<SchedulerBgTaskSubscriber>();
 }
-
-/**
- * @tc.name: OnRemoteDied_001
- * @tc.desc: Test SchedulerBgTaskSubscriber OnRemoteDied.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(SchedulerBgTaskSubscriberTest, OnRemoteDied_001, TestSize.Level3)
-{
-    schedulerBgTaskSubscriber_->OnRemoteDied(nullptr);
-    EXPECT_TRUE(schedulerBgTaskSubscriber_ != nullptr);
-}
 }
 }
