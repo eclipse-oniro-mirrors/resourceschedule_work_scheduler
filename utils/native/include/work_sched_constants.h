@@ -64,6 +64,10 @@ inline constexpr int32_t UID_TRANSFORM_DIVISOR = 200000;
 inline constexpr int32_t DEFAULT_SA_ID = 0;
 constexpr const char *WORK_SCHEDULER_CONDITION = "WORK_SCHEDULER_CONDITION";
 constexpr const char *EXECUTE_IMMEDIATE = "executeImmediate";
+
+// services\native\src\work_guard_thread.cpp
+inline constexpr int32_t GUARD_THREAD_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+inline constexpr int UPPER_LIMIT = 1000;
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H

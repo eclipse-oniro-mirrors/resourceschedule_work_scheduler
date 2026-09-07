@@ -1069,5 +1069,46 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
     int32_t delay = rand() % MAX_DELAY_SECOND + 1;
     handler->PostTask(task, delay * MILLISECOND);
 }
+
+std::vector<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllRunningWorkStatus()
+{
+    WS_HILOGD("enter");
+    std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
+    std::vector<std::shared_ptr<WorkStatus>> runningWorks;
+    auto it = uidQueueMap_.begin();
+    while (it != uidQueueMap_.end()) {
+        auto workList = it->second->GetWorkList();
+        for (const auto &work : workList) {
+            if (work && work->IsRunning()) {
+                runningWorks.push_back(work);
+            }
+        }
+        it++;
+    }
+    return runningWorks;
+}
+
+void WorkPolicyManager::CleanOrphanWork(std::shared_ptr<WorkStatus> workStatus)
+{
+    if (!workStatus) {
+        WS_HILOGE("CleanOrphanWork: workStatus is null");
+        return;
+    }
+    WS_HILOGI("CleanOrphanWork workId:%{public}s", workStatus->workId_.c_str());
+    if (workConnManager_) {
+        workConnManager_->RemoveConnInfo(workStatus->workId_);
+    }
+    if (!workStatus->IsRepeating()) {
+        workStatus->MarkStatus(WorkStatus::Status::REMOVED);
+        RemoveFromUidQueue(workStatus, workStatus->uid_);
+        RemoveFromReadyQueue(workStatus);
+    } else {
+        workStatus->workStartTime_ = 0;
+        workStatus->workWatchDogTime_ = 0;
+        workStatus->duration_ = 0;
+        workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    }
+    RemoveWatchDog(workStatus);
+}
 } // namespace WorkScheduler
 } // namespace OHOS
