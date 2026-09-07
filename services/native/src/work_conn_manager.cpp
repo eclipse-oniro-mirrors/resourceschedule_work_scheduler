@@ -197,7 +197,7 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
     if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::DEEP_IDLE) > 0) {
         conditions.append("DEEP_IDLE-");
     }
-    conditions.pop_back();
+    conditions.empty() ? (void)0 : conditions.pop_back();
 
     string type = "Repeat";
     if (!workStatus->workInfo_->IsRepeat()) {

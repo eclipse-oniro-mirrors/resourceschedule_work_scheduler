@@ -29,7 +29,7 @@ const int32_t TRUE_PARAM = 1;
 const int32_t FALSE_PARAM = 0;
 const int32_t BATTERY_LEVEL_MIN = 0;
 const int32_t BATTERY_LEVEL_MAX = 100;
-bool g_hasParamError = false;
+thread_local bool g_hasParamError = false;
 
 AsyncWorkData::AsyncWorkData(napi_env napiEnv)
 {

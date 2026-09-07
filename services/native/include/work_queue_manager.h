@@ -125,6 +125,8 @@ private:
     void PrintAllWorkStatus(WorkCondition::Type conditionType);
     void ClearTimeOutWorkStatus();
     void AsyncStopWork(std::shared_ptr<WorkStatus> workStatus);
+    void StartListener(WorkCondition::Type type);
+    void StopListener(WorkCondition::Type type);
 
 private:
     ffrt::mutex mutex_;
