@@ -130,7 +130,6 @@ void WorkGuardThread::CheckRunningWorkStatus()
             if (StopRunningExtension(workStatus->bundleName_, workStatus->abilityName_, workStatus->uid_)) {
                 policyManager->CleanOrphanWork(workStatus);
             }
-
         } else {
             WS_HILOGI("Orphan task found: workId=%{public}s is RUNNING but no connection, cleaning state.",
                 workStatus->workId_.c_str());
