@@ -214,7 +214,7 @@ void WorkPolicyManager::RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatu
 
 void WorkPolicyManager::RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus)
 {
-    conditionReadyQueue_->RemoveUnReady();
+    conditionReadyQueue_->CancelWork(workStatus);
 }
 
 std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
