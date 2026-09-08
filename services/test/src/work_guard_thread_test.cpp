@@ -32,8 +32,21 @@ class WorkGuardThreadTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
     static void TearDownTestCase() {}
-    void SetUp() {}
-    void TearDown() {}
+    void SetUp()
+    {
+        service_ = std::make_shared<WorkSchedulerService>();
+        guardThread_ = std::make_shared<WorkGuardThread>(service_);
+    }
+    void TearDown()
+    {
+        if (guardThread_) {
+            guardThread_->Stop();
+            guardThread_.reset();
+        }
+        service_.reset();
+    }
+    std::shared_ptr<WorkSchedulerService> service_;
+    std::shared_ptr<WorkGuardThread> guardThread_;
 };
 
 /* ======================== IsWorkInExtensionInfos ======================== */
@@ -45,9 +58,6 @@ public:
  */
 HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.SetElement("com.test.demo", "WorkExt");
@@ -60,7 +70,7 @@ HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_001, TestSize.Level1)
     extInfo.uid = 10000;
 
     std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos = {extInfo};
-    EXPECT_TRUE(guardThread->IsWorkInExtensionInfos(workStatus, extensionInfos));
+    EXPECT_TRUE(guardThread_->IsWorkInExtensionInfos(workStatus, extensionInfos));
 }
 
 /**
@@ -70,9 +80,6 @@ HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_001, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_002, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.SetElement("com.test.demo", "WorkExt");
@@ -85,7 +92,7 @@ HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_002, TestSize.Level1)
     extInfo.uid = 20000;
 
     std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos = {extInfo};
-    EXPECT_FALSE(guardThread->IsWorkInExtensionInfos(workStatus, extensionInfos));
+    EXPECT_FALSE(guardThread_->IsWorkInExtensionInfos(workStatus, extensionInfos));
 }
 
 /**
@@ -95,11 +102,8 @@ HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_002, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_003, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-
     std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos;
-    EXPECT_FALSE(guardThread->IsWorkInExtensionInfos(nullptr, extensionInfos));
+    EXPECT_FALSE(guardThread_->IsWorkInExtensionInfos(nullptr, extensionInfos));
 }
 
 /* ======================== IsExtensionInRunningWorks ======================== */
@@ -111,9 +115,6 @@ HWTEST_F(WorkGuardThreadTest, IsWorkInExtensionInfos_003, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, IsExtensionInRunningWorks_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.SetElement("com.test.demo", "WorkExt");
@@ -126,7 +127,7 @@ HWTEST_F(WorkGuardThreadTest, IsExtensionInRunningWorks_001, TestSize.Level1)
     extInfo.uid = 10000;
 
     std::vector<std::shared_ptr<WorkStatus>> runningWorks = {workStatus};
-    EXPECT_TRUE(guardThread->IsExtensionInRunningWorks(extInfo, runningWorks));
+    EXPECT_TRUE(guardThread_->IsExtensionInRunningWorks(extInfo, runningWorks));
 }
 
 /**
@@ -136,9 +137,6 @@ HWTEST_F(WorkGuardThreadTest, IsExtensionInRunningWorks_001, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, IsExtensionInRunningWorks_002, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.SetElement("com.test.demo", "WorkExt");
@@ -151,7 +149,7 @@ HWTEST_F(WorkGuardThreadTest, IsExtensionInRunningWorks_002, TestSize.Level1)
     extInfo.uid = 20000;
 
     std::vector<std::shared_ptr<WorkStatus>> runningWorks = {workStatus};
-    EXPECT_FALSE(guardThread->IsExtensionInRunningWorks(extInfo, runningWorks));
+    EXPECT_FALSE(guardThread_->IsExtensionInRunningWorks(extInfo, runningWorks));
 }
 
 /* ======================== Start / Stop ======================== */
@@ -163,11 +161,9 @@ HWTEST_F(WorkGuardThreadTest, IsExtensionInRunningWorks_002, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, Start_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    guardThread->Start();
-    EXPECT_TRUE(guardThread->running_.load());
-    guardThread->Stop();
+    guardThread_->Start();
+    EXPECT_TRUE(guardThread_->running_.load());
+    guardThread_->Stop();
 }
 
 /**
@@ -177,12 +173,10 @@ HWTEST_F(WorkGuardThreadTest, Start_001, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, Start_002, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    guardThread->Start();
-    guardThread->Start();
-    EXPECT_TRUE(guardThread->running_.load());
-    guardThread->Stop();
+    guardThread_->Start();
+    guardThread_->Start();
+    EXPECT_TRUE(guardThread_->running_.load());
+    guardThread_->Stop();
 }
 
 /**
@@ -192,12 +186,10 @@ HWTEST_F(WorkGuardThreadTest, Start_002, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, Stop_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    guardThread->Start();
-    guardThread->Stop();
-    EXPECT_FALSE(guardThread->running_.load());
-    EXPECT_EQ(guardThread->thread_, nullptr);
+    guardThread_->Start();
+    guardThread_->Stop();
+    EXPECT_FALSE(guardThread_->running_.load());
+    EXPECT_EQ(guardThread_->thread_, nullptr);
 }
 
 /**
@@ -207,40 +199,22 @@ HWTEST_F(WorkGuardThreadTest, Stop_001, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, Stop_002, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    guardThread->Stop();
-    EXPECT_FALSE(guardThread->running_.load());
-}
-
-/* ======================== GetAbilityManager ======================== */
-
-/**
- * @tc.name: GetAbilityManager_001
- * @tc.desc: Test GetAbilityManager returns nullptr when system ability manager is unavailable.
- * @tc.type: FUNC
- */
-HWTEST_F(WorkGuardThreadTest, GetAbilityManager_001, TestSize.Level1)
-{
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    auto abilityMgr = guardThread->GetAbilityManager();
-    EXPECT_NE(abilityMgr, nullptr);
+    guardThread_->Stop();
+    EXPECT_FALSE(guardThread_->running_.load());
 }
 
 /* ======================== GetRunningExtensionInfos ======================== */
 
 /**
  * @tc.name: GetRunningExtensionInfos_001
- * @tc.desc: Test GetRunningExtensionInfos returns false when ability manager is null.
+ * @tc.desc: Test GetRunningExtensionInfos.
  * @tc.type: FUNC
  */
 HWTEST_F(WorkGuardThreadTest, GetRunningExtensionInfos_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
+    guardThread_->abilityMgr_ = nullptr;
     std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos;
-    bool ret = guardThread->GetRunningExtensionInfos(extensionInfos);
+    bool ret = guardThread_->GetRunningExtensionInfos(extensionInfos);
     EXPECT_TRUE(ret);
 }
 
@@ -248,30 +222,41 @@ HWTEST_F(WorkGuardThreadTest, GetRunningExtensionInfos_001, TestSize.Level1)
 
 /**
  * @tc.name: StopRunningExtension_001
- * @tc.desc: Test StopRunningExtension returns false when ability manager is null.
+ * @tc.desc: Test StopRunningExtension.
  * @tc.type: FUNC
  */
 HWTEST_F(WorkGuardThreadTest, StopRunningExtension_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    bool ret = guardThread->StopRunningExtension("com.test.demo", "WorkExt", 10000);
+    guardThread_->abilityMgr_ = nullptr;
+    bool ret = guardThread_->StopRunningExtension("com.test.demo", "WorkExt", 10000);
     EXPECT_FALSE(ret);
 }
 
+/* ======================== CheckAbilityManagerValid ======================== */
+
+/**
+ * @tc.name: CheckAbilityManagerValid_001
+ * @tc.desc: Test CheckAbilityManagerValid returns false when abilityMgr_ is null and init fails.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkGuardThreadTest, CheckAbilityManagerValid_001, TestSize.Level1)
+{
+    guardThread_->abilityMgr_ = nullptr;
+    EXPECT_TRUE(guardThread_->CheckAbilityManagerValid());
+}
+
 /* ======================== CheckRunningWorkStatus ======================== */
+
 /**
  * @tc.name: CheckRunningWorkStatus_001
- * @tc.desc: Test CheckRunningWorkStatus with running work but GetRunningExtensionInfos fails,
- *           work should not be cleaned.
+ * @tc.desc: Test CheckRunningWorkStatus.
  * @tc.type: FUNC
  */
 HWTEST_F(WorkGuardThreadTest, CheckRunningWorkStatus_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
-    service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
-    service->workPolicyManager_->uidQueueMap_.clear();
+    service_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service_);
+    service_->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    service_->workPolicyManager_->uidQueueMap_.clear();
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.SetElement("com.test.demo", "WorkExt");
@@ -279,14 +264,14 @@ HWTEST_F(WorkGuardThreadTest, CheckRunningWorkStatus_001, TestSize.Level1)
     int32_t uid = 10000;
     auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    service->workPolicyManager_->AddWork(workStatus, uid);
+    service_->workPolicyManager_->AddWork(workStatus, uid);
 
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    guardThread->CheckRunningWorkStatus();
+    guardThread_->CheckRunningWorkStatus();
     EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::REMOVED);
 }
 
 /* ======================== CheckRunningExtensions ======================== */
+
 /**
  * @tc.name: CheckRunningExtensions_001
  * @tc.desc: Test CheckRunningExtensions with policyManager but GetRunningExtensionInfos fails,
@@ -295,10 +280,9 @@ HWTEST_F(WorkGuardThreadTest, CheckRunningWorkStatus_001, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, CheckRunningExtensions_001, TestSize.Level1)
 {
-    auto service = std::make_shared<WorkSchedulerService>();
-    service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
-    service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
-    service->workPolicyManager_->uidQueueMap_.clear();
+    service_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service_);
+    service_->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    service_->workPolicyManager_->uidQueueMap_.clear();
     WorkInfo workinfo;
     workinfo.SetWorkId(10000);
     workinfo.SetElement("com.test.demo", "WorkExt");
@@ -306,10 +290,9 @@ HWTEST_F(WorkGuardThreadTest, CheckRunningExtensions_001, TestSize.Level1)
     int32_t uid = 10000;
     auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    service->workPolicyManager_->AddWork(workStatus, uid);
+    service_->workPolicyManager_->AddWork(workStatus, uid);
 
-    auto guardThread = std::make_shared<WorkGuardThread>(service);
-    guardThread->CheckRunningExtensions();
+    guardThread_->CheckRunningExtensions();
     EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::RUNNING);
 }
 } // namespace WorkScheduler

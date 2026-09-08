@@ -54,13 +54,15 @@ private:
         const std::vector<std::shared_ptr<WorkStatus>>& runningWorks);
     bool GetRunningExtensionInfos(std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
     bool StopRunningExtension(const std::string& bundleName, const std::string& abilityName, int32_t uid);
-    sptr<AAFwk::IAbilityManager> GetAbilityManager();
+    void InitAbilityManager();
+    bool CheckAbilityManagerValid();
 
     std::weak_ptr<WorkSchedulerService> service_;
     std::atomic<bool> running_ {false};
     std::unique_ptr<ffrt::thread> thread_;
     std::mutex mutex_;
     std::condition_variable cv_;
+    sptr<AAFwk::IAbilityManager> abilityMgr_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

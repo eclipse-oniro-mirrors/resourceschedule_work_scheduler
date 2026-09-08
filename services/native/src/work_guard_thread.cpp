@@ -30,7 +30,10 @@
 namespace OHOS {
 namespace WorkScheduler {
 
-WorkGuardThread::WorkGuardThread(const std::shared_ptr<WorkSchedulerService>& service) : service_(service) {}
+WorkGuardThread::WorkGuardThread(const std::shared_ptr<WorkSchedulerService>& service) : service_(service)
+{
+    InitAbilityManager();
+}
 
 WorkGuardThread::~WorkGuardThread()
 {
@@ -200,13 +203,12 @@ bool WorkGuardThread::IsExtensionInRunningWorks(const AppExecFwk::ExtensionRunni
 
 bool WorkGuardThread::GetRunningExtensionInfos(std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos)
 {
-    auto abilityMgr = GetAbilityManager();
-    if (abilityMgr == nullptr) {
+    if (!CheckAbilityManagerValid()) {
         WS_HILOGE("Failed to get ability manager");
         return false;
     }
     std::vector<AppExecFwk::ExtensionRunningInfo> allExtensions;
-    int32_t ret = abilityMgr->GetExtensionRunningInfos(UPPER_LIMIT, allExtensions);
+    int32_t ret = abilityMgr_->GetExtensionRunningInfos(UPPER_LIMIT, allExtensions);
     if (ret != ERR_OK) {
         WS_HILOGE("GetExtensionRunningInfos failed, ret=%{public}d", ret);
         return false;
@@ -224,37 +226,44 @@ bool WorkGuardThread::GetRunningExtensionInfos(std::vector<AppExecFwk::Extension
 
 bool WorkGuardThread::StopRunningExtension(const std::string& bundleName, const std::string& abilityName, int32_t uid)
 {
-    auto abilityMgr = GetAbilityManager();
-    if (abilityMgr == nullptr) {
+    if (!CheckAbilityManagerValid()) {
         return false;
     }
     AAFwk::Want want;
     want.SetElementName(bundleName, abilityName);
     int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
-    int32_t ret = abilityMgr->StopExtensionAbility(want, nullptr, userId,
+    int32_t ret = abilityMgr_->StopExtensionAbility(want, nullptr, userId,
         AppExecFwk::ExtensionAbilityType::WORK_SCHEDULER);
     return ret == ERR_OK;
 }
 
-sptr<AAFwk::IAbilityManager> WorkGuardThread::GetAbilityManager()
+void WorkGuardThread::InitAbilityManager()
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
         WS_HILOGE("Failed to get system ability manager");
-        return nullptr;
+        return;
     }
     sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
     if (remoteObject == nullptr) {
         WS_HILOGE("Failed to get ability manager service");
-        return nullptr;
+        return;
     }
-    sptr<AAFwk::IAbilityManager> abilityMgr = iface_cast<AAFwk::IAbilityManager>(remoteObject);
-    if (abilityMgr == nullptr || abilityMgr->AsObject() == nullptr) {
+    abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
+    if (abilityMgr_ == nullptr || abilityMgr_->AsObject() == nullptr) {
         WS_HILOGE("Failed to cast ability manager");
-        return nullptr;
+        abilityMgr_ = nullptr;
+        return;
     }
-    return abilityMgr;
+}
+
+bool WorkGuardThread::CheckAbilityManagerValid()
+{
+    if (abilityMgr_ == nullptr || abilityMgr_->AsObject() == nullptr) {
+        InitAbilityManager();
+    }
+    return abilityMgr_ != nullptr;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
