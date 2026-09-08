@@ -20,13 +20,14 @@
 #include <condition_variable>
 #include <memory>
 #include <mutex>
-#include <thread>
 #include <ffrt.h>
+#include "cpp/thread.h"
 #include "ability_manager_interface.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerService;
+class WorkStatus;
 
 class WorkGuardThread {
 public:
@@ -47,9 +48,9 @@ private:
     void Run();
     void CheckRunningExtensions();
     void CheckRunningWorkStatus();
-    bool IsWorkInExtensionInfos(const std::shared_ptr<WorkStatus> workStatus, 
+    bool IsWorkInExtensionInfos(const std::shared_ptr<WorkStatus> workStatus,
         const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
-    bool IsExtensionInRunningWorks(const AppExecFwk::ExtensionRunningInfo>& extInfo,
+    bool IsExtensionInRunningWorks(const AppExecFwk::ExtensionRunningInfo& extInfo,
         const std::vector<std::shared_ptr<WorkStatus>>& runningWorks);
     bool GetRunningExtensionInfos(std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
     bool StopRunningExtension(const std::string& bundleName, const std::string& abilityName, int32_t uid);

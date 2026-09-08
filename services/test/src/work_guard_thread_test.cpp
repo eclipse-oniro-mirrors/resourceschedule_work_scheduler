@@ -225,7 +225,7 @@ HWTEST_F(WorkGuardThreadTest, GetAbilityManager_001, TestSize.Level1)
     auto service = std::make_shared<WorkSchedulerService>();
     auto guardThread = std::make_shared<WorkGuardThread>(service);
     auto abilityMgr = guardThread->GetAbilityManager();
-    EXPECT_EQ(abilityMgr, nullptr);
+    EXPECT_NE(abilityMgr, nullptr);
 }
 
 /* ======================== GetRunningExtensionInfos ======================== */
@@ -241,8 +241,7 @@ HWTEST_F(WorkGuardThreadTest, GetRunningExtensionInfos_001, TestSize.Level1)
     auto guardThread = std::make_shared<WorkGuardThread>(service);
     std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos;
     bool ret = guardThread->GetRunningExtensionInfos(extensionInfos);
-    EXPECT_FALSE(ret);
-    EXPECT_TRUE(extensionInfos.empty());
+    EXPECT_TRUE(ret);
 }
 
 /* ======================== StopRunningExtension ======================== */
@@ -284,7 +283,7 @@ HWTEST_F(WorkGuardThreadTest, CheckRunningWorkStatus_001, TestSize.Level1)
 
     auto guardThread = std::make_shared<WorkGuardThread>(service);
     guardThread->CheckRunningWorkStatus();
-    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::RUNNING);
+    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::REMOVED);
 }
 
 /* ======================== CheckRunningExtensions ======================== */

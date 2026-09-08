@@ -16,6 +16,9 @@
 #include "work_guard_thread.h"
 
 #include <set>
+#include <if_system_ability_manager.h>
+#include <iservice_registry.h>
+#include <system_ability_definition.h>
 
 #include "work_sched_hilog.h"
 #include "work_sched_constants.h"
@@ -182,7 +185,7 @@ bool WorkGuardThread::IsWorkInExtensionInfos(const std::shared_ptr<WorkStatus> w
     return false;
 }
 
-bool WorkGuardThread::IsExtensionInRunningWorks(const AppExecFwk::ExtensionRunningInfo>& extInfo,
+bool WorkGuardThread::IsExtensionInRunningWorks(const AppExecFwk::ExtensionRunningInfo& extInfo,
     const std::vector<std::shared_ptr<WorkStatus>>& runningWorks)
 {
     for (auto& workStatus : runningWorks) {
