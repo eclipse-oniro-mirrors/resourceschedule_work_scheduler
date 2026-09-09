@@ -47,6 +47,22 @@ bool WorkQueueManager::AddListener(WorkCondition::Type type, shared_ptr<IConditi
     return true;
 }
 
+void WorkQueueManager::StartListener(WorkCondition::Type type)
+{
+    auto it = listenerMap_.find(type);
+    if (it != listenerMap_.end()) {
+        it->second->Start();
+    }
+}
+
+void WorkQueueManager::StopListener(WorkCondition::Type type)
+{
+    auto it = listenerMap_.find(type);
+    if (it != listenerMap_.end()) {
+        it->second->Stop();
+    }
+}
+
 bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
 {
     if (!workStatus || !workStatus->workInfo_ || !workStatus->workInfo_->GetConditionMap()) {
@@ -58,9 +74,7 @@ bool WorkQueueManager::AddWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : *map) {
         if (queueMap_.count(it.first) == 0) {
             queueMap_.emplace(it.first, make_shared<WorkQueue>());
-            if (listenerMap_.count(it.first) != 0) {
-                listenerMap_.at(it.first)->Start();
-            }
+            StartListener(it.first);
         }
         queueMap_.at(it.first)->Push(workStatus);
     }
@@ -81,7 +95,7 @@ bool WorkQueueManager::RemoveWork(shared_ptr<WorkStatus> workStatus)
             queueMap_.at(it.first)->Remove(workStatus);
         }
         if (queueMap_.count(it.first) == 0) {
-            listenerMap_.at(it.first)->Stop();
+            StopListener(it.first);
         }
     }
     return true;
@@ -94,7 +108,7 @@ bool WorkQueueManager::CancelWork(shared_ptr<WorkStatus> workStatus)
     for (auto it : queueMap_) {
         it.second->CancelWork(workStatus);
         if (queueMap_.count(it.first) == 0) {
-            listenerMap_.at(it.first)->Stop();
+            StopListener(it.first);
         }
     }
     // Notify work remove event to battery statistics
@@ -134,10 +148,10 @@ vector<shared_ptr<WorkStatus>> WorkQueueManager::GetReayQueue(WorkCondition::Typ
                 (*it)->bundleName_.c_str(), (*it)->workId_.c_str());
             SetTimeRetrigger((*it)->timeRetrigger_);
             if (!hasStop) {
-                listenerMap_.at(WorkCondition::Type::GROUP)->Stop();
+                StopListener(WorkCondition::Type::GROUP);
                 hasStop = true;
             }
-            listenerMap_.at(WorkCondition::Type::GROUP)->Start();
+            StartListener(WorkCondition::Type::GROUP);
         }
         (*it)->needRetrigger_ = false;
         (*it)->timeRetrigger_ = INT32_MAX;

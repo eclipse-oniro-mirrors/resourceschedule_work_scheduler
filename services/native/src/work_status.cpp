@@ -300,8 +300,8 @@ bool WorkStatus::IsReady()
             "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
-    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+    time_t lastTime = 0;
+    if (!GetUidLastTime(uid_, lastTime)) {
         // first run task
         if (CheckEarliestStartTime()) {
             WS_HILOGE("The initial startup time does not meet the EarliestStartTime requirement.");
@@ -310,7 +310,7 @@ bool WorkStatus::IsReady()
         conditionStatus_ += DELIMITER + "firstTrigger";
         return true;
     }
-    double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
+    double del = difftime(getOppositeTime(), lastTime);
     if (del < minInterval_) {
         conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&" + NOT_OK + "(" +
             to_string(static_cast<long>(del)) + ":" + to_string(minInterval_) + ")";
@@ -456,12 +456,8 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
     }
     auto workConditionMap = workInfo_->GetConditionMap();
     uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-    time_t lastTime;
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        lastTime = 0;
-    } else {
-        lastTime = s_uid_last_time_map[uid_];
-    }
+    time_t lastTime = 0;
+    GetUidLastTime(uid_, lastTime);
     double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
     double oppositedel = difftime(getOppositeTime(), lastTime);
     double del = currentdel > oppositedel ? currentdel : oppositedel;
@@ -475,12 +471,8 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
 
 double WorkStatus::TimeUntilLast()
 {
-    time_t lastTime;
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        lastTime = 0;
-    } else {
-        lastTime = s_uid_last_time_map[uid_];
-    }
+    time_t lastTime = 0;
+    GetUidLastTime(uid_, lastTime);
     double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
     double oppositedel = difftime(getOppositeTime(), lastTime);
     return currentdel > oppositedel ? currentdel : oppositedel;
@@ -671,6 +663,17 @@ void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
     std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     s_uid_last_time_map.erase(uid);
+}
+
+bool WorkStatus::GetUidLastTime(int32_t uid, time_t &lastTime)
+{
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
+    auto it = s_uid_last_time_map.find(uid);
+    if (it == s_uid_last_time_map.end()) {
+        return false;
+    }
+    lastTime = it->second;
+    return true;
 }
 
 bool WorkStatus::IsRunning()

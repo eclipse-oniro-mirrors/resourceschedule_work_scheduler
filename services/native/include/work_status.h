@@ -221,17 +221,10 @@ public:
     double TimeUntilLast();
     bool IsDebugTask();
     void SetDebugTask(bool debugTask);
+
 private:
-    Status currentStatus_;
-    time_t baseTime_;
-    int64_t minInterval_;
-    bool groupChanged_;
-    ffrt::mutex conditionMapMutex_;
-    static ffrt::mutex s_uid_last_time_mutex;
-    static std::map<int32_t, time_t> s_uid_last_time_map;
-    std::string conditionStatus_;
-    std::atomic<bool> timeout_ {false};
-    std::atomic<bool> debugTask_ {false};
+    static int32_t GetDumpAppGroup(int32_t uid);
+    static bool GetUidLastTime(int32_t uid, time_t &lastTime);
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
@@ -245,9 +238,20 @@ private:
     bool IsStandbyExemption();
     bool CheckEarliestStartTime();
     int64_t HandleMinInterval(int64_t interval, int32_t group);
-    static int32_t GetDumpAppGroup(int32_t uid);
+
+private:
+    static ffrt::mutex s_uid_last_time_mutex;
+    static std::map<int32_t, time_t> s_uid_last_time_map;
     static ffrt::mutex dumpAppGroupMutex_;
     static std::map<int32_t, int32_t> dumpAppGroupMap_;
+    bool groupChanged_;
+    std::atomic<bool> timeout_ {false};
+    std::atomic<bool> debugTask_ {false};
+    Status currentStatus_;
+    time_t baseTime_;
+    int64_t minInterval_;
+    ffrt::mutex conditionMapMutex_;
+    std::string conditionStatus_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
