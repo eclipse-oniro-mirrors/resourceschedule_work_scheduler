@@ -17,37 +17,40 @@
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_WORK_GUARD_THREAD_H
 
 #include <atomic>
-#include <condition_variable>
 #include <memory>
-#include <mutex>
 #include <ffrt.h>
-#include "cpp/thread.h"
 #include "ability_manager_interface.h"
 
 namespace OHOS {
 namespace WorkScheduler {
 class WorkSchedulerService;
+class WorkPolicyManager;
 class WorkStatus;
 
-class WorkGuardThread {
+class WorkGuardThread : public std::enable_shared_from_this<WorkGuardThread> {
 public:
     explicit WorkGuardThread(const std::shared_ptr<WorkSchedulerService>& service);
     ~WorkGuardThread();
 
     /**
-     * @brief Start the guard thread.
+     * @brief Start the guard check by submitting the first delayed task.
      */
     void Start();
 
     /**
-     * @brief Stop the guard thread.
+     * @brief Stop the guard check. Pending tasks will exit without rescheduling.
      */
     void Stop();
 
 private:
-    void Run();
-    void CheckRunningExtensions();
-    void CheckRunningWorkStatus();
+    void ScheduleNextCheck();
+    void DoGuardCheck(uint64_t gen);
+    void StopGuardCheck();
+    void CheckRunningExtensions(const std::vector<std::shared_ptr<WorkStatus>>& runningWorks,
+        const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
+    void CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyManager>& policyManager,
+        const std::vector<std::shared_ptr<WorkStatus>>& runningWorks,
+        const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
     bool IsWorkInExtensionInfos(const std::shared_ptr<WorkStatus> workStatus,
         const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
     bool IsExtensionInRunningWorks(const AppExecFwk::ExtensionRunningInfo& extInfo,
@@ -59,9 +62,7 @@ private:
 
     std::weak_ptr<WorkSchedulerService> service_;
     std::atomic<bool> running_ {false};
-    std::unique_ptr<ffrt::thread> thread_;
-    std::mutex mutex_;
-    std::condition_variable cv_;
+    std::atomic<uint64_t> generation_ {0};
     sptr<AAFwk::IAbilityManager> abilityMgr_;
 };
 } // namespace WorkScheduler

@@ -30,14 +30,14 @@
 namespace OHOS {
 namespace WorkScheduler {
 
-WorkGuardThread::WorkGuardThread(const std::shared_ptr<WorkSchedulerService>& service) : service_(service)
-{
-    InitAbilityManager();
-}
+WorkGuardThread::WorkGuardThread(const std::shared_ptr<WorkSchedulerService>& service) : service_(service) {}
 
-WorkGuardThread::~WorkGuardThread()
+WorkGuardThread::~WorkGuardThread() = default;
+
+void WorkGuardThread::StopGuardCheck()
 {
-    Stop();
+    generation_.fetch_add(1);
+    running_.store(false);
 }
 
 void WorkGuardThread::Start()
@@ -47,7 +47,8 @@ void WorkGuardThread::Start()
         return;
     }
     running_.store(true);
-    thread_ = std::make_unique<ffrt::thread>(&WorkGuardThread::Run, this);
+    generation_.fetch_add(1);
+    ScheduleNextCheck();
     WS_HILOGI("Guard thread started.");
 }
 
@@ -56,68 +57,65 @@ void WorkGuardThread::Stop()
     if (!running_.load()) {
         return;
     }
-    running_.store(false);
-    {
-        std::lock_guard<std::mutex> lock(mutex_);
-        cv_.notify_all();
-    }
-    if (thread_ && thread_->joinable()) {
-        thread_->join();
-    }
-    thread_.reset();
+    StopGuardCheck();
     WS_HILOGI("Guard thread stopped.");
 }
 
-void WorkGuardThread::Run()
+void WorkGuardThread::ScheduleNextCheck()
 {
-    WS_HILOGI("Guard thread run loop started, interval:%{public}dms", GUARD_THREAD_INTERVAL_MS);
-    while (running_.load()) {
-        std::unique_lock<std::mutex> lock(mutex_);
-        cv_.wait_for(lock, std::chrono::milliseconds(GUARD_THREAD_INTERVAL_MS),
-            [this]() { return !running_.load(); });
-        if (!running_.load()) {
-            break;
-        }
-        lock.unlock();
-
-        auto service = service_.lock();
-        if (service == nullptr || !service->IsReady()) {
-            WS_HILOGD("Service not ready, skip guard check.");
-            continue;
-        }
-        auto policyManager = service->GetWorkPolicyManager();
-        if (policyManager == nullptr) {
-            WS_HILOGE("PolicyManager is null, skip guard check.");
-            continue;
-        }
-        WS_HILOGI("Guard thread begin periodic check.");
-        CheckRunningExtensions();
-        CheckRunningWorkStatus();
-        WS_HILOGI("Guard thread periodic check done.");
-    }
-    WS_HILOGI("Guard thread run loop exited.");
+    uint64_t gen = generation_.load();
+    auto self = shared_from_this();
+    ffrt::submit(
+        [self, gen]() {
+            self->DoGuardCheck(gen);
+        },
+        ffrt::task_attr().delay(GUARD_THREAD_INTERVAL_US));
 }
 
-void WorkGuardThread::CheckRunningWorkStatus()
+void WorkGuardThread::DoGuardCheck(uint64_t gen)
 {
+    if (!running_.load() || gen != generation_.load()) {
+        WS_HILOGI("Guard check skipped, running:%{public}d, gen mismatch:%{public}d",
+            running_.load(), gen != generation_.load());
+        return;
+    }
     auto service = service_.lock();
     if (service == nullptr) {
+        WS_HILOGE("Service destroyed, stop guard check.");
+        StopGuardCheck();
+        return;
+    }
+    if (!service->IsReady()) {
+        WS_HILOGD("Service not ready, skip guard check.");
         return;
     }
     auto policyManager = service->GetWorkPolicyManager();
     if (policyManager == nullptr) {
+        WS_HILOGE("PolicyManager is null, skip guard check.");
         return;
     }
     std::vector<std::shared_ptr<WorkStatus>> runningWorks = policyManager->GetAllRunningWorkStatus();
-    if (runningWorks.empty()) {
-        return;
-    }
     std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos;
     if (!GetRunningExtensionInfos(extensionInfos)) {
-        WS_HILOGE("Failed to get running extension infos");
+        WS_HILOGE("Failed to get running extension infos, skip guard check.");
+    } else {
+        WS_HILOGI("Guard thread begin periodic check.");
+        CheckRunningExtensions(runningWorks, extensionInfos);
+        CheckRunningWorkStatus(policyManager, runningWorks, extensionInfos);
+        WS_HILOGI("Guard thread periodic check done.");
+    }
+    if (!running_.load() || gen != generation_.load()) {
+        WS_HILOGE("Guard check not rescheduled, running:%{public}d, gen mismatch:%{public}d",
+            running_.load(), gen != generation_.load());
         return;
     }
+    ScheduleNextCheck();
+}
 
+void WorkGuardThread::CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyManager>& policyManager,
+    const std::vector<std::shared_ptr<WorkStatus>>& runningWorks,
+    const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos)
+{
     for (const auto &workStatus : runningWorks) {
         if (workStatus == nullptr) {
             continue;
@@ -141,25 +139,9 @@ void WorkGuardThread::CheckRunningWorkStatus()
     }
 }
 
-void WorkGuardThread::CheckRunningExtensions()
+void WorkGuardThread::CheckRunningExtensions(const std::vector<std::shared_ptr<WorkStatus>>& runningWorks,
+    const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos)
 {
-    auto service = service_.lock();
-    if (service == nullptr) {
-        return;
-    }
-    auto policyManager = service->GetWorkPolicyManager();
-    if (policyManager == nullptr) {
-        WS_HILOGE("CheckRunningExtensions: policyManager is null.");
-        return;
-    }
-
-    std::vector<std::shared_ptr<WorkStatus>> runningWorks = policyManager->GetAllRunningWorkStatus();
-    std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos;
-    if (!GetRunningExtensionInfos(extensionInfos)) {
-        WS_HILOGE("Failed to get running extension infos");
-        return;
-    }
-
     for (auto& extInfo : extensionInfos) {
         if (IsExtensionInRunningWorks(extInfo, runningWorks)) {
             continue;

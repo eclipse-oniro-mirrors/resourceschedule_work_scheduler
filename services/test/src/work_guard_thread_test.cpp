@@ -156,7 +156,7 @@ HWTEST_F(WorkGuardThreadTest, IsExtensionInRunningWorks_002, TestSize.Level1)
 
 /**
  * @tc.name: Start_001
- * @tc.desc: Test Start creates thread and sets running flag.
+ * @tc.desc: Test Start sets running flag and schedules first check.
  * @tc.type: FUNC
  */
 HWTEST_F(WorkGuardThreadTest, Start_001, TestSize.Level1)
@@ -181,7 +181,7 @@ HWTEST_F(WorkGuardThreadTest, Start_002, TestSize.Level1)
 
 /**
  * @tc.name: Stop_001
- * @tc.desc: Test Stop after Start, running flag cleared and thread joined.
+ * @tc.desc: Test Stop after Start, running flag cleared.
  * @tc.type: FUNC
  */
 HWTEST_F(WorkGuardThreadTest, Stop_001, TestSize.Level1)
@@ -189,7 +189,6 @@ HWTEST_F(WorkGuardThreadTest, Stop_001, TestSize.Level1)
     guardThread_->Start();
     guardThread_->Stop();
     EXPECT_FALSE(guardThread_->running_.load());
-    EXPECT_EQ(guardThread_->thread_, nullptr);
 }
 
 /**
@@ -266,34 +265,11 @@ HWTEST_F(WorkGuardThreadTest, CheckRunningWorkStatus_001, TestSize.Level1)
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     service_->workPolicyManager_->AddWork(workStatus, uid);
 
-    guardThread_->CheckRunningWorkStatus();
+    std::vector<std::shared_ptr<WorkStatus>> runningWorks = service_->workPolicyManager_->GetAllRunningWorkStatus();
+    std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos;
+    guardThread_->CheckRunningExtensions(runningWorks, extensionInfos);
+    guardThread_->CheckRunningWorkStatus(service_->workPolicyManager_, runningWorks, extensionInfos);
     EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::REMOVED);
-}
-
-/* ======================== CheckRunningExtensions ======================== */
-
-/**
- * @tc.name: CheckRunningExtensions_001
- * @tc.desc: Test CheckRunningExtensions with policyManager but GetRunningExtensionInfos fails,
- *           safe return.
- * @tc.type: FUNC
- */
-HWTEST_F(WorkGuardThreadTest, CheckRunningExtensions_001, TestSize.Level1)
-{
-    service_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service_);
-    service_->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
-    service_->workPolicyManager_->uidQueueMap_.clear();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(10000);
-    workinfo.SetElement("com.test.demo", "WorkExt");
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    service_->workPolicyManager_->AddWork(workStatus, uid);
-
-    guardThread_->CheckRunningExtensions();
-    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::RUNNING);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

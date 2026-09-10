@@ -66,7 +66,8 @@ constexpr const char *WORK_SCHEDULER_CONDITION = "WORK_SCHEDULER_CONDITION";
 constexpr const char *EXECUTE_IMMEDIATE = "executeImmediate";
 
 // services\native\src\work_guard_thread.cpp
-inline constexpr int32_t GUARD_THREAD_INTERVAL_MS = 60 * 60 * 1000; // 1 hour
+// ffrt::task_attr::delay expects microseconds (us)
+inline constexpr int64_t GUARD_THREAD_INTERVAL_US = 60LL * 60 * 1000 * 1000; // 1 hour
 inline constexpr int UPPER_LIMIT = 1000;
 } // namespace WorkScheduler
 } // namespace OHOS
