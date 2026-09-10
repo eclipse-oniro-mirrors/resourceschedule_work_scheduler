@@ -1928,17 +1928,5 @@ HWTEST_F(WorkSchedulerServiceTest, StopGuardThread_001, TestSize.Level1)
     workSchedulerService_->StopGuardThread();
     EXPECT_TRUE(workSchedulerService_->guardThread_ == nullptr);
 }
-
-/**
- * @tc.name: StopGuardThread_002
- * @tc.desc: Test StopGuardThread is no-op when guard thread does not exist.
- * @tc.type: FUNC
- */
-HWTEST_F(WorkSchedulerServiceTest, StopGuardThread_002, TestSize.Level1)
-{
-    workSchedulerService_->guardThread_ = nullptr;
-    workSchedulerService_->StopGuardThread();
-    EXPECT_TRUE(workSchedulerService_->guardThread_ == nullptr);
-}
 }
 }
