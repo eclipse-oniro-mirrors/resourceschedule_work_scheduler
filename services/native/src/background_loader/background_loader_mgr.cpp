@@ -400,12 +400,7 @@ void BackgroundLoaderMgr::SaveRemoteObject(const std::string& bundleName,
 {
     std::string key = GenerateTaskKey(bundleName, appIndex);
     std::lock_guard<ffrt::mutex> lock(abilityMapLock_);
-    auto it = abilityMap_.find(key);
-    if (it != abilityMap_.end()) {
-        it->second = remoteObject;
-    } else {
-        abilityMap_.emplace(key, remoteObject);
-    }
+    abilityMap_[key] = remoteObject;
     WS_HILOGI("[%{public}s:%{public}d] save remote object for %{public}s, appIndex: %{public}d success",
         __FUNCTION__, __LINE__, bundleName.c_str(), appIndex);
 }
