@@ -23,6 +23,7 @@
 #include "work_sched_hilog.h"
 #include "work_sched_constants.h"
 #include "work_sched_utils.h"
+#include "work_sched_hisysevent_report.h"
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
 #include "work_status.h"
@@ -128,12 +129,19 @@ void WorkGuardThread::CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyMan
             WS_HILOGI("Guard thread: work %{public}s timeout, stopping it", workStatus->workId_.c_str());
             if (StopRunningExtension(workStatus->bundleName_, workStatus->abilityName_, workStatus->uid_)) {
                 policyManager->CleanOrphanWork(workStatus);
+                WorkSchedUtil::HiSysEventException(EventErrorCode::TASK_GUARD,
+                    "timeout work cleaned, bundleName:" + workStatus->bundleName_ +
+                    ", abilityName:" + workStatus->abilityName_ +
+                    ", workId:" + workStatus->workId_);
             }
         } else {
             WS_HILOGI("Orphan task found: workId=%{public}s is RUNNING but no connection, cleaning state.",
                 workStatus->workId_.c_str());
             policyManager->CleanOrphanWork(workStatus);
-        }
+            WorkSchedUtil::HiSysEventException(EventErrorCode::TASK_GUARD,
+                "orphan work cleaned, bundleName:" + workStatus->bundleName_ +
+                ", abilityName:" + workStatus->abilityName_ +
+                ", workId:" + workStatus->workId_);
     }
 }
 
@@ -148,6 +156,12 @@ void WorkGuardThread::CheckRunningExtensions(const std::vector<std::shared_ptr<W
             extInfo.uid);
         WS_HILOGI("Guard thread: extension bundleName=%{public}s uid=%{public}d not in running works,"
             " stopping it, ret: %{public}d", extInfo.extension.GetBundleName().c_str(), extInfo.uid, ret);
+        if (ret) {
+            WorkSchedUtil::HiSysEventException(EventErrorCode::TASK_GUARD,
+                "orphan extension stopped, bundleName:" + extInfo.extension.GetBundleName() +
+                ", abilityName:" + extInfo.extension.GetAbilityName() +
+                ", uid:" + std::to_string(extInfo.uid));
+        }
     }
 }
 

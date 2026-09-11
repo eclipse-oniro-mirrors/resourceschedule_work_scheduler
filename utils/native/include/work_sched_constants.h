@@ -57,7 +57,8 @@ enum EventErrorCode {
     LOAD_SA,
     TOKEN_CHECK,
     WORK_CHECK,
-    SERVICE_STOP
+    SERVICE_STOP,
+    TASK_GUARD
 };
 inline constexpr int JSON_INDENT_WIDTH = 4;
 inline constexpr int32_t UID_TRANSFORM_DIVISOR = 200000;

@@ -217,7 +217,6 @@ public:
     double TimeUntilLast();
     bool IsDebugTask();
     void SetDebugTask(bool debugTask);
-
     uint64_t GetWorkStartTime();
     uint64_t GetWorkWatchDogTime();
     uint64_t GetDuration();
@@ -230,22 +229,8 @@ public:
     void InitRunningFields(uint64_t startTime, uint64_t watchdogTime);
     uint64_t PauseRunning(uint64_t currentTime);
     void ResumeRunning(uint64_t currentTime);
+
 private:
-    Status currentStatus_;
-    time_t baseTime_;
-    int64_t minInterval_;
-    bool groupChanged_;
-    uint64_t workStartTime_ {0};
-    uint64_t workWatchDogTime_ {0};
-    uint64_t duration_ {0};
-    bool paused_ {false};
-    ffrt::recursive_mutex statusMutex_;
-    ffrt::mutex conditionMapMutex_;
-    static ffrt::mutex s_uid_last_time_mutex;
-    static std::map<int32_t, time_t> s_uid_last_time_map;
-    std::string conditionStatus_;
-    std::atomic<bool> timeout_ {false};
-    std::atomic<bool> debugTask_ {false};
     static int32_t GetDumpAppGroup(int32_t uid);
     static bool GetUidLastTime(int32_t uid, time_t &lastTime);
     void MarkTimeout();
@@ -275,6 +260,10 @@ private:
     int64_t minInterval_;
     ffrt::mutex conditionMapMutex_;
     std::string conditionStatus_;
+    uint64_t workStartTime_ {0};
+    uint64_t workWatchDogTime_ {0};
+    uint64_t duration_ {0};
+    bool paused_ {false};
 };
 } // namespace WorkScheduler
 } // namespace OHOS
