@@ -150,6 +150,11 @@ const std::set<std::string> WORK_SCHED_SA_CALLER = {
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
 WorkSchedulerService::~WorkSchedulerService() {}
 
+bool WorkSchedulerService::IsReady()
+{
+    return ready_.load();
+}
+
 void WorkSchedulerService::OnStart()
 {
     if (ready_.load()) {
@@ -522,7 +527,7 @@ void WorkSchedulerService::StartGuardThread()
         WS_HILOGI("Guard thread already exists.");
         return;
     }
-    guardThread_ = std::make_shared<WorkGuardThread>(DelayedSingleton<WorkSchedulerService>::GetInstance());
+    guardThread_ = std::make_shared<WorkGuardThread>();
     guardThread_->Start();
     WS_HILOGI("Guard thread started successfully.");
 }

@@ -235,9 +235,7 @@ std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> wo
             RemoveFromReadyQueue(workStatus);
             hasCanceled = true;
         } else {
-            workStatus->workStartTime_ = 0;
-            workStatus->workWatchDogTime_ = 0;
-            workStatus->duration_ = 0;
+            workStatus->ResetRunningFields();
             workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
         }
     }
@@ -572,8 +570,8 @@ void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatu
     WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, watchdogTime:%{public}d",
         watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_.load());
     watchdog_->AddWatchdog(watchId, watchdogTime_.load());
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
-    workStatus->workWatchDogTime_ = static_cast<uint64_t>(watchdogTime_.load());
+    workStatus->InitRunningFields(WorkSchedUtils::GetCurrentTimeMs(),
+        static_cast<uint64_t>(watchdogTime_.load()));
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
 }
@@ -892,23 +890,10 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
                     workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
-            uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
-            uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
-            uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
-            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
-                WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
-                    ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
-                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime,
-                    runningTime);
-                newWatchdogTime = 0;
-            }
-            workStatus->duration_ += runningTime;
+            uint64_t newWatchdogTime = workStatus->PauseRunning(WorkSchedUtils::GetCurrentTimeMs());
             WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s,"
-                " oldWatchdogTime:%{public}" PRIu64 ", newWatchdogTime:%{public}" PRIu64 ", duration:%{public}" PRIu64,
-                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
-                oldWatchdogTime, newWatchdogTime, workStatus->duration_);
-            workStatus->paused_ = true;
-            workStatus->workWatchDogTime_ = newWatchdogTime;
+                " newWatchdogTime:%{public}" PRIu64,
+                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime);
             watchdog_->RemoveWatchdog(it->first);
         }
     }
@@ -934,13 +919,12 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
                     workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
-            int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
+            int32_t watchdogTime = static_cast<int32_t>(workStatus->GetWorkWatchDogTime());
             WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " watchdogTime:%{public}d",
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
-            workStatus->paused_ = false;
+            workStatus->ResumeRunning(WorkSchedUtils::GetCurrentTimeMs());
             watchdog_->AddWatchdog(it->first, watchdogTime);
-            workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
         }
     }
 
@@ -1103,9 +1087,7 @@ void WorkPolicyManager::CleanOrphanWork(std::shared_ptr<WorkStatus> workStatus)
         RemoveFromUidQueue(workStatus, workStatus->uid_);
         RemoveFromReadyQueue(workStatus);
     } else {
-        workStatus->workStartTime_ = 0;
-        workStatus->workWatchDogTime_ = 0;
-        workStatus->duration_ = 0;
+        workStatus->ResetRunningFields();
         workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     }
     RemoveWatchDog(workStatus);

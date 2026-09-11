@@ -30,13 +30,12 @@
 namespace OHOS {
 namespace WorkScheduler {
 
-WorkGuardThread::WorkGuardThread(const std::shared_ptr<WorkSchedulerService>& service) : service_(service) {}
+WorkGuardThread::WorkGuardThread() {}
 
 WorkGuardThread::~WorkGuardThread() = default;
 
 void WorkGuardThread::StopGuardCheck()
 {
-    generation_.fetch_add(1);
     running_.store(false);
 }
 
@@ -47,7 +46,6 @@ void WorkGuardThread::Start()
         return;
     }
     running_.store(true);
-    generation_.fetch_add(1);
     ScheduleNextCheck();
     WS_HILOGI("Guard thread started.");
 }
@@ -63,25 +61,27 @@ void WorkGuardThread::Stop()
 
 void WorkGuardThread::ScheduleNextCheck()
 {
-    uint64_t gen = generation_.load();
     auto self = shared_from_this();
     ffrt::submit(
-        [self, gen]() {
-            self->DoGuardCheck(gen);
+        [self]() {
+            if (self == nullptr) {
+                WS_HILOGE("Guard check skipped, self is nullptr.");
+                return;
+            }
+            self->DoGuardCheck();
         },
         ffrt::task_attr().delay(GUARD_THREAD_INTERVAL_US));
 }
 
-void WorkGuardThread::DoGuardCheck(uint64_t gen)
+void WorkGuardThread::DoGuardCheck()
 {
-    if (!running_.load() || gen != generation_.load()) {
-        WS_HILOGI("Guard check skipped, running:%{public}d, gen mismatch:%{public}d",
-            running_.load(), gen != generation_.load());
+    if (!running_.load()) {
+        WS_HILOGI("Guard check skipped, running:%{public}d", running_.load());
         return;
     }
-    auto service = service_.lock();
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
     if (service == nullptr) {
-        WS_HILOGE("Service destroyed, stop guard check.");
+        WS_HILOGE("Service is null, stop guard check.");
         StopGuardCheck();
         return;
     }
@@ -102,17 +102,15 @@ void WorkGuardThread::DoGuardCheck(uint64_t gen)
         WS_HILOGI("Guard thread begin periodic check.");
         CheckRunningExtensions(runningWorks, extensionInfos);
         CheckRunningWorkStatus(policyManager, runningWorks, extensionInfos);
-        WS_HILOGI("Guard thread periodic check done.");
     }
-    if (!running_.load() || gen != generation_.load()) {
-        WS_HILOGE("Guard check not rescheduled, running:%{public}d, gen mismatch:%{public}d",
-            running_.load(), gen != generation_.load());
+    if (!running_.load()) {
+        WS_HILOGI("Guard check not rescheduled, running:%{public}d", running_.load());
         return;
     }
     ScheduleNextCheck();
 }
 
-void WorkGuardThread::CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyManager>& policyManager,
+void WorkGuardThread::CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyManager> policyManager,
     const std::vector<std::shared_ptr<WorkStatus>>& runningWorks,
     const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos)
 {
@@ -185,12 +183,13 @@ bool WorkGuardThread::IsExtensionInRunningWorks(const AppExecFwk::ExtensionRunni
 
 bool WorkGuardThread::GetRunningExtensionInfos(std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos)
 {
-    if (!CheckAbilityManagerValid()) {
+    auto abilityMgr = GetAbilityManager();
+    if (abilityMgr == nullptr) {
         WS_HILOGE("Failed to get ability manager");
         return false;
     }
     std::vector<AppExecFwk::ExtensionRunningInfo> allExtensions;
-    int32_t ret = abilityMgr_->GetExtensionRunningInfos(UPPER_LIMIT, allExtensions);
+    int32_t ret = abilityMgr->GetExtensionRunningInfos(UPPER_LIMIT, allExtensions);
     if (ret != ERR_OK) {
         WS_HILOGE("GetExtensionRunningInfos failed, ret=%{public}d", ret);
         return false;
@@ -208,44 +207,37 @@ bool WorkGuardThread::GetRunningExtensionInfos(std::vector<AppExecFwk::Extension
 
 bool WorkGuardThread::StopRunningExtension(const std::string& bundleName, const std::string& abilityName, int32_t uid)
 {
-    if (!CheckAbilityManagerValid()) {
+    auto abilityMgr = GetAbilityManager();
+    if (abilityMgr == nullptr) {
         return false;
     }
     AAFwk::Want want;
     want.SetElementName(bundleName, abilityName);
     int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
-    int32_t ret = abilityMgr_->StopExtensionAbility(want, nullptr, userId,
+    int32_t ret = abilityMgr->StopExtensionAbility(want, nullptr, userId,
         AppExecFwk::ExtensionAbilityType::WORK_SCHEDULER);
     return ret == ERR_OK;
 }
 
-void WorkGuardThread::InitAbilityManager()
+sptr<AAFwk::IAbilityManager> WorkGuardThread::GetAbilityManager()
 {
     sptr<ISystemAbilityManager> systemAbilityManager =
         SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (systemAbilityManager == nullptr) {
         WS_HILOGE("Failed to get system ability manager");
-        return;
+        return nullptr;
     }
     sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(ABILITY_MGR_SERVICE_ID);
     if (remoteObject == nullptr) {
         WS_HILOGE("Failed to get ability manager service");
-        return;
+        return nullptr;
     }
-    abilityMgr_ = iface_cast<AAFwk::IAbilityManager>(remoteObject);
-    if (abilityMgr_ == nullptr || abilityMgr_->AsObject() == nullptr) {
+    sptr<AAFwk::IAbilityManager> abilityMgr = iface_cast<AAFwk::IAbilityManager>(remoteObject);
+    if (abilityMgr == nullptr || abilityMgr->AsObject() == nullptr) {
         WS_HILOGE("Failed to cast ability manager");
-        abilityMgr_ = nullptr;
-        return;
+        return nullptr;
     }
-}
-
-bool WorkGuardThread::CheckAbilityManagerValid()
-{
-    if (abilityMgr_ == nullptr || abilityMgr_->AsObject() == nullptr) {
-        InitAbilityManager();
-    }
-    return abilityMgr_ != nullptr;
+    return abilityMgr;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

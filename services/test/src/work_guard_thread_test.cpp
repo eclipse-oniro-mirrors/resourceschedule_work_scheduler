@@ -34,8 +34,8 @@ public:
     static void TearDownTestCase() {}
     void SetUp()
     {
-        service_ = std::make_shared<WorkSchedulerService>();
-        guardThread_ = std::make_shared<WorkGuardThread>(service_);
+        service_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        guardThread_ = std::make_shared<WorkGuardThread>();
     }
     void TearDown()
     {
@@ -211,7 +211,6 @@ HWTEST_F(WorkGuardThreadTest, Stop_002, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, GetRunningExtensionInfos_001, TestSize.Level1)
 {
-    guardThread_->abilityMgr_ = nullptr;
     std::vector<AppExecFwk::ExtensionRunningInfo> extensionInfos;
     bool ret = guardThread_->GetRunningExtensionInfos(extensionInfos);
     EXPECT_TRUE(ret);
@@ -226,22 +225,8 @@ HWTEST_F(WorkGuardThreadTest, GetRunningExtensionInfos_001, TestSize.Level1)
  */
 HWTEST_F(WorkGuardThreadTest, StopRunningExtension_001, TestSize.Level1)
 {
-    guardThread_->abilityMgr_ = nullptr;
     bool ret = guardThread_->StopRunningExtension("com.test.demo", "WorkExt", 10000);
     EXPECT_FALSE(ret);
-}
-
-/* ======================== CheckAbilityManagerValid ======================== */
-
-/**
- * @tc.name: CheckAbilityManagerValid_001
- * @tc.desc: Test CheckAbilityManagerValid returns false when abilityMgr_ is null and init fails.
- * @tc.type: FUNC
- */
-HWTEST_F(WorkGuardThreadTest, CheckAbilityManagerValid_001, TestSize.Level1)
-{
-    guardThread_->abilityMgr_ = nullptr;
-    EXPECT_TRUE(guardThread_->CheckAbilityManagerValid());
 }
 
 /* ======================== CheckRunningWorkStatus ======================== */

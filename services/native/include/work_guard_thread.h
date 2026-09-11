@@ -29,7 +29,7 @@ class WorkStatus;
 
 class WorkGuardThread : public std::enable_shared_from_this<WorkGuardThread> {
 public:
-    explicit WorkGuardThread(const std::shared_ptr<WorkSchedulerService>& service);
+    WorkGuardThread();
     ~WorkGuardThread();
 
     /**
@@ -44,11 +44,11 @@ public:
 
 private:
     void ScheduleNextCheck();
-    void DoGuardCheck(uint64_t gen);
+    void DoGuardCheck();
     void StopGuardCheck();
     void CheckRunningExtensions(const std::vector<std::shared_ptr<WorkStatus>>& runningWorks,
         const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
-    void CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyManager>& policyManager,
+    void CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyManager> policyManager,
         const std::vector<std::shared_ptr<WorkStatus>>& runningWorks,
         const std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
     bool IsWorkInExtensionInfos(const std::shared_ptr<WorkStatus> workStatus,
@@ -57,13 +57,9 @@ private:
         const std::vector<std::shared_ptr<WorkStatus>>& runningWorks);
     bool GetRunningExtensionInfos(std::vector<AppExecFwk::ExtensionRunningInfo>& extensionInfos);
     bool StopRunningExtension(const std::string& bundleName, const std::string& abilityName, int32_t uid);
-    void InitAbilityManager();
-    bool CheckAbilityManagerValid();
+    sptr<AAFwk::IAbilityManager> GetAbilityManager();
 
-    std::weak_ptr<WorkSchedulerService> service_;
     std::atomic<bool> running_ {false};
-    std::atomic<uint64_t> generation_ {0};
-    sptr<AAFwk::IAbilityManager> abilityMgr_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

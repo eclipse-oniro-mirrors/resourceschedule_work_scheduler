@@ -286,7 +286,7 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_003, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = true;
+    workStatus->SetPaused(true);
     workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
     int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
     EXPECT_EQ(ret, ERR_OK);
@@ -309,9 +309,9 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_004, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = false;
-    workStatus->workWatchDogTime_ = 120000;
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->SetPaused(false);
+    workStatus->SetWorkWatchDogTime(120000);
+    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
     std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::shared_ptr<AppExecFwk::EventRunner> runner;
     std::shared_ptr<Watchdog> watchdog_ =
@@ -374,7 +374,7 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_003, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = false;
+    workStatus->SetPaused(false);
     workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
     EXPECT_EQ(ret, ERR_OK);
@@ -397,9 +397,9 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_004, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = true;
-    workStatus->workWatchDogTime_ = 120000;
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->SetPaused(true);
+    workStatus->SetWorkWatchDogTime(120000);
+    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
     std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::shared_ptr<AppExecFwk::EventRunner> runner;
     std::shared_ptr<Watchdog> watchdog_ =
@@ -1162,9 +1162,9 @@ HWTEST_F(WorkPolicyManagerTest, CleanOrphanWork_001, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->workStartTime_ = 1000;
-    workStatus->workWatchDogTime_ = 2000;
-    workStatus->duration_ = 500;
+    workStatus->SetWorkStartTime(1000);
+    workStatus->SetWorkWatchDogTime(2000);
+    workStatus->SetDuration(500);
     workPolicyManager_->AddWork(workStatus, uid);
     EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 1);
 
@@ -1188,17 +1188,17 @@ HWTEST_F(WorkPolicyManagerTest, CleanOrphanWork_002, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->workStartTime_ = 1000;
-    workStatus->workWatchDogTime_ = 2000;
-    workStatus->duration_ = 500;
+    workStatus->SetWorkStartTime(1000);
+    workStatus->SetWorkWatchDogTime(2000);
+    workStatus->SetDuration(500);
     workPolicyManager_->AddWork(workStatus, uid);
     EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 1);
 
     workPolicyManager_->CleanOrphanWork(workStatus);
     EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::WAIT_CONDITION);
-    EXPECT_EQ(workStatus->workStartTime_, 0);
-    EXPECT_EQ(workStatus->workWatchDogTime_, 0);
-    EXPECT_EQ(workStatus->duration_, 0);
+    EXPECT_EQ(workStatus->GetWorkStartTime(), 0);
+    EXPECT_EQ(workStatus->GetWorkWatchDogTime(), 0);
+    EXPECT_EQ(workStatus->GetDuration(), 0);
     EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 1);
 }
 }

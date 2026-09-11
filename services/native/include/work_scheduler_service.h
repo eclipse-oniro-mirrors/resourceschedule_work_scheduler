@@ -224,10 +224,7 @@ public:
      *
      * @return True if the service is ready, else false.
      */
-    bool IsReady()
-    {
-        return ready_.load();
-    }
+    bool IsReady();
 
     /**
      * @brief Get work queue manager.
