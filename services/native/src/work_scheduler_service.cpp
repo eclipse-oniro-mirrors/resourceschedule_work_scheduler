@@ -80,7 +80,7 @@
 #include "work_sched_config.h"
 #include "work_sched_constants.h"
 #include "work_sched_hisysevent_report.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 #include "want.h"
 #include "work_guard_thread.h"
 
@@ -1956,158 +1956,6 @@ bool WorkSchedulerService::CheckPermission(const std::string &permission)
     return true;
 }
 
-bool WorkSchedulerService::VerifyAbilityName(const std::string& bundleName,
-    const std::string& abilityName, int32_t uid)
-{
-    if (bundleName.empty() || abilityName.empty()) {
-        WS_HILOGE("bundleName or abilityName invaild");
-        return false;
-    }
-
-    sptr<ISystemAbilityManager> systemAbilityManager =
-        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    if (!systemAbilityManager) {
-        WS_HILOGE("fail to get system ability mgr.");
-        WorkSchedUtil::HiSysEventException(EventErrorCode::WORK_CHECK, "fail to get system ability manager");
-        return false;
-    }
-    sptr<IRemoteObject> remoteObject = systemAbilityManager->GetSystemAbility(BUNDLE_MGR_SERVICE_SYS_ABILITY_ID);
-    if (!remoteObject) {
-        WS_HILOGE("fail to get bundle manager remoteObject.");
-        WorkSchedUtil::HiSysEventException(EventErrorCode::WORK_CHECK, "fail to get bundle manager remoteObject");
-        return false;
-    }
-    sptr<IBundleMgr> bundleMgr = iface_cast<IBundleMgr>(remoteObject);
-    if (!bundleMgr) {
-        WS_HILOGE("fail to get bundle manager proxy.");
-        WorkSchedUtil::HiSysEventException(EventErrorCode::WORK_CHECK, "fail to get bundle manager proxy");
-        return false;
-    }
-
-    std::vector<AbilityInfo> abilityInfos;
-    Want want;
-    want.SetAction(Want::ACTION_HOME);
-    want.AddEntity(Want::ENTITY_HOME);
-    ElementName elementName;
-    elementName.SetBundleName(bundleName);
-    want.SetElement(elementName);
-    int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
-    if (!bundleMgr->QueryAbilityInfos(want, 0, userId, abilityInfos)) {
-        WS_HILOGE("QueryAbilityInfos failed for bundle: %{public}s", bundleName.c_str());
-        return false;
-    }
-
-    for (const auto& ability : abilityInfos) {
-        if (ability.bundleName == bundleName && ability.name == abilityName && ability.enabled) {
-            WS_HILOGI("found ability %{public}s in bundle: %{public}s", abilityName.c_str(), bundleName.c_str());
-            return true;
-        }
-    }
-    WS_HILOGE("bundle: %{public}s not found or not enable", bundleName.c_str());
-    return false;
-}
-
-int32_t WorkSchedulerService::CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid)
-{
-    if (!ready_.load()) {
-        WS_HILOGE("service is not ready.");
-        return E_SERVICE_NOT_READY;
-    }
-    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
-        return E_PERMISSION_DENIED;
-    }
-    if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
-        WS_HILOGE("Failed to get bundle for uid %{public}d", uid);
-        return E_CHECK_WORKINFO_FAILED;
-    }
-    return ERR_OK;
-}
-
-int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
-{
-    std::string bundleName = "";
-    int32_t appIndex = -1;
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
-    if (ret != ERR_OK) {
-        return ret;
-    }
-    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
-        return E_CHECK_WORKINFO_FAILED;
-    }
-    TaskInfo info = {
-        .taskId_ = taskInfo.GetTaskId(),
-        .bundleName_ = bundleName,
-        .appIndex_ = appIndex,
-        .abilityName_ = taskInfo.GetAbilityName(),
-        .pid_ = pid
-    };
-    return BackgroundLoaderMgr::GetInstance().RegisterTask(info);
-}
-
-int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)
-{
-    std::string bundleName = "";
-    int32_t appIndex = -1;
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
-    if (ret != ERR_OK) {
-        return ret;
-    }
-    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
-        return E_CHECK_WORKINFO_FAILED;
-    }
-    TaskInfo info = {
-        .taskId_ = taskInfo.GetTaskId(),
-        .bundleName_ = bundleName,
-        .appIndex_ = appIndex,
-        .abilityName_ = taskInfo.GetAbilityName(),
-        .pid_ = pid
-    };
-    return BackgroundLoaderMgr::GetInstance().UnregisterTask(info);
-}
-    
-int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInfo)
-{
-    std::string bundleName = "";
-    int32_t appIndex = -1;
-    int32_t pid = IPCSkeleton::GetCallingPid();
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
-    if (ret != ERR_OK) {
-        return ret;
-    }
-    if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
-        return E_CHECK_WORKINFO_FAILED;
-    }
-    TaskInfo info = {
-        .taskId_ = taskInfo.GetTaskId(),
-        .bundleName_ = bundleName,
-        .appIndex_ = appIndex,
-        .abilityName_ = taskInfo.GetAbilityName(),
-        .pid_ = pid
-    };
-    return BackgroundLoaderMgr::GetInstance().FinishTask(info);
-}
-
-int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
-{
-    if (!ready_.load()) {
-        WS_HILOGE("service is not ready.");
-        return E_SERVICE_NOT_READY;
-    }
-    std::string bundleName = "";
-    int32_t appIndex = -1;
-    int32_t uid = IPCSkeleton::GetCallingUid();
-    auto ret = CheckPermissionAndTaskInfo(bundleName, appIndex, uid);
-    if (ret != ERR_OK) {
-        return ret;
-    }
-    return BackgroundLoaderMgr::GetInstance().GetTaskInfo(taskId, bundleName, appIndex, taskInfo);
-}
-
 uint32_t WorkSchedulerService::GetMinCheckTime() const
 {
     std::shared_lock<ffrt::shared_mutex> lock(configMutex_);
@@ -2842,6 +2690,39 @@ bool WorkSchedulerService::CreateNodePersistedInfoFile()
     }
     WS_HILOGD("Resources created successfully.");
     return true;
+}
+
+// backgroundloader interfaces
+int32_t WorkSchedulerService::RegisterTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().RegisterTaskWithCheck(taskInfo);
+}
+
+int32_t WorkSchedulerService::UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().UnregisterTaskWithCheck(taskInfo);
+}
+
+int32_t WorkSchedulerService::FinishTask(const BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().FinishTaskWithCheck(taskInfo);
+}
+
+int32_t WorkSchedulerService::GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo)
+{
+    if (!CheckPermission(std::string(BACKGROUND_LOADER_PERMISSION))) {
+        return E_PERMISSION_DENIED;
+    }
+    return BackgroundLoaderMgr::GetInstance().GetTaskInfoWithCheck(taskId, taskInfo);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -41,8 +41,8 @@ ohos_shared_library("workschedservice") {
     "-Os",
   ]
   sources = [
-    "native/src/ability_connect_callback.cpp",
-    "native/src/background_loader_mgr.cpp",
+    "native/src/background_loader/ability_connect_callback.cpp",
+    "native/src/background_loader/background_loader_mgr.cpp",
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
     "native/src/conditions/charger_listener.cpp",
@@ -76,6 +76,7 @@ ohos_shared_library("workschedservice") {
     "native/src/work_status.cpp",
     "plugin/src/work_sched_plugin_mgr.cpp",
     "plugin/src/background_task_observer_plugin_adapter.cpp",
+    "native/src/background_loader/background_loader_adapter.cpp",
   ]
 
   configs = [ ":worksched_private_config" ]
@@ -168,8 +169,8 @@ ohos_static_library("workschedservice_static") {
     debug = false
   }
   sources = [
-    "native/src/ability_connect_callback.cpp",
-    "native/src/background_loader_mgr.cpp",
+    "native/src/background_loader/ability_connect_callback.cpp",
+    "native/src/background_loader/background_loader_mgr.cpp",
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
     "native/src/conditions/charger_listener.cpp",
@@ -203,6 +204,7 @@ ohos_static_library("workschedservice_static") {
     "native/src/work_status.cpp",
     "plugin/src/work_sched_plugin_mgr.cpp",
     "plugin/src/background_task_observer_plugin_adapter.cpp",
+    "native/src/background_loader/background_loader_adapter.cpp",
   ]
 
   configs = [ ":worksched_private_config" ]

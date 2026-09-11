@@ -34,7 +34,7 @@
 #include "work_event_handler.h"
 #include "singleton.h"
 #include "work_standby_state_change_callback.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 #include "background_loader_task_info.h"
 #include "frequency_info.h"
 #include "ffrt.h"
@@ -340,10 +340,6 @@ public:
      */
     int32_t StopWorkForSA(int32_t saId) override;
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
-    int32_t RegisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
     bool NeedCreateTimer(int32_t saId, int32_t uid, int32_t time);
     bool HasDeepIdleTime();
     void UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot);
@@ -361,7 +357,6 @@ private:
     bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
     void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-    bool VerifyAbilityName(const std::string& bundleName, const std::string& abilityName, int32_t uid);
     bool VerifyTaskInfo(const TaskInfo& taskInfo);
     void LoadBackgroundLoaderFromFile(const char* path, int32_t& maxTimeoutCount, int32_t& backgroundLoaderTimeoutMs);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
@@ -405,7 +400,6 @@ private:
     void ReportUserDataSizeEvent();
     void DumpParamRestore(std::string& result);
     bool CheckPermission(const std::string &permission);
-    int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
     uint32_t GetMinCheckTime() const;
     void SetMinCheckTime(const uint32_t minCheckTime);
     void AddDeepIdleTimeToMap(const int32_t saId, const int32_t deepIdleTime, const int32_t uid);
@@ -474,6 +468,13 @@ private:
     ffrt::mutex frequencyMutex_;
     /* eg: {callingUid : {uid : frequencyInfo}} */
     std::map<int32_t, std::map<int32_t, FrequencyInfo>> frequencyMap_{};
+
+public:
+    // backgroundloader interfaces
+    int32_t RegisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
