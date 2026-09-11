@@ -13,8 +13,8 @@
  * limitations under the License.
  */
 
-#include "ability_connect_callback.h"
-#include "background_loader_mgr.h"
+#include "background_loader/ability_connect_callback.h"
+#include "background_loader/background_loader_mgr.h"
 #include "work_sched_hilog.h"
 
 namespace OHOS {
@@ -23,7 +23,8 @@ void AbilityConnectCallback::OnAbilityConnectDone(const OHOS::AppExecFwk::Elemen
     const OHOS::sptr<IRemoteObject>& remoteObject, int32_t resultCode)
 {
     const std::string& bundleName = element.GetBundleName();
-    WS_HILOGI("bundleName: %{public}s, resultCode: %{public}d", bundleName.c_str(), resultCode);
+    WS_HILOGI("[%{public}s:%{public}d] bundleName: %{public}s, resultCode: %{public}d",
+        __FUNCTION__, __LINE__, bundleName.c_str(), resultCode);
     if (resultCode != ERR_OK) {
         WS_HILOGE("OnAbilityConnectDone failed: resultCode: %{public}d", resultCode);
         return;

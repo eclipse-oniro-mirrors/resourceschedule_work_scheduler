@@ -14,8 +14,8 @@
  */
 
 #include <gtest/gtest.h>
-#include "ability_connect_callback.h"
-#include "background_loader_mgr.h"
+#include "background_loader/ability_connect_callback.h"
+#include "background_loader/background_loader_mgr.h"
 
 using namespace testing::ext;
 namespace OHOS {
