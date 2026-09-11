@@ -208,7 +208,7 @@ void WorkStatus::MarkTimeout()
 
 void WorkStatus::MarkStatus(Status status)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     currentStatus_ = status;
 }
 
@@ -679,25 +679,25 @@ bool WorkStatus::GetUidLastTime(int32_t uid, time_t &lastTime)
 
 bool WorkStatus::IsRunning()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return currentStatus_ == RUNNING;
 }
 
 bool WorkStatus::IsPaused()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return paused_;
 }
 
 bool WorkStatus::IsReadyStatus()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return currentStatus_ == CONDITION_READY;
 }
 
 bool WorkStatus::IsRemoved()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return currentStatus_ == REMOVED;
 }
 
@@ -721,7 +721,7 @@ bool WorkStatus::IsRepeating()
 
 WorkStatus::Status WorkStatus::GetStatus()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return currentStatus_;
 }
 
@@ -821,7 +821,7 @@ void WorkStatus::ToString(WorkCondition::Type type)
 
 bool WorkStatus::HasTimeout()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     if (currentStatus_ != RUNNING || paused_) {
         return false;
     }
@@ -972,55 +972,55 @@ void WorkStatus::AddDumpAppGroup(int32_t uid, int32_t group)
 
 uint64_t WorkStatus::GetWorkStartTime()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return workStartTime_;
 }
 
 uint64_t WorkStatus::GetWorkWatchDogTime()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return workWatchDogTime_;
 }
 
 uint64_t WorkStatus::GetDuration()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     return duration_;
 }
 
 void WorkStatus::SetWorkStartTime(uint64_t time)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     workStartTime_ = time;
 }
 
 void WorkStatus::SetWorkWatchDogTime(uint64_t time)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     workWatchDogTime_ = time;
 }
 
 void WorkStatus::SetDuration(uint64_t duration)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     duration_ = duration;
 }
 
 void WorkStatus::AddDuration(uint64_t delta)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     duration_ += delta;
 }
 
 void WorkStatus::SetPaused(bool paused)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     paused_ = paused;
 }
 
 void WorkStatus::ResetRunningFields()
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     workStartTime_ = 0;
     workWatchDogTime_ = 0;
     duration_ = 0;
@@ -1028,14 +1028,14 @@ void WorkStatus::ResetRunningFields()
 
 void WorkStatus::InitRunningFields(uint64_t startTime, uint64_t watchdogTime)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     workStartTime_ = startTime;
     workWatchDogTime_ = watchdogTime;
 }
 
 uint64_t WorkStatus::PauseRunning(uint64_t currentTime)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     uint64_t oldWatchdogTime = workWatchDogTime_;
     uint64_t runningTime = currentTime - workStartTime_;
     uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
@@ -1056,7 +1056,7 @@ uint64_t WorkStatus::PauseRunning(uint64_t currentTime)
 
 void WorkStatus::ResumeRunning(uint64_t currentTime)
 {
-    std::lock_guard<ffrt::recursive_mutex> lock(statusMutex_);
+    std::lock_guard<ffrt::mutex> lock(statusMutex_);
     paused_ = false;
     workStartTime_ = currentTime;
 }

@@ -142,6 +142,7 @@ void WorkGuardThread::CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyMan
                 "orphan work cleaned, bundleName:" + workStatus->bundleName_ +
                 ", abilityName:" + workStatus->abilityName_ +
                 ", workId:" + workStatus->workId_);
+        }
     }
 }
 

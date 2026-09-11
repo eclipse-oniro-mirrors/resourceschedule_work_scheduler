@@ -264,6 +264,7 @@ private:
     uint64_t workWatchDogTime_ {0};
     uint64_t duration_ {0};
     bool paused_ {false};
+    ffrt::mutex statusMutex_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
