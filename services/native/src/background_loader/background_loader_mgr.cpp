@@ -193,17 +193,17 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
             return;
         }
 
-        TaskInfo& taskInfo = it->second;
-        if (taskInfo.status_ == TaskStatus::RUNNING) {
+        TaskInfo* taskInfo = &it->second;
+        if (taskInfo->status_ == TaskStatus::RUNNING) {
             WS_HILOGI("[%{public}s:%{public}d] task still running, send onstop for bundle %{public}s",
                 __FUNCTION__, __LINE__, bundleName.c_str());
-            taskInfoCopy = taskInfo;
-            taskInfo.timeoutCount_++;
-            if (taskInfo.timeoutCount_ >= maxTimeoutCount_) {
-                taskInfo.status_ = TaskStatus::UNREGISIERED;
+            taskInfoCopy = *taskInfo;
+            taskInfo->timeoutCount_++;
+            if (taskInfo->timeoutCount_ >= maxTimeoutCount_) {
+                taskInfo->status_ = TaskStatus::UNREGISIERED;
                 shouldAddToBlackList = true;
             } else {
-                taskInfo.status_ = TaskStatus::FINISHED;
+                taskInfo->status_ = TaskStatus::FINISHED;
             }
         } else {
             WS_HILOGI("[%{public}s:%{public}d] task already finished for bundle %{public}s",
