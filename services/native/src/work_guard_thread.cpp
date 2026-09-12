@@ -62,7 +62,7 @@ void WorkGuardThread::Stop()
 
 void WorkGuardThread::ScheduleNextCheck()
 {
-    auto self = shared_from_this();
+    std::weak_ptr<WorkGuardThread> self = shared_from_this();
     ffrt::submit(
         [self]() {
             if (self == nullptr) {

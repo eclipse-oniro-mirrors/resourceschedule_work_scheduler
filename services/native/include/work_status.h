@@ -217,9 +217,9 @@ public:
     double TimeUntilLast();
     bool IsDebugTask();
     void SetDebugTask(bool debugTask);
-    uint64_t GetWorkStartTime();
-    uint64_t GetWorkWatchDogTime();
-    uint64_t GetDuration();
+    uint64_t GetWorkStartTime() const;
+    uint64_t GetWorkWatchDogTime() const;
+    uint64_t GetDuration() const;
     void SetWorkStartTime(uint64_t time);
     void SetWorkWatchDogTime(uint64_t time);
     void SetDuration(uint64_t duration);
@@ -264,7 +264,7 @@ private:
     uint64_t workWatchDogTime_ {0};
     uint64_t duration_ {0};
     bool paused_ {false};
-    ffrt::mutex statusMutex_;
+    mutable ffrt::shared_mutex statusMutex_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

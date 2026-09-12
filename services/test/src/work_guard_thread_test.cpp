@@ -43,6 +43,9 @@ public:
             guardThread_->Stop();
             guardThread_.reset();
         }
+        if (service_) {
+            service_->workPolicyManager_.reset();
+        }
         service_.reset();
     }
     std::shared_ptr<WorkSchedulerService> service_;
