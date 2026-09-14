@@ -45,6 +45,7 @@ class WorkQueueManager;
 class WorkPolicyManager;
 class WorkBundleGroupChangeCallback;
 class SchedulerBgTaskSubscriber;
+class WorkGuardThread;
 class WorkSchedulerService final : public SystemAbility, public WorkSchedServiceStub,
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
@@ -219,6 +220,13 @@ public:
     }
 
     /**
+     * @brief Check if the service is ready.
+     *
+     * @return True if the service is ready, else false.
+     */
+    bool IsReady();
+
+    /**
      * @brief Get work queue manager.
      *
      * @return Work queue manager.
@@ -281,6 +289,14 @@ public:
      */
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
+    /**
+     * @brief Start the guard thread for periodic orphan/timeout check.
+     */
+    void StartGuardThread();
+    /**
+     * @brief Stop the guard thread.
+     */
+    void StopGuardThread();
     /**
      * @brief stop deepIdle works.
      *
@@ -432,6 +448,7 @@ private:
     std::atomic<bool> ready_ {false};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
+    std::shared_ptr<WorkGuardThread> guardThread_;
     std::atomic<bool> checkBundle_ {true};
     std::set<std::string> exemptionBundles_;
     std::set<std::string> preinstalledBundles_;

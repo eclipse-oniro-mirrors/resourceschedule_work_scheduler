@@ -1899,5 +1899,34 @@ HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_003, TestSize.Level1)
     workSchedulerService_->ClearExecFrequency();
     remove(filePath);
 }
+
+/**
+ * @tc.name: StartGuardThread_001
+ * @tc.desc: Test StartGuardThread is no-op when guard thread already exists.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StartGuardThread_001, TestSize.Level1)
+{
+    workSchedulerService_->guardThread_ = nullptr;
+    workSchedulerService_->StartGuardThread();
+    auto firstThread = workSchedulerService_->guardThread_;
+    workSchedulerService_->StartGuardThread();
+    EXPECT_EQ(workSchedulerService_->guardThread_, firstThread);
+    workSchedulerService_->StopGuardThread();
+}
+
+/**
+ * @tc.name: StopGuardThread_001
+ * @tc.desc: Test StopGuardThread stops and clears guard thread.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopGuardThread_001, TestSize.Level1)
+{
+    workSchedulerService_->guardThread_ = nullptr;
+    workSchedulerService_->StartGuardThread();
+    EXPECT_TRUE(workSchedulerService_->guardThread_ != nullptr);
+    workSchedulerService_->StopGuardThread();
+    EXPECT_TRUE(workSchedulerService_->guardThread_ == nullptr);
+}
 }
 }

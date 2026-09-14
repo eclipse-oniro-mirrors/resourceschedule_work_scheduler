@@ -82,6 +82,7 @@
 #include "work_sched_hisysevent_report.h"
 #include "background_loader/background_loader_mgr.h"
 #include "want.h"
+#include "work_guard_thread.h"
 
 extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
 
@@ -148,6 +149,11 @@ const std::set<std::string> WORK_SCHED_SA_CALLER = {
 
 WorkSchedulerService::WorkSchedulerService() : SystemAbility(WORK_SCHEDULE_SERVICE_ID, true) {}
 WorkSchedulerService::~WorkSchedulerService() {}
+
+bool WorkSchedulerService::IsReady()
+{
+    return ready_.load();
+}
 
 void WorkSchedulerService::OnStart()
 {
@@ -499,6 +505,7 @@ bool WorkSchedulerService::GetJsonFromFile(const char *filePath, nlohmann::json 
 void WorkSchedulerService::OnStop()
 {
     WS_HILOGI("stop service.");
+    StopGuardThread();
     std::lock_guard<ffrt::mutex> observerLock(observerMutex_);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     DeviceUsageStats::BundleActiveClient::GetInstance().UnRegisterAppGroupCallBack(groupObserver_);
@@ -512,6 +519,26 @@ void WorkSchedulerService::OnStop()
     eventRunner_.reset();
     handler_.reset();
     ready_.store(false);
+}
+
+void WorkSchedulerService::StartGuardThread()
+{
+    if (guardThread_) {
+        WS_HILOGI("Guard thread already exists.");
+        return;
+    }
+    guardThread_ = std::make_shared<WorkGuardThread>();
+    guardThread_->Start();
+    WS_HILOGI("Guard thread started successfully.");
+}
+
+void WorkSchedulerService::StopGuardThread()
+{
+    if (guardThread_) {
+        guardThread_->Stop();
+        guardThread_.reset();
+        WS_HILOGI("Guard thread stopped successfully.");
+    }
 }
 
 bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
@@ -546,6 +573,7 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
         return false;
     }
     WS_HILOGI("init success.");
+    StartGuardThread();
     return true;
 }
 

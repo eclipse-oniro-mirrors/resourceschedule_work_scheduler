@@ -55,10 +55,6 @@ public:
     std::string abilityName_;
     int32_t uid_;
     int32_t userId_;
-    uint64_t workStartTime_ {0};
-    uint64_t workWatchDogTime_ {0};
-    uint64_t duration_ {0};
-    bool paused_ {false};
     bool persisted_;
     int32_t priority_;
     bool needRetrigger_ {false};
@@ -221,6 +217,18 @@ public:
     double TimeUntilLast();
     bool IsDebugTask();
     void SetDebugTask(bool debugTask);
+    uint64_t GetWorkStartTime() const;
+    uint64_t GetWorkWatchDogTime() const;
+    uint64_t GetDuration() const;
+    void SetWorkStartTime(uint64_t time);
+    void SetWorkWatchDogTime(uint64_t time);
+    void SetDuration(uint64_t duration);
+    void AddDuration(uint64_t delta);
+    void SetPaused(bool paused);
+    void ResetRunningFields();
+    void InitRunningFields(uint64_t startTime, uint64_t watchdogTime);
+    uint64_t PauseRunning(uint64_t currentTime);
+    void ResumeRunning(uint64_t currentTime);
 
 private:
     static int32_t GetDumpAppGroup(int32_t uid);
@@ -252,6 +260,11 @@ private:
     int64_t minInterval_;
     ffrt::mutex conditionMapMutex_;
     std::string conditionStatus_;
+    uint64_t workStartTime_ {0};
+    uint64_t workWatchDogTime_ {0};
+    uint64_t duration_ {0};
+    bool paused_ {false};
+    mutable ffrt::shared_mutex statusMutex_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

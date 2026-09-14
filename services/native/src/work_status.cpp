@@ -208,6 +208,7 @@ void WorkStatus::MarkTimeout()
 
 void WorkStatus::MarkStatus(Status status)
 {
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
     currentStatus_ = status;
 }
 
@@ -678,21 +679,25 @@ bool WorkStatus::GetUidLastTime(int32_t uid, time_t &lastTime)
 
 bool WorkStatus::IsRunning()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == RUNNING;
 }
 
 bool WorkStatus::IsPaused()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return paused_;
 }
 
 bool WorkStatus::IsReadyStatus()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == CONDITION_READY;
 }
 
 bool WorkStatus::IsRemoved()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == REMOVED;
 }
 
@@ -716,6 +721,7 @@ bool WorkStatus::IsRepeating()
 
 WorkStatus::Status WorkStatus::GetStatus()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_;
 }
 
@@ -739,8 +745,8 @@ void WorkStatus::Dump(string& result)
     } else {
         result.append(string("\"bundleName\":") + bundleName_ + ",\n");
     }
-    result.append(string("\"status\":") + to_string(currentStatus_) + ",\n");
-    result.append(string("\"paused\":") + (paused_ ? "true" : "false") + ",\n");
+    result.append(string("\"status\":") + to_string(GetStatus()) + ",\n");
+    result.append(string("\"paused\":") + (IsPaused() ? "true" : "false") + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
     DumpCondition(result);
@@ -815,7 +821,8 @@ void WorkStatus::ToString(WorkCondition::Type type)
 
 bool WorkStatus::HasTimeout()
 {
-    if (!IsRunning() || IsPaused()) {
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    if (currentStatus_ != RUNNING || paused_) {
         return false;
     }
 
@@ -961,6 +968,97 @@ void WorkStatus::AddDumpAppGroup(int32_t uid, int32_t group)
     } else {
         dumpAppGroupMap_.emplace(uid, group);
     }
+}
+
+uint64_t WorkStatus::GetWorkStartTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return workStartTime_;
+}
+
+uint64_t WorkStatus::GetWorkWatchDogTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return workWatchDogTime_;
+}
+
+uint64_t WorkStatus::GetDuration() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return duration_;
+}
+
+void WorkStatus::SetWorkStartTime(uint64_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = time;
+}
+
+void WorkStatus::SetWorkWatchDogTime(uint64_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workWatchDogTime_ = time;
+}
+
+void WorkStatus::SetDuration(uint64_t duration)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    duration_ = duration;
+}
+
+void WorkStatus::AddDuration(uint64_t delta)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    duration_ += delta;
+}
+
+void WorkStatus::SetPaused(bool paused)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    paused_ = paused;
+}
+
+void WorkStatus::ResetRunningFields()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = 0;
+    workWatchDogTime_ = 0;
+    duration_ = 0;
+}
+
+void WorkStatus::InitRunningFields(uint64_t startTime, uint64_t watchdogTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = startTime;
+    workWatchDogTime_ = watchdogTime;
+}
+
+uint64_t WorkStatus::PauseRunning(uint64_t currentTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    uint64_t oldWatchdogTime = workWatchDogTime_;
+    uint64_t runningTime = currentTime - workStartTime_;
+    uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
+    if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+        WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
+            ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
+            bundleName_.c_str(), workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);
+        newWatchdogTime = 0;
+    }
+    duration_ += runningTime;
+    WS_HILOGI("PauseRunning, bundleName:%{public}s, workId:%{public}s,"
+        " oldWatchdogTime:%{public}" PRIu64 ", newWatchdogTime:%{public}" PRIu64 ", duration:%{public}" PRIu64,
+        bundleName_.c_str(), workId_.c_str(), oldWatchdogTime, newWatchdogTime, duration_);
+    paused_ = true;
+    workWatchDogTime_ = newWatchdogTime;
+    return newWatchdogTime;
+}
+
+void WorkStatus::ResumeRunning(uint64_t currentTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    paused_ = false;
+    workStartTime_ = currentTime;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
