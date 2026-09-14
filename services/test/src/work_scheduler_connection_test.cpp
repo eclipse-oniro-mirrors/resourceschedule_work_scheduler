@@ -16,6 +16,7 @@
 #include <functional>
 #include <gtest/gtest.h>
 
+#define private public
 #include "work_info.h"
 #include "work_scheduler_connection.h"
 #include "work_sched_hilog.h"
@@ -84,7 +85,64 @@ HWTEST_F(WorkSchedulerConnectionTest, StopWork_002, TestSize.Level2)
     int32_t resultCode = 0;
     workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, resultCode);
     workSchedulerConnection_->StopWork();
-    EXPECT_FALSE(workSchedulerConnection_->proxy_ == nullptr);
+    EXPECT_EQ(workSchedulerConnection_->IsConnected(), true);
+}
+
+/**
+ * @tc.name: StopWork_NullProxy_001
+ * @tc.desc: Test WorkSchedulerConnection StopWork with null proxy returns early.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerConnectionTest, StopWork_NullProxy_001, TestSize.Level2)
+{
+    auto conn = std::make_shared<WorkSchedulerConnection>(std::make_shared<WorkInfo>());
+    conn->proxy_ = nullptr;
+    conn->StopWork();
+    EXPECT_EQ(conn->proxy_.get(), nullptr);
+}
+
+/**
+ * @tc.name: IsConnected_001
+ * @tc.desc: Test WorkSchedulerConnection IsConnected default false.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerConnectionTest, IsConnected_001, TestSize.Level2)
+{
+    auto conn = std::make_shared<WorkSchedulerConnection>(std::make_shared<WorkInfo>());
+    EXPECT_EQ(conn->IsConnected(), false);
+}
+
+/**
+ * @tc.name: IsConnected_002
+ * @tc.desc: Test WorkSchedulerConnection IsConnected true after connect.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerConnectionTest, IsConnected_002, TestSize.Level2)
+{
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    ASSERT_NE(samgr, nullptr);
+    sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+    ASSERT_NE(remoteObject, nullptr);
+    AppExecFwk::ElementName element;
+    workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, 0);
+    EXPECT_EQ(workSchedulerConnection_->IsConnected(), true);
+}
+
+/**
+ * @tc.name: OnAbilityDisconnectDone_NullWorkInfo_001
+ * @tc.desc: Test WorkSchedulerConnection OnAbilityDisconnectDone with null workInfo_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerConnectionTest, OnAbilityDisconnectDone_NullWorkInfo_001, TestSize.Level2)
+{
+    auto conn = std::make_shared<WorkSchedulerConnection>(nullptr);
+    AppExecFwk::ElementName element;
+    conn->OnAbilityDisconnectDone(element, 0);
+    EXPECT_EQ(conn->workInfo_.get(), nullptr);
 }
 }
 }

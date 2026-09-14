@@ -16,7 +16,10 @@
 #include <functional>
 #include <gtest/gtest.h>
 
+#define private public
 #include "work_conn_manager.h"
+#include "work_info.h"
+#include "work_status.h"
 #include "work_sched_hilog.h"
 
 using namespace testing::ext;
@@ -96,5 +99,56 @@ HWTEST_F(WorkConnManagerTest, StopWork_001, TestSize.Level2)
     EXPECT_FALSE(ret);
 }
 
+/**
+ * @tc.name: GetConnInfo_001
+ * @tc.desc: Test WorkConnManager GetConnInfo returns connection for existing workId.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level2)
+{
+    workConnManager_->connMap_.clear();
+    string workId = "u1000_456";
+    sptr<WorkSchedulerConnection> conn = new WorkSchedulerConnection(std::make_shared<WorkInfo>());
+    workConnManager_->AddConnInfo(workId, conn);
+    auto ret = workConnManager_->GetConnInfo(workId);
+    EXPECT_EQ(ret->AsObject(), conn->AsObject());
+    workConnManager_->connMap_.clear();
+}
+
+/**
+ * @tc.name: GetConnInfo_002
+ * @tc.desc: Test WorkConnManager GetConnInfo returns nullptr for non-existing workId.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkConnManagerTest, GetConnInfo_002, TestSize.Level2)
+{
+    workConnManager_->connMap_.clear();
+    auto ret = workConnManager_->GetConnInfo("nonexistent");
+    EXPECT_EQ(ret, nullptr);
+}
+
+/**
+ * @tc.name: StopWork_NotConnected_001
+ * @tc.desc: Test WorkConnManager StopWork with conn not connected and !isTimeOut returns false.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkConnManagerTest, StopWork_NotConnected_001, TestSize.Level2)
+{
+    workConnManager_->connMap_.clear();
+    WorkInfo workInfo;
+    workInfo.workId_ = 789;
+    workInfo.bundleName_ = "com.test.notconn";
+    workInfo.abilityName_ = "NotConnAbility";
+    int32_t uid = 5678;
+    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
+    sptr<WorkSchedulerConnection> conn = new WorkSchedulerConnection(std::make_shared<WorkInfo>());
+    workConnManager_->AddConnInfo(workStatus->workId_, conn);
+    bool ret = workConnManager_->StopWork(workStatus, false);
+    EXPECT_FALSE(ret);
+    workConnManager_->connMap_.clear();
+}
 }
 }

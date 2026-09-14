@@ -16,12 +16,15 @@
 #include <functional>
 #include <gtest/gtest.h>
 
+#define private public
 #include "work_status.h"
 #include "work_scheduler_service.h"
 #include "work_condition.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_hilog.h"
 #include "work_info.h"
+#include "work_sched_utils.h"
+#include "work_sched_constants.h"
 #include "frequency_info.h"
 
 using namespace testing::ext;
@@ -1409,6 +1412,131 @@ HWTEST_F(WorkStatusTest, HandleMinInterval_005, TestSize.Level1)
     int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
     EXPECT_EQ(resultInterval, -1);
     service->ClearExecFrequency();
+}
+
+/**
+ * @tc.name: HasTimeout_001
+ * @tc.desc: Test HasTimeout returns false when not running.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, HasTimeout_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9001);
+    workInfo->SetElement("com.test.timeout", "TimeoutAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9001);
+    workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    EXPECT_FALSE(workStatus->HasTimeout());
+}
+
+/**
+ * @tc.name: HasTimeout_002
+ * @tc.desc: Test HasTimeout returns true when workWatchDogTime_ exceeds LONG_WATCHDOG_TIME.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, HasTimeout_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9002);
+    workInfo->SetElement("com.test.timeout2", "TimeoutAbility2");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9002);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    workStatus->SetWorkWatchDogTime(LONG_WATCHDOG_TIME + 1);
+    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
+    EXPECT_TRUE(workStatus->HasTimeout());
+    EXPECT_TRUE(workStatus->IsTimeout());
+}
+
+/**
+ * @tc.name: SetTimeout_IsTimeout_001
+ * @tc.desc: Test SetTimeout and IsTimeout.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, SetTimeout_IsTimeout_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9003);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9003);
+    workStatus->SetTimeout(true);
+    EXPECT_TRUE(workStatus->IsTimeout());
+    workStatus->SetTimeout(false);
+    EXPECT_FALSE(workStatus->IsTimeout());
+}
+
+/**
+ * @tc.name: PauseRunning_001
+ * @tc.desc: Test PauseRunning with valid watchdog time returns remaining time.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, PauseRunning_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9004);
+    workInfo->SetElement("com.test.pause", "PauseAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9004);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    uint64_t startTime = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->SetWorkStartTime(startTime);
+    workStatus->SetWorkWatchDogTime(120000);
+    uint64_t ret = workStatus->PauseRunning(startTime + 30000);
+    EXPECT_EQ(ret, 90000);
+    EXPECT_TRUE(workStatus->IsPaused());
+}
+
+/**
+ * @tc.name: PauseRunning_002
+ * @tc.desc: Test PauseRunning with runningTime exceeding watchdog resets to 0.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, PauseRunning_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9005);
+    workInfo->SetElement("com.test.pause2", "PauseAbility2");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9005);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    uint64_t startTime = 1000;
+    workStatus->SetWorkStartTime(startTime);
+    workStatus->SetWorkWatchDogTime(5000);
+    uint64_t ret = workStatus->PauseRunning(startTime + 200000);
+    EXPECT_EQ(ret, 0);
+}
+
+/**
+ * @tc.name: IsNeedDiscreteScheduled_001
+ * @tc.desc: Test IsNeedDiscreteScheduled returns false when not system app.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsNeedDiscreteScheduled_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9006);
+    workInfo->SetElement("com.test.discrete", "DiscreteAbility");
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9006);
+    EXPECT_FALSE(workStatus->IsNeedDiscreteScheduled());
+}
+
+/**
+ * @tc.name: IsNeedDiscreteScheduled_002
+ * @tc.desc: Test IsNeedDiscreteScheduled returns false when no NETWORK condition.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsNeedDiscreteScheduled_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9007);
+    workInfo->SetElement("com.test.discrete2", "DiscreteAbility2");
+    workInfo->SetCallBySystemApp(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9007);
+    EXPECT_FALSE(workStatus->IsNeedDiscreteScheduled());
 }
 }
 }

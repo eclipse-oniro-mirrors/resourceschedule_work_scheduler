@@ -16,7 +16,9 @@
 #include <functional>
 #include <gtest/gtest.h>
 
+#define private public
 #include "scheduler_bg_task_subscriber.h"
+#include "work_scheduler_service.h"
 
 using namespace testing::ext;
 
@@ -37,6 +39,58 @@ std::shared_ptr<SchedulerBgTaskSubscriber> SchedulerBgTaskSubscriberTest::schedu
 void SchedulerBgTaskSubscriberTest::SetUpTestCase()
 {
     schedulerBgTaskSubscriber_ = std::make_shared<SchedulerBgTaskSubscriber>();
+}
+
+/**
+ * @tc.name: OnProcEfficiencyResourcesApply_001
+ * @tc.desc: Test OnProcEfficiencyResourcesApply with null resourceInfo returns early.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(SchedulerBgTaskSubscriberTest, OnProcEfficiencyResourcesApply_001, TestSize.Level1)
+{
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    schedulerBgTaskSubscriber_->OnProcEfficiencyResourcesApply(nullptr);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
+}
+
+/**
+ * @tc.name: OnProcEfficiencyResourcesReset_001
+ * @tc.desc: Test OnProcEfficiencyResourcesReset with null resourceInfo returns early.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(SchedulerBgTaskSubscriberTest, OnProcEfficiencyResourcesReset_001, TestSize.Level1)
+{
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    schedulerBgTaskSubscriber_->OnProcEfficiencyResourcesReset(nullptr);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
+}
+
+/**
+ * @tc.name: OnAppEfficiencyResourcesApply_001
+ * @tc.desc: Test OnAppEfficiencyResourcesApply with null resourceInfo returns early.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(SchedulerBgTaskSubscriberTest, OnAppEfficiencyResourcesApply_001, TestSize.Level1)
+{
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    schedulerBgTaskSubscriber_->OnAppEfficiencyResourcesApply(nullptr);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
+}
+
+/**
+ * @tc.name: OnAppEfficiencyResourcesReset_001
+ * @tc.desc: Test OnAppEfficiencyResourcesReset with null resourceInfo returns early.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(SchedulerBgTaskSubscriberTest, OnAppEfficiencyResourcesReset_001, TestSize.Level1)
+{
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    schedulerBgTaskSubscriber_->OnAppEfficiencyResourcesReset(nullptr);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
 }
 }
 }

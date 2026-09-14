@@ -57,7 +57,7 @@ void PowerModePolicyTest::SetUpTestCase()
 
 /**
  * @tc.name: GetPolicyMaxRunning_001
- * @tc.desc: Test PowerModePolicy GetPolicyMaxRunning.
+ * @tc.desc: Test PowerModePolicy GetPolicyMaxRunning with NORMAL_MODE.
  * @tc.type: FUNC
  * @tc.require: I974IQ
  */
@@ -67,11 +67,12 @@ HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_001, TestSize.Level1)
     PowerMgr::PowerMgrClient::GetInstance().SetDeviceMode(PowerMgr::PowerMode::NORMAL_MODE);
     int32_t ret = powerModePolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 3);
+    EXPECT_EQ(systemPolicy.powerMode, static_cast<uint32_t>(PowerMgr::PowerMode::NORMAL_MODE));
 }
 
 /**
  * @tc.name: GetPolicyMaxRunning_002
- * @tc.desc: Test PowerModePolicy GetPolicyMaxRunning.
+ * @tc.desc: Test PowerModePolicy GetPolicyMaxRunning with PERFORMANCE_MODE.
  * @tc.type: FUNC
  * @tc.require: I974IQ
  */
@@ -81,11 +82,12 @@ HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_002, TestSize.Level1)
     PowerMgr::PowerMgrClient::GetInstance().SetDeviceMode(PowerMgr::PowerMode::PERFORMANCE_MODE);
     int32_t ret = powerModePolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 3);
+    EXPECT_EQ(systemPolicy.powerMode, static_cast<uint32_t>(PowerMgr::PowerMode::PERFORMANCE_MODE));
 }
 
 /**
  * @tc.name: GetPolicyMaxRunning_003
- * @tc.desc: Test PowerModePolicy GetPolicyMaxRunning.
+ * @tc.desc: Test PowerModePolicy GetPolicyMaxRunning with POWER_MODE_MIN (non-NORMAL/PERF, charge NONE).
  * @tc.type: FUNC
  * @tc.require: I974IQ
  */
@@ -94,7 +96,23 @@ HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_003, TestSize.Level1)
     WorkSchedSystemPolicy systemPolicy;
     PowerMgr::PowerMgrClient::GetInstance().SetDeviceMode(PowerMgr::PowerMode::POWER_MODE_MIN);
     int32_t ret = powerModePolicy_->GetPolicyMaxRunning(systemPolicy);
-    EXPECT_EQ(ret, 3);
+    EXPECT_EQ(ret, 1);
+    EXPECT_EQ(systemPolicy.powerMode, static_cast<uint32_t>(PowerMgr::PowerMode::POWER_MODE_MIN));
+}
+
+/**
+ * @tc.name: GetPolicyMaxRunning_004
+ * @tc.desc: Test PowerModePolicy GetPolicyMaxRunning with ENERGY_SAVE_MODE (non-NORMAL/PERF, charge NONE).
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(PowerModePolicyTest, GetPolicyMaxRunning_004, TestSize.Level1)
+{
+    WorkSchedSystemPolicy systemPolicy;
+    PowerMgr::PowerMgrClient::GetInstance().SetDeviceMode(PowerMgr::PowerMode::ENERGY_SAVE_MODE);
+    int32_t ret = powerModePolicy_->GetPolicyMaxRunning(systemPolicy);
+    EXPECT_EQ(ret, 1);
+    EXPECT_EQ(systemPolicy.powerMode, static_cast<uint32_t>(PowerMgr::PowerMode::ENERGY_SAVE_MODE));
 }
 }
 }

@@ -16,9 +16,11 @@
 #include <functional>
 #include <gtest/gtest.h>
 
+#define private public
 #include "conditions/timer_listener.h"
 #include "work_scheduler_service.h"
 #include "work_queue_manager.h"
+#include "work_sched_hilog.h"
 
 using namespace OHOS::AppExecFwk;
 using namespace testing::ext;
@@ -49,5 +51,54 @@ void TimerListenerTest::SetUpTestCase()
         AppExecFwk::ThreadMode::FFRT);
     timerListener_ = std::make_shared<TimerListener>(workQueueManager_, eventRunner_);
 }
+
+/**
+ * @tc.name: Start_001
+ * @tc.desc: Test TimerListener Start with null workQueueManager_ leaves timerId_ 0.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(TimerListenerTest, Start_001, TestSize.Level1)
+{
+    auto runner = AppExecFwk::EventRunner::Create("TestTimerRunner", AppExecFwk::ThreadMode::FFRT);
+    auto listener = std::make_shared<TimerListener>(nullptr, runner);
+    listener->Start();
+    EXPECT_EQ(listener->timerId_, 0);
 }
+
+/**
+ * @tc.name: Start_002
+ * @tc.desc: Test TimerListener Start with valid workQueueManager_, verify timerId_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(TimerListenerTest, Start_002, TestSize.Level1)
+{
+    auto runner = AppExecFwk::EventRunner::Create("TestTimerRunner2", AppExecFwk::ThreadMode::FFRT);
+    auto listener = std::make_shared<TimerListener>(workQueueManager_, runner);
+    bool result = listener->Start();
+    if (result) {
+        EXPECT_GT(listener->timerId_, 0);
+        listener->Stop();
+        EXPECT_EQ(listener->timerId_, 0);
+    } else {
+        EXPECT_EQ(listener->timerId_, 0);
+    }
 }
+
+/**
+ * @tc.name: Stop_001
+ * @tc.desc: Test TimerListener Stop with timerId_ 0 does nothing.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(TimerListenerTest, Stop_001, TestSize.Level1)
+{
+    auto runner = AppExecFwk::EventRunner::Create("TestTimerRunner3", AppExecFwk::ThreadMode::FFRT);
+    auto listener = std::make_shared<TimerListener>(workQueueManager_, runner);
+    listener->timerId_ = 0;
+    listener->Stop();
+    EXPECT_EQ(listener->timerId_, 0);
+}
+} // namespace WorkScheduler
+} // namespace OHOS
