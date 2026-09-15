@@ -1369,6 +1369,11 @@ HWTEST_F(WorkPolicyManagerTest, RemoveWatchDog_001, TestSize.Level1)
     int32_t uid = 60001;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->workId_ = std::to_string(workinfo.GetWorkId()) + "_" + std::to_string(uid);
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    std::shared_ptr<AppExecFwk::EventRunner> runner;
+    std::shared_ptr<Watchdog> watchdog =
+        std::make_shared<Watchdog>(workSchedulerService->GetWorkPolicyManager(), runner);
+    workPolicyManager_->watchdog_ = watchdog;
     workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
     EXPECT_EQ(workPolicyManager_->watchdogIdMap_.size(), 1);
     workPolicyManager_->RemoveWatchDog(workStatus);

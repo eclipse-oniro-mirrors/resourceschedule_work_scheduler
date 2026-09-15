@@ -197,7 +197,7 @@ HWTEST_F(EventPublisherTest, PublishEvent_Storage_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishEvent_BatteryStatus_001, TestSize.Level3)
 {
     std::string result;
-    std::string type = "storage";
+    std::string type = "batteryStatus";
     std::string param = "invalid";
     eventPublisher_->PublishEvent(result, type, param);
     EXPECT_EQ(result, std::string("dump need right param."));
