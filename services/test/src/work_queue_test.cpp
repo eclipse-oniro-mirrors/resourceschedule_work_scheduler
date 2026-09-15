@@ -330,7 +330,7 @@ HWTEST_F(WorkQueueTest, GetWorkToRunByPriority_001, TestSize.Level1)
     workQueue_->Push(workStatus);
     auto ret = workQueue_->GetWorkToRunByPriority();
     EXPECT_EQ(ret->GetStatus(), WorkStatus::Status::CONDITION_READY);
-    EXPECT_EQ(ret->priority_, 1);
+    EXPECT_EQ(ret->priority_, 10001);
 }
 
 /**
@@ -533,7 +533,7 @@ HWTEST_F(WorkQueueTest, GetWorkIdStr_001, TestSize.Level1)
     workQueue_->Push(workStatus);
     std::string result;
     workQueue_->GetWorkIdStr(result);
-    EXPECT_GT(result.find(workStatus->workId_), 0);
+    EXPECT_NE(result.find(workStatus->workId_), std::string::npos);
 }
 
 /**

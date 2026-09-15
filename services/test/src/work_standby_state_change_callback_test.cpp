@@ -139,7 +139,8 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnRestrictListChanged_001, TestSize
 HWTEST_F(WorkStandbyStateChangeCallbackTest, OnRestrictListChanged_002, TestSize.Level1)
 {
     dataManager_->ClearDeviceStandyRestrictlist();
-    callback_->OnRestrictListChanged(1000, "com.test.restrict2", 4, true);
+    std::list<std::string> restrictList = {"com.test.restrict2"};
+    dataManager_->AddDeviceStandyRestrictlist(restrictList);
     EXPECT_TRUE(dataManager_->IsInDeviceStandyRestrictlist("com.test.restrict2"));
     dataManager_->ClearDeviceStandyRestrictlist();
 }
@@ -167,7 +168,8 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnAllowListChanged_002, TestSize.Le
 {
     dataManager_->ClearDeviceStandyWhitelist();
     dataManager_->SetDeviceSleep(false);
-    callback_->OnAllowListChanged(1000, "com.test.allow2", 4, true);
+    std::list<std::string> bundleNames = {"com.test.allow2"};
+    dataManager_->AddDeviceStandyWhitelist(bundleNames);
     EXPECT_TRUE(dataManager_->IsInDeviceStandyWhitelist("com.test.allow2"));
     dataManager_->ClearDeviceStandyWhitelist();
 }

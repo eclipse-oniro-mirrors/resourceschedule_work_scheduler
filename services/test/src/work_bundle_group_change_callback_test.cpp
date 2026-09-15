@@ -66,12 +66,7 @@ void WorkBundleGroupChangeCallbackTest::SetUpTestCase()
 static DeviceUsageStats::AppGroupCallbackInfo BuildCallbackInfo(int32_t newGroup, int32_t oldGroup,
     int32_t userId, const std::string &bundleName)
 {
-    DeviceUsageStats::AppGroupCallbackInfo info;
-    info.SetNewGroup(newGroup);
-    info.SetOldGroup(oldGroup);
-    info.SetUserId(userId);
-    info.SetBundleName(bundleName);
-    return info;
+    return DeviceUsageStats::AppGroupCallbackInfo(userId, oldGroup, newGroup, bundleName);
 }
 
 /**
@@ -83,10 +78,11 @@ static DeviceUsageStats::AppGroupCallbackInfo BuildCallbackInfo(int32_t newGroup
 HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_GroupUpgrade_001, TestSize.Level1)
 {
     DelayedSingleton<DataManager>::GetInstance()->ClearAllGroup();
+    size_t sizeBefore = workQueueManager_->queueMap_.size();
     auto info = BuildCallbackInfo(50, 30, 100, "com.test.upgrade");
     ErrCode ret = callback_->OnAppGroupChanged(info);
     EXPECT_EQ(ret, ERR_OK);
-    EXPECT_EQ(workQueueManager_->queueMap_.size(), 0);
+    EXPECT_EQ(workQueueManager_->queueMap_.size(), sizeBefore);
 }
 
 /**
@@ -98,10 +94,11 @@ HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_GroupUpgrade_001, 
 HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_GroupDowngrade_001, TestSize.Level1)
 {
     DelayedSingleton<DataManager>::GetInstance()->ClearAllGroup();
+    size_t sizeBefore = workQueueManager_->queueMap_.size();
     auto info = BuildCallbackInfo(10, 50, 101, "com.test.downgrade");
     ErrCode ret = callback_->OnAppGroupChanged(info);
     EXPECT_EQ(ret, ERR_OK);
-    EXPECT_EQ(workQueueManager_->queueMap_.size(), 0);
+    EXPECT_EQ(workQueueManager_->queueMap_.size(), sizeBefore);
 }
 
 /**
@@ -113,10 +110,11 @@ HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_GroupDowngrade_001
 HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_SameGroup_001, TestSize.Level1)
 {
     DelayedSingleton<DataManager>::GetInstance()->ClearAllGroup();
+    size_t sizeBefore = workQueueManager_->queueMap_.size();
     auto info = BuildCallbackInfo(30, 30, 102, "com.test.same");
     ErrCode ret = callback_->OnAppGroupChanged(info);
     EXPECT_EQ(ret, ERR_OK);
-    EXPECT_EQ(workQueueManager_->queueMap_.size(), 0);
+    EXPECT_EQ(workQueueManager_->queueMap_.size(), sizeBefore);
 }
 
 /**
@@ -130,7 +128,9 @@ HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_AddGroup_001, Test
     DelayedSingleton<DataManager>::GetInstance()->ClearAllGroup();
     auto info = BuildCallbackInfo(40, 20, 103, "com.test.addgroup");
     callback_->OnAppGroupChanged(info);
-    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->FindGroup("com.test.addgroup", 103, 40), true);
+    int32_t appGroup = 0;
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->FindGroup("com.test.addgroup", 103, appGroup), true);
+    EXPECT_EQ(appGroup, 40);
 }
 
 /**
@@ -168,7 +168,7 @@ HWTEST_F(WorkBundleGroupChangeCallbackTest, Constructor_NullManager_001, TestSiz
  */
 HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_DowngradeWithWork_001, TestSize.Level1)
 {
-    service_->uidQueueMap_.clear();
+    service_->GetWorkPolicyManager()->uidQueueMap_.clear();
     WorkInfo workinfo;
     workinfo.SetWorkId(8001);
     workinfo.bundleName_ = "com.test.downgrade";
@@ -182,7 +182,7 @@ HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_DowngradeWithWork_
     auto info = BuildCallbackInfo(10, 50, 105, "com.test.downgrade");
     ErrCode ret = callback_->OnAppGroupChanged(info);
     EXPECT_EQ(ret, ERR_OK);
-    service_->uidQueueMap_.clear();
+    service_->GetWorkPolicyManager()->uidQueueMap_.clear();
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -48,9 +48,9 @@ void SchedulerBgTaskSubscriberTest::SetUpTestCase()
  */
 HWTEST_F(SchedulerBgTaskSubscriberTest, OnProcEfficiencyResourcesApply_001, TestSize.Level1)
 {
-    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size();
     schedulerBgTaskSubscriber_->OnProcEfficiencyResourcesApply(nullptr);
-    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size(), before);
 }
 
 /**
@@ -61,9 +61,9 @@ HWTEST_F(SchedulerBgTaskSubscriberTest, OnProcEfficiencyResourcesApply_001, Test
  */
 HWTEST_F(SchedulerBgTaskSubscriberTest, OnProcEfficiencyResourcesReset_001, TestSize.Level1)
 {
-    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size();
     schedulerBgTaskSubscriber_->OnProcEfficiencyResourcesReset(nullptr);
-    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size(), before);
 }
 
 /**
@@ -74,9 +74,9 @@ HWTEST_F(SchedulerBgTaskSubscriberTest, OnProcEfficiencyResourcesReset_001, Test
  */
 HWTEST_F(SchedulerBgTaskSubscriberTest, OnAppEfficiencyResourcesApply_001, TestSize.Level1)
 {
-    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size();
     schedulerBgTaskSubscriber_->OnAppEfficiencyResourcesApply(nullptr);
-    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size(), before);
 }
 
 /**
@@ -87,9 +87,9 @@ HWTEST_F(SchedulerBgTaskSubscriberTest, OnAppEfficiencyResourcesApply_001, TestS
  */
 HWTEST_F(SchedulerBgTaskSubscriberTest, OnAppEfficiencyResourcesReset_001, TestSize.Level1)
 {
-    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size();
+    auto before = DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size();
     schedulerBgTaskSubscriber_->OnAppEfficiencyResourcesReset(nullptr);
-    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->effiResApplyUidSet_.size(), before);
+    EXPECT_EQ(DelayedSingleton<WorkSchedulerService>::GetInstance()->whitelist_.size(), before);
 }
 }
 }

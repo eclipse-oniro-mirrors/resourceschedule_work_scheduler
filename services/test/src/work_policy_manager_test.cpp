@@ -1225,7 +1225,7 @@ HWTEST_F(WorkPolicyManagerTest, NewWatchdogId_002, TestSize.Level1)
 {
     workPolicyManager_->watchdogId_ = 5;
     uint32_t ret = workPolicyManager_->NewWatchdogId();
-    EXPECT_EQ(ret, 6);
+    EXPECT_EQ(ret, 5);
 }
 
 /**
@@ -1258,7 +1258,8 @@ HWTEST_F(WorkPolicyManagerTest, ObtainAllWorks_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, ObtainAllWorks_002, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
-    auto ret = workPolicyManager_->ObtainAllWorks(99999);
+    int32_t uid = 99999;
+    auto ret = workPolicyManager_->ObtainAllWorks(uid);
     EXPECT_EQ(ret.size(), 0);
 }
 

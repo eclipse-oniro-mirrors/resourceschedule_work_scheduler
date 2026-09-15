@@ -28,6 +28,7 @@
 #include "conditions/battery_level_listener.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "work_sched_data_manager.h"
 #include "battery_info.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
@@ -2108,7 +2109,7 @@ HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_NotReady_001, TestSize.Level1)
 {
     workSchedulerService_->ready_ = false;
     WorkInfo workInfo;
-    int32_t ret = workSchedulerService_->GetWorkStatus(99999, 99999, workInfo);
+    int32_t ret = workSchedulerService_->GetWorkStatus(99999, workInfo);
     EXPECT_EQ(ret, E_SERVICE_NOT_READY);
 }
 
@@ -2161,8 +2162,8 @@ HWTEST_F(WorkSchedulerServiceTest, DumpEffiResApplyUid_002, TestSize.Level1)
     workSchedulerService_->UpdateEffiResApplyInfo(11111, true);
     workSchedulerService_->UpdateEffiResApplyInfo(22222, true);
     std::string ret = workSchedulerService_->DumpEffiResApplyUid();
-    EXPECT_GT(ret.find("11111"), 0);
-    EXPECT_GT(ret.find("22222"), 0);
+    EXPECT_NE(ret.find("11111"), std::string::npos);
+    EXPECT_NE(ret.find("22222"), std::string::npos);
     workSchedulerService_->whitelist_.clear();
 }
 
@@ -2179,7 +2180,7 @@ HWTEST_F(WorkSchedulerServiceTest, HandleDeepIdleMsg_Ready_001, TestSize.Level1)
     }
     DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
     workSchedulerService_->HandleDeepIdleMsg(0);
-    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), true);
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), false);
     DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
 }
 

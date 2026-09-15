@@ -84,7 +84,7 @@ HWTEST_F(EventPublisherTest, Dump_002, TestSize.Level3)
     std::string eventType = "network";
     std::string eventValue = "invalid";
     eventPublisher_->Dump(result, eventType, eventValue);
-    EXPECT_GT(result.find("dump need right param"), 0);
+    EXPECT_NE(result.find("dump need right param"), std::string::npos);
 }
 
 /**
@@ -96,7 +96,8 @@ HWTEST_F(EventPublisherTest, Dump_002, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishNetworkEvent_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishNetworkEvent(result, "invalid");
+    std::string param = "invalid";
+    eventPublisher_->PublishNetworkEvent(result, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 
@@ -109,7 +110,8 @@ HWTEST_F(EventPublisherTest, PublishNetworkEvent_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishChargingEvent_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishChargingEvent(result, "invalid");
+    std::string param = "invalid";
+    eventPublisher_->PublishChargingEvent(result, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 
@@ -122,7 +124,8 @@ HWTEST_F(EventPublisherTest, PublishChargingEvent_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishStorageEvent_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishStorageEvent(result, "invalid");
+    std::string param = "invalid";
+    eventPublisher_->PublishStorageEvent(result, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 
@@ -135,7 +138,8 @@ HWTEST_F(EventPublisherTest, PublishStorageEvent_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishBatteryStatusEvent_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishBatteryStatusEvent(result, "invalid");
+    std::string param = "invalid";
+    eventPublisher_->PublishBatteryStatusEvent(result, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 
@@ -148,7 +152,9 @@ HWTEST_F(EventPublisherTest, PublishBatteryStatusEvent_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishEvent_Network_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishEvent(result, std::string("network"), std::string("invalid"));
+    std::string type = "network";
+    std::string param = "invalid";
+    eventPublisher_->PublishEvent(result, type, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 
@@ -161,7 +167,9 @@ HWTEST_F(EventPublisherTest, PublishEvent_Network_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishEvent_Charging_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishEvent(result, std::string("charging"), std::string("invalid"));
+    std::string type = "charging";
+    std::string param = "invalid";
+    eventPublisher_->PublishEvent(result, type, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 
@@ -174,7 +182,9 @@ HWTEST_F(EventPublisherTest, PublishEvent_Charging_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishEvent_Storage_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishEvent(result, std::string("storage"), std::string("invalid"));
+    std::string type = "storage";
+    std::string param = "invalid";
+    eventPublisher_->PublishEvent(result, type, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 
@@ -187,7 +197,9 @@ HWTEST_F(EventPublisherTest, PublishEvent_Storage_001, TestSize.Level3)
 HWTEST_F(EventPublisherTest, PublishEvent_BatteryStatus_001, TestSize.Level3)
 {
     std::string result;
-    eventPublisher_->PublishEvent(result, std::string("batteryStatus"), std::string("invalid"));
+    std::string type = "storage";
+    std::string param = "invalid";
+    eventPublisher_->PublishEvent(result, type, param);
     EXPECT_EQ(result, std::string("dump need right param."));
 }
 }

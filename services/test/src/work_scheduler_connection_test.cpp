@@ -98,7 +98,7 @@ HWTEST_F(WorkSchedulerConnectionTest, StopWork_NullProxy_001, TestSize.Level2)
     auto conn = std::make_shared<WorkSchedulerConnection>(std::make_shared<WorkInfo>());
     conn->proxy_ = nullptr;
     conn->StopWork();
-    EXPECT_EQ(conn->proxy_.get(), nullptr);
+    EXPECT_EQ(conn->proxy_, nullptr);
 }
 
 /**

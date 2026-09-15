@@ -22,6 +22,7 @@
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
 #include "work_sched_hilog.h"
+#include "work_sched_constants.h"
 
 using namespace testing::ext;
 

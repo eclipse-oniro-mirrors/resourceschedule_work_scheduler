@@ -31,7 +31,6 @@ using namespace testing::ext;
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
-constexpr int64_t INVALID_VALUE = -1;
 constexpr int64_t ONE_MINUTE = 60 * 1000LL;
 constexpr int64_t TWENTY_MINUTE = 20 * ONE_MINUTE;
 constexpr int64_t THIRTY_MINUTE = 30 * ONE_MINUTE;
@@ -738,8 +737,12 @@ HWTEST_F(WorkStatusTest, IsSAReady_001, TestSize.Level1)
     workInfo_->workId_ = -1;
     workStatus_->MarkStatus(WorkStatus::Status::RUNNING);
     workStatus_->workInfo_ = workInfo_;
+    workStatus_->bundleName_ = "com.example.workStatus";
+    std::list<std::string> restrictList = {"com.example.workStatus"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
     bool result = workStatus_->IsSAReady();
     EXPECT_FALSE(result);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 /**
@@ -836,8 +839,12 @@ HWTEST_F(WorkStatusTest, IsSAReady_006, TestSize.Level1)
     batteryLevelCondition->intVal = 70;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
     workStatus_->workInfo_ = workInfo_;
+    workStatus_->bundleName_ = "com.example.workStatus";
+    std::list<std::string> restrictList = {"com.example.workStatus"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
     bool result = workStatus_->IsSAReady();
     EXPECT_FALSE(result);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 /**
@@ -876,6 +883,9 @@ HWTEST_F(WorkStatusTest, IsSAReady_008, TestSize.Level1)
     workInfo_->RequestRepeatCycle(timeInterval);
     workInfo_->SetPreinstalled(true);
     workStatus_->workInfo_ = workInfo_;
+    workStatus_->bundleName_ = "com.example.workStatus";
+    std::list<std::string> restrictList = {"com.example.workStatus"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
 
     std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();
     timerCondition->boolVal = true;
@@ -883,6 +893,7 @@ HWTEST_F(WorkStatusTest, IsSAReady_008, TestSize.Level1)
     workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
     bool result = workStatus_->IsSAReady();
     EXPECT_FALSE(result);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 /**
