@@ -16,7 +16,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "common_event_manager.h"
 #include "common_event_support.h"
 #include "conditions/screen_listener.h"

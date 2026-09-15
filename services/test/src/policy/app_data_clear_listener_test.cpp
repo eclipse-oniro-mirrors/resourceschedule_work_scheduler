@@ -15,7 +15,6 @@
 
 #include <functional>
 #include <gtest/gtest.h>
-#define private public
 #include "policy/app_data_clear_listener.h"
 #include "work_policy_manager.h"
 #include "work_scheduler_service.h"

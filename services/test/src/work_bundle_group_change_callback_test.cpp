@@ -17,7 +17,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "work_bundle_group_change_callback.h"
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"

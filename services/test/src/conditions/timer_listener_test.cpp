@@ -16,7 +16,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "conditions/timer_listener.h"
 #include "work_scheduler_service.h"
 #include "work_queue_manager.h"

@@ -19,7 +19,6 @@
 #include <unistd.h>
 #include <gtest/gtest.h>
 #include "timer.h"
-#define private public
 #include "work_scheduler_service.h"
 #include "work_status.h"
 #include "work_bundle_group_change_callback.h"

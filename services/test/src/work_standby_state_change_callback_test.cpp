@@ -17,7 +17,6 @@
 #include <gtest/gtest.h>
 #include "gmock/gmock.h"
 
-#define private public
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
 #include "work_standby_state_change_callback.h"

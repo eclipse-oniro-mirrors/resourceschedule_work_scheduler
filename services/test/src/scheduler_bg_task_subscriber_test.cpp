@@ -16,7 +16,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "scheduler_bg_task_subscriber.h"
 #include "work_scheduler_service.h"
 

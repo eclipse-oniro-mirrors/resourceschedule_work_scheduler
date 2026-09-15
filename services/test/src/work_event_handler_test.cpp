@@ -16,7 +16,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "work_event_handler.h"
 #include "work_policy_manager.h"
 #include "work_scheduler_service.h"

@@ -16,7 +16,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "work_conn_manager.h"
 #include "work_info.h"
 #include "work_status.h"

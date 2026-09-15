@@ -18,7 +18,6 @@
 #include <thread>
 #include <gtest/gtest.h>
 
-#define private public
 #include "conditions/condition_checker.h"
 #include "work_conn_manager.h"
 #include "work_policy_manager.h"

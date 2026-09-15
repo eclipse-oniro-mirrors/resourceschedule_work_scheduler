@@ -16,7 +16,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "work_status.h"
 #include "work_scheduler_service.h"
 #include "work_condition.h"

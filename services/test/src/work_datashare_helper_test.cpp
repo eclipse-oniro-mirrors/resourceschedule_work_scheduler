@@ -16,7 +16,6 @@
 #include <functional>
 #include <gtest/gtest.h>
 
-#define private public
 #include "work_datashare_helper.h"
 #include "work_sched_hilog.h"
 
