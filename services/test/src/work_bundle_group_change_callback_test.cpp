@@ -66,7 +66,7 @@ void WorkBundleGroupChangeCallbackTest::SetUpTestCase()
 static DeviceUsageStats::AppGroupCallbackInfo BuildCallbackInfo(int32_t newGroup, int32_t oldGroup,
     int32_t userId, const std::string &bundleName)
 {
-    return DeviceUsageStats::AppGroupCallbackInfo(userId, oldGroup, newGroup, bundleName);
+    return DeviceUsageStats::AppGroupCallbackInfo(userId, oldGroup, newGroup, 0, bundleName);
 }
 
 /**
