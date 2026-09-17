@@ -19,6 +19,7 @@
 #include "conditions/group_listener.h"
 #include "work_scheduler_service.h"
 #include "work_queue_manager.h"
+#include "work_sched_hilog.h"
 
 using namespace OHOS::AppExecFwk;
 using namespace testing::ext;
@@ -31,7 +32,7 @@ const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 class GroupListenerTest : public testing::Test {
 public:
     static void SetUpTestCase();
-    static void TearDownTestCase() {};
+    static void TearDownTestCase();
     void SetUp() {};
     void TearDown() {};
     static std::shared_ptr<WorkQueueManager> workQueueManager_;
@@ -49,5 +50,71 @@ void GroupListenerTest::SetUpTestCase()
         AppExecFwk::ThreadMode::FFRT);
     groupListener_ = std::make_shared<GroupListener>(workQueueManager_, eventRunner_);
 }
+
+void GroupListenerTest::TearDownTestCase()
+{
+    if (groupListener_ != nullptr) {
+        groupListener_->Stop();
+        groupListener_.reset();
+    }
+    workQueueManager_.reset();
 }
+
+/**
+ * @tc.name: Start_001
+ * @tc.desc: Test GroupListener Start creates handler_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(GroupListenerTest, Start_001, TestSize.Level1)
+{
+    groupListener_->handler_.reset();
+    groupListener_->Start();
+    EXPECT_EQ(groupListener_->handler_.use_count(), 1);
+    groupListener_->Stop();
 }
+
+/**
+ * @tc.name: Start_002
+ * @tc.desc: Test GroupListener Start twice does not recreate handler_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(GroupListenerTest, Start_002, TestSize.Level1)
+{
+    groupListener_->handler_.reset();
+    groupListener_->Start();
+    auto handlerBefore = groupListener_->handler_.get();
+    groupListener_->Start();
+    EXPECT_EQ(groupListener_->handler_.get(), handlerBefore);
+    groupListener_->Stop();
+}
+
+/**
+ * @tc.name: Start_003
+ * @tc.desc: Test GroupListener Start with null runner leaves handler_ unset.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(GroupListenerTest, Start_003, TestSize.Level1)
+{
+    auto listener = std::make_shared<GroupListener>(workQueueManager_, nullptr);
+    listener->Start();
+    EXPECT_EQ(listener->handler_.use_count(), 0);
+}
+
+/**
+ * @tc.name: Start_004
+ * @tc.desc: Test GroupListener Start with null workQueueManager leaves handler_ unset.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(GroupListenerTest, Start_004, TestSize.Level1)
+{
+    auto runner = AppExecFwk::EventRunner::Create("TestRunner", AppExecFwk::ThreadMode::FFRT);
+    auto listener = std::make_shared<GroupListener>(nullptr, runner);
+    listener->Start();
+    EXPECT_EQ(listener->handler_.use_count(), 1);
+}
+} // namespace WorkScheduler
+} // namespace OHOS

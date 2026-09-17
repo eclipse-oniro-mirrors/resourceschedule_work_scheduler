@@ -68,23 +68,20 @@ void WorkSchedulerConnectionTest::SetUp()
 }
 
 /**
- * @tc.name: StopWork_002
- * @tc.desc: Test WorkSchedulerConnection StopWork.
+ * @tc.name: IsConnected_002
+ * @tc.desc: Test WorkSchedulerConnection IsConnected true after connect.
  * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
+ * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerConnectionTest, StopWork_002, TestSize.Level2)
+HWTEST_F(WorkSchedulerConnectionTest, IsConnected_002, TestSize.Level2)
 {
-    sptr<ISystemAbilityManager> SystemAbilityManager =
-        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_NE(SystemAbilityManager, nullptr);
-    sptr<IRemoteObject> remoteObject = SystemAbilityManager->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    ASSERT_NE(samgr, nullptr);
+    sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
     ASSERT_NE(remoteObject, nullptr);
     AppExecFwk::ElementName element;
-    int32_t resultCode = 0;
-    workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, resultCode);
-    workSchedulerConnection_->StopWork();
-    EXPECT_FALSE(workSchedulerConnection_->proxy_ == nullptr);
+    workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, 0);
+    EXPECT_EQ(workSchedulerConnection_->IsConnected(), true);
 }
 }
 }

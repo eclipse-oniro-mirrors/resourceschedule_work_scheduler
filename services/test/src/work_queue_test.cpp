@@ -329,7 +329,8 @@ HWTEST_F(WorkQueueTest, GetWorkToRunByPriority_001, TestSize.Level1)
     workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
     workQueue_->Push(workStatus);
     auto ret = workQueue_->GetWorkToRunByPriority();
-    EXPECT_TRUE(ret != nullptr);
+    EXPECT_EQ(ret->GetStatus(), WorkStatus::Status::CONDITION_READY);
+    EXPECT_EQ(ret->priority_, 10001);
 }
 
 /**
@@ -433,6 +434,212 @@ HWTEST_F(WorkQueueTest, GetDeepIdleWorks_001, TestSize.Level1)
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     workQueue_->Push(workStatus);
     EXPECT_TRUE(workQueue_->GetDeepIdleWorks().size() == 1);
+}
+
+/**
+ * @tc.name: Find_003
+ * @tc.desc: Test WorkQueue Find by workId returns workStatus.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, Find_003, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(10);
+    workInfo_.SetElement("com.test.find", "FindAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
+    workQueue_->Push(workStatus);
+    auto ret = workQueue_->Find(workStatus->workId_);
+    EXPECT_EQ(ret->workId_, workStatus->workId_);
+}
+
+/**
+ * @tc.name: Find_004
+ * @tc.desc: Test WorkQueue Find by workId not found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, Find_004, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto ret = workQueue_->Find("nonexistent_id");
+    EXPECT_EQ(ret.get(), nullptr);
+}
+
+/**
+ * @tc.name: Find_UserIdBundleName_001
+ * @tc.desc: Test WorkQueue Find by userId and bundleName returns true.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, Find_UserIdBundleName_001, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(20);
+    workInfo_.SetElement("com.test.findub", "FindAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
+    workQueue_->Push(workStatus);
+    bool ret = workQueue_->Find(workStatus->userId_, "com.test.findub");
+    EXPECT_EQ(ret, true);
+}
+
+/**
+ * @tc.name: Find_UserIdBundleName_002
+ * @tc.desc: Test WorkQueue Find by userId and bundleName not found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, Find_UserIdBundleName_002, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    bool ret = workQueue_->Find(999, "nonexist.bundle");
+    EXPECT_EQ(ret, false);
+}
+
+/**
+ * @tc.name: CancelWork_001
+ * @tc.desc: Test WorkQueue CancelWork removes work from list.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, CancelWork_001, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(30);
+    workInfo_.SetElement("com.test.cancel", "CancelAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
+    workQueue_->Push(workStatus);
+    EXPECT_EQ(workQueue_->GetSize(), 1);
+    workQueue_->CancelWork(workStatus);
+    EXPECT_EQ(workQueue_->GetSize(), 0);
+}
+
+/**
+ * @tc.name: SetMinIntervalByDump_001
+ * @tc.desc: Test WorkQueue SetMinIntervalByDump updates minInterval for all works.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, SetMinIntervalByDump_001, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(50);
+    workInfo_.SetElement("com.test.interval", "IntervalAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
+    workQueue_->Push(workStatus);
+    workQueue_->SetMinIntervalByDump(5000);
+    auto workList = workQueue_->GetWorkList();
+    EXPECT_EQ(workList.front()->minInterval_, 5000);
+}
+
+/**
+ * @tc.name: GetSize_001
+ * @tc.desc: Test WorkQueue GetSize after push and clear.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, GetSize_001, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    EXPECT_EQ(workQueue_->GetSize(), 0);
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(60);
+    workInfo_.SetElement("com.test.size", "SizeAbility");
+    workQueue_->Push(std::make_shared<WorkStatus>(workInfo_, 1));
+    EXPECT_EQ(workQueue_->GetSize(), 1);
+}
+
+/**
+ * @tc.name: ClearAll_001
+ * @tc.desc: Test WorkQueue ClearAll empties list.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, ClearAll_001, TestSize.Level1)
+{
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(70);
+    workInfo_.SetElement("com.test.clear", "ClearAbility");
+    workQueue_->Push(std::make_shared<WorkStatus>(workInfo_, 1));
+    workQueue_->ClearAll();
+    EXPECT_EQ(workQueue_->GetSize(), 0);
+}
+
+/**
+ * @tc.name: ParseCondition_Charger_001
+ * @tc.desc: Test WorkQueue ParseCondition CHARGER sets enumVal and boolVal.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, ParseCondition_Charger_001, TestSize.Level1)
+{
+    WorkCondition::Type type = WorkCondition::Type::CHARGER;
+    auto value = std::make_shared<DetectorValue>(WorkCondition::CHARGING_PLUGGED_AC, 0, true, "");
+    auto ret = workQueue_->ParseCondition(type, value);
+    EXPECT_EQ(ret->enumVal, WorkCondition::CHARGING_PLUGGED_AC);
+    EXPECT_EQ(ret->boolVal, true);
+}
+
+/**
+ * @tc.name: ParseCondition_BatteryLevel_001
+ * @tc.desc: Test WorkQueue ParseCondition BATTERY_LEVEL sets intVal.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, ParseCondition_BatteryLevel_001, TestSize.Level1)
+{
+    WorkCondition::Type type = WorkCondition::Type::BATTERY_LEVEL;
+    auto value = std::make_shared<DetectorValue>(85, 0, false, "");
+    auto ret = workQueue_->ParseCondition(type, value);
+    EXPECT_EQ(ret->intVal, 85);
+}
+
+/**
+ * @tc.name: ParseCondition_Group_001
+ * @tc.desc: Test WorkQueue ParseCondition GROUP sets all fields.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, ParseCondition_Group_001, TestSize.Level1)
+{
+    WorkCondition::Type type = WorkCondition::Type::GROUP;
+    auto value = std::make_shared<DetectorValue>(30, 100, true, "com.test.group");
+    auto ret = workQueue_->ParseCondition(type, value);
+    EXPECT_EQ(ret->enumVal, 30);
+    EXPECT_EQ(ret->intVal, 100);
+    EXPECT_EQ(ret->boolVal, true);
+    EXPECT_EQ(ret->strVal, "com.test.group");
+}
+
+/**
+ * @tc.name: ParseCondition_Standby_001
+ * @tc.desc: Test WorkQueue ParseCondition STANDBY sets boolVal.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, ParseCondition_Standby_001, TestSize.Level1)
+{
+    WorkCondition::Type type = WorkCondition::Type::STANDBY;
+    auto value = std::make_shared<DetectorValue>(0, 0, true, "");
+    auto ret = workQueue_->ParseCondition(type, value);
+    EXPECT_EQ(ret->boolVal, true);
+}
+
+/**
+ * @tc.name: FindSA_001
+ * @tc.desc: Test WorkQueue FindSA returns nullptr when no SA work found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, FindSA_001, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto ret = workQueue_->FindSA(100);
+    EXPECT_EQ(ret, nullptr);
 }
 }
 }

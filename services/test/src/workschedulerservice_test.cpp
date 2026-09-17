@@ -19,7 +19,6 @@
 #include <unistd.h>
 #include <gtest/gtest.h>
 #include "timer.h"
-#define private public
 #include "work_scheduler_service.h"
 #include "work_status.h"
 #include "work_bundle_group_change_callback.h"
@@ -29,6 +28,7 @@
 #include "conditions/battery_level_listener.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "work_sched_data_manager.h"
 #include "battery_info.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
@@ -1924,9 +1924,350 @@ HWTEST_F(WorkSchedulerServiceTest, StopGuardThread_001, TestSize.Level1)
 {
     workSchedulerService_->guardThread_ = nullptr;
     workSchedulerService_->StartGuardThread();
-    EXPECT_TRUE(workSchedulerService_->guardThread_ != nullptr);
+    auto threadPtr = workSchedulerService_->guardThread_.get();
+    EXPECT_NE(threadPtr, nullptr);
     workSchedulerService_->StopGuardThread();
-    EXPECT_TRUE(workSchedulerService_->guardThread_ == nullptr);
+    EXPECT_EQ(workSchedulerService_->guardThread_.get(), nullptr);
+}
+
+/**
+ * @tc.name: AddDeepIdleTimeToMap_001
+ * @tc.desc: Test AddDeepIdleTimeToMap adds and updates entries.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, AddDeepIdleTimeToMap_001, TestSize.Level1)
+{
+    workSchedulerService_->deepIdleTimeMap_.clear();
+    workSchedulerService_->AddDeepIdleTimeToMap(100, 1800000, 10000);
+    EXPECT_EQ(workSchedulerService_->HasDeepIdleTime(), true);
+    auto map = workSchedulerService_->GetDeepIdleTimeMap();
+    EXPECT_EQ(map.count(100), 1);
+    EXPECT_EQ(map.at(100).first, 1800000);
+    workSchedulerService_->AddDeepIdleTimeToMap(100, 3600000, 10000);
+    map = workSchedulerService_->GetDeepIdleTimeMap();
+    EXPECT_EQ(map.at(100).first, 3600000);
+    workSchedulerService_->deepIdleTimeMap_.clear();
+}
+
+/**
+ * @tc.name: RemoveDeepIdleTimeToMap_001
+ * @tc.desc: Test RemoveDeepIdleTimeToMap erases entry from map.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, RemoveDeepIdleTimeToMap_001, TestSize.Level1)
+{
+    workSchedulerService_->deepIdleTimeMap_.clear();
+    workSchedulerService_->AddDeepIdleTimeToMap(200, 1800000, 20000);
+    EXPECT_EQ(workSchedulerService_->HasDeepIdleTime(), true);
+    workSchedulerService_->RemoveDeepIdleTimeToMap(200);
+    EXPECT_EQ(workSchedulerService_->HasDeepIdleTime(), false);
+}
+
+/**
+ * @tc.name: InsertRemovePreinstalledBundles_001
+ * @tc.desc: Test InsertPreinstalledBundles and RemovePreinstalledBundles.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, InsertRemovePreinstalledBundles_001, TestSize.Level1)
+{
+    workSchedulerService_->preinstalledBundles_.clear();
+    workSchedulerService_->InsertPreinstalledBundles("com.test.preinstall");
+    EXPECT_EQ(workSchedulerService_->IsPreinstalledBundle("com.test.preinstall"), true);
+    workSchedulerService_->RemovePreinstalledBundles("com.test.preinstall");
+    EXPECT_EQ(workSchedulerService_->IsPreinstalledBundle("com.test.preinstall"), false);
+}
+
+/**
+ * @tc.name: GetClearExemptionBundles_001
+ * @tc.desc: Test GetExemptionBundles and ClearExemptionBundles.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetClearExemptionBundles_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExemptionBundles();
+    workSchedulerService_->InsertExemptionBundles("com.test.exempt");
+    auto bundles = workSchedulerService_->GetExemptionBundles();
+    EXPECT_EQ(bundles.count("com.test.exempt"), 1);
+    workSchedulerService_->ClearExemptionBundles();
+    bundles = workSchedulerService_->GetExemptionBundles();
+    EXPECT_EQ(bundles.size(), 0);
+}
+
+/**
+ * @tc.name: SetMinTimeCycle_001
+ * @tc.desc: Test SetMinTimeCycle updates value.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetMinTimeCycle_001, TestSize.Level1)
+{
+    workSchedulerService_->SetMinTimeCycle(5000);
+    EXPECT_EQ(workSchedulerService_->minTimeCycle_, 5000);
+}
+
+/**
+ * @tc.name: RemovePersistedMap_001
+ * @tc.desc: Test RemovePersistedMap erases entry.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, RemovePersistedMap_001, TestSize.Level1)
+{
+    workSchedulerService_->persistedMap_.clear();
+    workSchedulerService_->persistedMap_.emplace("test_work_100", std::make_shared<WorkInfo>());
+    EXPECT_EQ(workSchedulerService_->persistedMap_.count("test_work_100"), 1);
+    workSchedulerService_->RemovePersistedMap("test_work_100");
+    EXPECT_EQ(workSchedulerService_->persistedMap_.count("test_work_100"), 0);
+}
+
+/**
+ * @tc.name: StopDeepIdleWorks_NotReady_001
+ * @tc.desc: Test StopDeepIdleWorks returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopDeepIdleWorks_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    int32_t ret = workSchedulerService_->StopDeepIdleWorks();
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: StopDeepIdleWorks_NoWorks_001
+ * @tc.desc: Test StopDeepIdleWorks returns ERR_OK when no deep idle works.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopDeepIdleWorks_NoWorks_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    if (workSchedulerService_->workPolicyManager_ == nullptr) {
+        workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
+    }
+    workSchedulerService_->workPolicyManager_->uidQueueMap_.clear();
+    int32_t ret = workSchedulerService_->StopDeepIdleWorks();
+    EXPECT_EQ(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: HandleDeepIdleMsg_NotReady_001
+ * @tc.desc: Test HandleDeepIdleMsg returns early when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, HandleDeepIdleMsg_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    auto before = DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle();
+    workSchedulerService_->HandleDeepIdleMsg(0);
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), before);
+}
+
+/**
+ * @tc.name: TriggerWorkIfConditionReady_001
+ * @tc.desc: Test TriggerWorkIfConditionReady executes without crash.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, TriggerWorkIfConditionReady_001, TestSize.Level1)
+{
+    if (workSchedulerService_->workQueueManager_ == nullptr) {
+        workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+    }
+    auto before = workSchedulerService_->workQueueManager_->queueMap_.size();
+    workSchedulerService_->TriggerWorkIfConditionReady();
+    EXPECT_EQ(workSchedulerService_->workQueueManager_->queueMap_.size(), before);
+}
+
+/**
+ * @tc.name: IsLastWorkTimeout_NotReady_001
+ * @tc.desc: Test IsLastWorkTimeout returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    bool result = true;
+    int32_t ret = workSchedulerService_->IsLastWorkTimeout(99999, result);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: ObtainAllWorks_NotReady_001
+ * @tc.desc: Test ObtainAllWorks returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    std::vector<WorkInfo> workInfos;
+    int32_t ret = workSchedulerService_->ObtainAllWorks(workInfos);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: GetWorkStatus_NotReady_001
+ * @tc.desc: Test GetWorkStatus returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    WorkInfo workInfo;
+    int32_t ret = workSchedulerService_->GetWorkStatus(99999, workInfo);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: GetAllRunningWorks_NotReady_001
+ * @tc.desc: Test GetAllRunningWorks returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    std::vector<WorkInfo> workInfos;
+    int32_t ret = workSchedulerService_->GetAllRunningWorks(workInfos);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: UpdateEffiResApplyInfo_001
+ * @tc.desc: Test UpdateEffiResApplyInfo add and remove uid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateEffiResApplyInfo_001, TestSize.Level1)
+{
+    workSchedulerService_->UpdateEffiResApplyInfo(55555, true);
+    EXPECT_EQ(workSchedulerService_->CheckEffiResApplyInfo(55555), true);
+    workSchedulerService_->UpdateEffiResApplyInfo(55555, false);
+    EXPECT_EQ(workSchedulerService_->CheckEffiResApplyInfo(55555), false);
+}
+
+/**
+ * @tc.name: DumpEffiResApplyUid_001
+ * @tc.desc: Test DumpEffiResApplyUid with empty whitelist returns "[]".
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpEffiResApplyUid_001, TestSize.Level1)
+{
+    workSchedulerService_->whitelist_.clear();
+    std::string ret = workSchedulerService_->DumpEffiResApplyUid();
+    EXPECT_EQ(ret, "[]");
+}
+
+/**
+ * @tc.name: DumpEffiResApplyUid_002
+ * @tc.desc: Test DumpEffiResApplyUid with non-empty whitelist returns uid string.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpEffiResApplyUid_002, TestSize.Level1)
+{
+    workSchedulerService_->whitelist_.clear();
+    workSchedulerService_->UpdateEffiResApplyInfo(11111, true);
+    workSchedulerService_->UpdateEffiResApplyInfo(22222, true);
+    std::string ret = workSchedulerService_->DumpEffiResApplyUid();
+    EXPECT_NE(ret.find("11111"), std::string::npos);
+    EXPECT_NE(ret.find("22222"), std::string::npos);
+    workSchedulerService_->whitelist_.clear();
+}
+
+/**
+ * @tc.name: HandleDeepIdleMsg_Ready_001
+ * @tc.desc: Test HandleDeepIdleMsg with ready=true and DEFAULT_SA_ID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, HandleDeepIdleMsg_Ready_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    if (workSchedulerService_->workQueueManager_ == nullptr) {
+        workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+    }
+    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+    workSchedulerService_->HandleDeepIdleMsg(0);
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), false);
+    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+}
+
+/**
+ * @tc.name: HandleDeepIdleMsg_Ready_002
+ * @tc.desc: Test HandleDeepIdleMsg with ready=true and non-default saId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, HandleDeepIdleMsg_Ready_002, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    if (workSchedulerService_->workQueueManager_ == nullptr) {
+        workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+    }
+    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+    workSchedulerService_->HandleDeepIdleMsg(500);
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), false);
+}
+
+/**
+ * @tc.name: SetWorkSchedulerConfig_NotReady_001
+ * @tc.desc: Test SetWorkSchedulerConfig returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetWorkSchedulerConfig_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    int32_t ret = workSchedulerService_->SetWorkSchedulerConfig("{}", 0);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: SetExecFrequency_NotSystemApp_001
+ * @tc.desc: Test SetExecFrequency returns E_NOT_SYSTEM_APP.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetExecFrequency_NotSystemApp_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    FrequencyInfo freqInfo;
+    freqInfo.SetUid(99999);
+    freqInfo.SetWorkId(99999);
+    freqInfo.SetInterval(7200000);
+    int32_t ret = workSchedulerService_->SetExecFrequency(freqInfo);
+    EXPECT_EQ(ret, E_NOT_SYSTEM_APP);
+}
+
+/**
+ * @tc.name: ResetExecFrequency_NotSystemApp_001
+ * @tc.desc: Test ResetExecFrequency returns E_NOT_SYSTEM_APP.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequency_NotSystemApp_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    int32_t ret = workSchedulerService_->ResetExecFrequency(99999);
+    EXPECT_EQ(ret, E_NOT_SYSTEM_APP);
+}
+
+/**
+ * @tc.name: StopWork_WorkNotExist_001
+ * @tc.desc: Test StopWork returns E_WORK_NOT_EXIST_FAILED when workStatus is null.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopWork_WorkNotExist_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    workSchedulerService_->checkBundle_ = false;
+    WorkInfo workInfo;
+    workInfo.SetWorkId(88888);
+    int32_t ret = workSchedulerService_->StopWork(workInfo);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
+}
+
+/**
+ * @tc.name: StopAndCancelWork_WorkNotExist_001
+ * @tc.desc: Test StopAndCancelWork returns E_WORK_NOT_EXIST_FAILED when workStatus is null.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_WorkNotExist_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    workSchedulerService_->checkBundle_ = false;
+    WorkInfo workInfo;
+    workInfo.SetWorkId(88889);
+    int32_t ret = workSchedulerService_->StopAndCancelWork(workInfo);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
 }
 }

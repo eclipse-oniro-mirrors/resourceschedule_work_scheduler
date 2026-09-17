@@ -43,6 +43,10 @@ ohos_unittest("WorkScheduleServiceTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
+    "src/conditions/battery_level_listener_test.cpp",
+    "src/conditions/battery_status_listener_test.cpp",
+    "src/conditions/charger_listener_test.cpp",
+    "src/conditions/condition_checker_test.cpp",
     "src/conditions/group_listener_test.cpp",
     "src/conditions/network_listener_test.cpp",
     "src/conditions/screen_listener_test.cpp",
@@ -57,6 +61,8 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/scheduler_bg_task_subscriber_test.cpp",
     "src/watchdog_test.cpp",
     "src/work_conn_manager_test.cpp",
+    "src/work_bundle_group_change_callback_test.cpp",
+    "src/work_datashare_helper_test.cpp",
     "src/work_guard_thread_test.cpp",
     "src/work_policy_manager_test.cpp",
     "src/work_queue_manager_test.cpp",
@@ -90,6 +96,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_consumer",
     "eventhandler:libeventhandler",
     "ffrt:libffrt",
     "googletest:gmock_main",
