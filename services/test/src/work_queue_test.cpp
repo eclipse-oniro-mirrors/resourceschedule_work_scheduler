@@ -437,6 +437,24 @@ HWTEST_F(WorkQueueTest, GetDeepIdleWorks_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: Find_003
+ * @tc.desc: Test WorkQueue Find by workId returns workStatus.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, Find_003, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(10);
+    workInfo_.SetElement("com.test.find", "FindAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
+    workQueue_->Push(workStatus);
+    auto ret = workQueue_->Find(workStatus->workId_);
+    EXPECT_EQ(ret->workId_, workStatus->workId_);
+}
+
+/**
  * @tc.name: Find_004
  * @tc.desc: Test WorkQueue Find by workId not found.
  * @tc.type: FUNC

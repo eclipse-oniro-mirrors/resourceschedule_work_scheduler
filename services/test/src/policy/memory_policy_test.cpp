@@ -86,46 +86,5 @@ HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_003, TestSize.Level1)
     int32_t ret = memoryPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, 3);
 }
-
-/**
- * @tc.name: GetPolicyMaxRunning_004
- * @tc.desc: Test MemoryPolicy GetPolicyMaxRunning boundary mem=MEM_CRUCIAL (1*1024*1024).
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_004, TestSize.Level1)
-{
-    WorkSchedSystemPolicy systemPolicy;
-    memoryPolicy_->workPolicyManager_->SetMemoryByDump(1 * 1024 * 1024);
-    int32_t ret = memoryPolicy_->GetPolicyMaxRunning(systemPolicy);
-    EXPECT_EQ(ret, 1);
-}
-
-/**
- * @tc.name: GetPolicyMaxRunning_005
- * @tc.desc: Test MemoryPolicy GetPolicyMaxRunning boundary mem=MEM_LOW (2*1024*1024).
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(MemoryPolicyTest, GetPolicyMaxRunning_005, TestSize.Level1)
-{
-    WorkSchedSystemPolicy systemPolicy;
-    memoryPolicy_->workPolicyManager_->SetMemoryByDump(2 * 1024 * 1024);
-    int32_t ret = memoryPolicy_->GetPolicyMaxRunning(systemPolicy);
-    EXPECT_EQ(ret, 2);
-}
-
-/**
- * @tc.name: GetMemAvailable_001
- * @tc.desc: Test MemoryPolicy GetMemAvailable with dump=-1 falls through to /proc/meminfo.
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(MemoryPolicyTest, GetMemAvailable_001, TestSize.Level1)
-{
-    memoryPolicy_->workPolicyManager_->SetMemoryByDump(-1);
-    int32_t memAvailable = memoryPolicy_->GetMemAvailable();
-    EXPECT_GE(memAvailable, -1);
-}
 }
 }

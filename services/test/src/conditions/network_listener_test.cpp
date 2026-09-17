@@ -213,6 +213,22 @@ HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_DefaultNetType_001, TestS
     subscriber_->OnReceiveEvent(data);
     EXPECT_EQ(testListener_->callCount_, 0);
 }
+
+/**
+ * @tc.name: OnReceiveEvent_Disconnected_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent DISCONNECTED triggers NETWORK_UNKNOWN.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Disconnected_001, TestSize.Level1)
+{
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_DISCONNECTED), BEARER_WIFI);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_UNKNOWN);
+}
 #endif // COMMUNICATION_NETMANAGER_BASE_ENABLE
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -187,6 +187,19 @@ HWTEST_F(WorkQueueManagerTest, Dump_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: StopAndClearWorks_001
+ * @tc.desc: Test WorkQueueManager StopAndClearWorks returns true.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, StopAndClearWorks_001, TestSize.Level1)
+{
+    std::list<std::shared_ptr<WorkStatus>> workList;
+    bool ret = workQueueManager_->StopAndClearWorks(workList);
+    EXPECT_EQ(ret, true);
+}
+
+/**
  * @tc.name: SetMinIntervalByDump_001
  * @tc.desc: Test WorkQueueManager SetMinIntervalByDump updates all queues.
  * @tc.type: FUNC

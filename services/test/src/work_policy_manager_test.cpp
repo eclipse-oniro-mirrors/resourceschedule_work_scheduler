@@ -1302,7 +1302,7 @@ HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->AddWork(workStatus, uid);
     auto ret = workPolicyManager_->FindWorkStatus(uid, 40001);
-    EXPECT_NE(net, nullptr);
+    EXPECT_NE(ret, nullptr);
     EXPECT_EQ(ret.get(), workStatus.get());
     workPolicyManager_->uidQueueMap_.clear();
 }
