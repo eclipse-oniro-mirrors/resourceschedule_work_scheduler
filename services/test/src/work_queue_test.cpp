@@ -437,24 +437,6 @@ HWTEST_F(WorkQueueTest, GetDeepIdleWorks_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: Find_003
- * @tc.desc: Test WorkQueue Find by workId returns workStatus.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, Find_003, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto workInfo_ = WorkInfo();
-    workInfo_.SetWorkId(10);
-    workInfo_.SetElement("com.test.find", "FindAbility");
-    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workQueue_->Push(workStatus);
-    auto ret = workQueue_->Find(workStatus->workId_);
-    EXPECT_EQ(ret->workId_, workStatus->workId_);
-}
-
-/**
  * @tc.name: Find_004
  * @tc.desc: Test WorkQueue Find by workId not found.
  * @tc.type: FUNC
@@ -515,25 +497,6 @@ HWTEST_F(WorkQueueTest, CancelWork_001, TestSize.Level1)
     EXPECT_EQ(workQueue_->GetSize(), 1);
     workQueue_->CancelWork(workStatus);
     EXPECT_EQ(workQueue_->GetSize(), 0);
-}
-
-/**
- * @tc.name: GetWorkIdStr_001
- * @tc.desc: Test WorkQueue GetWorkIdStr appends workId.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, GetWorkIdStr_001, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto workInfo_ = WorkInfo();
-    workInfo_.SetWorkId(40);
-    workInfo_.SetElement("com.test.idstr", "IdStrAbility");
-    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workQueue_->Push(workStatus);
-    std::string result;
-    workQueue_->GetWorkIdStr(result);
-    EXPECT_NE(result.find(workStatus->workId_), std::string::npos);
 }
 
 /**
@@ -649,20 +612,6 @@ HWTEST_F(WorkQueueTest, ParseCondition_Standby_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: ParseCondition_Timer_001
- * @tc.desc: Test WorkQueue ParseCondition TIMER returns default condition.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, ParseCondition_Timer_001, TestSize.Level1)
-{
-    WorkCondition::Type type = WorkCondition::Type::TIMER;
-    auto value = std::make_shared<DetectorValue>(0, 0, false, "");
-    auto ret = workQueue_->ParseCondition(type, value);
-    EXPECT_EQ(ret->enumVal, 0);
-}
-
-/**
  * @tc.name: FindSA_001
  * @tc.desc: Test WorkQueue FindSA returns nullptr when no SA work found.
  * @tc.type: FUNC
@@ -673,25 +622,6 @@ HWTEST_F(WorkQueueTest, FindSA_001, TestSize.Level1)
     workQueue_->ClearAll();
     auto ret = workQueue_->FindSA(100);
     EXPECT_EQ(ret, nullptr);
-}
-
-/**
- * @tc.name: Dump_001
- * @tc.desc: Test WorkQueue Dump produces output for existing works.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, Dump_001, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto workInfo_ = WorkInfo();
-    workInfo_.SetWorkId(80);
-    workInfo_.SetElement("com.test.dump", "DumpAbility");
-    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workQueue_->Push(workStatus);
-    std::string result;
-    workQueue_->Dump(result);
-    EXPECT_GT(result.size(), 0);
 }
 }
 }

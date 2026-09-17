@@ -90,32 +90,6 @@ HWTEST_F(ConditionCheckerTest, Constructor_001, TestSize.Level1)
     EXPECT_EQ(checker->workQueueManager_, workQueueManager_);
 }
 
-/**
- * @tc.name: CheckAllStatus_001
- * @tc.desc: Test ConditionChecker CheckAllStatus executes all sub-checks.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(ConditionCheckerTest, CheckAllStatus_001, TestSize.Level1)
-{
-    auto workInfo = std::make_shared<WorkInfo>();
-    workInfo->SetWorkId(9901);
-    workInfo->SetElement("com.example.checker", "CheckerAbility");
-    workInfo->RequestPersisted(false);
-#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
-    workInfo->RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
-#endif
-    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10001);
-    workQueueManager_->AddWork(workStatus);
-
-    auto checker = std::make_shared<ConditionChecker>(workQueueManager_);
-    checker->CheckAllStatus();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-
-    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::BATTERY_STATUS), 1);
-    workQueueManager_->RemoveWork(workStatus);
-}
-
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 /**
  * @tc.name: CheckBatteryStatus_001

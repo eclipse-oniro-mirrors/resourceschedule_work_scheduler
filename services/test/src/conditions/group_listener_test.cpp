@@ -32,7 +32,7 @@ const std::string WORKSCHEDULER_SERVICE_NAME = "WorkSchedulerService";
 class GroupListenerTest : public testing::Test {
 public:
     static void SetUpTestCase();
-    static void TearDownTestCase() {};
+    static void TearDownTestCase();
     void SetUp() {};
     void TearDown() {};
     static std::shared_ptr<WorkQueueManager> workQueueManager_;
@@ -49,6 +49,15 @@ void GroupListenerTest::SetUpTestCase()
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_ = AppExecFwk::EventRunner::Create(WORKSCHEDULER_SERVICE_NAME,
         AppExecFwk::ThreadMode::FFRT);
     groupListener_ = std::make_shared<GroupListener>(workQueueManager_, eventRunner_);
+}
+
+void GroupListenerTest::TearDownTestCase()
+{
+    if (groupListener_ != nullptr) {
+        groupListener_->Stop();
+        groupListener_.reset();
+    }
+    workQueueManager_.reset();
 }
 
 /**

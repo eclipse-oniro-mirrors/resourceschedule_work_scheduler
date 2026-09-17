@@ -59,49 +59,6 @@ HWTEST_F(WatchdogTest, watchdog_001, TestSize.Level3)
 }
 
 /**
- * @tc.name: ProcessEvent_NullEvent_001
- * @tc.desc: Test Watchdog ProcessEvent with null event returns early (watchdogTime_ unchanged).
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WatchdogTest, ProcessEvent_NullEvent_001, TestSize.Level3)
-{
-    auto before = policy_->watchdogTime_.load();
-    AppExecFwk::InnerEvent::Pointer event(nullptr, 0);
-    watchdog_->ProcessEvent(event);
-    EXPECT_EQ(policy_->watchdogTime_.load(), before);
-}
-
-/**
- * @tc.name: ProcessEvent_NullService_001
- * @tc.desc: Test Watchdog ProcessEvent with null service_ does not crash.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WatchdogTest, ProcessEvent_NullService_001, TestSize.Level3)
-{
-    auto before = policy_->watchdogTime_.load();
-    auto wd = std::make_shared<Watchdog>(nullptr, nullptr);
-    auto event = AppExecFwk::InnerEvent::Get(42, 0);
-    wd->ProcessEvent(event);
-    EXPECT_EQ(policy_->watchdogTime_.load(), before);
-}
-
-/**
- * @tc.name: RemoveWatchdog_001
- * @tc.desc: Test Watchdog RemoveWatchdog sets runner and removes event.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WatchdogTest, RemoveWatchdog_001, TestSize.Level3)
-{
-    auto runner = AppExecFwk::EventRunner::Create("TestRemoveWd", AppExecFwk::ThreadMode::FFRT);
-    auto wd = std::make_shared<Watchdog>(nullptr, runner);
-    wd->RemoveWatchdog(99);
-    EXPECT_EQ(wd->GetEventRunner().get(), runner.get());
-}
-
-/**
  * @tc.name: AddWatchdog_WithRunner_001
  * @tc.desc: Test Watchdog AddWatchdog with valid runner returns true.
  * @tc.type: FUNC

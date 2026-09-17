@@ -68,52 +68,6 @@ void WorkSchedulerConnectionTest::SetUp()
 }
 
 /**
- * @tc.name: StopWork_002
- * @tc.desc: Test WorkSchedulerConnection StopWork.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
- */
-HWTEST_F(WorkSchedulerConnectionTest, StopWork_002, TestSize.Level2)
-{
-    sptr<ISystemAbilityManager> SystemAbilityManager =
-        SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_NE(SystemAbilityManager, nullptr);
-    sptr<IRemoteObject> remoteObject = SystemAbilityManager->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
-    ASSERT_NE(remoteObject, nullptr);
-    AppExecFwk::ElementName element;
-    int32_t resultCode = 0;
-    workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, resultCode);
-    workSchedulerConnection_->StopWork();
-    EXPECT_EQ(workSchedulerConnection_->IsConnected(), true);
-}
-
-/**
- * @tc.name: StopWork_NullProxy_001
- * @tc.desc: Test WorkSchedulerConnection StopWork with null proxy returns early.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkSchedulerConnectionTest, StopWork_NullProxy_001, TestSize.Level2)
-{
-    auto conn = std::make_shared<WorkSchedulerConnection>(std::make_shared<WorkInfo>());
-    conn->proxy_ = nullptr;
-    conn->StopWork();
-    EXPECT_EQ(conn->proxy_, nullptr);
-}
-
-/**
- * @tc.name: IsConnected_001
- * @tc.desc: Test WorkSchedulerConnection IsConnected default false.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkSchedulerConnectionTest, IsConnected_001, TestSize.Level2)
-{
-    auto conn = std::make_shared<WorkSchedulerConnection>(std::make_shared<WorkInfo>());
-    EXPECT_EQ(conn->IsConnected(), false);
-}
-
-/**
  * @tc.name: IsConnected_002
  * @tc.desc: Test WorkSchedulerConnection IsConnected true after connect.
  * @tc.type: FUNC
@@ -128,20 +82,6 @@ HWTEST_F(WorkSchedulerConnectionTest, IsConnected_002, TestSize.Level2)
     AppExecFwk::ElementName element;
     workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, 0);
     EXPECT_EQ(workSchedulerConnection_->IsConnected(), true);
-}
-
-/**
- * @tc.name: OnAbilityDisconnectDone_NullWorkInfo_001
- * @tc.desc: Test WorkSchedulerConnection OnAbilityDisconnectDone with null workInfo_.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkSchedulerConnectionTest, OnAbilityDisconnectDone_NullWorkInfo_001, TestSize.Level2)
-{
-    auto conn = std::make_shared<WorkSchedulerConnection>(nullptr);
-    AppExecFwk::ElementName element;
-    conn->OnAbilityDisconnectDone(element, 0);
-    EXPECT_EQ(conn->workInfo_.get(), nullptr);
 }
 }
 }

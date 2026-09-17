@@ -84,7 +84,7 @@ HWTEST_F(EventPublisherTest, Dump_002, TestSize.Level3)
     std::string eventType = "network";
     std::string eventValue = "invalid";
     eventPublisher_->Dump(result, eventType, eventValue);
-    EXPECT_NE(result.find("dump need right param"), std::string::npos);
+    EXPECT_EQ(result, std::stringd("dump need right param"));
 }
 
 /**

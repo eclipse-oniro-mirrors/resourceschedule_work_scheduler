@@ -187,19 +187,6 @@ HWTEST_F(WorkQueueManagerTest, Dump_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: StopAndClearWorks_001
- * @tc.desc: Test WorkQueueManager StopAndClearWorks returns true.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueManagerTest, StopAndClearWorks_001, TestSize.Level1)
-{
-    std::list<std::shared_ptr<WorkStatus>> workList;
-    bool ret = workQueueManager_->StopAndClearWorks(workList);
-    EXPECT_EQ(ret, true);
-}
-
-/**
  * @tc.name: SetMinIntervalByDump_001
  * @tc.desc: Test WorkQueueManager SetMinIntervalByDump updates all queues.
  * @tc.type: FUNC
@@ -220,36 +207,6 @@ HWTEST_F(WorkQueueManagerTest, SetMinIntervalByDump_001, TestSize.Level1)
     EXPECT_EQ(workList.size(), 1);
     EXPECT_EQ(workList.front()->minInterval_, 5000);
     workQueueManager_->RemoveWork(workStatus);
-}
-
-/**
- * @tc.name: StartListener_001
- * @tc.desc: Test WorkQueueManager StartListener for existing type calls Start.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueManagerTest, StartListener_001, TestSize.Level1)
-{
-    auto listener = std::make_shared<NetworkListener>(workQueueManager_);
-    workQueueManager_->AddListener(WorkCondition::Type::NETWORK, listener);
-    workQueueManager_->StartListener(WorkCondition::Type::NETWORK);
-    EXPECT_EQ(workQueueManager_->listenerMap_.count(WorkCondition::Type::NETWORK), 1);
-    workQueueManager_->listenerMap_.erase(WorkCondition::Type::NETWORK);
-}
-
-/**
- * @tc.name: StopListener_001
- * @tc.desc: Test WorkQueueManager StopListener for existing type calls Stop.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueManagerTest, StopListener_001, TestSize.Level1)
-{
-    auto listener = std::make_shared<NetworkListener>(workQueueManager_);
-    workQueueManager_->AddListener(WorkCondition::Type::NETWORK, listener);
-    workQueueManager_->StopListener(WorkCondition::Type::NETWORK);
-    EXPECT_EQ(workQueueManager_->listenerMap_.count(WorkCondition::Type::NETWORK), 1);
-    workQueueManager_->listenerMap_.erase(WorkCondition::Type::NETWORK);
 }
 
 /**

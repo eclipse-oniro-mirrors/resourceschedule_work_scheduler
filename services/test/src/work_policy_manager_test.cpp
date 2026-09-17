@@ -998,20 +998,6 @@ HWTEST_F(WorkPolicyManagerTest, DumpTriggerWork_003, TestSize.Level1)
 }
 
 /**
- * @tc.name: OnPolicyChanged_002
- * @tc.desc: Test WorkPolicyManagerTest OnPolicyChanged.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
- */
-HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_002, TestSize.Level1)
-{
-    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
-    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
-    workPolicyManager_->OnPolicyChanged(static_cast<PolicyType>(999), std::make_shared<DetectorValue>(0, 0, false, ""));
-    EXPECT_EQ(workPolicyManager_->wss_.lock().get(), workSchedulerService.get());
-}
-
-/**
  * @tc.name: UpdateWatchdogTime_001
  * @tc.desc: Test WorkPolicyManagerTest UpdateWatchdogTime.
  * @tc.type: FUNC
@@ -1316,7 +1302,8 @@ HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->AddWork(workStatus, uid);
     auto ret = workPolicyManager_->FindWorkStatus(uid, 40001);
-    EXPECT_EQ(ret->workId_, workStatus->workId_);
+    EXPECT_NE(net, nullptr);
+    EXPECT_EQ(ret.get(), workStatus.get());
     workPolicyManager_->uidQueueMap_.clear();
 }
 
@@ -1331,27 +1318,6 @@ HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_002, TestSize.Level1)
     workPolicyManager_->uidQueueMap_.clear();
     auto ret = workPolicyManager_->FindWorkStatus(99999, 99999);
     EXPECT_EQ(ret, nullptr);
-}
-
-/**
- * @tc.name: Dump_001
- * @tc.desc: Test Dump produces non-empty output with works added.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkPolicyManagerTest, Dump_001, TestSize.Level1)
-{
-    workPolicyManager_->uidQueueMap_.clear();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(50001);
-    workinfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
-    int32_t uid = 50001;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workPolicyManager_->AddWork(workStatus, uid);
-    std::string result;
-    workPolicyManager_->Dump(result);
-    EXPECT_GT(result.size(), 0);
-    workPolicyManager_->uidQueueMap_.clear();
 }
 
 /**

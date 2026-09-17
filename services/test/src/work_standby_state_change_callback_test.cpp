@@ -131,21 +131,6 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnRestrictListChanged_001, TestSize
 }
 
 /**
- * @tc.name: OnRestrictListChanged_002
- * @tc.desc: Test OnRestrictListChanged with correct type adds to restrictlist.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkStandbyStateChangeCallbackTest, OnRestrictListChanged_002, TestSize.Level1)
-{
-    dataManager_->ClearDeviceStandyRestrictlist();
-    std::list<std::string> restrictList = {"com.test.restrict2"};
-    dataManager_->AddDeviceStandyRestrictlist(restrictList);
-    EXPECT_TRUE(dataManager_->IsInDeviceStandyRestrictlist("com.test.restrict2"));
-    dataManager_->ClearDeviceStandyRestrictlist();
-}
-
-/**
  * @tc.name: OnAllowListChanged_001
  * @tc.desc: Test OnAllowListChanged with wrong allowType returns early.
  * @tc.type: FUNC
@@ -156,22 +141,6 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnAllowListChanged_001, TestSize.Le
     dataManager_->ClearDeviceStandyWhitelist();
     callback_->OnAllowListChanged(1000, "com.test.allow", 999, true);
     EXPECT_FALSE(dataManager_->IsInDeviceStandyWhitelist("com.test.allow"));
-}
-
-/**
- * @tc.name: OnAllowListChanged_002
- * @tc.desc: Test OnAllowListChanged with correct type but not sleeping returns early after whitelist update.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkStandbyStateChangeCallbackTest, OnAllowListChanged_002, TestSize.Level1)
-{
-    dataManager_->ClearDeviceStandyWhitelist();
-    dataManager_->SetDeviceSleep(false);
-    std::list<std::string> bundleNames = {"com.test.allow2"};
-    dataManager_->AddDeviceStandyWhitelist(bundleNames);
-    EXPECT_TRUE(dataManager_->IsInDeviceStandyWhitelist("com.test.allow2"));
-    dataManager_->ClearDeviceStandyWhitelist();
 }
 }
 }

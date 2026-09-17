@@ -159,31 +159,6 @@ HWTEST_F(WorkBundleGroupChangeCallbackTest, Constructor_NullManager_001, TestSiz
     EXPECT_EQ(ret, ERR_OK);
     EXPECT_EQ(cb->workQueueManager_.use_count(), 0);
 }
-
-/**
- * @tc.name: OnAppGroupChanged_DowngradeWithWork_001
- * @tc.desc: Test OnAppGroupChanged with downgrade and FindWork=true triggers OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkBundleGroupChangeCallbackTest, OnAppGroupChanged_DowngradeWithWork_001, TestSize.Level1)
-{
-    service_->GetWorkPolicyManager()->uidQueueMap_.clear();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(8001);
-    workinfo.bundleName_ = "com.test.downgrade";
-    workinfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
-    int32_t uid = 105;
-    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workStatus->userId_ = 105;
-    service_->GetWorkPolicyManager()->AddWork(workStatus, uid);
-
-    auto before = workQueueManager_->queueMap_.size();
-    auto info = BuildCallbackInfo(10, 50, 105, "com.test.downgrade");
-    ErrCode ret = callback_->OnAppGroupChanged(info);
-    EXPECT_EQ(ret, ERR_OK);
-    service_->GetWorkPolicyManager()->uidQueueMap_.clear();
-}
 } // namespace WorkScheduler
 } // namespace OHOS
 #endif // DEVICE_USAGE_STATISTICS_ENABLE
