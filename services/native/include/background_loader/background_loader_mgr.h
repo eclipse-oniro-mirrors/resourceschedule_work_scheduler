@@ -68,11 +68,6 @@ class BackgroundLoaderMgr {
 DECLARE_SINGLE_INSTANCE(BackgroundLoaderMgr);
 public:
     void Init(int32_t maxTimeoutCount, int32_t backgroundLoaderTimeoutMs);
-    ErrCode RegisterTask(const TaskInfo& taskInfo);
-    ErrCode UnregisterTask(const TaskInfo& taskInfo);
-    ErrCode FinishTask(const TaskInfo& taskInfo);
-    ErrCode GetTaskInfo(int32_t taskId, const std::string& bundleName, int32_t appIndex,
-        BackgroundLoaderTaskInfo& taskInfo);
     int32_t GetTaskId(const std::string& bundleName, const std::string& abilityName, int32_t appIndex);
     void HandleBackgroundLoaderTask(const nlohmann::json& payload);
     void SaveRemoteObject(const std::string& bundleName,
@@ -83,7 +78,6 @@ public:
     void PostTimeoutTask(const std::string& bundleName, const std::string& abilityName, int32_t appIndex,
         int32_t taskId);
     void SendOnStart(const sptr<IRemoteObject>& remoteObject, const std::string& bundleName, int32_t appIndex);
-    TaskInfo* GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex);
     void RemoveRemoteObject(const std::string& bundleName, int32_t appIndex);
     void HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload);
     ErrCode RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo);
@@ -92,6 +86,11 @@ public:
     ErrCode GetTaskInfoWithCheck(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo);
 
 private:
+    ErrCode RegisterTask(const TaskInfo& taskInfo);
+    ErrCode UnregisterTask(const TaskInfo& taskInfo);
+    ErrCode FinishTask(const TaskInfo& taskInfo);
+    ErrCode GetTaskInfo(int32_t taskId, const std::string& bundleName, int32_t appIndex,
+        BackgroundLoaderTaskInfo& taskInfo);
     int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
     bool VerifyAbilityName(const std::string& bundleName, const std::string& abilityName, int32_t uid);
     bool GetAppIndexAndBundleNameByUid(int32_t uid, int32_t& appIndex, std::string& bundleName);

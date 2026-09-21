@@ -79,17 +79,22 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
     }
 
     std::lock_guard<ffrt::mutex> lock(taskLock_);
-    if (taskMap_.find(key) == taskMap_.end() || taskMap_[key].status_ == TaskStatus::UNREGISIERED) {
+    auto it = taskMap_.find(key);
+    if (it == taskMap_.end() || it->second.status_ == TaskStatus::UNREGISIERED) {
         nlohmann::json payload;
         payload["bundleName"] = taskInfo.bundleName_;
         payload["appIndex"] = std::to_string(taskInfo.appIndex_);
         ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVENT,
             ResType::BackgroundLoaderState::ADD, payload);
-        taskMap_[key] = taskInfo;
-        taskMap_[key].status_ = TaskStatus::NOT_STARTED;
-    } else if (taskMap_[key].taskId_ != taskInfo.taskId_) {
+        if (it == taskMap_.end()) {
+            it = taskMap_.emplace(key, taskInfo).first;
+        } else {
+            it->second = taskInfo;
+        }
+        it->second.status_ = TaskStatus::NOT_STARTED;
+    } else if (it->second.taskId_ != taskInfo.taskId_) {
         // 任务存在且taskId不同的情况下仅刷新taskId
-        taskMap_[key].taskId_ = taskInfo.taskId_;
+        it->second.taskId_ = taskInfo.taskId_;
     }
     return ERR_OK;
 }
@@ -181,12 +186,14 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
     bool shouldAddToBlackList = false;
     {
         std::lock_guard<ffrt::mutex> lock(taskLock_);
-        TaskInfo* taskInfo = GetInnerTaskInfo(bundleName, appIndex);
-        if (taskInfo == nullptr) {
+        std::string key = GenerateTaskKey(bundleName, appIndex);
+        auto it = taskMap_.find(key);
+        if (it == taskMap_.end()) {
             WS_HILOGE("task not found for bundle %{public}s", bundleName.c_str());
             return;
         }
 
+        TaskInfo* taskInfo = &it->second;
         if (taskInfo->status_ == TaskStatus::RUNNING) {
             WS_HILOGI("[%{public}s:%{public}d] task still running, send onstop for bundle %{public}s",
                 __FUNCTION__, __LINE__, bundleName.c_str());
@@ -320,16 +327,6 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
     }
     info.status_ = TaskStatus::RUNNING;
     PostTimeoutTask(info.bundleName_, info.abilityName_, info.appIndex_, info.taskId_);
-}
-
-TaskInfo* BackgroundLoaderMgr::GetInnerTaskInfo(const std::string& bundleName, int32_t appIndex)
-{
-    std::string key = GenerateTaskKey(bundleName, appIndex);
-    auto it = taskMap_.find(key);
-    if (it != taskMap_.end()) {
-        return &(it->second);
-    }
-    return nullptr;
 }
 
 void BackgroundLoaderMgr::RemoveRemoteObject(const std::string& bundleName, int32_t appIndex)
