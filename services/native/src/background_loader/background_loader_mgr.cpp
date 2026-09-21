@@ -531,10 +531,10 @@ ErrCode BackgroundLoaderMgr::RegisterTaskWithCheck(const BackgroundLoaderTaskInf
         return E_CHECK_WORKINFO_FAILED;
     }
     TaskInfo info = {
-        .taskId_ = taskInfo.GetTaskId(),
         .bundleName_ = bundleName,
-        .appIndex_ = appIndex,
         .abilityName_ = taskInfo.GetAbilityName(),
+        .appIndex_ = appIndex,
+        .taskId_ = taskInfo.GetTaskId(),
         .pid_ = pid
     };
     return RegisterTask(info);
@@ -554,10 +554,10 @@ ErrCode BackgroundLoaderMgr::UnregisterTaskWithCheck(const BackgroundLoaderTaskI
         return E_CHECK_WORKINFO_FAILED;
     }
     TaskInfo info = {
-        .taskId_ = taskInfo.GetTaskId(),
         .bundleName_ = bundleName,
-        .appIndex_ = appIndex,
         .abilityName_ = taskInfo.GetAbilityName(),
+        .appIndex_ = appIndex,
+        .taskId_ = taskInfo.GetTaskId(),
         .pid_ = pid
     };
     return UnregisterTask(info);
@@ -577,10 +577,10 @@ ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo&
         return E_CHECK_WORKINFO_FAILED;
     }
     TaskInfo info = {
-        .taskId_ = taskInfo.GetTaskId(),
         .bundleName_ = bundleName,
-        .appIndex_ = appIndex,
         .abilityName_ = taskInfo.GetAbilityName(),
+        .appIndex_ = appIndex,
+        .taskId_ = taskInfo.GetTaskId(),
         .pid_ = pid
     };
     return FinishTask(info);

@@ -31,10 +31,10 @@
 #include "nlohmann/json.hpp"
 
 namespace OHOS {
-namespace WorkScheduler {
+namespace WorkScheduler { 
 
 namespace {
-static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 15000;
+static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 30000000;
 static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
 }
 
