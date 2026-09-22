@@ -31,7 +31,7 @@
 #include "nlohmann/json.hpp"
 
 namespace OHOS {
-namespace WorkScheduler { 
+namespace WorkScheduler {
 
 namespace {
 static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 30000000;
