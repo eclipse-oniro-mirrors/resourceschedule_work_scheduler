@@ -24,7 +24,7 @@ class AbilityConnectCallbackTest : public testing::Test {
 public:
     void SetUp() override
     {
-        BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_MS);
+        BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_US);
     };
     void TearDown() override {};
 };
