@@ -34,7 +34,7 @@ namespace OHOS {
 namespace WorkScheduler {
 
 namespace {
-static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_MS = 30000000;
+static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_US = 30000000;
 static constexpr int32_t BACKGROUND_LOADER_TIMEOUT_COUNT = 3;
 }
 
@@ -105,7 +105,7 @@ private:
     ffrt::mutex blackListLock_;
     std::unordered_set<std::string> blackLists_;
     int32_t maxTimeoutCount_ = BACKGROUND_LOADER_TIMEOUT_COUNT;
-    int32_t backgroundLoaderTimeoutMs_ = BACKGROUND_LOADER_TIMEOUT_MS;
+    int32_t backgroundLoaderTimeoutMs_ = BACKGROUND_LOADER_TIMEOUT_US;
 };
 
 }  // namespace WorkScheduler
