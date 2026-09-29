@@ -63,7 +63,7 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
         return false;
     }
     g_workSchedulerService->OnStart();
-    g_workSchedulerService->InitBgTaskSubscriber();
+    g_workSchedulerService->InitWorkSchedPluginMgr();
     if (!g_workSchedulerService->ready_) {
         g_workSchedulerService->ready_ = true;
     }

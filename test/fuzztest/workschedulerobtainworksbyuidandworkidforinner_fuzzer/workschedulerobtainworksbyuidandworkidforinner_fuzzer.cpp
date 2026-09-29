@@ -51,7 +51,7 @@ void InitService()
 {
     g_workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     g_workSchedulerService->OnStart();
-    g_workSchedulerService->InitBgTaskSubscriber();
+    g_workSchedulerService->InitWorkSchedPluginMgr();
     if (!g_workSchedulerService->ready_) {
         g_workSchedulerService->ready_ = true;
     }
