@@ -432,6 +432,7 @@ private:
     bool CreateNodePersistedInfoFile();
     void DumpTwoParamsSet(std::vector<std::string> &argsInStr, std::string &result);
     void DumpAppGroup(const std::string& bundleName, const std::string& groupStr, std::string& result);
+    void DumpBackgroundLoader(const std::string& bundleName, const std::string& abilityName, std::string& result);
 
 private:
     std::set<int32_t> whitelist_;

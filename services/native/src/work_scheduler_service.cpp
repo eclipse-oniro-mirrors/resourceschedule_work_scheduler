@@ -2332,9 +2332,25 @@ void WorkSchedulerService::DumpTwoParamsSet(std::vector<std::string> &argsInStr,
         DumpTriggerWork(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else if (argsInStr[DUMP_OPTION] == "-group") {
         DumpAppGroup(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-b") {
+        DumpAppGroup(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else {
         result.append("Error params.");
     }
+}
+
+void WorkSchedulerService::DumpBackgroundLoader(const std::string& bundleName, const std::string& abilityName, std::string& result)
+{
+    if (bundleName.empty() || abilityName.empty()) {
+        result.append("param error");
+        return;
+    }
+    nlohmann::json payload;
+    payload["bundleName"] = bundleName;
+    payload["abilityName"] = abilityName;
+    payload["appIndex"] = 0;
+    BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(payload);
+    result.append("set group success.");
 }
 
 void WorkSchedulerService::DumpAppGroup(const std::string& uidStr, const std::string& groupStr, std::string& result)
