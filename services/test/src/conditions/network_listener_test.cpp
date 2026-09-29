@@ -21,7 +21,12 @@
 #include "work_queue_manager.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "matching_skills.h"
+#include "want.h"
+#include "work_sched_hilog.h"
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
 #include "net_supplier_info.h"
+#endif
 
 using namespace testing::ext;
 
@@ -34,6 +39,28 @@ const int32_t BEARER_BLUETOOTH = 2;
 const int32_t BEARER_ETHERNET = 3;
 const int32_t BEARER_WIFI_AWARE = 5;
 
+class TestNetworkListener : public NetworkListener {
+public:
+    TestNetworkListener() : NetworkListener(nullptr) {}
+    ~TestNetworkListener() override {}
+    void OnConditionChanged(WorkCondition::Type conditionType,
+        std::shared_ptr<DetectorValue> conditionVal) override
+    {
+        callCount_++;
+        lastType_ = conditionType;
+        lastVal_ = conditionVal;
+    }
+    void Reset()
+    {
+        callCount_ = 0;
+        lastType_ = WorkCondition::Type::UNKNOWN;
+        lastVal_ = nullptr;
+    }
+    int32_t callCount_ = 0;
+    WorkCondition::Type lastType_ = WorkCondition::Type::UNKNOWN;
+    std::shared_ptr<DetectorValue> lastVal_ = nullptr;
+};
+
 class NetworkListenerTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -42,177 +69,166 @@ public:
     void TearDown() {};
     static std::shared_ptr<WorkQueueManager> workQueueManager_;
     static std::shared_ptr<NetworkListener> networkListener_;
+    static std::shared_ptr<TestNetworkListener> testListener_;
+    static std::shared_ptr<NetworkEventSubscriber> subscriber_;
 };
 
 std::shared_ptr<WorkQueueManager> NetworkListenerTest::workQueueManager_ = nullptr;
 std::shared_ptr<NetworkListener> NetworkListenerTest::networkListener_ = nullptr;
+std::shared_ptr<TestNetworkListener> NetworkListenerTest::testListener_ = nullptr;
+std::shared_ptr<NetworkEventSubscriber> NetworkListenerTest::subscriber_ = nullptr;
 
 void NetworkListenerTest::SetUpTestCase()
 {
     std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedulerService>();
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
     networkListener_ = std::make_shared<NetworkListener>(workQueueManager_);
+
+    testListener_ = std::make_shared<TestNetworkListener>();
+    EventFwk::MatchingSkills skill;
+    skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
+    EventFwk::CommonEventSubscribeInfo info(skill);
+    subscriber_ = std::make_shared<NetworkEventSubscriber>(info, *testListener_);
 }
 
-/**
- * @tc.name: OnConditionChanged_001
- * @tc.desc: Test networkListener OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_001, TestSize.Level1)
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
+static EventFwk::CommonEventData BuildNetworkEvent(int32_t code, int32_t netType)
 {
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
-}
-
-/**
- * @tc.name: OnConditionChanged_002
- * @tc.desc: Test networkListener OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: IAJSVG
- */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_002, TestSize.Level1)
-{
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
     EventFwk::Want want;
     want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-    want.SetParam("NetType", BEARER_CELLULAR);
+    want.SetParam("NetType", netType);
+    EventFwk::CommonEventData data;
     data.SetWant(want);
-    data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
-    EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
+    data.SetCode(code);
+    return data;
 }
 
 /**
- * @tc.name: OnConditionChanged_003
- * @tc.desc: Test networkListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_Connected_Cellular_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent CONNECTED + CELLULAR.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: I8JBRY
  */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_003, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_Cellular_001, TestSize.Level1)
 {
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-    want.SetParam("NetType", BEARER_WIFI);
-    data.SetWant(want);
-    data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
-    EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED), BEARER_CELLULAR);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_TYPE_MOBILE);
 }
 
 /**
- * @tc.name: OnConditionChanged_004
- * @tc.desc: Test networkListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_Connected_Wifi_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent CONNECTED + WIFI.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: I8JBRY
  */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_004, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_Wifi_001, TestSize.Level1)
 {
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-    want.SetParam("NetType", BEARER_BLUETOOTH);
-    data.SetWant(want);
-    data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
-    EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED), BEARER_WIFI);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_TYPE_WIFI);
 }
 
 /**
- * @tc.name: OnConditionChanged_005
- * @tc.desc: Test networkListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_Connected_Bluetooth_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent CONNECTED + BLUETOOTH.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: I8JBRY
  */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_005, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_Bluetooth_001, TestSize.Level1)
 {
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-    want.SetParam("NetType", BEARER_ETHERNET);
-    data.SetWant(want);
-    data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
-    EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED), BEARER_BLUETOOTH);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_TYPE_BLUETOOTH);
 }
 
 /**
- * @tc.name: OnConditionChanged_006
- * @tc.desc: Test networkListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_Connected_Ethernet_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent CONNECTED + ETHERNET.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: I8JBRY
  */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_006, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_Ethernet_001, TestSize.Level1)
 {
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-    want.SetParam("NetType", BEARER_WIFI_AWARE);
-    data.SetWant(want);
-    data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
-    EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED), BEARER_ETHERNET);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_TYPE_ETHERNET);
 }
 
 /**
- * @tc.name: OnConditionChanged_007
- * @tc.desc: Test networkListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_Connected_WifiAware_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent CONNECTED + WIFI_AWARE.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: I8JBRY
  */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_007, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_WifiAware_001, TestSize.Level1)
 {
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-    want.SetParam("NetType", DEFAULT_VALUE);
-    data.SetWant(want);
-    data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
-    EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED), BEARER_WIFI_AWARE);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_TYPE_WIFI_P2P);
 }
 
 /**
- * @tc.name: OnConditionChanged_008
- * @tc.desc: Test networkListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_Connected_UnknownNetType_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent CONNECTED + unknown netType.
  * @tc.type: FUNC
- * @tc.require: IAJSVG
+ * @tc.require: I8JBRY
  */
-HWTEST_F(NetworkListenerTest, OnConditionChanged_008, TestSize.Level1)
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_UnknownNetType_001, TestSize.Level1)
 {
-    networkListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_CONNECTIVITY_CHANGE);
-    data.SetWant(want);
-    data.SetCode(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED);
-    EventFwk::CommonEventManager::PublishCommonEvent(data);
-    networkListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = networkListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED), 999);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_TYPE_ANY);
 }
+
+/**
+ * @tc.name: OnReceiveEvent_Connected_DefaultNetType_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent CONNECTED + DEFAULT_VALUE (no trigger).
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Connected_DefaultNetType_001, TestSize.Level1)
+{
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_CONNECTED), DEFAULT_VALUE);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 0);
 }
+
+/**
+ * @tc.name: OnReceiveEvent_Disconnected_001
+ * @tc.desc: Test NetworkEventSubscriber OnReceiveEvent DISCONNECTED triggers NETWORK_UNKNOWN.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(NetworkListenerTest, OnReceiveEvent_Disconnected_001, TestSize.Level1)
+{
+    testListener_->Reset();
+    auto data = BuildNetworkEvent(
+        static_cast<int32_t>(NetManagerStandard::NetConnState::NET_CONN_STATE_DISCONNECTED), BEARER_WIFI);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::NETWORK_UNKNOWN);
 }
+#endif // COMMUNICATION_NETMANAGER_BASE_ENABLE
+} // namespace WorkScheduler
+} // namespace OHOS

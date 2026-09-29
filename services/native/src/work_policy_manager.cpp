@@ -214,7 +214,7 @@ void WorkPolicyManager::RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatu
 
 void WorkPolicyManager::RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus)
 {
-    conditionReadyQueue_->RemoveUnReady();
+    conditionReadyQueue_->CancelWork(workStatus);
 }
 
 std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
@@ -235,9 +235,7 @@ std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> wo
             RemoveFromReadyQueue(workStatus);
             hasCanceled = true;
         } else {
-            workStatus->workStartTime_ = 0;
-            workStatus->workWatchDogTime_ = 0;
-            workStatus->duration_ = 0;
+            workStatus->ResetRunningFields();
             workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
         }
     }
@@ -376,6 +374,7 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
             service->StopAndClearWorksByUid(detectorVal->intVal);
             int32_t userId = WorkSchedUtils::GetUserIdByUid(uid);
             DelayedSingleton<DataManager>::GetInstance()->ClearGroup(detectorVal->strVal, userId);
+            service->ResetExecFrequencyWhenAppRemove(uid);
             break;
         }
         default: {}
@@ -571,8 +570,8 @@ void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatu
     WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, watchdogTime:%{public}d",
         watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_.load());
     watchdog_->AddWatchdog(watchId, watchdogTime_.load());
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
-    workStatus->workWatchDogTime_ = static_cast<uint64_t>(watchdogTime_.load());
+    workStatus->InitRunningFields(WorkSchedUtils::GetCurrentTimeMs(),
+        static_cast<uint64_t>(watchdogTime_.load()));
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
 }
@@ -821,6 +820,7 @@ void WorkPolicyManager::TriggerIdeWork()
         return;
     }
     topWork->MarkStatus(WorkStatus::Status::RUNNING);
+    topWork->SetDebugTask(true);
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
         WS_HILOGI("TriggerIdeWork ok");
@@ -831,6 +831,7 @@ void WorkPolicyManager::TriggerIdeWork()
     } else {
         WS_HILOGE("TriggerIdeWork error");
         topWork->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+        topWork->SetDebugTask(false);
         ideDebugList.clear();
         return;
     }
@@ -889,23 +890,10 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
                     workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
-            uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
-            uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
-            uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
-            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
-                WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
-                    ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
-                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime,
-                    runningTime);
-                newWatchdogTime = 0;
-            }
-            workStatus->duration_ += runningTime;
+            uint64_t newWatchdogTime = workStatus->PauseRunning(WorkSchedUtils::GetCurrentTimeMs());
             WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s,"
-                " oldWatchdogTime:%{public}" PRIu64 ", newWatchdogTime:%{public}" PRIu64 ", duration:%{public}" PRIu64,
-                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
-                oldWatchdogTime, newWatchdogTime, workStatus->duration_);
-            workStatus->paused_ = true;
-            workStatus->workWatchDogTime_ = newWatchdogTime;
+                " newWatchdogTime:%{public}" PRIu64,
+                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime);
             watchdog_->RemoveWatchdog(it->first);
         }
     }
@@ -931,13 +919,12 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
                     workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
-            int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
+            int32_t watchdogTime = static_cast<int32_t>(workStatus->GetWorkWatchDogTime());
             WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " watchdogTime:%{public}d",
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
-            workStatus->paused_ = false;
+            workStatus->ResumeRunning(WorkSchedUtils::GetCurrentTimeMs());
             watchdog_->AddWatchdog(it->first, watchdogTime);
-            workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
         }
     }
 
@@ -1060,11 +1047,50 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
     }
     constexpr int32_t MAX_DELAY_SECOND = 120;
     constexpr int32_t MILLISECOND = 1000;
-    int64_t seed = static_cast<int64_t>(WorkStatus::getOppositeTime())
+    int64_t seed = static_cast<int64_t>(topWork->getOppositeTime())
         + static_cast<int64_t>(getpid()) + static_cast<int64_t>(gettid());
     srand(static_cast<uint32_t>(seed));
     int32_t delay = rand() % MAX_DELAY_SECOND + 1;
     handler->PostTask(task, delay * MILLISECOND);
+}
+
+std::vector<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllRunningWorkStatus()
+{
+    WS_HILOGD("enter");
+    std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
+    std::vector<std::shared_ptr<WorkStatus>> runningWorks;
+    auto it = uidQueueMap_.begin();
+    while (it != uidQueueMap_.end()) {
+        auto workList = it->second->GetWorkList();
+        for (const auto &work : workList) {
+            if (work && work->IsRunning()) {
+                runningWorks.push_back(work);
+            }
+        }
+        it++;
+    }
+    return runningWorks;
+}
+
+void WorkPolicyManager::CleanOrphanWork(std::shared_ptr<WorkStatus> workStatus)
+{
+    if (!workStatus) {
+        WS_HILOGE("CleanOrphanWork: workStatus is null");
+        return;
+    }
+    WS_HILOGI("CleanOrphanWork workId:%{public}s", workStatus->workId_.c_str());
+    if (workConnManager_) {
+        workConnManager_->RemoveConnInfo(workStatus->workId_);
+    }
+    if (!workStatus->IsRepeating()) {
+        workStatus->MarkStatus(WorkStatus::Status::REMOVED);
+        RemoveFromUidQueue(workStatus, workStatus->uid_);
+        RemoveFromReadyQueue(workStatus);
+    } else {
+        workStatus->ResetRunningFields();
+        workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    }
+    RemoveWatchDog(workStatus);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

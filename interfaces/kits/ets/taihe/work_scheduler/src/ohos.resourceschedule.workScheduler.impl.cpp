@@ -151,8 +151,14 @@ bool IsLastWorkTimeOutSync(int32_t workId)
 // NOLINTBEGIN
 TH_EXPORT_CPP_API_StartWork(StartWork);
 TH_EXPORT_CPP_API_StopWork(StopWork);
+TH_EXPORT_CPP_API_GetWorkStatusAsync(GetWorkStatusSync);
+TH_EXPORT_CPP_API_GetWorkStatusPromise(GetWorkStatusSync);
 TH_EXPORT_CPP_API_GetWorkStatusSync(GetWorkStatusSync);
+TH_EXPORT_CPP_API_ObtainAllWorksAsync(ObtainAllWorksSync);
+TH_EXPORT_CPP_API_ObtainAllWorksPromise(ObtainAllWorksSync);
 TH_EXPORT_CPP_API_ObtainAllWorksSync(ObtainAllWorksSync);
 TH_EXPORT_CPP_API_StopAndClearWorks(StopAndClearWorks);
+TH_EXPORT_CPP_API_IsLastWorkTimeOutAsync(IsLastWorkTimeOutSync);
+TH_EXPORT_CPP_API_IsLastWorkTimeOutPromise(IsLastWorkTimeOutSync);
 TH_EXPORT_CPP_API_IsLastWorkTimeOutSync(IsLastWorkTimeOutSync);
 // NOLINTEND

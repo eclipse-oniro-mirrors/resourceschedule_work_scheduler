@@ -63,7 +63,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
             if (ret != ERR_OK) {
                 WS_HILOGE("stop work after unlocking failed, error code:%{public}d.", ret);
             } else {
-                WS_HILOGI("stop work after unlocking successed.");
+                WS_HILOGD("stop work after unlocking successed.");
             }
         };
         eventHandler->PostTask(task);
@@ -140,7 +140,7 @@ void ScreenListener::StartTimer()
 {
     for (auto &entry : saIdTimeInfoMap_) {
         if (entry.second.timerId_ != 0) {
-            WS_HILOGW("SA %{public}d timer already exists", entry.first);
+            WS_HILOGD("SA %{public}d timer already exists", entry.first);
             continue;
         }
         if (service_ == nullptr) {
@@ -149,10 +149,10 @@ void ScreenListener::StartTimer()
         }
         if (entry.first != DEFAULT_SA_ID && !service_->NeedCreateTimer(entry.first,
             entry.second.uid_, entry.second.time_)) {
-            WS_HILOGW("SA %{public}d don't need create timer, time is %{public}d", entry.first, entry.second.time_);
+            WS_HILOGD("SA %{public}d don't need create timer, time is %{public}d", entry.first, entry.second.time_);
             continue;
         }
-        WS_HILOGI("SA %{public}d start timer with time %{public}d", entry.first, entry.second.time_);
+        WS_HILOGD("SA %{public}d start timer with time %{public}d", entry.first, entry.second.time_);
         auto timerInfo = std::make_shared<TimerInfo>();
         uint32_t type = static_cast<uint32_t>(timerInfo->TIMER_TYPE_EXACT) |
             static_cast<uint32_t>(timerInfo->TIMER_TYPE_REALTIME);
@@ -188,7 +188,7 @@ void ScreenListener::StopTimer()
             MiscServices::TimeServiceClient::GetInstance()->StopTimer(entry.second.timerId_) &&
             MiscServices::TimeServiceClient::GetInstance()->DestroyTimer(entry.second.timerId_)) {
             entry.second.timerId_ = 0;
-            WS_HILOGI("SA %{public}d deep idle timer stop success", entry.first);
+            WS_HILOGD("SA %{public}d deep idle timer stop success", entry.first);
         }
     }
 }

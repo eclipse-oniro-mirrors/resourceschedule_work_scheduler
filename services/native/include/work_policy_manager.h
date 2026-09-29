@@ -311,6 +311,18 @@ public:
      * @return Dump set thermalLevel.
      */
     int32_t GetDumpSetThermalLevel();
+    /**
+     * @brief Get all running work status.
+     *
+     * @return All running work status.
+     */
+    std::vector<std::shared_ptr<WorkStatus>> GetAllRunningWorkStatus();
+    /**
+     * @brief Clean orphan work whose connection is lost but status is still RUNNING.
+     *
+     * @param workStatus The workStatus to clean.
+     */
+    void CleanOrphanWork(std::shared_ptr<WorkStatus> workStatus);
 private:
     int32_t GetMaxRunningCount(WorkSchedSystemPolicy& systemPolicy);
     int32_t GetRunningCount();

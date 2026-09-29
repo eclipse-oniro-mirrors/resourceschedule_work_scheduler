@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -145,6 +145,55 @@ public:
      * @return ErrCode ERR_OK on success, others on failure
      */
     ErrCode StopWorkForSA(int32_t saId);
+
+    /**
+     * @brief Register background loader task.
+     *
+     * @param taskInfo The info of background loader task.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode RegisterTask(BackgroundLoaderTaskInfo& taskInfo);
+
+    /**
+     * @brief Unregister background loader task.
+     *
+     * @param taskInfo The info of background loader task.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode UnregisterTask(BackgroundLoaderTaskInfo& taskInfo);
+
+    /**
+     * @brief Finish background loader task.
+     *
+     * @param taskInfo The info of background loader task.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode FinishTask(BackgroundLoaderTaskInfo& taskInfo);
+
+    /**
+     * @brief Get background loader task.
+     *
+     * @param taskId The id of background loader task.
+     * @param taskInfo The info of background loader task.
+     * @return ErrCode ERR_OK on success, others on failure
+     */
+    ErrCode GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo);
+
+    /**
+     * @brief Set exec frequency for work.
+     *
+     * @param frequencyInfo The info of frequency.
+     * @return ErrCode ERR_OK on success, others on failure.
+     */
+    ErrCode SetExecFrequency(const FrequencyInfo& frequencyInfo);
+
+    /**
+     * @brief Reset exec frequency for work.
+     *
+     * @param uid The uid.
+     * @return ErrCode ERR_OK on success, others on failure.
+     */
+    ErrCode ResetExecFrequency(const int32_t uid);
 private:
     class WorkSchedulerDeathRecipient : public IRemoteObject::DeathRecipient {
     public:

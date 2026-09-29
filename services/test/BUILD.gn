@@ -20,6 +20,7 @@ config("worksched_private_config") {
   include_dirs = [
     "${worksched_service_path}/zidl/include",
     "${worksched_service_path}/native/include",
+    "${worksched_service_path}/plugin/include",
   ]
 }
 
@@ -42,6 +43,10 @@ ohos_unittest("WorkScheduleServiceTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
+    "src/conditions/battery_level_listener_test.cpp",
+    "src/conditions/battery_status_listener_test.cpp",
+    "src/conditions/charger_listener_test.cpp",
+    "src/conditions/condition_checker_test.cpp",
     "src/conditions/group_listener_test.cpp",
     "src/conditions/network_listener_test.cpp",
     "src/conditions/screen_listener_test.cpp",
@@ -56,6 +61,9 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/scheduler_bg_task_subscriber_test.cpp",
     "src/watchdog_test.cpp",
     "src/work_conn_manager_test.cpp",
+    "src/work_bundle_group_change_callback_test.cpp",
+    "src/work_datashare_helper_test.cpp",
+    "src/work_guard_thread_test.cpp",
     "src/work_policy_manager_test.cpp",
     "src/work_queue_manager_test.cpp",
     "src/work_queue_test.cpp",
@@ -64,6 +72,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/work_scheduler_connection_test.cpp",
     "src/work_standby_state_change_callback_test.cpp",
     "src/work_status_test.cpp",
+    "src/work_sched_plugin_mgr_test.cpp",
     "src/workschedulerservice_test.cpp",
     "src/zidl/work_scheduler_proxy_test.cpp",
   ]
@@ -87,12 +96,14 @@ ohos_unittest("WorkScheduleServiceTest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_consumer",
     "eventhandler:libeventhandler",
     "ffrt:libffrt",
     "googletest:gmock_main",
     "hilog:libhilog",
     "hisysevent:libhisysevent",
     "ipc:ipc_single",
+    "resource_schedule_service:resschedsvc",
     "resource_schedule_service:ressched_common_utils",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
@@ -132,11 +143,60 @@ ohos_unittest("WorkScheduleServiceTest") {
   }
 }
 
+ohos_unittest("BackgroundLoaderMgrTest") {
+  sanitize = {
+    cfi = true
+    cfi_cross_dso = true
+    debug = false
+  }
+  cflags_cc = [
+    "-Dprivate=public",
+    "-Dprotected=public",
+  ]
+  module_out_path = module_output_path
+  configs = [ ":worksched_private_config" ]
+  cflags = [
+    "-g",
+    "-O0",
+    "-Wno-unused-variable",
+    "-fno-omit-frame-pointer",
+  ]
+  sources = [
+    "src/background_loader/background_loader_mgr_test.cpp",
+    "src/background_loader/ability_connect_callback_test.cpp",
+  ]
+
+  deps = [
+    "${worksched_frameworks_path}:workschedclient",
+    "${worksched_service_path}:workschedservice_static",
+    "${worksched_utils_path}:workschedutils",
+  ]
+
+  external_deps = [
+    "ability_runtime:ability_connect_callback_stub",
+    "ability_runtime:ability_manager",
+    "c_utils:utils",
+    "ffrt:libffrt",
+    "hilog:libhilog",
+    "ipc:ipc_single",
+    "resource_schedule_service:resschedsvc",
+    "resource_schedule_service:ressched_common_utils",
+    "samgr:samgr_proxy",
+  ]
+
+  defines = [ "WORK_SCHEDULER_TEST" ]
+  if (resourceschedule_bgtaskmgr_enable) {
+    external_deps += [ "background_task_mgr:bgtaskmgr_innerkits" ]
+    defines += [ "RESOURCESCHEDULE_BGTASKMGR_ENABLE" ]
+  }
+}
+
 group("unittest") {
   testonly = true
   deps = []
   deps += [
     # deps file
     ":WorkScheduleServiceTest",
+    ":BackgroundLoaderMgrTest",
   ]
 }

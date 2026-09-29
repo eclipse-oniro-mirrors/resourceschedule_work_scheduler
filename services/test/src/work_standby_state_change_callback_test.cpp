@@ -22,6 +22,9 @@
 #include "work_standby_state_change_callback.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_utils.h"
+#include "work_policy_manager.h"
+#include "work_info.h"
+#include "work_status.h"
 
 using namespace testing::ext;
 
@@ -50,19 +53,6 @@ void WorkStandbyStateChangeCallbackTest::SetUpTestCase()
 }
 
 /**
- * @tc.name: OnDeviceIdleMode_001
- * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICB1SP
- */
-HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_001, TestSize.Level1)
-{
-    dataManager_->SetDeviceSleep(false);
-    callback_->OnDeviceIdleMode(true, false);
-    EXPECT_FALSE(dataManager_->GetDeviceSleep());
-}
-
-/**
  * @tc.name: OnDeviceIdleMode_002
  * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
  * @tc.type: FUNC
@@ -73,19 +63,6 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_002, TestSize.Leve
     dataManager_->SetDeviceSleep(false);
     callback_->OnDeviceIdleMode(false, true);
     EXPECT_TRUE(dataManager_->GetDeviceSleep());
-}
-
-/**
- * @tc.name: OnDeviceIdleMode_003
- * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICB1SP
- */
-HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_003, TestSize.Level1)
-{
-    dataManager_->SetDeviceSleep(false);
-    callback_->OnDeviceIdleMode(false, false);
-    EXPECT_FALSE(dataManager_->GetDeviceSleep());
 }
 
 /**
@@ -103,15 +80,67 @@ HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_004, TestSize.Leve
 
 /**
  * @tc.name: OnDeviceIdleMode_005
- * @tc.desc: Test WorkStandbyStateChangeCallbackTest OnDeviceIdleMode.
+ * @tc.desc: Test OnDeviceIdleMode with napped=true && !sleeping returns early (nap state).
  * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICB1SP
+ * @tc.require: I8JBRY
  */
 HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_005, TestSize.Level1)
+{
+    dataManager_->SetDeviceSleep(false);
+    callback_->OnDeviceIdleMode(true, false);
+    EXPECT_FALSE(dataManager_->GetDeviceSleep());
+}
+
+/**
+ * @tc.name: OnDeviceIdleMode_006
+ * @tc.desc: Test OnDeviceIdleMode with same state returns early (no change).
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_006, TestSize.Level1)
 {
     dataManager_->SetDeviceSleep(true);
     callback_->OnDeviceIdleMode(false, true);
     EXPECT_TRUE(dataManager_->GetDeviceSleep());
+}
+
+/**
+ * @tc.name: OnDeviceIdleMode_007
+ * @tc.desc: Test OnDeviceIdleMode exit sleeping state (0,0).
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStandbyStateChangeCallbackTest, OnDeviceIdleMode_007, TestSize.Level1)
+{
+    dataManager_->SetDeviceSleep(true);
+    callback_->OnDeviceIdleMode(false, false);
+    EXPECT_FALSE(dataManager_->GetDeviceSleep());
+}
+
+/**
+ * @tc.name: OnRestrictListChanged_001
+ * @tc.desc: Test OnRestrictListChanged with wrong resourceType returns early.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStandbyStateChangeCallbackTest, OnRestrictListChanged_001, TestSize.Level1)
+{
+    dataManager_->ClearDeviceStandyRestrictlist();
+    callback_->OnRestrictListChanged(1000, "com.test.restrict", 999, true);
+    EXPECT_FALSE(dataManager_->IsInDeviceStandyRestrictlist("com.test.restrict"));
+}
+
+/**
+ * @tc.name: OnAllowListChanged_001
+ * @tc.desc: Test OnAllowListChanged with wrong allowType returns early.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStandbyStateChangeCallbackTest, OnAllowListChanged_001, TestSize.Level1)
+{
+    dataManager_->ClearDeviceStandyWhitelist();
+    callback_->OnAllowListChanged(1000, "com.test.allow", 999, true);
+    EXPECT_FALSE(dataManager_->IsInDeviceStandyWhitelist("com.test.allow"));
 }
 }
 }

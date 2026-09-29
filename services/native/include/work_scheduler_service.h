@@ -34,6 +34,9 @@
 #include "work_event_handler.h"
 #include "singleton.h"
 #include "work_standby_state_change_callback.h"
+#include "background_loader/background_loader_mgr.h"
+#include "background_loader_task_info.h"
+#include "frequency_info.h"
 #include "ffrt.h"
 
 namespace OHOS {
@@ -42,6 +45,7 @@ class WorkQueueManager;
 class WorkPolicyManager;
 class WorkBundleGroupChangeCallback;
 class SchedulerBgTaskSubscriber;
+class WorkGuardThread;
 class WorkSchedulerService final : public SystemAbility, public WorkSchedServiceStub,
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
@@ -216,6 +220,13 @@ public:
     }
 
     /**
+     * @brief Check if the service is ready.
+     *
+     * @return True if the service is ready, else false.
+     */
+    bool IsReady();
+
+    /**
      * @brief Get work queue manager.
      *
      * @return Work queue manager.
@@ -244,12 +255,12 @@ public:
     void UpdateEffiResApplyInfo(int32_t uid, bool isAdd);
 
     /**
-     * @brief init background task subscriber, subscribe self to bgtask service
+     * @brief init workSched plugin
      *
-     * @return true seccess to init subscriber
-     * @return false fail to init subscriber
+     * @return true seccess to init workSched plugin
+     * @return false fail to init workSched plugin
      */
-    bool InitBgTaskSubscriber();
+    bool InitWorkSchedPluginMgr();
 
     /**
      * @brief check uid has work_scheduler resources or not
@@ -278,6 +289,14 @@ public:
      */
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
+    /**
+     * @brief Start the guard thread for periodic orphan/timeout check.
+     */
+    void StartGuardThread();
+    /**
+     * @brief Stop the guard thread.
+     */
+    void StopGuardThread();
     /**
      * @brief stop deepIdle works.
      *
@@ -323,13 +342,23 @@ public:
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
     bool NeedCreateTimer(int32_t saId, int32_t uid, int32_t time);
     bool HasDeepIdleTime();
+    void UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot);
+    void UpdateCloudConfigEngExemptionBundles(const nlohmann::json &exemptionBundlesRoot);
+    void UpdateCloudConfigPrinstalledWorkKey(const nlohmann::json &preinstalledWorksRoot);
+    void StopCloudConfigWork(const std::string &workId, std::shared_ptr<WorkInfo> workInfo);
     std::map<int32_t, std::pair<int32_t, int32_t>> GetDeepIdleTimeMap();
+    int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo) override;
+    int32_t ResetExecFrequency(const int32_t uid) override;
+    void ResetExecFrequencyWhenAppRemove(int32_t uid);
+    int64_t GetExecFrequency(int32_t uid, int32_t callingUid = -1);
 private:
     void RegisterStandbyStateObserver();
     void WorkQueueManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
     void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
+    bool VerifyTaskInfo(const TaskInfo& taskInfo);
+    void LoadBackgroundLoaderFromFile(const char* path, int32_t& maxTimeoutCount, int32_t& backgroundLoaderTimeoutMs);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     void GroupObserverInit();
 #endif
@@ -340,6 +369,8 @@ private:
     bool CheckCondition(WorkInfo& workInfo);
     bool IsBaseAbilityReady();
     void DumpUsage(std::string& result);
+    void DumpCommonUsage(std::string& result);
+    void DumpUsageForUserMode(std::string& result);
     void DumpParamSet(std::string& key, std::string& value, std::string& result);
     void DumpProcessWorks(const std::string& bundleName, const std::string& abilityName, std::string& result);
     void DumpRunningWorks(const std::string& uidStr, const std::string& option, std::string& result);
@@ -368,6 +399,39 @@ private:
     void DumpTriggerWork(const std::string& uIdStr, const std::string& workIdStr, std::string& result);
     void ReportUserDataSizeEvent();
     void DumpParamRestore(std::string& result);
+    bool CheckPermission(const std::string &permission);
+    uint32_t GetMinCheckTime() const;
+    void SetMinCheckTime(const uint32_t minCheckTime);
+    void AddDeepIdleTimeToMap(const int32_t saId, const int32_t deepIdleTime, const int32_t uid);
+    void InsertPreinstalledBundles(const std::string &bundleName);
+    void InsertExemptionBundles(const std::string &exemptionBundleName);
+    std::set<std::string> GetExemptionBundles() const;
+    void SetMinTimeCycle(const uint32_t minTimeCycle);
+    void AddSpecialToMap(const std::string &bundleName, uint32_t time);
+    std::map<std::string, uint32_t> GetSpecialMap() const;
+    void ClearExemptionBundles();
+    void ClearSpecialToMap();
+    void DeleteSaWork(std::shared_ptr<WorkInfo> workinfo);
+    void DeleteAppWork(std::shared_ptr<WorkInfo> workinfo);
+    void InsertPreinstalledWorkId(const std::string &workId);
+    bool CheckCloudConfigPreinstallDelete(const nlohmann::json &workJson);
+    bool CheckPreinstalledWorkId(const std::string &workId);
+    void RemovePreinstalledWorkId(const std::string &workId);
+    void RemovePersistedMap(const std::string &workId);
+    void RemovePreinstalledBundles(const std::string &bundleName);
+    void RemoveDeepIdleTimeToMap(const int32_t saId);
+    void ReStartCloudConfigPreinstalledWork(std::list<std::shared_ptr<WorkInfo>> &workInfos);
+    void UpdateWorkForCloudConfig(std::shared_ptr<WorkInfo> workInfo);
+    void InitPersistedInfos();
+    void SetExecFrequencyInner(int32_t callingUid, const FrequencyInfo& frequencyInfo);
+    void ClearExecFrequency();
+    bool ResetExecFrequencyByCallingUid(int32_t callingUid, int32_t uid);
+    bool ResetExecFrequencyByUid(int32_t uid);
+    std::string ParseFrequencyMapToJsonStr();
+    void RefreshPersistedInfos();
+    bool CreateNodePersistedInfoFile();
+    void DumpTwoParamsSet(std::vector<std::string> &argsInStr, std::string &result);
+    void DumpAppGroup(const std::string& bundleName, const std::string& groupStr, std::string& result);
 
 private:
     std::set<int32_t> whitelist_;
@@ -377,15 +441,18 @@ private:
 #endif
     std::shared_ptr<WorkQueueManager> workQueueManager_;
     std::shared_ptr<WorkPolicyManager> workPolicyManager_;
+    std::shared_ptr<BackgroundLoaderMgr> backgroundLoaderMgr_;
     ffrt::recursive_mutex mutex_;
     ffrt::mutex observerMutex_;
     std::map<std::string, std::shared_ptr<WorkInfo>> persistedMap_;
     std::atomic<bool> ready_ {false};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
+    std::shared_ptr<WorkGuardThread> guardThread_;
     std::atomic<bool> checkBundle_ {true};
     std::set<std::string> exemptionBundles_;
     std::set<std::string> preinstalledBundles_;
+    std::set<std::string> deletePreinstalledWorkId_;
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
     sptr<WorkBundleGroupChangeCallback> groupObserver_;
 #endif
@@ -394,11 +461,20 @@ private:
 #endif
     uint32_t minTimeCycle_ = 20 * 60 * 1000;
     uint32_t minCheckTime_ = 0;
-    ffrt::mutex specialMutex_;
     std::map<std::string, uint32_t> specialMap_;
-    ffrt::mutex deepIdleTimeMutex_;
     /* first: saId, second.first: deepIdleTime, second.second: uid */
     std::map<int32_t, std::pair<int32_t, int32_t>> deepIdleTimeMap_ {};
+    mutable ffrt::shared_mutex configMutex_;
+    ffrt::mutex frequencyMutex_;
+    /* eg: {callingUid : {uid : frequencyInfo}} */
+    std::map<int32_t, std::map<int32_t, FrequencyInfo>> frequencyMap_{};
+
+public:
+    // backgroundloader interfaces
+    int32_t RegisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

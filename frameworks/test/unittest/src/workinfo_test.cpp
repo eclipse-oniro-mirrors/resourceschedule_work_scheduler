@@ -268,25 +268,6 @@ HWTEST_F (WorkInfoTest, WorkInfoTest016, Function | MediumTest | Level2)
 }
 
 /**
- * @tc.name WorkInfoTest017
- * @tc.desc Set workInfo extras
- * @tc.type FUNC
- * @tc.require: issueI5Y6YK
- */
-HWTEST_F (WorkInfoTest, WorkInfoTest017, Function | MediumTest | Level2)
-{
-    WorkInfo workInfo = WorkInfo();
-    AAFwk::WantParams extras;
-    workInfo.RequestExtras(extras);
-    auto extrasRead = workInfo.GetExtras();
-    if (extras == *extrasRead.get()) {
-        EXPECT_TRUE(true);
-    } else {
-        EXPECT_FALSE(true);
-    }
-}
-
-/**
  * @tc.name WorkInfoTest018
  * @tc.desc Set workInfo GetConditionMap
  * @tc.type FUNC

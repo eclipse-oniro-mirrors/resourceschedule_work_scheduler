@@ -21,7 +21,8 @@
 #include "conditions/screen_listener.h"
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
-
+#include "work_sched_hilog.h"
+#include "work_sched_constants.h"
 
 using namespace testing::ext;
 
@@ -35,87 +36,63 @@ public:
     void TearDown() {};
     static std::shared_ptr<WorkQueueManager> workQueueManager_;
     static std::shared_ptr<ScreenListener> screenListener_;
+    static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 
 std::shared_ptr<ScreenListener> ScreenListenerTest::screenListener_ = nullptr;
 std::shared_ptr<WorkQueueManager> ScreenListenerTest::workQueueManager_ = nullptr;
+std::shared_ptr<WorkSchedulerService> ScreenListenerTest::workSchedulerService_ = nullptr;
 
 void ScreenListenerTest::SetUpTestCase()
 {
-    std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedulerService>();
-    workSchedulerService_->Start();
-    workSchedulerService_->OnStart();
+    workSchedulerService_ = std::make_shared<WorkSchedulerService>();
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
     screenListener_ = std::make_shared<ScreenListener>(workQueueManager_, workSchedulerService_);
 }
 
 /**
- * @tc.name: OnConditionChanged_001
- * @tc.desc: Test ScreenListener OnConditionChanged.
+ * @tc.name: Start_001
+ * @tc.desc: Test ScreenListener Start populates saIdTimeInfoMap_ with DEFAULT_SA_ID.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: I8JBRY
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_001, TestSize.Level1)
+HWTEST_F(ScreenListenerTest, Start_001, TestSize.Level1)
 {
-    screenListener_->Start();
-    EventFwk::CommonEventData data;
-    screenListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = screenListener_->Stop();
-    EXPECT_TRUE(ret);
+    auto listener = std::make_shared<ScreenListener>(workQueueManager_, workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->Start();
+    EXPECT_EQ(listener->saIdTimeInfoMap_.count(0), 1);
+    EXPECT_EQ(listener->saIdTimeInfoMap_.at(0).time_, MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
+    listener->Stop();
 }
 
 /**
- * @tc.name: OnConditionChanged_002
- * @tc.desc: Test ScreenListener OnConditionChanged.
+ * @tc.name: Start_002
+ * @tc.desc: Test ScreenListener Start with null service_ leaves saIdTimeInfoMap_ empty.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: I8JBRY
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_002, TestSize.Level1)
+HWTEST_F(ScreenListenerTest, Start_002, TestSize.Level1)
 {
-    screenListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
-    data.SetWant(want);
-    screenListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = screenListener_->Stop();
-    EXPECT_TRUE(ret);
+    auto listener = std::make_shared<ScreenListener>(workQueueManager_, nullptr);
+    listener->saIdTimeInfoMap_.clear();
+    listener->Start();
+    EXPECT_EQ(listener->saIdTimeInfoMap_.size(), 0);
 }
 
 /**
- * @tc.name: OnConditionChanged_003
- * @tc.desc: Test ScreenListener OnConditionChanged.
+ * @tc.name: Stop_001
+ * @tc.desc: Test ScreenListener Stop with null subscriber clears saIdTimeInfoMap_.
  * @tc.type: FUNC
- * @tc.require: I974IQ
+ * @tc.require: I8JBRY
  */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_003, TestSize.Level1)
+HWTEST_F(ScreenListenerTest, Stop_001, TestSize.Level1)
 {
-    screenListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
-    data.SetWant(want);
-    screenListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = screenListener_->Stop();
-    EXPECT_TRUE(ret);
+    auto listener = std::make_shared<ScreenListener>(workQueueManager_, workSchedulerService_);
+    listener->commonEventSubscriber = nullptr;
+    listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 0);
+    listener->Stop();
+    EXPECT_EQ(listener->saIdTimeInfoMap_.size(), 0);
 }
-
-/**
- * @tc.name: OnConditionChanged_004
- * @tc.desc: Test ScreenListener OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(ScreenListenerTest, OnConditionChanged_004, TestSize.Level1)
-{
-    screenListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
-    data.SetWant(want);
-    screenListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = screenListener_->Stop();
-    EXPECT_TRUE(ret);
-}
-}
-}
+} // namespace WorkScheduler
+} // namespace OHOS

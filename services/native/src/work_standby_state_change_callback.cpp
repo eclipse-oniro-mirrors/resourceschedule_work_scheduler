@@ -34,14 +34,14 @@ void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping
 {
     WS_HILOGI("napped is %{public}d, sleeping is %{public}d", napped, sleeping);
     if (napped && !sleeping) {
-        WS_HILOGI("Device standby state is nap, do not need process");
+        WS_HILOGD("Device standby state is nap, do not need process");
         return;
     }
     if (!napped && sleeping) {
-        WS_HILOGI("Device standby state is sleeping");
+        WS_HILOGD("Device standby state is sleeping");
     } else {
-        // (1, 0) or (0, 0)
-        WS_HILOGI("Device standby exit sleeping state");
+        // (0, 0)
+        WS_HILOGD("Device standby exit sleeping state");
     }
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->GetDeviceSleep() == sleeping) {
@@ -58,7 +58,7 @@ void WorkStandbyStateChangeCallback::OnRestrictListChanged(int32_t uid, const st
     uint32_t resourceType, bool added)
 {
     if (resourceType != DevStandbyMgr::AllowType::WORK_SCHEDULER) {
-        WS_HILOGE("Standby restrict list changed, restrictType is not WORK_SCHEDULER");
+        WS_HILOGD("Standby restrict list changed, restrictType is not WORK_SCHEDULER");
         return;
     }
     WS_HILOGD("%{public}s apply restrict, added %{public}d", name.c_str(), added);
@@ -79,7 +79,7 @@ void WorkStandbyStateChangeCallback::OnAllowListChanged(int32_t uid, const std::
     uint32_t allowType, bool added)
 {
     if (allowType != DevStandbyMgr::AllowType::WORK_SCHEDULER) {
-        WS_HILOGE("Standby allow list changed, allowType is not WORK_SCHEDULER");
+        WS_HILOGD("Standby allow list changed, allowType is not WORK_SCHEDULER");
         return;
     }
     WS_HILOGI("%{public}s apply allow, added %{public}d", name.c_str(), added);

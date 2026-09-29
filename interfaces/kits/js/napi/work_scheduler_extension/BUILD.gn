@@ -59,7 +59,11 @@ ohos_shared_library("workschedulerextensionability_napi") {
     ":work_scheduler_extension_ability_js",
   ]
 
-  external_deps = [ "napi:ace_napi" ]
+  external_deps = [
+    "libuv:uv",
+    "napi:ace_napi",
+    "node:node_header_notice",
+  ]
 
   relative_install_dir = "module"
   part_name = "${worksched_native_part_name}"

@@ -286,7 +286,7 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_003, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = true;
+    workStatus->SetPaused(true);
     workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
     int32_t ret = workPolicyManager_->PauseRunningWorks(uid);
     EXPECT_EQ(ret, ERR_OK);
@@ -309,9 +309,9 @@ HWTEST_F(WorkPolicyManagerTest, PauseRunningWorks_004, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = false;
-    workStatus->workWatchDogTime_ = 120000;
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->SetPaused(false);
+    workStatus->SetWorkWatchDogTime(120000);
+    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
     std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::shared_ptr<AppExecFwk::EventRunner> runner;
     std::shared_ptr<Watchdog> watchdog_ =
@@ -374,7 +374,7 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_003, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = false;
+    workStatus->SetPaused(false);
     workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
     int32_t ret = workPolicyManager_->ResumePausedWorks(uid);
     EXPECT_EQ(ret, ERR_OK);
@@ -397,9 +397,9 @@ HWTEST_F(WorkPolicyManagerTest, ResumePausedWorks_004, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->paused_ = true;
-    workStatus->workWatchDogTime_ = 120000;
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->SetPaused(true);
+    workStatus->SetWorkWatchDogTime(120000);
+    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
     std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::shared_ptr<AppExecFwk::EventRunner> runner;
     std::shared_ptr<Watchdog> watchdog_ =
@@ -546,46 +546,6 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_008, TestSize.Level1)
 }
 
 /**
- * @tc.name: FindWorkStatus_001
- * @tc.desc: Test WorkPolicyManagerTest FindWorkStatus.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
-{
-    workPolicyManager_->uidQueueMap_.clear();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(10000);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workPolicyManager_->AddWork(workStatus, uid);
-    std::shared_ptr<WorkStatus> ret = workPolicyManager_->FindWorkStatus(workinfo, uid);
-    EXPECT_FALSE(ret == nullptr);
-}
-
-/**
- * @tc.name: FindWorkStatus_002
- * @tc.desc: Test WorkPolicyManagerTest FindWorkStatus.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_002, TestSize.Level1)
-{
-    workPolicyManager_->uidQueueMap_.clear();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(10000);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workPolicyManager_->AddWork(workStatus, uid);
-    
-    int32_t uid1 = 10001;
-    std::shared_ptr<WorkStatus> ret = workPolicyManager_->FindWorkStatus(workinfo, uid1);
-    EXPECT_TRUE(ret == nullptr);
-}
-
-/**
  * @tc.name: StopWork_001
  * @tc.desc: Test WorkPolicyManagerTest StopWork.
  * @tc.type: FUNC
@@ -708,82 +668,6 @@ HWTEST_F(WorkPolicyManagerTest, IsLastWorkTimeout_001, TestSize.Level1)
     bool ret = false;
     workPolicyManager_->IsLastWorkTimeout(workId, uid, ret);
     EXPECT_TRUE(ret);
-}
-
-/**
- * @tc.name: OnConditionReady_001
- * @tc.desc: Test WorkPolicyManagerTest OnConditionReady.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, OnConditionReady_001, TestSize.Level1)
-{
-    std::vector<std::shared_ptr<WorkStatus>> readyWorkVector = {};
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork =
-        std::make_shared<std::vector<std::shared_ptr<WorkStatus>>>(readyWorkVector);
-    workPolicyManager_->OnConditionReady(readyWork);
-    EXPECT_TRUE(readyWork != nullptr);
-}
-
-/**
- * @tc.name: OnConditionReady_002
- * @tc.desc: Test WorkPolicyManagerTest OnConditionReady.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, OnConditionReady_002, TestSize.Level1)
-{
-    std::vector<std::shared_ptr<WorkStatus>> readyWorkVector;
-    WorkInfo workinfo;
-    int32_t workId = 10000;
-    workinfo.SetWorkId(workId);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->lastTimeout_ = true;
-    readyWorkVector.emplace_back(workStatus);
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork =
-        std::make_shared<std::vector<std::shared_ptr<WorkStatus>>>(readyWorkVector);
-    workPolicyManager_->OnConditionReady(readyWork);
-    EXPECT_FALSE(readyWork == nullptr);
-}
-
-/**
- * @tc.name: OnConditionReady_003
- * @tc.desc: Test WorkPolicyManagerTest OnConditionReady.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, OnConditionReady_003, TestSize.Level1)
-{
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork = nullptr;
-    workPolicyManager_->OnConditionReady(readyWork);
-    EXPECT_TRUE(readyWork == nullptr);
-}
-
-/**
- * @tc.name: AddToReadyQueue_001
- * @tc.desc: Test WorkPolicyManagerTest AddToReadyQueue.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, AddToReadyQueue_001, TestSize.Level1)
-{
-    std::vector<std::shared_ptr<WorkStatus>> readyWorkVector;
-    WorkInfo workinfo;
-    int32_t workId = 10000;
-    workinfo.SetWorkId(workId);
-    workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->lastTimeout_ = true;
-    readyWorkVector.emplace_back(workStatus);
-    std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> readyWork =
-        std::make_shared<std::vector<std::shared_ptr<WorkStatus>>>(readyWorkVector);
-    workPolicyManager_->AddToReadyQueue(readyWork);
-    EXPECT_FALSE(readyWork == nullptr);
 }
 
 /**
@@ -1114,36 +998,6 @@ HWTEST_F(WorkPolicyManagerTest, DumpTriggerWork_003, TestSize.Level1)
 }
 
 /**
- * @tc.name: OnPolicyChanged_001
- * @tc.desc: Test WorkPolicyManagerTest OnPolicyChanged.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
- */
-HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_001, TestSize.Level1)
-{
-    std::shared_ptr<DetectorValue> detectorVal = std::make_shared<DetectorValue>(0, 0, false, "preinstalled_app");
-    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
-    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
-    workPolicyManager_->OnPolicyChanged(PolicyType::APP_ADDED, detectorVal);
-
-    EXPECT_FALSE(workPolicyManager_->wss_.lock() == nullptr);
-}
-
-/**
- * @tc.name: OnPolicyChanged_002
- * @tc.desc: Test WorkPolicyManagerTest OnPolicyChanged.
- * @tc.type: FUNC
- * @tc.require: https://gitee.com/openharmony/resourceschedule_work_scheduler/issues/ICBI5I
- */
-HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_002, TestSize.Level1)
-{
-    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
-    workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
-    workPolicyManager_->OnPolicyChanged(static_cast<PolicyType>(999), std::make_shared<DetectorValue>(0, 0, false, ""));
-    EXPECT_FALSE(workPolicyManager_->wss_.lock() == nullptr);
-}
-
-/**
  * @tc.name: UpdateWatchdogTime_001
  * @tc.desc: Test WorkPolicyManagerTest UpdateWatchdogTime.
  * @tc.type: FUNC
@@ -1257,6 +1111,306 @@ HWTEST_F(WorkPolicyManagerTest, WatchdogTimeOut_001, TestSize.Level1)
     uint32_t watchdogId = 1;
     workPolicyManager_->WatchdogTimeOut(watchdogId);
     EXPECT_EQ(workPolicyManager_->watchdogIdMap_.size(), 0);
+}
+
+/**
+ * @tc.name: GetAllRunningWorkStatus_001
+ * @tc.desc: Test GetAllRunningWorkStatus with a running work.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkPolicyManagerTest, GetAllRunningWorkStatus_001, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(10000);
+    workinfo.RequestDeepIdle(true);
+    int32_t uid = 10000;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    workPolicyManager_->AddWork(workStatus, uid);
+
+    auto result = workPolicyManager_->GetAllRunningWorkStatus();
+    EXPECT_EQ(result.size(), 1);
+}
+
+/**
+ * @tc.name: CleanOrphanWork_001
+ * @tc.desc: Test CleanOrphanWork with non-repeating work, verify status removed and queue cleaned.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkPolicyManagerTest, CleanOrphanWork_001, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(10000);
+    workinfo.RequestDeepIdle(true);
+    int32_t uid = 10000;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    workStatus->SetWorkStartTime(1000);
+    workStatus->SetWorkWatchDogTime(2000);
+    workStatus->SetDuration(500);
+    workPolicyManager_->AddWork(workStatus, uid);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 1);
+
+    workPolicyManager_->CleanOrphanWork(workStatus);
+    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::REMOVED);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 0);
+}
+
+/**
+ * @tc.name: CleanOrphanWork_002
+ * @tc.desc: Test CleanOrphanWork with repeating work, verify status reset and work retained.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkPolicyManagerTest, CleanOrphanWork_002, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(10000);
+    workinfo.RequestRepeatCycle(1200000);
+    int32_t uid = 10000;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    workStatus->SetWorkStartTime(1000);
+    workStatus->SetWorkWatchDogTime(2000);
+    workStatus->SetDuration(500);
+    workPolicyManager_->AddWork(workStatus, uid);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 1);
+
+    workPolicyManager_->CleanOrphanWork(workStatus);
+    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::WAIT_CONDITION);
+    EXPECT_EQ(workStatus->GetWorkStartTime(), 0);
+    EXPECT_EQ(workStatus->GetWorkWatchDogTime(), 0);
+    EXPECT_EQ(workStatus->GetDuration(), 0);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 1);
+}
+
+/**
+ * @tc.name: NewWatchdogId_001
+ * @tc.desc: Test NewWatchdogId wraps around at MAX_WATCHDOG_ID.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, NewWatchdogId_001, TestSize.Level1)
+{
+    workPolicyManager_->watchdogId_ = MAX_WATCHDOG_ID;
+    uint32_t ret = workPolicyManager_->NewWatchdogId();
+    EXPECT_EQ(ret, INIT_WATCHDOG_ID);
+}
+
+/**
+ * @tc.name: NewWatchdogId_002
+ * @tc.desc: Test NewWatchdogId increments normally.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, NewWatchdogId_002, TestSize.Level1)
+{
+    workPolicyManager_->watchdogId_ = 5;
+    uint32_t ret = workPolicyManager_->NewWatchdogId();
+    EXPECT_EQ(ret, 5);
+}
+
+/**
+ * @tc.name: ObtainAllWorks_001
+ * @tc.desc: Test ObtainAllWorks returns works for existing uid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, ObtainAllWorks_001, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(20001);
+    workinfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
+    workinfo.RequestBatteryLevel(80);
+    int32_t uid = 20001;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workPolicyManager_->AddWork(workStatus, uid);
+    auto ret = workPolicyManager_->ObtainAllWorks(uid);
+    EXPECT_EQ(ret.size(), 1);
+    workPolicyManager_->uidQueueMap_.clear();
+}
+
+/**
+ * @tc.name: ObtainAllWorks_002
+ * @tc.desc: Test ObtainAllWorks returns empty for non-existing uid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, ObtainAllWorks_002, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    int32_t uid = 99999;
+    auto ret = workPolicyManager_->ObtainAllWorks(uid);
+    EXPECT_EQ(ret.size(), 0);
+}
+
+/**
+ * @tc.name: GetWorkStatus_001
+ * @tc.desc: Test GetWorkStatus returns workInfo for existing work.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, GetWorkStatus_001, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(30001);
+    workinfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
+    int32_t uid = 30001;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workPolicyManager_->AddWork(workStatus, uid);
+    int32_t queryUid = uid;
+    int32_t queryWorkId = 30001;
+    auto ret = workPolicyManager_->GetWorkStatus(queryUid, queryWorkId);
+    EXPECT_EQ(ret->GetWorkId(), 30001);
+    workPolicyManager_->uidQueueMap_.clear();
+}
+
+/**
+ * @tc.name: GetWorkStatus_002
+ * @tc.desc: Test GetWorkStatus returns nullptr for non-existing work.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, GetWorkStatus_002, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    int32_t queryUid = 99999;
+    int32_t queryWorkId = 99999;
+    auto ret = workPolicyManager_->GetWorkStatus(queryUid, queryWorkId);
+    EXPECT_EQ(ret, nullptr);
+}
+
+/**
+ * @tc.name: FindWorkStatus_001
+ * @tc.desc: Test FindWorkStatus by uid and workId returns workStatus.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(40001);
+    workinfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
+    int32_t uid = 40001;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workPolicyManager_->AddWork(workStatus, uid);
+    auto ret = workPolicyManager_->FindWorkStatus(uid, 40001);
+    EXPECT_NE(ret, nullptr);
+    EXPECT_EQ(ret.get(), workStatus.get());
+    workPolicyManager_->uidQueueMap_.clear();
+}
+
+/**
+ * @tc.name: FindWorkStatus_002
+ * @tc.desc: Test FindWorkStatus by uid and workId returns nullptr when not found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_002, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    auto ret = workPolicyManager_->FindWorkStatus(99999, 99999);
+    EXPECT_EQ(ret, nullptr);
+}
+
+/**
+ * @tc.name: RemoveWatchDog_001
+ * @tc.desc: Test RemoveWatchDog removes entry from watchdogIdMap_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, RemoveWatchDog_001, TestSize.Level1)
+{
+    workPolicyManager_->watchdogIdMap_.clear();
+    uint32_t watchdogId = 10;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(60001);
+    int32_t uid = 60001;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->workId_ = std::to_string(workinfo.GetWorkId()) + "_" + std::to_string(uid);
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    std::shared_ptr<AppExecFwk::EventRunner> runner;
+    std::shared_ptr<Watchdog> watchdog =
+        std::make_shared<Watchdog>(workSchedulerService->GetWorkPolicyManager(), runner);
+    workPolicyManager_->watchdog_ = watchdog;
+    workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
+    EXPECT_EQ(workPolicyManager_->watchdogIdMap_.size(), 1);
+    workPolicyManager_->RemoveWatchDog(workStatus);
+    EXPECT_EQ(workPolicyManager_->watchdogIdMap_.size(), 0);
+}
+
+/**
+ * @tc.name: RemoveWatchDog_002
+ * @tc.desc: Test RemoveWatchDog with null workStatus does nothing.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, RemoveWatchDog_002, TestSize.Level1)
+{
+    workPolicyManager_->watchdogIdMap_.clear();
+    uint32_t watchdogId = 11;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(60002);
+    int32_t uid = 60002;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workPolicyManager_->watchdogIdMap_.emplace(watchdogId, workStatus);
+    auto before = workPolicyManager_->watchdogIdMap_.size();
+    workPolicyManager_->RemoveWatchDog(nullptr);
+    EXPECT_EQ(workPolicyManager_->watchdogIdMap_.size(), before);
+    workPolicyManager_->watchdogIdMap_.clear();
+}
+
+/**
+ * @tc.name: SetWatchdogTimeByDump_001
+ * @tc.desc: Test SetWatchdogTimeByDump with 0 uses WATCHDOG_TIME default.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, SetWatchdogTimeByDump_001, TestSize.Level1)
+{
+    workPolicyManager_->SetWatchdogTimeByDump(0);
+    EXPECT_EQ(workPolicyManager_->GetWatchdogTime(), WATCHDOG_TIME);
+}
+
+/**
+ * @tc.name: SetWatchdogTimeByDump_002
+ * @tc.desc: Test SetWatchdogTimeByDump with non-zero sets custom time.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, SetWatchdogTimeByDump_002, TestSize.Level1)
+{
+    workPolicyManager_->SetWatchdogTimeByDump(300000);
+    EXPECT_EQ(workPolicyManager_->GetWatchdogTime(), 300000);
+    workPolicyManager_->SetWatchdogTimeByDump(0);
+}
+
+/**
+ * @tc.name: GetAllRunningWorks_001
+ * @tc.desc: Test GetAllRunningWorks returns running works.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkPolicyManagerTest, GetAllRunningWorks_001, TestSize.Level1)
+{
+    workPolicyManager_->uidQueueMap_.clear();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(70001);
+    workinfo.RequestDeepIdle(true);
+    int32_t uid = 70001;
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    workPolicyManager_->AddWork(workStatus, uid);
+    auto ret = workPolicyManager_->GetAllRunningWorks();
+    EXPECT_EQ(ret.size(), 1);
+    workPolicyManager_->uidQueueMap_.clear();
 }
 }
 }

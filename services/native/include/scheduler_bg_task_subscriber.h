@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2022 Huawei Device Co., Ltd.
+ * Copyright (c) 2022-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,18 +21,18 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-class SchedulerBgTaskSubscriber : public BackgroundTaskMgr::BackgroundTaskSubscriber {
+class SchedulerBgTaskSubscriber {
 public:
     SchedulerBgTaskSubscriber() = default;
     void OnProcEfficiencyResourcesApply(
-        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
+        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo);
     void OnProcEfficiencyResourcesReset(
-        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
+        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo);
     void OnAppEfficiencyResourcesApply(
-        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
+        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo);
     void OnAppEfficiencyResourcesReset(
-        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo) override;
-    void OnRemoteDied(const wptr<IRemoteObject> &object) override;
+        const std::shared_ptr<BackgroundTaskMgr::ResourceCallbackInfo> &resourceInfo);
+    void OnRemoteDied(const wptr<IRemoteObject> &object);
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -54,7 +54,7 @@ bool GroupListener::Start()
 
 bool GroupListener::Stop()
 {
-    WS_HILOGI("GroupListener stop");
+    WS_HILOGD("GroupListener stop");
     if (handler_ != nullptr) {
         handler_->RemoveEvent(WorkQueueEventHandler::GROUP_TICK);
     }

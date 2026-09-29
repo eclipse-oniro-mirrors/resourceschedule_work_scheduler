@@ -55,6 +55,8 @@ const int32_t ACTIVE_GROUP = 10;
 const string SWITCH_ON = "1";
 const string DELIMITER = ",";
 ffrt::mutex WorkStatus::s_uid_last_time_mutex;
+ffrt::mutex WorkStatus::dumpAppGroupMutex_;
+std::map<int32_t, int32_t> WorkStatus::dumpAppGroupMap_;
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 namespace GroupConst {
@@ -116,6 +118,11 @@ time_t WorkStatus::getOppositeTime()
     time_t result;
     sptr<MiscServices::TimeServiceClient> timer = MiscServices::TimeServiceClient::GetInstance();
     result = static_cast<time_t>(timer->GetBootTimeMs());
+    int32_t dumpAppGroup = GetDumpAppGroup(uid_);
+    if (dumpAppGroup > 0) {
+        result = static_cast<time_t>(timer->GetWallTimeMs());
+        WS_HILOGD("uid: %{public}d set group: %{public}d.", uid_, dumpAppGroup);
+    }
     return result;
 }
 
@@ -201,6 +208,7 @@ void WorkStatus::MarkTimeout()
 
 void WorkStatus::MarkStatus(Status status)
 {
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
     currentStatus_ = status;
 }
 
@@ -293,8 +301,8 @@ bool WorkStatus::IsReady()
             "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
-    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+    time_t lastTime = 0;
+    if (!GetUidLastTime(uid_, lastTime)) {
         // first run task
         if (CheckEarliestStartTime()) {
             WS_HILOGE("The initial startup time does not meet the EarliestStartTime requirement.");
@@ -303,7 +311,7 @@ bool WorkStatus::IsReady()
         conditionStatus_ += DELIMITER + "firstTrigger";
         return true;
     }
-    double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
+    double del = difftime(getOppositeTime(), lastTime);
     if (del < minInterval_) {
         conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&" + NOT_OK + "(" +
             to_string(static_cast<long>(del)) + ":" + to_string(minInterval_) + ")";
@@ -449,12 +457,8 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
     }
     auto workConditionMap = workInfo_->GetConditionMap();
     uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-    time_t lastTime;
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        lastTime = 0;
-    } else {
-        lastTime = s_uid_last_time_map[uid_];
-    }
+    time_t lastTime = 0;
+    GetUidLastTime(uid_, lastTime);
     double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
     double oppositedel = difftime(getOppositeTime(), lastTime);
     double del = currentdel > oppositedel ? currentdel : oppositedel;
@@ -468,12 +472,8 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
 
 double WorkStatus::TimeUntilLast()
 {
-    time_t lastTime;
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        lastTime = 0;
-    } else {
-        lastTime = s_uid_last_time_map[uid_];
-    }
+    time_t lastTime = 0;
+    GetUidLastTime(uid_, lastTime);
     double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
     double oppositedel = difftime(getOppositeTime(), lastTime);
     return currentdel > oppositedel ? currentdel : oppositedel;
@@ -516,19 +516,18 @@ bool WorkStatus::IsMailApp()
         return false;
     }
     std::vector<int32_t> pkgTypes;
+    std::string pkgTypesStr = "[";
     if (reply.contains("thirdKindIds") && reply.at("thirdKindIds").is_array()) {
-        pkgTypes = reply["thirdKindIds"].get<std::vector<int32_t>>();
+        for (const auto &kindId : reply["thirdKindIds"]) {
+            if (kindId.is_number_integer()) {
+                pkgTypes.emplace_back(kindId.get<int32_t>());
+                pkgTypesStr += std::to_string(kindId.get<int32_t>());
+            }
+        }
     } else {
         WS_HILOGD("no thirdKindIds");
     }
 
-    std::string pkgTypesStr = "[";
-    for (size_t i = 0; i < pkgTypes.size(); ++i) {
-        pkgTypesStr += std::to_string(pkgTypes[i]);
-        if (i < pkgTypes.size() - 1) {
-            pkgTypesStr += ", ";
-        }
-    }
     pkgTypesStr += "]";
     WS_HILOGD("IsMailApp type bundleName_:%{public}s, pkgTypes:%{public}s", bundleName_.c_str(), pkgTypesStr.c_str());
 
@@ -544,6 +543,11 @@ bool WorkStatus::IsMailApp()
 bool WorkStatus::SetMinInterval()
 {
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
+    int32_t dumpAppGroup = GetDumpAppGroup(uid_);
+    if (dumpAppGroup > 0) {
+        WS_HILOGD("app %{public}s, set group is: %{public}d.", bundleName_.c_str(), dumpAppGroup);
+        return SetMinIntervalByGroup(dumpAppGroup);
+    }
     int32_t group = 0;
     if (workInfo_->IsCallBySystemApp()) {
         WS_HILOGD("system app %{public}s, default group is active.", bundleName_.c_str());
@@ -595,7 +599,7 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
     if (itMap == GroupConst::GROUP_INTERVAL_MAP.end()) {
         WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
             group, bundleName_.c_str());
-        minInterval_ = -1;
+        minInterval_ = HandleMinInterval(INVALID_VALUE, group);
         return;
     }
     if (IsMailApp() && group == DeviceUsageStats::DeviceUsageStatsGroupConst::ACTIVE_GROUP_ALIVE) {
@@ -603,7 +607,7 @@ void WorkStatus::SetMinIntervalWhenCharging(int32_t group)
         WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
             minInterval_, group, bundleName_.c_str());
     } else {
-        minInterval_ = itMap->second;
+        minInterval_ = HandleMinInterval(itMap->second, group);
         WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
             minInterval_, group, bundleName_.c_str());
     }
@@ -614,24 +618,24 @@ void WorkStatus::SetMinIntervalWhenNotCharging(int32_t group)
     if (IsMailApp()) {
         auto itMap = GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.find(group);
         if (itMap != GroupConst::MAIL_APP_GROUP_INTERVAL_MAP.end()) {
-            minInterval_ = itMap->second;
+            minInterval_ = HandleMinInterval(itMap->second, group);
             WS_HILOGD("set min interval to %{public}" PRId64 " by group %{public}d, bundleName:%{public}s",
                 minInterval_, group, bundleName_.c_str());
         } else {
             WS_HILOGE("query mail app group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
-            minInterval_ = -1;
+            minInterval_ = HandleMinInterval(INVALID_VALUE, group);
         }
     } else {
         auto itMap = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.find(group);
         if (itMap != DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_.end()) {
             WS_HILOGD("SetMinIntervalWhenNotCharging not mailApp. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
-            minInterval_ = DeviceUsageStats::DeviceUsageStatsGroupMap::groupIntervalMap_[group];
+            minInterval_ = HandleMinInterval(itMap->second, group);
         } else {
             WS_HILOGE("query package group interval failed. group:%{public}d, bundleName:%{public}s",
                 group, bundleName_.c_str());
-            minInterval_ = -1;
+            minInterval_ = HandleMinInterval(INVALID_VALUE, group);
         }
     }
 }
@@ -662,23 +666,38 @@ void WorkStatus::ClearUidLastTimeMap(int32_t uid)
     s_uid_last_time_map.erase(uid);
 }
 
+bool WorkStatus::GetUidLastTime(int32_t uid, time_t &lastTime)
+{
+    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
+    auto it = s_uid_last_time_map.find(uid);
+    if (it == s_uid_last_time_map.end()) {
+        return false;
+    }
+    lastTime = it->second;
+    return true;
+}
+
 bool WorkStatus::IsRunning()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == RUNNING;
 }
 
 bool WorkStatus::IsPaused()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return paused_;
 }
 
 bool WorkStatus::IsReadyStatus()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == CONDITION_READY;
 }
 
 bool WorkStatus::IsRemoved()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == REMOVED;
 }
 
@@ -702,6 +721,7 @@ bool WorkStatus::IsRepeating()
 
 WorkStatus::Status WorkStatus::GetStatus()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_;
 }
 
@@ -725,8 +745,8 @@ void WorkStatus::Dump(string& result)
     } else {
         result.append(string("\"bundleName\":") + bundleName_ + ",\n");
     }
-    result.append(string("\"status\":") + to_string(currentStatus_) + ",\n");
-    result.append(string("\"paused\":") + (paused_ ? "true" : "false") + ",\n");
+    result.append(string("\"status\":") + to_string(GetStatus()) + ",\n");
+    result.append(string("\"paused\":") + (IsPaused() ? "true" : "false") + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
     DumpCondition(result);
@@ -801,7 +821,8 @@ void WorkStatus::ToString(WorkCondition::Type type)
 
 bool WorkStatus::HasTimeout()
 {
-    if (!IsRunning() || IsPaused()) {
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    if (currentStatus_ != RUNNING || paused_) {
         return false;
     }
 
@@ -849,7 +870,7 @@ bool WorkStatus::IsSpecial()
             WS_HILOGE("parameters type not supported.");
             continue;
         }
-        if (pair.first == "executeImmediate") {
+        if (pair.first == EXECUTE_IMMEDIATE) {
             return AAFwk::WantParams::GetStringByType(pair.second, typeId) == "false";
         }
     }
@@ -893,6 +914,151 @@ bool WorkStatus::IsNeedDiscreteScheduled()
         return false;
     }
     return true;
+}
+
+void WorkStatus::SetDebugTask(bool debugTask)
+{
+    debugTask_.store(debugTask);
+}
+
+bool WorkStatus::IsDebugTask()
+{
+    return debugTask_.load();
+}
+
+int64_t WorkStatus::HandleMinInterval(int64_t interval, int32_t group)
+{
+    int64_t result = DelayedSingleton<WorkSchedulerService>::GetInstance()->GetExecFrequency(uid_);
+    if (result < 0) {
+        return interval;
+    }
+
+    WS_HILOGI("HandleMinInterval interval: %{public}" PRId64
+        " group: %{public}d, uid: %{public}d, set interval: %{public}" PRId64,
+        interval, group, uid_, result);
+    if (interval < 0) {
+        return result;
+    }
+    int64_t minInterval = interval;
+    minInterval = minInterval < result ? minInterval : result;
+    return minInterval;
+}
+
+int32_t WorkStatus::GetDumpAppGroup(int32_t uid)
+{
+    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    if (dumpAppGroupMap_.count(uid) > 0) {
+        return dumpAppGroupMap_.at(uid);
+    } else {
+        return INVALID_VALUE;
+    }
+}
+
+void WorkStatus::ClearDumpAppGroup(int32_t uid)
+{
+    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    dumpAppGroupMap_.erase(uid);
+}
+
+void WorkStatus::AddDumpAppGroup(int32_t uid, int32_t group)
+{
+    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    if (dumpAppGroupMap_.count(uid) > 0) {
+        dumpAppGroupMap_[uid] = group;
+    } else {
+        dumpAppGroupMap_.emplace(uid, group);
+    }
+}
+
+uint64_t WorkStatus::GetWorkStartTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return workStartTime_;
+}
+
+uint64_t WorkStatus::GetWorkWatchDogTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return workWatchDogTime_;
+}
+
+uint64_t WorkStatus::GetDuration() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return duration_;
+}
+
+void WorkStatus::SetWorkStartTime(uint64_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = time;
+}
+
+void WorkStatus::SetWorkWatchDogTime(uint64_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workWatchDogTime_ = time;
+}
+
+void WorkStatus::SetDuration(uint64_t duration)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    duration_ = duration;
+}
+
+void WorkStatus::AddDuration(uint64_t delta)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    duration_ += delta;
+}
+
+void WorkStatus::SetPaused(bool paused)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    paused_ = paused;
+}
+
+void WorkStatus::ResetRunningFields()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = 0;
+    workWatchDogTime_ = 0;
+    duration_ = 0;
+}
+
+void WorkStatus::InitRunningFields(uint64_t startTime, uint64_t watchdogTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = startTime;
+    workWatchDogTime_ = watchdogTime;
+}
+
+uint64_t WorkStatus::PauseRunning(uint64_t currentTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    uint64_t oldWatchdogTime = workWatchDogTime_;
+    uint64_t runningTime = currentTime - workStartTime_;
+    uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
+    if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+        WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
+            ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
+            bundleName_.c_str(), workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);
+        newWatchdogTime = 0;
+    }
+    duration_ += runningTime;
+    WS_HILOGI("PauseRunning, bundleName:%{public}s, workId:%{public}s,"
+        " oldWatchdogTime:%{public}" PRIu64 ", newWatchdogTime:%{public}" PRIu64 ", duration:%{public}" PRIu64,
+        bundleName_.c_str(), workId_.c_str(), oldWatchdogTime, newWatchdogTime, duration_);
+    paused_ = true;
+    workWatchDogTime_ = newWatchdogTime;
+    return newWatchdogTime;
+}
+
+void WorkStatus::ResumeRunning(uint64_t currentTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    paused_ = false;
+    workStartTime_ = currentTime;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

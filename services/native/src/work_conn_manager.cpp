@@ -146,24 +146,23 @@ bool WorkConnManager::StopWork(shared_ptr<WorkStatus> workStatus, bool isTimeOut
     conn->StopWork();
     bool ret = DisConnect(conn);
 
-    RemoveConnInfo(workStatus->workId_);
-
     // Notify work remove event to battery statistics only work has started
     int32_t pid = IPCSkeleton::GetCallingPid();
-    workStatus->duration_ += WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
+    workStatus->AddDuration(WorkSchedUtils::GetCurrentTimeMs() - workStatus->GetWorkStartTime());
     HiSysEventWrite(HiviewDFX::HiSysEvent::Domain::WORK_SCHEDULER, "WORK_STOP",
         HiSysEvent::EventType::STATISTIC, "UID",
         workStatus->uid_, "PID", pid, "NAME", workStatus->bundleName_, "WORKID", workStatus->workId_,
-        "REASON", isTimeOut, "DURATION", workStatus->duration_);
-#ifdef DEVICE_STANDBY_ENABLE
+        "REASON", isTimeOut, "DURATION", workStatus->GetDuration());
     if (ret) {
         WS_HILOGI("OnWorkStop uid:%{public}d bundleName:%{public}s workId:%{public}s duration:%{public}" PRIu64
             ", startTime:%{public}" PRIu64, workStatus->uid_, workStatus->bundleName_.c_str(),
-            workStatus->workId_.c_str(), workStatus->duration_, workStatus->workStartTime_);
+            workStatus->workId_.c_str(), workStatus->GetDuration(), workStatus->GetWorkStartTime());
+        RemoveConnInfo(workStatus->workId_);
+#ifdef DEVICE_STANDBY_ENABLE
         DevStandbyMgr::StandbyServiceClient::GetInstance().ReportWorkSchedulerStatus(false,
             workStatus->uid_, workStatus->bundleName_);
-    }
 #endif // DEVICE_STANDBY_ENABLE
+    }
     return true;
 }
 
@@ -198,7 +197,7 @@ void WorkConnManager::WriteStartWorkEvent(shared_ptr<WorkStatus> workStatus)
     if (workStatus->workInfo_->GetConditionMap()->count(WorkCondition::Type::DEEP_IDLE) > 0) {
         conditions.append("DEEP_IDLE-");
     }
-    conditions.pop_back();
+    conditions.empty() ? (void)0 : conditions.pop_back();
 
     string type = "Repeat";
     if (!workStatus->workInfo_->IsRepeat()) {

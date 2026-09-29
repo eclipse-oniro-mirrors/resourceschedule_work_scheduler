@@ -46,17 +46,15 @@ public:
      * @return Workid and uid.
      */
     static std::string MakeWorkId(int32_t workId, int32_t uid);
-    static time_t getOppositeTime();
+    time_t getOppositeTime();
+    static void ClearDumpAppGroup(int32_t uid);
+    static void AddDumpAppGroup(int32_t uid, int32_t group);
 
     std::string workId_;
     std::string bundleName_;
     std::string abilityName_;
     int32_t uid_;
     int32_t userId_;
-    uint64_t workStartTime_ {0};
-    uint64_t workWatchDogTime_ {0};
-    uint64_t duration_ {0};
-    bool paused_ {false};
     bool persisted_;
     int32_t priority_;
     bool needRetrigger_ {false};
@@ -217,16 +215,24 @@ public:
     void SetTimeout(bool timeout);
     bool IsSpecial();
     double TimeUntilLast();
+    bool IsDebugTask();
+    void SetDebugTask(bool debugTask);
+    uint64_t GetWorkStartTime() const;
+    uint64_t GetWorkWatchDogTime() const;
+    uint64_t GetDuration() const;
+    void SetWorkStartTime(uint64_t time);
+    void SetWorkWatchDogTime(uint64_t time);
+    void SetDuration(uint64_t duration);
+    void AddDuration(uint64_t delta);
+    void SetPaused(bool paused);
+    void ResetRunningFields();
+    void InitRunningFields(uint64_t startTime, uint64_t watchdogTime);
+    uint64_t PauseRunning(uint64_t currentTime);
+    void ResumeRunning(uint64_t currentTime);
+
 private:
-    Status currentStatus_;
-    time_t baseTime_;
-    int64_t minInterval_;
-    bool groupChanged_;
-    ffrt::mutex conditionMapMutex_;
-    static ffrt::mutex s_uid_last_time_mutex;
-    static std::map<int32_t, time_t> s_uid_last_time_map;
-    std::string conditionStatus_;
-    std::atomic<bool> timeout_ {false};
+    static int32_t GetDumpAppGroup(int32_t uid);
+    static bool GetUidLastTime(int32_t uid, time_t &lastTime);
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
@@ -239,6 +245,26 @@ private:
     bool IsConditionReady();
     bool IsStandbyExemption();
     bool CheckEarliestStartTime();
+    int64_t HandleMinInterval(int64_t interval, int32_t group);
+
+private:
+    static ffrt::mutex s_uid_last_time_mutex;
+    static std::map<int32_t, time_t> s_uid_last_time_map;
+    static ffrt::mutex dumpAppGroupMutex_;
+    static std::map<int32_t, int32_t> dumpAppGroupMap_;
+    bool groupChanged_;
+    std::atomic<bool> timeout_ {false};
+    std::atomic<bool> debugTask_ {false};
+    Status currentStatus_;
+    time_t baseTime_;
+    int64_t minInterval_;
+    ffrt::mutex conditionMapMutex_;
+    std::string conditionStatus_;
+    uint64_t workStartTime_ {0};
+    uint64_t workWatchDogTime_ {0};
+    uint64_t duration_ {0};
+    bool paused_ {false};
+    mutable ffrt::shared_mutex statusMutex_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

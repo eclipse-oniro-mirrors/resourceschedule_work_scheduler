@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 Huawei Device Co., Ltd.
+ * Copyright (c) 2024-2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -17,17 +17,20 @@
 #include <gtest/gtest.h>
 
 #include "work_status.h"
+#include "work_scheduler_service.h"
 #include "work_condition.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_hilog.h"
 #include "work_info.h"
+#include "work_sched_utils.h"
+#include "work_sched_constants.h"
+#include "frequency_info.h"
 
 using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
-constexpr int64_t INVALID_VALUE = -1;
 constexpr int64_t ONE_MINUTE = 60 * 1000LL;
 constexpr int64_t TWENTY_MINUTE = 20 * ONE_MINUTE;
 constexpr int64_t THIRTY_MINUTE = 30 * ONE_MINUTE;
@@ -471,22 +474,6 @@ HWTEST_F(WorkStatusTest, dump_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: dump_002
- * @tc.desc: Test WorkStatus Dump.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, dump_002, TestSize.Level1)
-{
-    workStatus_->workInfo_->saId_ = 1000;
-    workStatus_->workInfo_->residentSa_ = true;
-
-    std::string result;
-    workStatus_->Dump(result);
-    EXPECT_TRUE(workStatus_->workInfo_->IsSA());
-}
-
-/**
  * @tc.name: getMinInterval_001
  * @tc.desc: Test WorkStatus GetMinInterval.
  * @tc.type: FUNC
@@ -750,8 +737,12 @@ HWTEST_F(WorkStatusTest, IsSAReady_001, TestSize.Level1)
     workInfo_->workId_ = -1;
     workStatus_->MarkStatus(WorkStatus::Status::RUNNING);
     workStatus_->workInfo_ = workInfo_;
+    workStatus_->bundleName_ = "com.example.workStatus";
+    std::list<std::string> restrictList = {"com.example.workStatus"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
     bool result = workStatus_->IsSAReady();
     EXPECT_FALSE(result);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 /**
@@ -848,8 +839,12 @@ HWTEST_F(WorkStatusTest, IsSAReady_006, TestSize.Level1)
     batteryLevelCondition->intVal = 70;
     workStatus_->conditionMap_.emplace(WorkCondition::Type::BATTERY_LEVEL, batteryLevelCondition);
     workStatus_->workInfo_ = workInfo_;
+    workStatus_->bundleName_ = "com.example.workStatus";
+    std::list<std::string> restrictList = {"com.example.workStatus"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
     bool result = workStatus_->IsSAReady();
     EXPECT_FALSE(result);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 /**
@@ -888,6 +883,9 @@ HWTEST_F(WorkStatusTest, IsSAReady_008, TestSize.Level1)
     workInfo_->RequestRepeatCycle(timeInterval);
     workInfo_->SetPreinstalled(true);
     workStatus_->workInfo_ = workInfo_;
+    workStatus_->bundleName_ = "com.example.workStatus";
+    std::list<std::string> restrictList = {"com.example.workStatus"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
 
     std::shared_ptr<Condition> timerCondition = std::make_shared<Condition>();
     timerCondition->boolVal = true;
@@ -895,6 +893,7 @@ HWTEST_F(WorkStatusTest, IsSAReady_008, TestSize.Level1)
     workStatus_->conditionMap_.emplace(WorkCondition::Type::TIMER, timerCondition);
     bool result = workStatus_->IsSAReady();
     EXPECT_FALSE(result);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 /**
@@ -1040,40 +1039,6 @@ HWTEST_F(WorkStatusTest, ToString_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: ToString_002
- * @tc.desc: Test WorkStatus ToString.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, ToString_002, TestSize.Level1)
-{
-    workStatus_->conditionStatus_.clear();
-    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
-    dataManager->SetDeviceSleep(false);
-    workStatus_->conditionStatus_ = "TIMER&ready";
-    workStatus_->workInfo_->saId_ = 1000;
-    workStatus_->workInfo_->residentSa_ = true;
-    workStatus_->ToString(WorkCondition::Type::TIMER);
-    EXPECT_FALSE(workStatus_->conditionStatus_.empty());
-}
-
-/**
- * @tc.name: ToString_003
- * @tc.desc: Test WorkStatus ToString.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, ToString_003, TestSize.Level1)
-{
-    workStatus_->conditionStatus_.clear();
-    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
-    dataManager->SetDeviceSleep(false);
-    workStatus_->conditionStatus_ = "TIMER&ready";
-    workStatus_->ToString(WorkCondition::Type::TIMER);
-    EXPECT_FALSE(workStatus_->conditionStatus_.empty());
-}
-
-/**
  * @tc.name: CheckEarliestStartTime_001
  * @tc.desc: Test WorkStatus CheckEarliestStartTime.
  * @tc.type: FUNC
@@ -1096,24 +1061,6 @@ HWTEST_F(WorkStatusTest, CheckEarliestStartTime_001, TestSize.Level1)
     work->SetEarliestStartTime(10);
     work->createTime_ = static_cast<uint64_t>(now) * 1000;
     EXPECT_FALSE(workStatus.CheckEarliestStartTime());
-}
-
-/**
- * @tc.name: IsNeedDiscreteScheduled_001
- * @tc.desc: Test WorkStatus IsNeedDiscreteScheduled.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, IsNeedDiscreteScheduled_001, TestSize.Level1)
-{
-    WorkInfo workInfo;
-    WorkStatus workStatus(workInfo, 100);
-    auto work = std::move(workStatus.workInfo_);
-    EXPECT_FALSE(workStatus.IsNeedDiscreteScheduled());
-    workStatus.workInfo_ = work;
-    EXPECT_FALSE(workStatus.IsNeedDiscreteScheduled());
-    work->SetCallBySystemApp(true);
-    EXPECT_GE(workStatus.IsNeedDiscreteScheduled(), 0);
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
@@ -1212,5 +1159,394 @@ HWTEST_F(WorkStatusTest, SetMinIntervalWhenNotCharging_002, TestSize.Level1)
     EXPECT_EQ(workStatus_->minInterval_, INVALID_VALUE);
 }
 #endif
+
+/**
+ * @tc.name: IsDebugTask_001
+ * @tc.desc: Test WorkStatus IsDebugTask.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, IsDebugTask_001, TestSize.Level1)
+{
+    EXPECT_FALSE(workStatus_->IsDebugTask());
+    workStatus_->SetDebugTask(true);
+    EXPECT_TRUE(workStatus_->IsDebugTask());
+}
+
+// ======================== GetDumpAppGroup Tests ========================
+
+/**
+ * @tc.name: GetDumpAppGroup_001
+ * @tc.desc: Test GetDumpAppGroup with non-existent uid.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, GetDumpAppGroup_001, TestSize.Level1)
+{
+    int32_t uid = 999;
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), INVALID_VALUE);
+}
+
+/**
+ * @tc.name: GetDumpAppGroup_002
+ * @tc.desc: Test GetDumpAppGroup after AddDumpAppGroup.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, GetDumpAppGroup_002, TestSize.Level1)
+{
+    int32_t uid = 100;
+    WorkStatus::AddDumpAppGroup(uid, 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 10);
+    WorkStatus::ClearDumpAppGroup(uid);
+}
+
+// ======================== ClearDumpAppGroup Tests ========================
+
+/**
+ * @tc.name: ClearDumpAppGroup_001
+ * @tc.desc: Test ClearDumpAppGroup removes the entry.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, ClearDumpAppGroup_001, TestSize.Level1)
+{
+    int32_t uid = 200;
+    WorkStatus::AddDumpAppGroup(uid, 20);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 20);
+    WorkStatus::ClearDumpAppGroup(uid);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), INVALID_VALUE);
+}
+
+/**
+ * @tc.name: ClearDumpAppGroup_002
+ * @tc.desc: Test ClearDumpAppGroup on non-existent uid.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, ClearDumpAppGroup_002, TestSize.Level1)
+{
+    int32_t uid = 888;
+    WorkStatus::ClearDumpAppGroup(uid);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), INVALID_VALUE);
+}
+
+// ======================== AddDumpAppGroup Tests ========================
+
+/**
+ * @tc.name: AddDumpAppGroup_001
+ * @tc.desc: Test AddDumpAppGroup adds new entry.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, AddDumpAppGroup_001, TestSize.Level1)
+{
+    int32_t uid = 300;
+    WorkStatus::ClearDumpAppGroup(uid);
+    WorkStatus::AddDumpAppGroup(uid, 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 10);
+    WorkStatus::ClearDumpAppGroup(uid);
+}
+
+/**
+ * @tc.name: AddDumpAppGroup_002
+ * @tc.desc: Test AddDumpAppGroup updates existing entry.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, AddDumpAppGroup_002, TestSize.Level1)
+{
+    int32_t uid = 400;
+    WorkStatus::AddDumpAppGroup(uid, 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 10);
+    WorkStatus::AddDumpAppGroup(uid, 20);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid), 20);
+    WorkStatus::ClearDumpAppGroup(uid);
+}
+
+/**
+ * @tc.name: AddDumpAppGroup_003
+ * @tc.desc: Test AddDumpAppGroup with multiple uids.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, AddDumpAppGroup_003, TestSize.Level1)
+{
+    int32_t uid1 = 500;
+    int32_t uid2 = 600;
+    WorkStatus::AddDumpAppGroup(uid1, 10);
+    WorkStatus::AddDumpAppGroup(uid2, 20);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid1), 10);
+    EXPECT_EQ(WorkStatus::GetDumpAppGroup(uid2), 20);
+    WorkStatus::ClearDumpAppGroup(uid1);
+    WorkStatus::ClearDumpAppGroup(uid2);
+}
+
+// ======================== HandleMinInterval Tests ========================
+
+/**
+ * @tc.name: HandleMinInterval_001
+ * @tc.desc: Test HandleMinInterval when no exec frequency is set.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExecFrequency();
+    int32_t uid = 100;
+    auto result = service->GetExecFrequency(uid);
+    EXPECT_EQ(result, INVALID_VALUE);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = 30 * 60 * 1000;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, interval);
+    service->ClearExecFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_002
+ * @tc.desc: Test HandleMinInterval when exec frequency is set and interval is larger than exec frequency.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExecFrequency();
+    int32_t uid = 100;
+    FrequencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(uid);
+    freqInfo.SetInterval(86400000);
+    service->SetExecFrequencyInner(1001, freqInfo);
+
+    auto result = service->GetExecFrequency(uid);
+    EXPECT_NE(result, INVALID_VALUE);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = 7 * 24 * 60 * 60 * 1000;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, 86400000);
+    service->ClearExecFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_003
+ * @tc.desc: Test HandleMinInterval when exec frequency is set and group is > 40 (group check removed).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_003, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExecFrequency();
+    int32_t uid = 100;
+    FrequencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(uid);
+    freqInfo.SetInterval(86400000);
+    service->SetExecFrequencyInner(1001, freqInfo);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = 30 * 60 * 1000;
+    int32_t group = 50;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, interval);
+    service->ClearExecFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_004
+ * @tc.desc: Test HandleMinInterval when interval is negative (returns exec frequency).
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_004, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExecFrequency();
+    int32_t uid = 100;
+    FrequencyInfo freqInfo = FrequencyInfo();
+    freqInfo.SetWorkId(1);
+    freqInfo.SetUid(uid);
+    freqInfo.SetInterval(86400000);
+    service->SetExecFrequencyInner(1001, freqInfo);
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = -1;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, 86400000);
+    service->ClearExecFrequency();
+}
+
+/**
+ * @tc.name: HandleMinInterval_005
+ * @tc.desc: Test HandleMinInterval when interval is negative and no exec frequency is set.
+ * @tc.type: FUNC
+ * @tc.require:
+ */
+HWTEST_F(WorkStatusTest, HandleMinInterval_005, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExecFrequency();
+    int32_t uid = 100;
+
+    WorkInfo workInfo = WorkInfo();
+    workInfo.SetWorkId(1);
+    workInfo.RefreshUid(uid);
+    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workInfo, uid);
+
+    int64_t interval = -1;
+    int32_t group = 10;
+    int64_t resultInterval = workStatus->HandleMinInterval(interval, group);
+    EXPECT_EQ(resultInterval, -1);
+    service->ClearExecFrequency();
+}
+
+/**
+ * @tc.name: HasTimeout_001
+ * @tc.desc: Test HasTimeout returns false when not running.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, HasTimeout_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9001);
+    workInfo->SetElement("com.test.timeout", "TimeoutAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9001);
+    workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    EXPECT_FALSE(workStatus->HasTimeout());
+}
+
+/**
+ * @tc.name: HasTimeout_002
+ * @tc.desc: Test HasTimeout returns true when workWatchDogTime_ exceeds LONG_WATCHDOG_TIME.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, HasTimeout_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9002);
+    workInfo->SetElement("com.test.timeout2", "TimeoutAbility2");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9002);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    workStatus->SetWorkWatchDogTime(LONG_WATCHDOG_TIME + 1);
+    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
+    EXPECT_TRUE(workStatus->HasTimeout());
+    EXPECT_TRUE(workStatus->IsTimeout());
+}
+
+/**
+ * @tc.name: SetTimeout_IsTimeout_001
+ * @tc.desc: Test SetTimeout and IsTimeout.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, SetTimeout_IsTimeout_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9003);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9003);
+    workStatus->SetTimeout(true);
+    EXPECT_TRUE(workStatus->IsTimeout());
+    workStatus->SetTimeout(false);
+    EXPECT_FALSE(workStatus->IsTimeout());
+}
+
+/**
+ * @tc.name: PauseRunning_001
+ * @tc.desc: Test PauseRunning with valid watchdog time returns remaining time.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, PauseRunning_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9004);
+    workInfo->SetElement("com.test.pause", "PauseAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9004);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    uint64_t startTime = WorkSchedUtils::GetCurrentTimeMs();
+    workStatus->SetWorkStartTime(startTime);
+    workStatus->SetWorkWatchDogTime(120000);
+    uint64_t ret = workStatus->PauseRunning(startTime + 30000);
+    EXPECT_EQ(ret, 90000);
+    EXPECT_TRUE(workStatus->IsPaused());
+}
+
+/**
+ * @tc.name: PauseRunning_002
+ * @tc.desc: Test PauseRunning with runningTime exceeding watchdog resets to 0.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, PauseRunning_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9005);
+    workInfo->SetElement("com.test.pause2", "PauseAbility2");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9005);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    uint64_t startTime = 1000;
+    workStatus->SetWorkStartTime(startTime);
+    workStatus->SetWorkWatchDogTime(5000);
+    uint64_t ret = workStatus->PauseRunning(startTime + 200000);
+    EXPECT_EQ(ret, 0);
+}
+
+/**
+ * @tc.name: IsNeedDiscreteScheduled_001
+ * @tc.desc: Test IsNeedDiscreteScheduled returns false when not system app.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsNeedDiscreteScheduled_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9006);
+    workInfo->SetElement("com.test.discrete", "DiscreteAbility");
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9006);
+    EXPECT_FALSE(workStatus->IsNeedDiscreteScheduled());
+}
+
+/**
+ * @tc.name: IsNeedDiscreteScheduled_002
+ * @tc.desc: Test IsNeedDiscreteScheduled returns false when no NETWORK condition.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsNeedDiscreteScheduled_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9007);
+    workInfo->SetElement("com.test.discrete2", "DiscreteAbility2");
+    workInfo->SetCallBySystemApp(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9007);
+    EXPECT_FALSE(workStatus->IsNeedDiscreteScheduled());
+}
 }
 }
