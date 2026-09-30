@@ -83,8 +83,9 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_INVALID_PROCESS_NAME, "Pause or resume verify failed. caller process name invaild."},
     {E_PARAM_INVAILD_UID, "GetWork failed. The param uid invaild."},
     {E_WORK_NOT_EXIST_FAILED, "The workId do not exist."},
-    {E_PERMISSION_DENIED, "Permission denied."},
-    {E_NOT_SYSTEM_APP, "Not system app."},
+    {E_PERMISSION_DENIED,
+        "Permission verification failed. The application does not have the permission required to call the API."},
+    {E_NOT_SYSTEM_APP, "Permission verification failed. A non-system application calls a system API."},
     {E_PARAM_NUMBER_ERROR, "The param number error."},
     {E_FREQUENCY_INFO_TYPE_ERROR, "The type of frequencyInfo must be {key: value} object."},
     {E_UID_ERROR, "The uid is invalid."},
@@ -115,7 +116,8 @@ const inline std::map<int32_t, std::string> paramErrCodeMsgMap = {
     {E_PARAMETERS_TYPE_ERR, "The type of parameters must be string, boolean or number."},
     {E_NEED_CANCLE_TYPE_ERR, "The type of needCancle must be boolean."},
     {E_UID_NO_MATCHING_WORK_ERR, "The UID has no matching work."},
-    {E_PARAM_ERROR, "The input param is error."},
+    {E_PARAM_ERROR, "Possible causes: 1. Mandatory parameters are left unspecified; "
+        "2. Incorrect parameter types; 3. Parameter verification failed."},
     {E_EARLIEST_START_TIME_TYPE_ERR, "The type of earliestStartTime must be number."},
 };
 } // namespace WorkScheduler
