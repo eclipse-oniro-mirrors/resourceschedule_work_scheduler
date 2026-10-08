@@ -2351,7 +2351,7 @@ void WorkSchedulerService::DumpBackgroundLoader(const std::string& bundleName,
     payload["abilityName"] = abilityName;
     payload["appIndex"] = 0;
     BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(payload);
-    result.append("set group success.");
+    result.append("dump background loader success.");
 }
 
 void WorkSchedulerService::DumpAppGroup(const std::string& uidStr, const std::string& groupStr, std::string& result)
