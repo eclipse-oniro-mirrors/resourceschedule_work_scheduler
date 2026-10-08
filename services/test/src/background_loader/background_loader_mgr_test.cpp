@@ -14,6 +14,9 @@
  */
 
 #include <gtest/gtest.h>
+#include <chrono>
+#include <future>
+#include <thread>
 #include "background_loader/background_loader_mgr.h"
 #include "work_sched_errors.h"
 #include "res_type.h"
@@ -22,13 +25,46 @@ using namespace testing::ext;
 using namespace OHOS::ResourceSchedule;
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+constexpr int32_t TEST_SLEEP_TIME = 10;
+
+void FlushDbQueue()
+{
+    auto& mgr = BackgroundLoaderMgr::GetInstance();
+    if (mgr.dbQueue_ == nullptr) {
+        return;
+    }
+    std::promise<void> promise;
+    auto future = promise.get_future();
+    mgr.dbQueue_->submit([&promise]() { promise.set_value(); });
+    future.wait();
+}
+}
 class BackgroundLoaderMgrTest : public testing::Test {
 public:
     void SetUp() override
     {
         BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_US);
+        auto deadline = std::chrono::steady_clock::now() + std::chrono::seconds(2);
+        while (!BackgroundLoaderMgr::GetInstance().isReady_.load() &&
+            std::chrono::steady_clock::now() < deadline) {
+            std::this_thread::sleep_for(std::chrono::milliseconds(TEST_SLEEP_TIME));
+        }
     };
-    void TearDown() override {};
+    void TearDown() override
+    {
+        FlushDbQueue();
+        BackgroundLoaderMgr::GetInstance().database_.ExecuteSql("DELETE FROM BackgroundLoaderTask;");
+        BackgroundLoaderMgr::GetInstance().database_.ExecuteSql("DELETE FROM BlockList;");
+        {
+            std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
+            BackgroundLoaderMgr::GetInstance().taskMap_.clear();
+        }
+        {
+            std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
+            BackgroundLoaderMgr::GetInstance().blackLists_.clear();
+        }
+    };
 };
 
 /**
@@ -505,12 +541,12 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveRemoteObject_NotFound_001, TestSize.Leve
 }
 
 /**
- * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_001
- * @tc.desc: Test HandleAppUninstallEvent with valid uninstall event.
+ * @tc.name: BackgroundLoaderMgr_HandleAppChangeEvent_001
+ * @tc.desc: Test HandleAppChangeEvent with valid uninstall event.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_001, TestSize.Level1)
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppChangeEvent_001, TestSize.Level1)
 {
     TaskInfo info = {
         .bundleName_ = "com.uninstall.bundle",
@@ -524,7 +560,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_001, TestSize.Level1)
     nlohmann::json payload;
     payload["bundleName"] = "com.uninstall.bundle";
     payload["appIndex"] = "0";
-    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+    BackgroundLoaderMgr::GetInstance().HandleAppChangeEvent(
         ResType::AppInstallStatus::APP_UNINSTALL, payload);
     std::string key = "com.uninstall.bundle_0";
     std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
@@ -533,12 +569,12 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_002
- * @tc.desc: Test HandleAppUninstallEvent with non-uninstall value.
+ * @tc.name: BackgroundLoaderMgr_HandleAppChangeEvent_002
+ * @tc.desc: Test HandleAppChangeEvent with non-uninstall value.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_002, TestSize.Level1)
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppChangeEvent_002, TestSize.Level1)
 {
     TaskInfo info = {
         .bundleName_ = "com.install.bundle",
@@ -551,7 +587,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_002, TestSize.Level1)
     nlohmann::json payload;
     payload["bundleName"] = "com.install.bundle";
     payload["appIndex"] = "0";
-    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+    BackgroundLoaderMgr::GetInstance().HandleAppChangeEvent(
         ResType::AppInstallStatus::APP_INSTALL_END, payload);
     std::string key = "com.install.bundle_0";
     std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
@@ -560,12 +596,12 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_002, TestSize.Level1)
 }
 
 /**
- * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_003
- * @tc.desc: Test HandleAppUninstallEvent with invalid payload (missing bundleName).
+ * @tc.name: BackgroundLoaderMgr_HandleAppChangeEvent_003
+ * @tc.desc: Test HandleAppChangeEvent with invalid payload (missing bundleName).
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_003, TestSize.Level1)
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppChangeEvent_003, TestSize.Level1)
 {
     TaskInfo info = {
         .bundleName_ = "com.invalid.bundle",
@@ -577,7 +613,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_003, TestSize.Level1)
     EXPECT_EQ(ret, ERR_OK);
     nlohmann::json payload;
     payload["appIndex"] = "0";
-    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+    BackgroundLoaderMgr::GetInstance().HandleAppChangeEvent(
         ResType::AppInstallStatus::APP_UNINSTALL, payload);
     std::string key = "com.invalid.bundle_0";
     std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
@@ -586,12 +622,12 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_003, TestSize.Level1)
 }
 
 /**
- * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_004
- * @tc.desc: Test HandleAppUninstallEvent with invalid payload (missing appIndex).
+ * @tc.name: BackgroundLoaderMgr_HandleAppChangeEvent_004
+ * @tc.desc: Test HandleAppChangeEvent with invalid payload (missing appIndex).
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_004, TestSize.Level1)
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppChangeEvent_004, TestSize.Level1)
 {
     TaskInfo info = {
         .bundleName_ = "com.noinfo.bundle",
@@ -603,7 +639,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_004, TestSize.Level1)
     EXPECT_EQ(ret, ERR_OK);
     nlohmann::json payload;
     payload["bundleName"] = "com.noinfo.bundle";
-    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+    BackgroundLoaderMgr::GetInstance().HandleAppChangeEvent(
         ResType::AppInstallStatus::APP_UNINSTALL, payload);
     std::string key = "com.noinfo.bundle_0";
     std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().taskLock_);
@@ -612,12 +648,12 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_004, TestSize.Level1)
 }
 
 /**
- * @tc.name: BackgroundLoaderMgr_HandleAppUninstallEvent_ClearBlackList_001
- * @tc.desc: Test HandleAppUninstallEvent clears  list entry.
+ * @tc.name: BackgroundLoaderMgr_HandleAppChangeEvent_ClearBlackList_001
+ * @tc.desc: Test HandleAppChangeEvent clears  list entry.
  * @tc.type: FUNC
  * @tc.require:
  */
-HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_ClearBlackList_001, TestSize.Level1)
+HWTEST_F(BackgroundLoaderMgrTest, HandleAppChangeEvent_ClearBlackList_001, TestSize.Level1)
 {
     std::string key = "com.list.bundle_0";
     {
@@ -627,7 +663,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppUninstallEvent_ClearBlackList_001, Te
     nlohmann::json payload;
     payload["bundleName"] = "com.list.bundle";
     payload["appIndex"] = "0";
-    BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(
+    BackgroundLoaderMgr::GetInstance().HandleAppChangeEvent(
         ResType::AppInstallStatus::APP_UNINSTALL, payload);
     std::lock_guard<ffrt::mutex> lock(BackgroundLoaderMgr::GetInstance().blackListLock_);
     auto it = BackgroundLoaderMgr::GetInstance().blackLists_.find(key);
