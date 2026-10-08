@@ -2339,7 +2339,8 @@ void WorkSchedulerService::DumpTwoParamsSet(std::vector<std::string> &argsInStr,
     }
 }
 
-void WorkSchedulerService::DumpBackgroundLoader(const std::string& bundleName, const std::string& abilityName, std::string& result)
+void WorkSchedulerService::DumpBackgroundLoader(const std::string& bundleName,
+    const std::string& abilityName, std::string& result)
 {
     if (bundleName.empty() || abilityName.empty()) {
         result.append("param error");
