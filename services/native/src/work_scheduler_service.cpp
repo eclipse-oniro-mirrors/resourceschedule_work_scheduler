@@ -1216,6 +1216,7 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -count (number): set the max running task count.\n")
         .append("    -thermalLevel (number): set the thermal level.\n")
         .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n");
+        .append("    -b (bundleName) (abilityName): run backgroundloader task for App.\n");
     DumpCommonUsage(result);
 }
 
@@ -2333,7 +2334,7 @@ void WorkSchedulerService::DumpTwoParamsSet(std::vector<std::string> &argsInStr,
     } else if (argsInStr[DUMP_OPTION] == "-group") {
         DumpAppGroup(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else if (argsInStr[DUMP_OPTION] == "-b") {
-        DumpAppGroup(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+        DumpBackgroundLoader(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else {
         result.append("Error params.");
     }
