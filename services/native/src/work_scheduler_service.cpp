@@ -1215,7 +1215,7 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
         .append("    -thermalLevel (number): set the thermal level.\n")
-        .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n");
+        .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n")
         .append("    -b (bundleName) (abilityName): run backgroundloader task for App.\n");
     DumpCommonUsage(result);
 }
