@@ -1215,7 +1215,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
         .append("    -thermalLevel (number): set the thermal level.\n")
-        .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n");
+        .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n")
+        .append("    -b (bundleName) (abilityName): run backgroundloader task for App.\n");
     DumpCommonUsage(result);
 }
 
@@ -2332,9 +2333,26 @@ void WorkSchedulerService::DumpTwoParamsSet(std::vector<std::string> &argsInStr,
         DumpTriggerWork(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else if (argsInStr[DUMP_OPTION] == "-group") {
         DumpAppGroup(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-b") {
+        DumpBackgroundLoader(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else {
         result.append("Error params.");
     }
+}
+
+void WorkSchedulerService::DumpBackgroundLoader(const std::string& bundleName,
+    const std::string& abilityName, std::string& result)
+{
+    if (bundleName.empty() || abilityName.empty()) {
+        result.append("param error");
+        return;
+    }
+    nlohmann::json payload;
+    payload["bundleName"] = bundleName;
+    payload["abilityName"] = abilityName;
+    payload["appIndex"] = 0;
+    BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(payload);
+    result.append("dump background loader success.");
 }
 
 void WorkSchedulerService::DumpAppGroup(const std::string& uidStr, const std::string& groupStr, std::string& result)
