@@ -2350,7 +2350,7 @@ void WorkSchedulerService::DumpBackgroundLoader(const std::string& bundleName,
     nlohmann::json payload;
     payload["bundleName"] = bundleName;
     payload["abilityName"] = abilityName;
-    payload["appIndex"] = 0;
+    payload["appIndex"] = "0";
     BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(payload);
     result.append("dump background loader success.");
 }
