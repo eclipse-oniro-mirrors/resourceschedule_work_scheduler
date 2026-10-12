@@ -12,6 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <string_ex.h>
 
 #include "background_loader/ability_connect_callback.h"
 #include "ability_manager_client.h"
@@ -316,7 +317,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
     MessageOption option;
     option.SetFlags(MessageOption::TF_ASYNC);
 
-    if (!data.WriteString(std::string(ON_START))) {
+    if (!data.WriteString16(Str8ToStr16(std::string(ON_START)))) {
         WS_HILOGE("SendOnStart: write function name failed");
         return;
     }
@@ -365,7 +366,7 @@ void BackgroundLoaderMgr::SendOnStop(const TaskInfo& taskInfo, int32_t stopCode,
     MessageOption option;
     option.SetFlags(MessageOption::TF_ASYNC);
 
-    if (!data.WriteString(std::string(ON_STOP))) {
+    if (!data.WriteString16(Str8ToStr16(std::string(ON_STOP)))) {
         WS_HILOGE("SendOnStop: write function name failed");
         return;
     }
@@ -373,7 +374,7 @@ void BackgroundLoaderMgr::SendOnStop(const TaskInfo& taskInfo, int32_t stopCode,
         WS_HILOGE("SendOnStop: write task id failed");
         return;
     }
-    if (!data.WriteString(taskInfo.abilityName_)) {
+    if (!data.WriteString16(Str8ToStr16(taskInfo.abilityName_))) {
         WS_HILOGE("SendOnStop: write ability name failed");
         return;
     }
@@ -381,7 +382,7 @@ void BackgroundLoaderMgr::SendOnStop(const TaskInfo& taskInfo, int32_t stopCode,
         WS_HILOGE("SendOnStop: write stopCode failed");
         return;
     }
-    if (!data.WriteString(message)) {
+    if (!data.WriteString16(Str8ToStr16(message))) {
         WS_HILOGE("SendOnStop: write message failed");
         return;
     }
