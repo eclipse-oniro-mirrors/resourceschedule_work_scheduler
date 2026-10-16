@@ -45,7 +45,6 @@ void InitWorkSchedulerService()
 {
     workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
     workSchedulerService_->OnStart();
-    workSchedulerService_->InitBgTaskSubscriber();
     if (!workSchedulerService_->ready_) {
         workSchedulerService_->ready_ = true;
     }
