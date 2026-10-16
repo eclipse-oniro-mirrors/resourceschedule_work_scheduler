@@ -25,6 +25,7 @@
 
 #include "work_sched_errors.h"
 #include "background_loader_task_info.h"
+#include "background_loader/background_loader_database.h"
 #include "single_instance.h"
 #include "ffrt.h"
 #include "iremote_object.h"
@@ -79,7 +80,7 @@ public:
         int32_t taskId);
     void SendOnStart(const sptr<IRemoteObject>& remoteObject, const std::string& bundleName, int32_t appIndex);
     void RemoveRemoteObject(const std::string& bundleName, int32_t appIndex);
-    void HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload);
+    void HandleAppChangeEvent(int64_t value, const nlohmann::json& payload);
     ErrCode RegisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo);
     ErrCode UnregisterTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo);
     ErrCode FinishTaskWithCheck(const BackgroundLoaderTaskInfo& taskInfo);
@@ -97,6 +98,15 @@ private:
     std::string GenerateTaskKey(const std::string& bundleName, int32_t appIndex);
     sptr<IRemoteObject> GetRemoteObject(const std::string& bundleName, const std::string& abilityName,
         int32_t appIndex);
+    void InitDatabaseAsync();
+    void RestoreTasksFromDb();
+    void RestoreTaskMapFromDb(const std::vector<TaskRow>& rows);
+    void RestoreBlockListFromDb();
+    TaskRow ToTaskRow(const std::string& key, const TaskInfo& info);
+    void PersistTaskResult(const std::string& key, bool shouldAddToBlackList, const TaskInfo& taskInfo);
+    void AddToBlockList(const std::string& key);
+    void ReportRestoredTasks(const std::vector<std::pair<std::string, int32_t>>& restoreKeys);
+    bool IsResSchedReady();
     std::atomic<bool> isReady_ {false};
     ffrt::mutex taskLock_;
     std::unordered_map<std::string, TaskInfo> taskMap_;
@@ -106,6 +116,10 @@ private:
     std::unordered_set<std::string> blackLists_;
     int32_t maxTimeoutCount_ = BACKGROUND_LOADER_TIMEOUT_COUNT;
     int32_t backgroundLoaderTimeoutMs_ = BACKGROUND_LOADER_TIMEOUT_US;
+    BackgroundLoaderDatabase database_;
+    std::unique_ptr<ffrt::queue> dbQueue_ {nullptr};
+    ffrt::task_handle retryReportHandle_ {nullptr};
+    std::atomic<int32_t> retryCount_ {0};
 };
 
 }  // namespace WorkScheduler

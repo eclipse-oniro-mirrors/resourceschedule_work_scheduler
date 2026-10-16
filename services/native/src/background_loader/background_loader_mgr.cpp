@@ -43,6 +43,8 @@ constexpr std::string_view BACKGROUND_LOADER_CONFIG_KEY = "background_loader_con
 constexpr std::string_view BACKGROUND_LOADER_TIMEOUT_COUNT_KEY = "maxTimeoutCount";
 constexpr std::string_view BACKGROUND_LOADER_TIMEOUTMS_KEY = "backgroundLoaderTimeoutMs";
 constexpr int32_t DEFAULT_INVAL_VALUE = -1;
+constexpr int32_t REPORT_DATA_MAX_RETRY = 3;
+constexpr int32_t REPORT_DATA_RETRY_DELAY_MS = 2000;
 }
 IMPLEMENT_SINGLE_INSTANCE(BackgroundLoaderMgr)
 
@@ -51,7 +53,134 @@ void BackgroundLoaderMgr::Init(int32_t maxTimeoutCount, int32_t backgroundLoader
     WS_HILOGI("[%{public}s:%{public}d] BackgroundLoaderMgr init", __FUNCTION__, __LINE__);
     maxTimeoutCount_ = maxTimeoutCount;
     backgroundLoaderTimeoutMs_ = backgroundLoaderTimeoutMs;
-    isReady_.store(true);
+    if (dbQueue_ == nullptr) {
+        dbQueue_ = std::make_unique<ffrt::queue>("BackgroundLoaderDbQueue",
+            ffrt::queue_attr().qos(ffrt::qos_default));
+    }
+    InitDatabaseAsync();
+}
+
+void BackgroundLoaderMgr::InitDatabaseAsync()
+{
+    ffrt::submit([this]() {
+        if (!database_.Init()) {
+            WS_HILOGE("database init failed");
+            return;
+        }
+        RestoreTasksFromDb();
+        isReady_.store(true);
+    });
+}
+
+void BackgroundLoaderMgr::RestoreTaskMapFromDb(const std::vector<TaskRow>& rows)
+{
+    std::vector<std::pair<std::string, int32_t>> restoreKeys;
+    {
+        std::lock_guard<ffrt::mutex> lock(taskLock_);
+        for (const auto& row : rows) {
+            if (row.status < static_cast<int32_t>(TaskStatus::UNREGISIERED) ||
+                row.status > static_cast<int32_t>(TaskStatus::FINISHED)) {
+                WS_HILOGE("invalid status from db: %{public}d, key=%{public}s, skip",
+                    row.status, row.taskKey.c_str());
+                continue;
+            }
+            TaskInfo info;
+            info.bundleName_ = row.bundleName;
+            info.abilityName_ = row.abilityName;
+            info.appIndex_ = row.appIndex;
+            info.taskId_ = row.taskId;
+            info.status_ = static_cast<TaskStatus>(row.status);
+            info.uid_ = row.uid;
+            info.timeoutCount_ = row.timeoutCount;
+            info.pid_ = row.pid;
+            taskMap_[row.taskKey] = info;
+            if (info.status_ != TaskStatus::UNREGISIERED) {
+                restoreKeys.emplace_back(info.bundleName_, info.appIndex_);
+            }
+        }
+    }
+    WS_HILOGI("restore %{public}zu tasks from db", rows.size());
+    if (restoreKeys.empty()) {
+        return;
+    }
+    retryCount_.store(0);
+    ReportRestoredTasks(restoreKeys);
+}
+
+bool BackgroundLoaderMgr::IsResSchedReady()
+{
+    auto samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    if (samgr == nullptr) {
+        return false;
+    }
+    return samgr->GetSystemAbility(RES_SCHED_SYS_ABILITY_ID) != nullptr;
+}
+
+void BackgroundLoaderMgr::ReportRestoredTasks(const std::vector<std::pair<std::string, int32_t>>& restoreKeys)
+{
+    if (IsResSchedReady()) {
+        for (const auto& [bundleName, appIndex] : restoreKeys) {
+            nlohmann::json payload;
+            payload["bundleName"] = bundleName;
+            payload["appIndex"] = std::to_string(appIndex);
+            ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVENT,
+                ResType::BackgroundLoaderState::ADD, payload);
+        }
+        if (retryReportHandle_ && dbQueue_ != nullptr) {
+            dbQueue_->cancel(retryReportHandle_);
+            retryReportHandle_ = nullptr;
+        }
+        return;
+    }
+    if (retryCount_.fetch_add(1) >= REPORT_DATA_MAX_RETRY) {
+        WS_HILOGW("res sched not ready after %{public}d retries, skip report restore events.", REPORT_DATA_MAX_RETRY);
+        return;
+    }
+    if (dbQueue_ == nullptr) {
+        WS_HILOGW("dbQueue is null, skip report restore events.");
+        return;
+    }
+    retryReportHandle_ = dbQueue_->submit_h([this, restoreKeys]() {
+        ReportRestoredTasks(restoreKeys);
+    }, ffrt::task_attr().delay(REPORT_DATA_RETRY_DELAY_MS));
+}
+
+void BackgroundLoaderMgr::RestoreTasksFromDb()
+{
+    std::vector<TaskRow> rows;
+    if (!database_.QueryAllTasks(rows)) {
+        WS_HILOGE("query active tasks from db failed");
+        return;
+    }
+    RestoreTaskMapFromDb(rows);
+    RestoreBlockListFromDb();
+}
+
+void BackgroundLoaderMgr::RestoreBlockListFromDb()
+{
+    std::unordered_set<std::string> dbKeys;
+    if (!database_.QueryAllBlockList(dbKeys)) {
+        WS_HILOGE("query blacklists from db failed");
+        return;
+    }
+    std::lock_guard<ffrt::mutex> blackLock(blackListLock_);
+    blackLists_.merge(dbKeys);
+    WS_HILOGI("retore %{public}zu blacklists from db", blackLists_.size());
+}
+
+TaskRow BackgroundLoaderMgr::ToTaskRow(const std::string& key, const TaskInfo& info)
+{
+    TaskRow row;
+    row.taskKey = key;
+    row.bundleName = info.bundleName_;
+    row.abilityName = info.abilityName_;
+    row.appIndex = info.appIndex_;
+    row.taskId = info.taskId_;
+    row.status = static_cast<int32_t>(info.status_);
+    row.uid = info.uid_;
+    row.timeoutCount = info.timeoutCount_;
+    row.pid = info.pid_;
+    return row;
 }
 
 std::string BackgroundLoaderMgr::GenerateTaskKey(const std::string& bundleName, int32_t appIndex)
@@ -97,6 +226,15 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
         // 任务存在且taskId不同的情况下仅刷新taskId
         it->second.taskId_ = taskInfo.taskId_;
     }
+
+    TaskRow row = ToTaskRow(key, taskMap_[key]);
+    if (dbQueue_ != nullptr) {
+        dbQueue_->submit([this, row, key]() {
+            if (!database_.UpsertTask(row)) {
+                WS_HILOGE("upsert db task failed, key=%{public}s", key.c_str());
+            }
+        });
+    }
     return ERR_OK;
 }
 
@@ -126,6 +264,13 @@ ErrCode BackgroundLoaderMgr::UnregisterTask(const TaskInfo& taskInfo)
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVENT,
         ResType::BackgroundLoaderState::DELETE, payload);
     it->second.status_ = TaskStatus::UNREGISIERED;
+    if (dbQueue_ != nullptr) {
+        dbQueue_->submit([this, key]() {
+            if (!database_.DeleteTask(key)) {
+                WS_HILOGE("delete db task failed, key=%{public}s", key.c_str());
+            }
+        });
+    }
     return ERR_OK;
 }
 
@@ -153,6 +298,14 @@ ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
     payload["appIndex"] = std::to_string(taskInfo.appIndex_);
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, 0, payload);
     it->second.status_ = TaskStatus::FINISHED;
+    TaskRow row = ToTaskRow(key, it->second);
+    if (dbQueue_ != nullptr) {
+        dbQueue_->submit([this, row, key]() {
+            if (!database_.UpsertTask(row)) {
+                WS_HILOGE("update db task status failed, key=%{public}s", key.c_str());
+            }
+        });
+    }
     return ERR_OK;
 }
 
@@ -198,7 +351,6 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
         if (taskInfo->status_ == TaskStatus::RUNNING) {
             WS_HILOGI("[%{public}s:%{public}d] task still running, send onstop for bundle %{public}s",
                 __FUNCTION__, __LINE__, bundleName.c_str());
-            taskInfoCopy = *taskInfo;
             taskInfo->timeoutCount_++;
             if (taskInfo->timeoutCount_ >= maxTimeoutCount_) {
                 taskInfo->status_ = TaskStatus::UNREGISIERED;
@@ -206,6 +358,7 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
             } else {
                 taskInfo->status_ = TaskStatus::FINISHED;
             }
+            taskInfoCopy = *taskInfo;
         } else {
             WS_HILOGI("[%{public}s:%{public}d] task already finished for bundle %{public}s",
                 __FUNCTION__, __LINE__, bundleName.c_str());
@@ -221,11 +374,41 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
         ResType::BackgroundLoaderState::DELETE, payload);
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, 0, payload);
 
+    auto key = GenerateTaskKey(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_);
+    PersistTaskResult(key, shouldAddToBlackList, taskInfoCopy);
+}
+
+void BackgroundLoaderMgr::PersistTaskResult(const std::string& key, bool shouldAddToBlackList,
+    const TaskInfo& taskInfo)
+{
     if (shouldAddToBlackList) {
-        auto key = GenerateTaskKey(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_);
+        AddToBlockList(key);
+    }
+    TaskRow row = ToTaskRow(key, taskInfo);
+    if (dbQueue_ != nullptr) {
+        dbQueue_->submit([this, row, key]() {
+            if (!database_.UpsertTask(row)) {
+                WS_HILOGE("update db task status failed, key=%{public}s", key.c_str());
+            }
+        });
+    }
+}
+
+void BackgroundLoaderMgr::AddToBlockList(const std::string& key)
+{
+    {
         std::lock_guard<ffrt::mutex> lock(blackListLock_);
         blackLists_.insert(key);
     }
+    if (dbQueue_ == nullptr) {
+        return;
+    }
+    std::string blockKey = key;
+    dbQueue_->submit([this, blockKey]() {
+        if (!database_.InsertBlockList(blockKey)) {
+            WS_HILOGE("insert blocklist to db failed, key=%{public}s", blockKey.c_str());
+        }
+    });
 }
 
 void BackgroundLoaderMgr::PostTimeoutTask(const std::string& bundleName,
@@ -406,9 +589,9 @@ void BackgroundLoaderMgr::SaveRemoteObject(const std::string& bundleName,
         __FUNCTION__, __LINE__, bundleName.c_str(), appIndex);
 }
 
-void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann::json& payload)
+void BackgroundLoaderMgr::HandleAppChangeEvent(int64_t value, const nlohmann::json& payload)
 {
-    if (value != ResType::AppInstallStatus::APP_UNINSTALL) {
+    if (value != ResType::AppInstallStatus::APP_UNINSTALL && value != ResType::AppInstallStatus::APP_CHANGED) {
         return;
     }
     std::string bundleName = "";
@@ -430,6 +613,16 @@ void BackgroundLoaderMgr::HandleAppUninstallEvent(int64_t value, const nlohmann:
     auto it = taskMap_.find(key);
     if (it != taskMap_.end()) {
         taskMap_.erase(it);
+    }
+    if (dbQueue_ != nullptr) {
+        dbQueue_->submit([this, key]() {
+            if (!database_.DeleteBlockList(key)) {
+                WS_HILOGE("delete blocklist from db failed, key=%{public}s", key.c_str());
+            }
+            if (!database_.DeleteTask(key)) {
+                WS_HILOGE("delete db task failed, key=%{public}s", key.c_str());
+            }
+        });
     }
 }
 

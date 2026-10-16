@@ -43,6 +43,7 @@ ohos_shared_library("workschedservice") {
   sources = [
     "native/src/background_loader/ability_connect_callback.cpp",
     "native/src/background_loader/background_loader_mgr.cpp",
+    "native/src/background_loader/background_loader_database.cpp",
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
     "native/src/conditions/charger_listener.cpp",
@@ -116,6 +117,7 @@ ohos_shared_library("workschedservice") {
     "resource_schedule_service:ressched_common_utils",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
     "time_service:time_client",
   ]
 
@@ -171,6 +173,7 @@ ohos_static_library("workschedservice_static") {
   sources = [
     "native/src/background_loader/ability_connect_callback.cpp",
     "native/src/background_loader/background_loader_mgr.cpp",
+    "native/src/background_loader/background_loader_database.cpp",
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
     "native/src/conditions/charger_listener.cpp",
@@ -244,6 +247,7 @@ ohos_static_library("workschedservice_static") {
     "resource_schedule_service:ressched_common_utils",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
     "time_service:time_client",
   ]
 

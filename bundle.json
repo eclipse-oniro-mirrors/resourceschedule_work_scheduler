@@ -52,6 +52,7 @@
           "power_manager",
           "resource_schedule_service",
           "runtime_core",
+          "sqlite",
           "ets_frontend",
           "taihe_ffi_gen",
           "node",

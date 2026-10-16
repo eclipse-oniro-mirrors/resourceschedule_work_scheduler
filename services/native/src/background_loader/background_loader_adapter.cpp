@@ -36,7 +36,7 @@ void BackgroundLoaderAdapter::DispatchResource(const std::shared_ptr<ResourceSch
             break;
         }
         case ResType::RES_TYPE_APP_INSTALL_UNINSTALL: {
-            BackgroundLoaderMgr::GetInstance().HandleAppUninstallEvent(resData->value, resData->payload);
+            BackgroundLoaderMgr::GetInstance().HandleAppChangeEvent(resData->value, resData->payload);
             break;
         }
         default:
