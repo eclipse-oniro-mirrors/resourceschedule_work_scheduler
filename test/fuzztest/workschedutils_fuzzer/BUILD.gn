@@ -56,6 +56,7 @@ ohos_fuzztest("WorkschedutilsFuzzTest") {
     "bundle_framework:appexecfwk_core",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
     "init:libbegetutil",
   ]
 
