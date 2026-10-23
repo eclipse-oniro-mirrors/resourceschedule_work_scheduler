@@ -77,6 +77,12 @@ public:
      * @return True is user mode, else false.
      */
     static bool IsUserMode();
+    /**
+     * @brief Check if device is car device.
+     *
+     * @return True if car device, else false.
+     */
+    static bool IsCarDevice();
 };
 } // namespace WorkScheduler
 } // namespace OHOS

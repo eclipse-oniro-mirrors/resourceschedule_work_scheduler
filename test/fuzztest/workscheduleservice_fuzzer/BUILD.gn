@@ -104,6 +104,9 @@ ohos_fuzztest("WorkScheduleServiceFuzzTest") {
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
   }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
+  }
   resource_config_file = "${worksched_test_path}/resource/ohos_test.xml"
 }
 

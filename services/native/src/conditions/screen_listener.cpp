@@ -45,7 +45,9 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
         WS_HILOGE("event handler is null");
         return;
     }
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED ||
+        (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON &&
+            WorkSchedUtils::IsCarDevice())) {
         if (DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle()) {
             DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
             WorkSchedUtil::HiSysEventStateChanged({"DEEP_IDLE", 0});
@@ -88,6 +90,7 @@ std::shared_ptr<EventFwk::CommonEventSubscriber> CreateScreenEventSubscriber(Scr
 {
     EventFwk::MatchingSkills skill = EventFwk::MatchingSkills();
     skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
+    skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
     skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
     EventFwk::CommonEventSubscribeInfo info(skill);
     return std::make_shared<ScreenEventSubscriber>(info, listener);
