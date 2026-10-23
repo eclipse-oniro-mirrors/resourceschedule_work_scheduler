@@ -17,6 +17,7 @@
 #include "background_loader/ability_connect_callback.h"
 #include "ability_manager_client.h"
 #include "background_loader/background_loader_mgr.h"
+#include "background_loader/background_loader_hisysevent_report.h"
 #include "res_sched_client.h"
 #include "res_sched_json_util.h"
 #include "system_ability_definition.h"
@@ -227,6 +228,8 @@ ErrCode BackgroundLoaderMgr::RegisterTask(const TaskInfo& taskInfo)
         it->second.taskId_ = taskInfo.taskId_;
     }
 
+    BackgroundLoaderHiSysEvent::ReportRecordSysEvent(it->second, "Register Task", "");
+
     TaskRow row = ToTaskRow(key, taskMap_[key]);
     if (dbQueue_ != nullptr) {
         dbQueue_->submit([this, row, key]() {
@@ -257,13 +260,13 @@ ErrCode BackgroundLoaderMgr::UnregisterTask(const TaskInfo& taskInfo)
         WS_HILOGE("UnregisterTask failed : task not found");
         return E_WORK_NOT_EXIST_FAILED;
     }
-
     nlohmann::json payload;
     payload["bundleName"] = taskInfo.bundleName_;
     payload["appIndex"] = std::to_string(taskInfo.appIndex_);
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_CHANGE_EVENT,
         ResType::BackgroundLoaderState::DELETE, payload);
     it->second.status_ = TaskStatus::UNREGISIERED;
+    BackgroundLoaderHiSysEvent::ReportRecordSysEvent(it->second, "Unregister Task", "");
     if (dbQueue_ != nullptr) {
         dbQueue_->submit([this, key]() {
             if (!database_.DeleteTask(key)) {
@@ -298,6 +301,7 @@ ErrCode BackgroundLoaderMgr::FinishTask(const TaskInfo& taskInfo)
     payload["appIndex"] = std::to_string(taskInfo.appIndex_);
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, 0, payload);
     it->second.status_ = TaskStatus::FINISHED;
+    BackgroundLoaderHiSysEvent::ReportRecordSysEvent(it->second, "Finish task", "");
     TaskRow row = ToTaskRow(key, it->second);
     if (dbQueue_ != nullptr) {
         dbQueue_->submit([this, row, key]() {
@@ -367,6 +371,7 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(const std::string& bundleName,
     }
 
     SendOnStop(taskInfoCopy, static_cast<int32_t>(StopCode::TIMEOUT_ERROR), std::string(TIMEOUT_MESSAGE));
+    BackgroundLoaderHiSysEvent::ReportRecordSysEvent(taskInfoCopy, "Onstop task", "");
     nlohmann::json payload;
     payload["bundleName"] = taskInfoCopy.bundleName_;
     payload["appIndex"] = std::to_string(taskInfoCopy.appIndex_);
@@ -383,6 +388,7 @@ void BackgroundLoaderMgr::PersistTaskResult(const std::string& key, bool shouldA
 {
     if (shouldAddToBlackList) {
         AddToBlockList(key);
+        BackgroundLoaderHiSysEvent::ReportAnomalousSysEvent(taskInfo, "Outtime insert blocklist", "");
     }
     TaskRow row = ToTaskRow(key, taskInfo);
     if (dbQueue_ != nullptr) {
@@ -510,6 +516,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
         return;
     }
     info.status_ = TaskStatus::RUNNING;
+    BackgroundLoaderHiSysEvent::ReportRecordSysEvent(info, "Send onStart", "");
     PostTimeoutTask(info.bundleName_, info.abilityName_, info.appIndex_, info.taskId_);
 }
 
