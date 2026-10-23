@@ -166,14 +166,5 @@ bool WorkSchedUtils::IsUserMode()
     bool debugable = OHOS::system::GetIntParameter("const.debuggable", 0) == 1;
     return secureMode && !debugable;
 }
-
-bool WorkSchedUtils::IsCarDevice()
-{
-#ifdef CAR_PLATFORM
-    return true;
-#else
-    return false;
-#endif
-}
 } // namespace WorkScheduler
 } // namespace OHOS

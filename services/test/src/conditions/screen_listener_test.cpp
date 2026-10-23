@@ -25,7 +25,6 @@
 #include "work_scheduler_service.h"
 #include "work_sched_hilog.h"
 #include "work_sched_constants.h"
-#include "work_sched_utils.h"
 #include "work_event_handler.h"
 
 using namespace testing::ext;
@@ -146,22 +145,6 @@ HWTEST_F(ScreenListenerTest, Stop_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: IsCarDevice_001
- * @tc.desc: Test WorkSchedUtils::IsCarDevice returns expected value by platform.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(ScreenListenerTest, IsCarDevice_001, TestSize.Level1)
-{
-    bool result = WorkSchedUtils::IsCarDevice();
-#ifdef CAR_PLATFORM
-    EXPECT_EQ(result, true);
-#else
-    EXPECT_EQ(result, false);
-#endif
-}
-
-/**
  * @tc.name: OnReceiveEvent_ScreenUnlocked_001
  * @tc.desc: Test ScreenEventSubscriber OnReceiveEvent SCREEN_UNLOCKED triggers DEEP_IDLE callback.
  * @tc.type: FUNC
@@ -178,7 +161,7 @@ HWTEST_F(ScreenListenerTest, OnReceiveEvent_ScreenUnlocked_001, TestSize.Level1)
 
 /**
  * @tc.name: OnReceiveEvent_ScreenOn_001
- * @tc.desc: Test ScreenEventSubscriber OnReceiveEvent SCREEN_ON behavior depends on IsCarDevice.
+ * @tc.desc: Test ScreenEventSubscriber OnReceiveEvent SCREEN_ON behavior depends on CAR_PLATFORM.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
@@ -187,12 +170,12 @@ HWTEST_F(ScreenListenerTest, OnReceiveEvent_ScreenOn_001, TestSize.Level1)
     testListener_->Reset();
     auto data = BuildScreenEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
     subscriber_->OnReceiveEvent(data);
-    if (WorkSchedUtils::IsCarDevice()) {
-        EXPECT_EQ(testListener_->callCount_, 1);
-        EXPECT_EQ(testListener_->lastType_, WorkCondition::Type::DEEP_IDLE);
-    } else {
-        EXPECT_EQ(testListener_->callCount_, 0);
-    }
+#ifdef CAR_PLATFORM
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastType_, WorkCondition::Type::DEEP_IDLE);
+#else
+    EXPECT_EQ(testListener_->callCount_, 0);
+#endif
 }
 
 /**
