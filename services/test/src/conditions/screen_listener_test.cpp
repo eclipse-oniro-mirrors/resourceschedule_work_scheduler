@@ -84,7 +84,9 @@ void ScreenListenerTest::SetUpTestCase()
     testListener_ = std::make_shared<TestScreenListener>(workSchedulerService_);
     EventFwk::MatchingSkills skills;
     skills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
+#ifdef CAR_PLATFORM
     skills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
+#endif
     skills.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
     EventFwk::CommonEventSubscribeInfo info(skills);
     subscriber_ = std::make_shared<ScreenEventSubscriber>(info, *testListener_);

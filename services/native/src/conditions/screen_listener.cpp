@@ -102,7 +102,9 @@ std::shared_ptr<EventFwk::CommonEventSubscriber> CreateScreenEventSubscriber(Scr
 {
     EventFwk::MatchingSkills skill = EventFwk::MatchingSkills();
     skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
+#ifdef CAR_PLATFORM
     skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
+#endif
     skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
     EventFwk::CommonEventSubscribeInfo info(skill);
     return std::make_shared<ScreenEventSubscriber>(info, listener);

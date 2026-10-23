@@ -291,9 +291,11 @@ namespace WorkScheduler {
         data.SetWant(want);
         screenListener.commonEventSubscriber->OnReceiveEvent(data);
 
+#ifdef CAR_PLATFORM
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
         data.SetWant(want);
         screenListener.commonEventSubscriber->OnReceiveEvent(data);
+#endif
 
         want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
         data.SetWant(want);
