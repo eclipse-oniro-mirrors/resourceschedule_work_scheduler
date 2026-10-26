@@ -1,7 +1,7 @@
 ﻿# 延迟任务代码设计
 
-> 文档版本：v1.0
-> 更新时间：2026-09-10
+> 文档版本：v1.1
+> 更新时间：2026-10-23
 
 ## 上下文与场景
 
@@ -209,7 +209,7 @@ WCM -> App : OnWorkStop(workInfo) 回调
 | `BatteryLevelListener` | 电池电量 | 电量变化超过阈值 |
 | `BatteryStatusListener` | 电池状态 | 低电量/电量正常 |
 | `ChargerListener` | 充电状态 | 充电/放电/充电类型变化 |
-| `ScreenListener` | 屏幕状态 | 屏幕亮/灭，影响深度空闲判定 |
+| `ScreenListener` | 屏幕状态 | 屏幕亮/灭，影响深度空闲判定；车机设备亮屏等同于屏幕解锁 |
 | `StorageListener` | 存储状态 | 存储空间低/正常 |
 | `TimerListener` | 定时器 | 定时周期到期（默认 10 分钟） |
 | `GroupListener` | 应用分组 | 应用分组变化 |

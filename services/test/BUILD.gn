@@ -142,6 +142,9 @@ ohos_unittest("WorkScheduleServiceTest") {
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
   }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
+  }
 }
 
 ohos_unittest("BackgroundLoaderMgrTest") {

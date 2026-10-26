@@ -33,6 +33,20 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+
+static bool IsScreenOnOrUnlocked(const std::string &action)
+{
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
+        return true;
+    }
+#ifdef CAR_PLATFORM
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON) {
+        return true;
+    }
+#endif
+    return false;
+}
+
 ScreenEventSubscriber::ScreenEventSubscriber(const EventFwk::CommonEventSubscribeInfo &subscribeInfo,
     ScreenListener &listener) : EventFwk::CommonEventSubscriber(subscribeInfo), listener_(listener) {}
 
@@ -45,7 +59,7 @@ void ScreenEventSubscriber::OnReceiveEvent(const EventFwk::CommonEventData &data
         WS_HILOGE("event handler is null");
         return;
     }
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
+    if (IsScreenOnOrUnlocked(action)) {
         if (DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle()) {
             DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
             WorkSchedUtil::HiSysEventStateChanged({"DEEP_IDLE", 0});
@@ -88,6 +102,9 @@ std::shared_ptr<EventFwk::CommonEventSubscriber> CreateScreenEventSubscriber(Scr
 {
     EventFwk::MatchingSkills skill = EventFwk::MatchingSkills();
     skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED);
+#ifdef CAR_PLATFORM
+    skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON);
+#endif
     skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_OFF);
     EventFwk::CommonEventSubscribeInfo info(skill);
     return std::make_shared<ScreenEventSubscriber>(info, listener);

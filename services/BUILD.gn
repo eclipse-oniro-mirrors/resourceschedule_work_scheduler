@@ -159,6 +159,9 @@ ohos_shared_library("workschedservice") {
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
   }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
+  }
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
   version_script = "libworkschedservice.versionscript"
@@ -289,6 +292,9 @@ ohos_static_library("workschedservice_static") {
   }
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
+  }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
   }
 
   subsystem_name = "resourceschedule"
