@@ -76,7 +76,7 @@ ErrCode BackgroundTaskMgrHelper::SubscribeBackgroundTask(const BackgroundTaskSub
     return ERR_OK;
 }
 
-ErrCode BackgroundTaskMgrHelper::GetEfficiencyResourceInfos(
+ErrCode BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(
     std::vector<std::shared_ptr<ResourceCallbackInfo>> &appList,
     std::vector<std::shared_ptr<ResourceCallbackInfo>> &procList)
 {
@@ -740,7 +740,7 @@ HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level
     subscriber.OnAppEfficiencyResourcesReset(nullptr);
 
     service->whitelist_.erase(1000);
-    auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(0, 0, 0xFFFF, "name");
+    auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(1000, 0, 0xFFFF, "name");
     subscriber.OnProcEfficiencyResourcesApply(resourceInfo);
     EXPECT_TRUE(service->CheckEffiResApplyInfo(1000));
     subscriber.OnProcEfficiencyResourcesReset(resourceInfo);
@@ -1028,15 +1028,15 @@ HWTEST_F(WorkSchedulerServiceTest, DumpExemptionBundles_002, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_001, TestSize.Level1)
 {
     const char* dirPath = "/data/service/el1/public/WorkScheduler";
-    const char* filePath = "/data/service/el1/public/WorkScheduler/test_exemption.json"
+    const char* filePath = "/data/service/el1/public/WorkScheduler/test_exemption.json";
     if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
         GTEST_SKIP() << "Cannot create directory: " << dirPath;
     }
-    FILE* fp = fdopen(filePath, "w");
+    FILE* fp = fopen(filePath, "w");
     if (fp == nullptr) {
         GTEST_SKIP() << "Cannot write file: " << filePath;
     }
-    const char* jsonContent = "{\"work_scheduler_eng_exemption_bundles\":[\"com.test.bundle\"]}"
+    const char* jsonContent = "{\"work_scheduler_eng_exemption_bundles\":[\"com.test.bundle\"]}";
     fputs(jsonContent, fp);
     fclose(fp);
 
@@ -1115,16 +1115,16 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_003, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level1)
 {
     const char* dirPath = "/data/service/el1/public/WorkScheduler";
-    const char* filePath = "/data/service/el1/public/WorkScheduler/test_min_repeat.json"
+    const char* filePath = "/data/service/el1/public/WorkScheduler/test_min_repeat.json";
     if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
         GTEST_SKIP() << "Cannot create directory: " << dirPath;
     }
-    FILE* fp = fdopen(filePath, "w");
+    FILE* fp = fopen(filePath, "w");
     if (fp == nullptr) {
         GTEST_SKIP() << "Cannot write file: " << filePath;
     }
     const char* jsonContent = "{\"work_scheduler_min_repeat_time\":
-        {\"defult\":600000,\"special\":[{\"bundelName\":\"com.test.bundle\",\"time\":600000}]}}";
+        {\"default\":600000,\"special\":[{\"bundleName\":\"com.test.bundle\",\"time\":600000}]}}";
     fputs(jsonContent, fp);
     fclose(fp);
 
