@@ -1123,8 +1123,8 @@ HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level
     if (fp == nullptr) {
         GTEST_SKIP() << "Cannot write file: " << filePath;
     }
-    const char* jsonContent = "{\"work_scheduler_min_repeat_time\":
-        {\"default\":600000,\"special\":[{\"bundleName\":\"com.test.bundle\",\"time\":600000}]}}";
+    const char* jsonContent = "{\"work_scheduler_min_repeat_time\":"
+        "{\"default\":600000,\"special\":[{\"bundleName\":\"com.test.bundle\",\"time\":600000}]}}";
     fputs(jsonContent, fp);
     fclose(fp);
 
