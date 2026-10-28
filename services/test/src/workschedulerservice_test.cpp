@@ -75,6 +75,15 @@ ErrCode BackgroundTaskMgrHelper::SubscribeBackgroundTask(const BackgroundTaskSub
 {
     return ERR_OK;
 }
+
+ErrCode BackgroundTaskMgrHelper::GetEfficiencyResourceInfos(
+    std::vector<std::shared_ptr<ResourceCallbackInfo>> &appList,
+    std::vector<std::shared_ptr<ResourceCallbackInfo>> &procList)
+{
+    appList.emplace_back(std::make_shared<ResourceCallbackInfo>(
+        1000, 0, ResourceType::WORK_SCHEDULER, "com.test.bundle"));
+    return ERR_OK;
+}
 }
 }
 #endif
@@ -713,9 +722,10 @@ HWTEST_F(WorkSchedulerServiceTest, WorkSchedulerConnection_001, TestSize.Level1)
     auto workinfo = std::make_shared<WorkInfo>();
     WorkSchedulerConnection conection(workinfo);
     AppExecFwk::ElementName element;
+    EXPECT_FALSE(conection.IsConnected());
     conection.StopWork();
     conection.OnAbilityDisconnectDone(element, 0);
-    EXPECT_EQ(conection.proxy_, nullptr);
+    EXPECT_FALSE(conection.IsConnected());
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkSchedulerConnection_001 end ====== ");
 }
 
@@ -723,29 +733,39 @@ HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 begin ====== ");
     SchedulerBgTaskSubscriber subscriber;
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
     subscriber.OnProcEfficiencyResourcesApply(nullptr);
     subscriber.OnProcEfficiencyResourcesReset(nullptr);
     subscriber.OnAppEfficiencyResourcesApply(nullptr);
     subscriber.OnAppEfficiencyResourcesReset(nullptr);
 
+    service->whitelist_.erase(1000);
     auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(0, 0, 0xFFFF, "name");
     subscriber.OnProcEfficiencyResourcesApply(resourceInfo);
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(1000));
     subscriber.OnProcEfficiencyResourcesReset(resourceInfo);
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(1000));
     subscriber.OnAppEfficiencyResourcesApply(resourceInfo);
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(1000));
     subscriber.OnAppEfficiencyResourcesReset(resourceInfo);
-    EXPECT_EQ(resourceInfo->GetBundleName(), "name");
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(1000));
     WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 end ====== ");
 }
 
 HWTEST_F(WorkSchedulerServiceTest, ListenerStop_001, TestSize.Level1)
 {
     WS_HILOGI("====== ListenerStop_001 begin====== ");
-    for (auto pair : workSchedulerService_->workQueueManager_->listenerMap_)
+    auto workQueueManager = workSchedulerService_->workQueueManager_;
+    auto chargerListener = std::make_shared<ChargerListener>(workQueueManager);
+    workQueueManager->AddListener(WorkCondition::Type::CHARGER, chargerListener);
+    size_t sizeBefore = workQueueManager->listenerMap_.size();
+    for (auto pair : workQueueManager->listenerMap_)
     {
         pair.second->Stop();
     }
-    workSchedulerService_->workQueueManager_->listenerMap_.clear();
-    EXPECT_TRUE(workSchedulerService_->workQueueManager_->listenerMap_.size() == 0);
+    EXPECT_EQ(workQueueManager->listenerMap_.size(), sizeBefore);
+    EXPECT_GT(sizeBefore, 0);
+    workQueueManager->listenerMap_.erase(WorkCondition::Type::CHARGER);
     WS_HILOGI("====== ListenerStop_001 end ====== ");
 }
 
@@ -825,8 +845,10 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, InitWorkSchedPluginMgr_001, TestSize.Level1)
 {
+    workSchedulerService_->whitelist_.clear();
     bool ret = workSchedulerService_->InitWorkSchedPluginMgr();
     EXPECT_TRUE(ret);
+    EXPECT_TRUE(workSchedulerService_->CheckEffiResApplyInfo(1000));
 }
 
 /**
@@ -1005,10 +1027,24 @@ HWTEST_F(WorkSchedulerServiceTest, DumpExemptionBundles_002, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_001, TestSize.Level1)
 {
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/test_exemption.json"
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp = fdopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << filePath;
+    }
+    const char* jsonContent = "{\"work_scheduler_eng_exemption_bundles\":[\"com.test.bundle\"]}"
+    fputs(jsonContent, fp);
+    fclose(fp);
+
     workSchedulerService_->exemptionBundles_.clear();
-    const char* path = nullptr;
-    workSchedulerService_->LoadExemptionBundlesFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
+    workSchedulerService_->LoadExemptionBundlesFromFile(filePath);
+    EXPECT_TRUE(workSchedulerService_->IsExemptionBundle("com.test.bundle"));
+    workSchedulerService_->ClearExemptionBundles();
+    remove(filePath);
 }
 
 /**
@@ -1019,10 +1055,11 @@ HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_001, TestSize.Le
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_002, TestSize.Level1)
 {
-    workSchedulerService_->exemptionBundles_.clear();
+    workSchedulerService_->exemptionBundles_.insert("com.keep.bundle");
     const char *path = "/a/b/c";
     workSchedulerService_->LoadExemptionBundlesFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
+    EXPECT_TRUE(workSchedulerService_->IsExemptionBundle("com.keep.bundle"));
+    workSchedulerService_->ClearExemptionBundles();
 }
 
 /**
@@ -1077,10 +1114,25 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_003, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level1)
 {
-    workSchedulerService_->specialMap_.clear();
-    const char* path = nullptr;
-    workSchedulerService_->LoadMinRepeatTimeFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/test_min_repeat.json"
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp = fdopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << filePath;
+    }
+    const char* jsonContent = "{\"work_scheduler_min_repeat_time\":
+        {\"defult\":600000,\"special\":[{\"bundelName\":\"com.test.bundle\",\"time\":600000}]}}";
+    fputs(jsonContent, fp);
+    fclose(fp);
+
+    workSchedulerService_->ClearSpecialToMap();
+    workSchedulerService_->LoadMinRepeatTimeFromFile(filePath);
+    EXPECT_EQ(workSchedulerService_->specialMap_.count("com.test.bundle"), 1);
+    workSchedulerService_->ClearSpecialToMap();
+    remove(filePath);
 }
 
 /**
@@ -1091,10 +1143,12 @@ HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_002, TestSize.Level1)
 {
-    workSchedulerService_->specialMap_.clear();
+    workSchedulerService_->ClearSpecialToMap();
+    workSchedulerService_->AddSpecialToMap("com.keep.bundle", 600000);
     const char *path = "/a/b/c";
     workSchedulerService_->LoadMinRepeatTimeFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+    EXPECT_EQ(workSchedulerService_->specialMap_.count("com.keep.bundle"), 1);
+    workSchedulerService_->ClearSpecialToMap();
 }
 
 /**
@@ -1278,10 +1332,9 @@ HWTEST_F(WorkSchedulerServiceTest, NeedCreateTimer_002, TestSize.Level1)
     std::shared_ptr<WorkPolicyManager> workPolicyManager = std::make_shared<WorkPolicyManager>(instance);
     workSchedulerService_->workPolicyManager_ = workPolicyManager;
     int32_t ret = workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
-    if (ret == ERR_OK) {
-        bool result = workSchedulerService_->NeedCreateTimer(saId, uid, time);
-        EXPECT_EQ(result, true);
-    }
+    ASSERT_EQ(ret, ERR_OK);
+    bool result = workSchedulerService_->NeedCreateTimer(saId, uid, time);
+    EXPECT_EQ(result, true);
 }
 
 /**
@@ -1312,10 +1365,9 @@ HWTEST_F(WorkSchedulerServiceTest, NeedCreateTimer_003, TestSize.Level1)
     std::shared_ptr<WorkPolicyManager> workPolicyManager = std::make_shared<WorkPolicyManager>(instance);
     workSchedulerService_->workPolicyManager_ = workPolicyManager;
     int32_t ret = workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
-    if (ret == ERR_OK) {
-        bool result = workSchedulerService_->NeedCreateTimer(saId, uid, deepIdleTime);
-        EXPECT_EQ(result, false);
-    }
+    ASSERT_EQ(ret, ERR_OK);
+    bool result = workSchedulerService_->NeedCreateTimer(saId, uid, deepIdleTime);
+    EXPECT_EQ(result, false);
 }
 
 /**

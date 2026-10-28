@@ -440,7 +440,7 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_002, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     std::string ret = workPolicyManager_->GetConditionString(workStatus);
-    EXPECT_FALSE(ret.empty());
+    EXPECT_EQ(ret, "NETWORK");
 }
 
 /**
@@ -457,7 +457,7 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_003, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     std::string ret = workPolicyManager_->GetConditionString(workStatus);
-    EXPECT_FALSE(ret.empty());
+    EXPECT_EQ(ret, "CHARGER");
 }
 
 /**
@@ -474,7 +474,7 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_004, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     std::string ret = workPolicyManager_->GetConditionString(workStatus);
-    EXPECT_FALSE(ret.empty());
+    EXPECT_EQ(ret, "BATTERY_STATUS");
 }
 
 /**
@@ -491,7 +491,7 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_005, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     std::string ret = workPolicyManager_->GetConditionString(workStatus);
-    EXPECT_FALSE(ret.empty());
+    EXPECT_EQ(ret, "BATTERY_LEVEL");
 }
 
 /**
@@ -508,7 +508,7 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_006, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     std::string ret = workPolicyManager_->GetConditionString(workStatus);
-    EXPECT_FALSE(ret.empty());
+    EXPECT_EQ(ret, "STORAGE");
 }
 
 /**
@@ -525,7 +525,7 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_007, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     std::string ret = workPolicyManager_->GetConditionString(workStatus);
-    EXPECT_FALSE(ret.empty());
+    EXPECT_EQ(ret, "TIMER");
 }
 
 /**
@@ -542,7 +542,7 @@ HWTEST_F(WorkPolicyManagerTest, GetConditionString_008, TestSize.Level1)
     int32_t uid = 10000;
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     std::string ret = workPolicyManager_->GetConditionString(workStatus);
-    EXPECT_FALSE(ret.empty());
+    EXPECT_EQ(ret, "DEEP_IDLE");
 }
 
 /**
@@ -572,26 +572,6 @@ HWTEST_F(WorkPolicyManagerTest, StopWork_001, TestSize.Level1)
  * @tc.require: I9J0A7
  */
 HWTEST_F(WorkPolicyManagerTest, StopWork_002, TestSize.Level1)
-{
-    workPolicyManager_->uidQueueMap_.clear();
-    workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
-    WorkInfo workinfo;
-    workinfo.SetWorkId(10000);
-    workinfo.RequestRepeatCycle(1200000);
-    int32_t uid = 10000;
-    std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    std::pair<bool, bool> ret = workPolicyManager_->StopWork(workStatus, uid, true, false);
-    EXPECT_TRUE(ret.second);
-}
-
-/**
- * @tc.name: StopWork_003
- * @tc.desc: Test WorkPolicyManagerTest StopWork.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkPolicyManagerTest, StopWork_003, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
     workPolicyManager_->workConnManager_ = std::make_shared<MockWorkConnManager>();
@@ -695,7 +675,7 @@ HWTEST_F(WorkPolicyManagerTest, GetMaxRunningCount_002, TestSize.Level1)
     workPolicyManager_->dumpSetMaxRunningCount_ = 0;
     WorkSchedSystemPolicy systemPolicy;
     int32_t ret = workPolicyManager_->GetMaxRunningCount(systemPolicy);
-    EXPECT_TRUE(ret >= workPolicyManager_->dumpSetMaxRunningCount_);
+    EXPECT_EQ(ret, MAX_RUNNING_COUNT);
 }
 
 /**
@@ -933,7 +913,8 @@ HWTEST_F(WorkPolicyManagerTest, GetDeepIdleWorks_001, TestSize.Level1)
     workPolicyManager_->AddWork(workStatus, uid);
 
     std::list<std::shared_ptr<WorkStatus>> ret = workPolicyManager_->GetDeepIdleWorks();
-    EXPECT_TRUE(ret.size() > 0);
+    EXPECT_EQ(ret.size(), 1);
+    EXPECT_EQ(ret.front()->bundleName_, "com.test.demo");
 }
 
 /**
