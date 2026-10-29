@@ -80,8 +80,9 @@ ErrCode BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(
     std::vector<std::shared_ptr<ResourceCallbackInfo>> &appList,
     std::vector<std::shared_ptr<ResourceCallbackInfo>> &procList)
 {
+    int32_t uid = 1000;
     std::shared_ptr<ResourceCallbackInfo> info = std::make_shared<ResourceCallbackInfo>(
-        1000, 0, ResourceType::WORK_SCHEDULER, "com.test.bundle");
+        uid, 0, ResourceType::WORK_SCHEDULER, "com.test.bundle");
     appList.emplace_back(info);
     return ERR_OK;
 }
@@ -740,16 +741,17 @@ HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level
     subscriber.OnAppEfficiencyResourcesApply(nullptr);
     subscriber.OnAppEfficiencyResourcesReset(nullptr);
 
-    service->whitelist_.erase(1000);
-    auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(1000, 0, 0xFFFF, "name");
+    int32_t uid = 1000;
+    service->whitelist_.erase(uid);
+    auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(uid, 0, 0xFFFF, "name");
     subscriber.OnProcEfficiencyResourcesApply(resourceInfo);
-    EXPECT_TRUE(service->CheckEffiResApplyInfo(1000));
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(uid));
     subscriber.OnProcEfficiencyResourcesReset(resourceInfo);
-    EXPECT_FALSE(service->CheckEffiResApplyInfo(1000));
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(uid));
     subscriber.OnAppEfficiencyResourcesApply(resourceInfo);
-    EXPECT_TRUE(service->CheckEffiResApplyInfo(1000));
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(uid));
     subscriber.OnAppEfficiencyResourcesReset(resourceInfo);
-    EXPECT_FALSE(service->CheckEffiResApplyInfo(1000));
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(uid));
     WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 end ====== ");
 }
 
