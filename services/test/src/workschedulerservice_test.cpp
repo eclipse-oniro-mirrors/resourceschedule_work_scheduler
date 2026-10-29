@@ -80,8 +80,9 @@ ErrCode BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(
     std::vector<std::shared_ptr<ResourceCallbackInfo>> &appList,
     std::vector<std::shared_ptr<ResourceCallbackInfo>> &procList)
 {
-    appList.emplace_back(
-        std::make_shared<ResourceCallbackInfo>(1000, 0, ResourceType::WORK_SCHEDULER, "com.test.bundle"));
+    std::shared_ptr<ResourceCallbackInfo> info = std::make_shared<ResourceCallbackInfo>(
+        1000, 0, ResourceType::WORK_SCHEDULER, "com.test.bundle");
+    appList.emplace_back(info);
     return ERR_OK;
 }
 }
