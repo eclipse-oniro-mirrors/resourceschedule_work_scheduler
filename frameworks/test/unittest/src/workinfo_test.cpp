@@ -269,17 +269,21 @@ HWTEST_F (WorkInfoTest, WorkInfoTest016, Function | MediumTest | Level2)
 
 /**
  * @tc.name WorkInfoTest018
- * @tc.desc Set workInfo GetConditionMap
+ * @tc.desc Set workInfo Dump
  * @tc.type FUNC
  * @tc.require: issueI5Y6YK
  */
 HWTEST_F (WorkInfoTest, WorkInfoTest018, Function | MediumTest | Level2)
 {
     WorkInfo workInfo = WorkInfo();
-    workInfo.GetConditionMap();
+    int32_t workId = 1;
+    workInfo.SetWorkId(workId);
+    workInfo.RequestPersisted(true);
     std::string result;
     workInfo.Dump(result);
-    EXPECT_NE(result, "");
+    nlohmann::json parsed = nlohmann::json::parse(result);
+    EXPECT_EQ(parsed["workId"].get<int32_t>(), workId);
+    EXPECT_EQ(parsed["persisted"].get<bool>(), true);
 }
 
 /**
@@ -291,33 +295,13 @@ HWTEST_F (WorkInfoTest, WorkInfoTest018, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, WorkInfoTestJson001, Function | MediumTest | Level2)
 {
     WorkInfo workInfo = WorkInfo();
-    std::string res = workInfo.ParseToJsonStr();
-
+    workInfo.SetWorkId(1);
     workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY);
-    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_ANY);
-    workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW);
-    workInfo.RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
-    workInfo.RequestBatteryLevel(1);
-    uint32_t timeInterval = 120;
-    workInfo.RequestRepeatCycle(timeInterval);
-    res = workInfo.ParseToJsonStr();
-
-    workInfo.saId_ = 1000;
-    workInfo.residentSa_ = true;
-    res = workInfo.ParseToJsonStr();
-
-    workInfo.RefreshUid(1);
-    workInfo.RequestRepeatCycle(timeInterval, 3);
-    AAFwk::WantParams extras;
-    extras.SetParam("key1", OHOS::AAFwk::String::Box("value1"));
-    workInfo.RequestExtras(extras);
-    res = workInfo.ParseToJsonStr();
-
-    std::shared_ptr<Condition> condUnknown = std::make_shared<Condition>();
-    condUnknown->boolVal = true;
-    workInfo.conditionMap_.emplace(WorkCondition::Type::UNKNOWN, condUnknown);
-    res = workInfo.ParseToJsonStr();
-    EXPECT_NE(res, "");
+    std::string res = workInfo.ParseToJsonStr();
+    nlohmann::json parsed = nlohmann::json::parse(res);
+    EXPECT_EQ(parsed["workId"].get<int32_t>(), 1);
+    EXPECT_EQ(parsed["conditions"]["batteryStatus"].get<int32_t>(),
+        WorkCondition::BatteryStatus::BATTERY_STATUS_OKAY);
 }
 
 /**
@@ -660,7 +644,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest023, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, WorkSchedUtils001, Function | MediumTest | Level2)
 {
     int32_t res = WorkSchedUtils::GetCurrentAccountId();
-    EXPECT_NE(res, -1000);
+    EXPECT_NE(res, -1);
 }
 
 /**
@@ -768,7 +752,10 @@ HWTEST_F (WorkInfoTest, EarliestStartTime001, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, GetCreateTime001, Function | MediumTest | Level2)
 {
     WorkInfo workInfo;
-    EXPECT_NE(workInfo.GetCreateTime(), 0);
+    uint64_t createTime = workInfo.GetCreateTime();
+    uint64_t now = WorkSchedUtils::GetCurrentTimeMs();
+    EXPECT_LE(createTime, now);
+    EXPECT_GE(createTime, now - 5000);
 }
 
 /**

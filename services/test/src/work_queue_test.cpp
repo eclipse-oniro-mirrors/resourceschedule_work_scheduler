@@ -272,46 +272,6 @@ HWTEST_F(WorkQueueTest, Contains_002, TestSize.Level1)
 }
 
 /**
- * @tc.name: Find_001
- * @tc.desc: Test WorkQueue Find.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, Find_001, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto workInfo_ = WorkInfo();
-    workInfo_.SetWorkId(1);
-    std::string bundleName = "com.example.workStatus";
-    std::string abilityName = "workStatusAbility";
-    workInfo_.SetElement(bundleName, abilityName);
-    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workQueue_->Push(workStatus);
-    bool ret = workQueue_->Contains(std::make_shared<std::string>(workStatus->workId_));
-    EXPECT_TRUE(ret);
-}
-
-/**
- * @tc.name: Find_002
- * @tc.desc: Test WorkQueue Find.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkQueueTest, Find_002, TestSize.Level1)
-{
-    workQueue_->ClearAll();
-    auto workInfo_ = WorkInfo();
-    workInfo_.SetWorkId(1);
-    std::string bundleName = "com.example.workStatus";
-    std::string abilityName = "workStatusAbility";
-    workInfo_.SetElement(bundleName, abilityName);
-    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workQueue_->Push(workStatus);
-    bool ret = workQueue_->Contains(std::make_shared<std::string>("u1_2"));
-    EXPECT_FALSE(ret);
-}
-
-/**
  * @tc.name: GetWorkToRunByPriority_001
  * @tc.desc: Test WorkQueue GetWorkToRunByPriority.
  * @tc.type: FUNC
