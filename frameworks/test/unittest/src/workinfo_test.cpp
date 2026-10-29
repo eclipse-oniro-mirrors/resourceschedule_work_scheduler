@@ -279,7 +279,6 @@ HWTEST_F (WorkInfoTest, WorkInfoTest018, Function | MediumTest | Level2)
     int32_t workId = 1;
     workInfo.SetWorkId(workId);
     workInfo.RequestPersisted(true);
-    // workInfo.GetConditionMap();
     std::string result;
     workInfo.Dump(result);
     nlohmann::json parsed = nlohmann::json::parse(result);
