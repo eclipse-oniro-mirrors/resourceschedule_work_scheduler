@@ -102,6 +102,7 @@ private:
     void SetCommonInfo(ani_env *env, ani_object &workInfoObject, int32_t workId,
         const std::string& bundleName, const std::string& abilityName);
     void SetPersistedInfo(ani_env *env, ani_object &workInfoObject, bool isPersisted);
+    void SetPerformanceSensitiveInfo(ani_env *env, ani_object &workInfoObject, bool isPerformanceSensitive);
     void SetNetWorkInfo(ani_env *env, ani_object &workInfoObject, WorkCondition::Network networkType);
     void SetChargerTypeInfo(ani_env *env, ani_object &workInfoObject, WorkCondition::Charger charger);
     void SetBatteryInfo(ani_env *env, ani_object &workInfoObject, int32_t batteryLevel,
@@ -115,7 +116,7 @@ private:
     ani_object CreateBoolean(ani_env *env, bool value);
     bool SetPropertyOptionalByString(
         ani_env *env, ani_object &object, const char *name, const std::string &value);
-    ani_status GetAniStringByString(ani_env* env, const std::string str, ani_string& aniStr);
+    ani_status GetAniStringByString(ani_env* env, const std::string& str, ani_string& aniStr);
     bool SetPropertyOptionalByInt(ani_env *env, ani_object &object, const char *name, int32_t value);
     ani_object CreateInt(ani_env *env, int32_t value);
     bool SetPropertyOptionalByEnum(ani_env *env, ani_object &object, const char *name, int32_t value);

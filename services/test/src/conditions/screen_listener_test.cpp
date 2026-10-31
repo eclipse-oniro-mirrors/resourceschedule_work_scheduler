@@ -147,6 +147,25 @@ HWTEST_F(ScreenListenerTest, Stop_001, TestSize.Level1)
 }
 
 /**
+ * @tc.name: Start_003
+ * @tc.desc: Test ScreenListener Start uses g_deepIdleScreenOffTimeMin value.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, Start_003, TestSize.Level1)
+{
+    int32_t customTime = 5 * 60 * 1000;
+    g_deepIdleScreenOffTimeMin.store(customTime);
+    auto listener = std::make_shared<ScreenListener>(workQueueManager_, workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->Start();
+    EXPECT_EQ(listener->saIdTimeInfoMap_.count(DEFAULT_SA_ID), 1);
+    EXPECT_EQ(listener->saIdTimeInfoMap_.at(DEFAULT_SA_ID).time_, customTime);
+    listener->Stop();
+    g_deepIdleScreenOffTimeMin.store(MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN);
+}
+
+/**
  * @tc.name: OnReceiveEvent_ScreenUnlocked_001
  * @tc.desc: Test ScreenEventSubscriber OnReceiveEvent SCREEN_UNLOCKED triggers DEEP_IDLE callback.
  * @tc.type: FUNC

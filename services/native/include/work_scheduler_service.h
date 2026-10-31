@@ -367,11 +367,13 @@ private:
     bool CheckWorkInfo(WorkInfo& workInfo, int32_t& uid);
     int32_t StartWorkInner(const WorkInfo& workInfo, int32_t uid);
     bool CheckCondition(WorkInfo& workInfo);
+    bool CheckPerformanceSensitiveCondition(WorkInfo& workInfo);
     bool IsBaseAbilityReady();
     void DumpUsage(std::string& result);
     void DumpCommonUsage(std::string& result);
     void DumpUsageForUserMode(std::string& result);
     void DumpParamSet(std::string& key, std::string& value, std::string& result);
+    void DumpSetHighPerfDuration(const std::string& value, std::string& result);
     void DumpProcessWorks(const std::string& bundleName, const std::string& abilityName, std::string& result);
     void DumpRunningWorks(const std::string& uidStr, const std::string& option, std::string& result);
     bool IsDebugApp(const std::string& bundleName);

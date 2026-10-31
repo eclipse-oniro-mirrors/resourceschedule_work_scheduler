@@ -128,6 +128,7 @@ WCM -> App : OnWorkStop(workInfo) 回调
 | `createTime_` | `uint64_t` | 当前时间 | 创建时间（毫秒） |
 | `deepIdleTime_` | `int32_t` | `0` | 深度空闲时间（毫秒） |
 | `triggerType_` | `int32_t` | `UNKNOWN` | 触发类型 |
+| `isPerformanceSensitive_` | `bool` | `false` | 延迟任务在CPU中/大核上运行，设为 true 时须同时满足 isDeepIdle=true 和 isCharging=true，该任务一天只能运行一次 |
 
 ### WorkStatus
 

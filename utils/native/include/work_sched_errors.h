@@ -32,6 +32,7 @@ enum {
     E_SERVICE_NOT_READY,
     E_CHECK_WORKINFO_FAILED = 970000401,
     E_WORK_NOT_EXIST_FAILED,
+    E_PERFORMANCE_SENSITIVE_CONDITION_ERR,
     E_ADD_REPEAT_WORK_ERR = 970000501,
     E_WORK_EXCEED_UPPER_LIMIT,
     E_REPEAT_CYCLE_TIME_ERR,
@@ -69,6 +70,7 @@ enum ParamError {
     E_NEED_CANCLE_TYPE_ERR,
     E_UID_NO_MATCHING_WORK_ERR,
     E_EARLIEST_START_TIME_TYPE_ERR,
+    E_IS_PERFORMANCE_SENSITIVE_ERR,
 };
 
 const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
@@ -91,6 +93,9 @@ const inline std::map<int32_t, std::string> saErrCodeMsgMap = {
     {E_UID_ERROR, "The uid is invalid."},
     {E_WORKID_ERROR, "The work id is invalid, the task with workId does not exist."},
     {E_INTERVAL_ERROR, "The interval out of range, must be greater than or equal to 7200000 and less than INT_MAX."},
+    {E_PERFORMANCE_SENSITIVE_CONDITION_ERR,
+        "StartWork failed. When isPerformanceSensitive is true, isDeepIdle and isCharging must be set to true. "
+        "If it is a repeat work, the repeatCycleTime must be greater than or equal to 24 hours."},
 };
 
 const inline std::map<int32_t, std::string> paramErrCodeMsgMap = {
@@ -119,6 +124,7 @@ const inline std::map<int32_t, std::string> paramErrCodeMsgMap = {
     {E_PARAM_ERROR, "Possible causes: 1. Mandatory parameters are left unspecified; "
         "2. Incorrect parameter types; 3. Parameter verification failed."},
     {E_EARLIEST_START_TIME_TYPE_ERR, "The type of earliestStartTime must be number."},
+    {E_IS_PERFORMANCE_SENSITIVE_ERR, "The type of isPerformanceSensitive must be boolean."},
 };
 } // namespace WorkScheduler
 } // namespace OHOS
