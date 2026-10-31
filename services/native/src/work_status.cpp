@@ -349,18 +349,18 @@ bool WorkStatus::IsSAReady()
 
 bool WorkStatus::IsPerformanceSensitiveReady()
 {
-    // ÉÏ´ÎÔÚ´óºËÔËĞĞÊ±¼äºÍµ±Ç°²»ÊÇÍ¬Ò»Ìì£¬ÇåÁã´óºËÔËĞĞÊ±³¤
+    // ä¸Šæ¬¡åœ¨å¤§æ ¸è¿è¡Œæ—¶é—´å’Œå½“å‰ä¸æ˜¯åŒä¸€å¤©ï¼Œæ¸…é›¶å¤§æ ¸è¿è¡Œæ—¶é•¿
     if (!IsSameDay(WorkSchedUtils::GetCurrentTimeMs(), GetLastHighPerfEndTime())) {
         SetHighPerfDuration(0);
     }
-    // µ±Ìì´óºËÔËĞĞÊ±³¤³¬¹ı10·ÖÖÓ£¬²»ÔÊĞíÖ´ĞĞ
+    // å½“å¤©å¤§æ ¸è¿è¡Œæ—¶é•¿è¶…è¿‡10åˆ†é’Ÿï¼Œä¸å…è®¸æ‰§è¡Œ
     if (GetHighPerfDuration() >= MAX_HIGH_PERF_DURATION) {
         conditionStatus_ += DELIMITER + "highPerfDuration" + "&" + NOT_OK;
         WS_HILOGE("performance sensitive work not ready, highPerfDuration exceeds limit, workId:%{public}s, "
             "highPerfDuration:%{public}" PRIu64, workId_.c_str(), GetHighPerfDuration());
         return false;
     }
-    // ¸ÃÓ¦ÓÃ¾àÉÏ´ÎÔÚ´óºËÔËĞĞÊ±¼äÊÇ·ñÂú×ã24Ğ¡Ê±
+    // è¯¥åº”ç”¨è·ä¸Šæ¬¡åœ¨å¤§æ ¸è¿è¡Œæ—¶é—´æ˜¯å¦æ»¡è¶³24å°æ—¶
     time_t performanceSensitiveLastTime = 0;
     if (GetPerformanceSensitiveLastTime(uid_, performanceSensitiveLastTime)) {
         double del = difftime(getOppositeTime(), performanceSensitiveLastTime);
@@ -1154,7 +1154,7 @@ void WorkStatus::StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>
     uint64_t currentDuration = currentTime - GetWorkStartTime();
     bool isSameDay = IsSameDay(currentTime, GetLastHighPerfEndTime());
     std::lock_guard<ffrt::mutex> lock(mutex_);
-    // ÉÏ´ÎÔÚ´óºËÔËĞĞµÄÑÓ³ÙÈÎÎñ½áÊøÊ±¼äÓë±¾´Î½áÊøÊ±¼äÊÇÍ¬Ò»Ìì£¬´óºËÉÏÔËĞĞµÄÑÓ³ÙÈÎÎñÊ±¼äÀÛ¼Æ
+    // ä¸Šæ¬¡åœ¨å¤§æ ¸è¿è¡Œçš„å»¶è¿Ÿä»»åŠ¡ç»“æŸæ—¶é—´ä¸æœ¬æ¬¡ç»“æŸæ—¶é—´æ˜¯åŒä¸€å¤©ï¼Œå¤§æ ¸ä¸Šè¿è¡Œçš„å»¶è¿Ÿä»»åŠ¡æ—¶é—´ç´¯è®¡
     if (isSameDay) {
         highPerfState_.duration += currentDuration;
     } else {
