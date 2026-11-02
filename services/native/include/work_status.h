@@ -236,12 +236,9 @@ public:
     void ResumeRunning(uint64_t currentTime);
     void StartHighPerfTimer();
     void StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &runningWorks);
-    static uint64_t GetHighPerfStartTime();
-    static void SetHighPerfStartTime(uint64_t startTime);
     static uint64_t GetHighPerfDuration();
     static void SetHighPerfDuration(uint64_t duration);
     static uint64_t GetLastHighPerfEndTime();
-    static void SetLastHighPerfEndTime(uint64_t endTime);
 
 private:
     struct HighPerfTimerState {

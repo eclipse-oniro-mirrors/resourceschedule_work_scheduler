@@ -1131,13 +1131,13 @@ void WorkStatus::StartHighPerfTimer()
     if (!workInfo_->IsPerformanceSensitive()) {
         return;
     }
+    ReportDelayTaskPerf(uid_, DELAY_TASK_PERF_START);
+    WS_HILOGI("Start high perf timer, workId:%{public}s", workId_.c_str());
     std::lock_guard<ffrt::mutex> lock(mutex_);
     if (highPerfState_.startTime != 0) {
         return;
     }
     highPerfState_.startTime = WorkSchedUtils::GetCurrentTimeMs();
-    ReportDelayTaskPerf(uid_, DELAY_TASK_PERF_START);
-    WS_HILOGI("Start high perf timer, workId:%{public}s", workId_.c_str());
 }
 
 void WorkStatus::StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &runningWorks)
@@ -1145,12 +1145,19 @@ void WorkStatus::StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>
     if (!workInfo_->IsPerformanceSensitive()) {
         return;
     }
+    bool isHighPerfWorkExist = false;
     for (const auto &work : runningWorks) {
         if (work && work->workId_ != workId_ && work->workInfo_->IsPerformanceSensitive()) {
-            return;
+            isHighPerfWorkExist = true;
+            break;
         }
     }
     uint64_t currentTime = WorkSchedUtils::GetCurrentTimeMs();
+    if (currentTime < GetWorkStartTime() || GetWorkStartTime() == 0) {
+        WS_HILOGE("invalid currentDuration, workId:%{public}s, currentTime:%{public}" PRIu64
+            ", startTime:%{public}" PRIu64, workId_.c_str(), currentTime, GetWorkStartTime());
+        return;
+    }
     uint64_t currentDuration = currentTime - GetWorkStartTime();
     bool isSameDay = IsSameDay(currentTime, GetLastHighPerfEndTime());
     std::lock_guard<ffrt::mutex> lock(mutex_);
@@ -1160,22 +1167,10 @@ void WorkStatus::StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>
     } else {
         highPerfState_.duration = currentDuration;
     }
-    highPerfState_.startTime = 0;
+    highPerfState_.startTime = isHighPerfWorkExist ? currentTime : 0;
     highPerfState_.lastEndTime = currentTime;
     ReportDelayTaskPerf(uid_, DELAY_TASK_PERF_END);
     WS_HILOGI("Stop high perf timer, workId:%{public}s", workId_.c_str());
-}
-
-uint64_t WorkStatus::GetHighPerfStartTime()
-{
-    std::lock_guard<ffrt::mutex> lock(mutex_);
-    return highPerfState_.startTime;
-}
-
-void WorkStatus::SetHighPerfStartTime(uint64_t startTime)
-{
-    std::lock_guard<ffrt::mutex> lock(mutex_);
-    highPerfState_.startTime = startTime;
 }
 
 uint64_t WorkStatus::GetHighPerfDuration()
@@ -1194,12 +1189,6 @@ uint64_t WorkStatus::GetLastHighPerfEndTime()
 {
     std::lock_guard<ffrt::mutex> lock(mutex_);
     return highPerfState_.lastEndTime;
-}
-
-void WorkStatus::SetLastHighPerfEndTime(uint64_t endTime)
-{
-    std::lock_guard<ffrt::mutex> lock(mutex_);
-    highPerfState_.lastEndTime = endTime;
 }
 
 void WorkStatus::ReportDelayTaskPerf(int32_t uid, int32_t type)

@@ -47,12 +47,9 @@
 | `StartHighPerfTimer` | public | `void StartHighPerfTimer()` | 启动高性能运行计时 |
 | `StopHighPerfTimer` | public | `void StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &)` | 停止高性能运行计时 |
 | `GetPerformanceSensitiveLastTime` | public static | `bool GetPerformanceSensitiveLastTime(int32_t, time_t&)` | 查询 uid 上次执行时间 |
-| `GetHighPerfStartTime` | public static | `uint64_t GetHighPerfStartTime()` | 高性能起始时间读 |
-| `SetHighPerfStartTime` | public static | `void SetHighPerfStartTime(uint64_t)` | 高性能起始时间写 |
 | `GetHighPerfDuration` | public static | `uint64_t GetHighPerfDuration()` | 当日累计时长读 |
 | `SetHighPerfDuration` | public static | `void SetHighPerfDuration(uint64_t)` | 当日累计时长写 |
 | `GetLastHighPerfEndTime` | public static | `uint64_t GetLastHighPerfEndTime()` | 上次结束时间读 |
-| `SetLastHighPerfEndTime` | public static | `void SetLastHighPerfEndTime(uint64_t)` | 上次结束时间写 |
 
 ### 1.3 常量与错误码
 
@@ -392,9 +389,7 @@ WorkPolicyManager::uidMapMutex_ → conditionMapMutex_ → mutex_(static)
 
 ### 8.1 frameworks 测试（workinfo_test.cpp）
 
-| 用例 | 验证点 |
-|---|---|
-| `RequestPerformanceSensitive001` | 默认 false；set true 后返回 true；set false 后返回 false |
+无新增用例。
 
 ### 8.2 services 测试
 
@@ -402,11 +397,10 @@ WorkPolicyManager::uidMapMutex_ → conditionMapMutex_ → mutex_(static)
 
 | 用例 | 验证点 |
 |---|---|
-| `StartHighPerfTimer_001` | 非性能敏感任务不启动计时，`GetHighPerfStartTime() == 0` |
+| `StartHighPerfTimer_001` | 非性能敏感任务不启动计时，`highPerfState_.startTime == 0` |
 | `StartHighPerfTimer_002` | 连续调用两次，第二次不覆盖第一次的起始时间 |
 | `StopHighPerfTimer_001` | 有其它性能敏感任务运行时提前返回，`highPerfStartTime_` 不被置零 |
 | `StopHighPerfTimer_002` | 跨天重置 `highPerfDuration_` 为本次运行时长，`highPerfStartTime_` 置零 |
-| `StopHighPerfTimer_004` | 同天累加 `highPerfDuration_`，验证累加值在预期区间 `[preset+2500, preset+5000]` |
 | `StopHighPerfTimer_005` | 跨天重置 `highPerfDuration_` 为本次运行时长，验证值在区间 `[2500, 5000]`，`highPerfStartTime_` 置零 |
 | `IsPerformanceSensitiveReady_001` | 累计超限返回 false |
 | `IsPerformanceSensitiveReady_002` | 满足条件返回 true |

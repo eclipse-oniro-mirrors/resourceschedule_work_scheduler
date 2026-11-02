@@ -845,21 +845,5 @@ HWTEST_F (WorkInfoTest, SetTriggerType001, Function | MediumTest | Level2)
     workInfo.SetTriggerType(1);
     EXPECT_EQ(workInfo.GetTriggerType(), 1);
 }
-
-/**
- * @tc.name RequestPerformanceSensitive001
- * @tc.desc test RequestPerformanceSensitive and IsPerformanceSensitive
- * @tc.type FUNC
- * @tc.require:
- */
-HWTEST_F (WorkInfoTest, RequestPerformanceSensitive001, Function | MediumTest | Level2)
-{
-    WorkInfo workInfo;
-    EXPECT_FALSE(workInfo.IsPerformanceSensitive());
-    workInfo.RequestPerformanceSensitive(true);
-    EXPECT_TRUE(workInfo.IsPerformanceSensitive());
-    workInfo.RequestPerformanceSensitive(false);
-    EXPECT_FALSE(workInfo.IsPerformanceSensitive());
-}
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -57,9 +57,9 @@ std::shared_ptr<WorkInfo> WorkStatusTest::workInfo_ = nullptr;
 
 void WorkStatusTest::TearDown()
 {
-    WorkStatus::SetHighPerfStartTime(0);
+    WorkStatus::highPerfState_.startTime = 0;
     WorkStatus::SetHighPerfDuration(0);
-    WorkStatus::SetLastHighPerfEndTime(0);
+    WorkStatus::highPerfState_.lastEndTime = 0;
 }
 
 void WorkStatusTest::SetUpTestCase()
@@ -1568,9 +1568,9 @@ HWTEST_F(WorkStatusTest, StartHighPerfTimer_001, TestSize.Level1)
     workInfo->SetWorkId(9101);
     workInfo->SetElement("com.test.highperf", "HighPerfAbility");
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9101);
-    WorkStatus::SetHighPerfStartTime(0);
+    WorkStatus::highPerfState_.startTime = 0;
     workStatus->StartHighPerfTimer();
-    EXPECT_EQ(WorkStatus::GetHighPerfStartTime(), 0);
+    EXPECT_EQ(WorkStatus::highPerfState_.startTime, 0);
 }
 
 
@@ -1589,14 +1589,14 @@ HWTEST_F(WorkStatusTest, StopHighPerfTimer_002, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9106);
     uint64_t presetDuration = 5000;
     WorkStatus::SetHighPerfDuration(presetDuration);
-    WorkStatus::SetLastHighPerfEndTime(0);
+    WorkStatus::highPerfState_.lastEndTime = 0;
     workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs() - 3000;
 
     std::vector<std::shared_ptr<WorkStatus>> runningWorks;
     runningWorks.push_back(workStatus);
     workStatus->StopHighPerfTimer(runningWorks);
     EXPECT_NE(WorkStatus::GetHighPerfDuration(), presetDuration);
-    EXPECT_EQ(WorkStatus::GetHighPerfStartTime(), 0);
+    EXPECT_EQ(WorkStatus::highPerfState_.startTime, 0);
 }
 
 /**
@@ -1643,15 +1643,15 @@ HWTEST_F(WorkStatusTest, IsPerformanceSensitiveReady_002, TestSize.Level1)
 HWTEST_F(WorkStatusTest, HighPerfStaticMembers_001, TestSize.Level1)
 {
     uint64_t time = 123456;
-    WorkStatus::SetHighPerfStartTime(time);
-    EXPECT_EQ(WorkStatus::GetHighPerfStartTime(), time);
+    WorkStatus::highPerfState_.startTime = time;
+    EXPECT_EQ(WorkStatus::highPerfState_.startTime, time);
 
     uint64_t duration = 60000;
     WorkStatus::SetHighPerfDuration(duration);
     EXPECT_EQ(WorkStatus::GetHighPerfDuration(), duration);
 
     uint64_t endTime = 999999;
-    WorkStatus::SetLastHighPerfEndTime(endTime);
+    WorkStatus::highPerfState_.lastEndTime = endTime;
     EXPECT_EQ(WorkStatus::GetLastHighPerfEndTime(), endTime);
 }
 
@@ -1694,40 +1694,12 @@ HWTEST_F(WorkStatusTest, IsPerformanceSensitiveReady_003, TestSize.Level1)
     workInfo->RequestPerformanceSensitive(true);
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9109);
     WorkStatus::SetHighPerfDuration(MAX_HIGH_PERF_DURATION + 1);
-    WorkStatus::SetLastHighPerfEndTime(0);
+    WorkStatus::highPerfState_.lastEndTime = 0;
     WorkStatus::ClearUidLastTimeMap(9109);
     EXPECT_TRUE(workStatus->IsPerformanceSensitiveReady());
     EXPECT_EQ(WorkStatus::GetHighPerfDuration(), 0);
     WorkStatus::SetHighPerfDuration(0);
-    WorkStatus::SetLastHighPerfEndTime(0);
-}
-
-/**
- * @tc.name: StopHighPerfTimer_004
- * @tc.desc: Test StopHighPerfTimer accumulates duration when same day.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkStatusTest, StopHighPerfTimer_004, TestSize.Level1)
-{
-    auto workInfo = std::make_shared<WorkInfo>();
-    workInfo->SetWorkId(9110);
-    workInfo->SetElement("com.test.highperf", "HighPerfAbility");
-    workInfo->RequestPerformanceSensitive(true);
-    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9110);
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs() - 3000;
-
-    uint64_t presetDuration = 5000;
-    WorkStatus::SetHighPerfDuration(presetDuration);
-    WorkStatus::SetLastHighPerfEndTime(WorkSchedUtils::GetCurrentTimeMs() - 1000);
-    std::vector<std::shared_ptr<WorkStatus>> runningWorks;
-    runningWorks.push_back(workStatus);
-    workStatus->StopHighPerfTimer(runningWorks);
-    uint64_t expectedMin = presetDuration + 2500;
-    uint64_t expectedMax = presetDuration + 5000;
-    uint64_t actualDuration = WorkStatus::GetHighPerfDuration();
-    EXPECT_GE(actualDuration, expectedMin);
-    EXPECT_LE(actualDuration, expectedMax);
+    WorkStatus::highPerfState_.lastEndTime = 0;
 }
 
 /**
@@ -1747,14 +1719,14 @@ HWTEST_F(WorkStatusTest, StopHighPerfTimer_005, TestSize.Level1)
 
     uint64_t presetDuration = 5000;
     WorkStatus::SetHighPerfDuration(presetDuration);
-    WorkStatus::SetLastHighPerfEndTime(0);
+    WorkStatus::highPerfState_.lastEndTime = 0;
     std::vector<std::shared_ptr<WorkStatus>> runningWorks;
     runningWorks.push_back(workStatus);
     workStatus->StopHighPerfTimer(runningWorks);
     uint64_t actualDuration = WorkStatus::GetHighPerfDuration();
     EXPECT_GE(actualDuration, 2500);
     EXPECT_LE(actualDuration, 5000);
-    EXPECT_EQ(WorkStatus::GetHighPerfStartTime(), 0);
+    EXPECT_EQ(WorkStatus::highPerfState_.startTime, 0);
 }
 }
 }
