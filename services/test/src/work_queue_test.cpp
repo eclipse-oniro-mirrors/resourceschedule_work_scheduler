@@ -120,9 +120,12 @@ HWTEST_F(WorkQueueTest, ParseCondition_005, TestSize.Level1)
 HWTEST_F(WorkQueueTest, ParseCondition_006, TestSize.Level1)
 {
     WorkCondition::Type type = WorkCondition::Type::TIMER;
-    std::shared_ptr<DetectorValue> value = std::make_shared<DetectorValue>(0, 0, false, "");
+    std::shared_ptr<DetectorValue> value = std::make_shared<DetectorValue>(81, 0, false, "");
     std::shared_ptr<Condition> ret = workQueue_->ParseCondition(type, value);
-    EXPECT_TRUE(ret->intVal == 0);
+    EXPECT_EQ(ret->intVal, 0);
+    EXPECT_EQ(ret->enumVal, 0);
+    EXPECT_FALSE(ret->boolVal);
+    EXPECT_TRUE(ret->strVal.empty());
 }
 
 /**
@@ -162,9 +165,13 @@ HWTEST_F(WorkQueueTest, ParseCondition_008, TestSize.Level1)
 HWTEST_F(WorkQueueTest, ParseCondition_009, TestSize.Level1)
 {
     WorkCondition::Type type = WorkCondition::Type::UNKNOWN;
-    std::shared_ptr<DetectorValue> value = std::make_shared<DetectorValue>(0, 0, false, "");
+    std::shared_ptr<DetectorValue> value =
+        std::make_shared<DetectorValue>(99, 88, true, "non_default");
     std::shared_ptr<Condition> ret = workQueue_->ParseCondition(type, value);
+    EXPECT_EQ(ret->enumVal, 0);
+    EXPECT_EQ(ret->intVal, 0);
     EXPECT_FALSE(ret->boolVal);
+    EXPECT_TRUE(ret->strVal.empty());
 }
 
 /**
