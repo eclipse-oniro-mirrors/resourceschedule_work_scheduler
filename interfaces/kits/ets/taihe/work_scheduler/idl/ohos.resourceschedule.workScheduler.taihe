@@ -34,6 +34,7 @@ export class WorkInfoInner implements workScheduler.WorkInfo {
   idleWaitTime: int | undefined;
   parameters: Record<string, int | double | string | boolean> | undefined;
   earliestStartTime: int | undefined;
+  isPerformanceSensitive: boolean | undefined;
 }
 """)
 
@@ -98,6 +99,7 @@ struct WorkInfo {
   idleWaitTime: Optional<i32>;
   parameters: Optional<@record Map<String, ParameType>>;
   earliestStartTime: Optional<i32>;
+  isPerformanceSensitive: Optional<bool>;
 }
 
 function StartWork(work: WorkInfo): void;

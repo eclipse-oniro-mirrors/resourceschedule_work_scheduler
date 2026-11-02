@@ -226,6 +226,7 @@ std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> wo
         workStatus->lastTimeout_ = isTimeOut;
         if (workConnManager_->StopWork(workStatus, isTimeOut)) {
             stopWorkSuccess = true;
+            workStatus->StopHighPerfTimer(GetAllRunningWorkStatus());
         } else {
             return {stopWorkSuccess, hasCanceled};
         }
@@ -521,6 +522,7 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     if (ret) {
         AddWatchdogForWork(topWork);
         topWork->UpdateUidLastTimeMap();
+        topWork->StartHighPerfTimer();
     } else {
         if (!topWork->IsRepeating()) {
             topWork->MarkStatus(WorkStatus::Status::REMOVED);
@@ -534,6 +536,11 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
     std::shared_ptr<WorkStatus> &topWork)
 {
+    if (topWork->workInfo_->IsPerformanceSensitive()) {
+        WS_HILOGD("isPerformanceSensitive, update watchdog time:%{public}d", WATCHDOG_TIME);
+        SetWatchdogTime(WATCHDOG_TIME);
+        return;
+    }
     if (topWork->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNKNOWN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNPLUGGED) {
@@ -895,6 +902,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
                 " newWatchdogTime:%{public}" PRIu64,
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime);
             watchdog_->RemoveWatchdog(it->first);
+            workStatus->StopHighPerfTimer(GetAllRunningWorkStatus());
         }
     }
 
@@ -925,6 +933,7 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
             workStatus->ResumeRunning(WorkSchedUtils::GetCurrentTimeMs());
             watchdog_->AddWatchdog(it->first, watchdogTime);
+            workStatus->StartHighPerfTimer();
         }
     }
 
@@ -1031,6 +1040,7 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
         if (ret) {
             AddWatchdogForWork(topWork);
             topWork->UpdateUidLastTimeMap();
+            topWork->StartHighPerfTimer();
         } else {
             if (!topWork->IsRepeating()) {
                 topWork->MarkStatus(WorkStatus::Status::REMOVED);
@@ -1082,6 +1092,7 @@ void WorkPolicyManager::CleanOrphanWork(std::shared_ptr<WorkStatus> workStatus)
     if (workConnManager_) {
         workConnManager_->RemoveConnInfo(workStatus->workId_);
     }
+    workStatus->StopHighPerfTimer(GetAllRunningWorkStatus());
     if (!workStatus->IsRepeating()) {
         workStatus->MarkStatus(WorkStatus::Status::REMOVED);
         RemoveFromUidQueue(workStatus, workStatus->uid_);

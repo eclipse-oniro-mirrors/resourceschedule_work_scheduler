@@ -42,6 +42,7 @@
 | `batteryStatus` | BatteryStatus | 否 | 电池状态 |
 | `storageRequest` | StorageRequest | 否 | 存储状态 |
 | `isRepeat` | bool | 否 | 是否重复任务 |
+| `isPerformanceSensitive` | bool | 否 | 延迟任务在CPU中/大核上运行，设为 true 时须同时满足 `isDeepIdle` 为 true 和 `isCharging` 为 true，该任务一天只能运行一次 |
 | `repeatCycleTime` | number | 否 | 重复周期时间 |
 | `repeatCount` | number | 否 | 重复次数 |
 | `parameters` | {[key: string]: any} | 否 | 自定义参数 |
@@ -131,6 +132,7 @@
 3. `repeatCycleTime` 至少 20 分钟（`minTimeCycle_ = 20 * 60 * 1000`），设置时须在 `isRepeat` 和 `repeatCount` 中选择其一
 4. `parameters` 支持 number、string 和 bool 类型
 5. 重复添加相同 `workId` 的任务返回 `E_ADD_REPEAT_WORK_ERR`
+6. `isPerformanceSensitive` 设为 true 时，必须同时设置 `isDeepIdle` 为 true 和 `isCharging` 为 true，否则返回 `E_PERFORMANCE_SENSITIVE_CONDITION_ERR`
 
 ### 持久化约束
 

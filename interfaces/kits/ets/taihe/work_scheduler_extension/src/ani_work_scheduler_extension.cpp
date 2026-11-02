@@ -227,6 +227,7 @@ void AniWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
     std::string bundleName = workInfo.GetBundleName();
     std::string abilityName = workInfo.GetAbilityName();
     bool isPersisted = workInfo.IsPersisted();
+    bool isPerformanceSensitive = workInfo.IsPerformanceSensitive();
     WorkCondition::Network networkType = workInfo.GetNetworkType();
     WorkCondition::Charger charger = workInfo.GetChargerType();
     int32_t batteryLevel = workInfo.GetBatteryLevel();
@@ -249,6 +250,7 @@ void AniWorkSchedulerExtension::OnWorkStart(WorkInfo& workInfo)
         SetCommonInfo(env, workInfoObject, workId, bundleName, abilityName);
         SetExtrasInfo(env, workInfoObject, getExtrasRet, extrasStr);
         SetPersistedInfo(env, workInfoObject, isPersisted);
+        SetPerformanceSensitiveInfo(env, workInfoObject, isPerformanceSensitive);
         SetNetWorkInfo(env, workInfoObject, networkType);
         SetChargerTypeInfo(env, workInfoObject, charger);
         SetBatteryInfo(env, workInfoObject, batteryLevel, batteryStatus);
@@ -276,6 +278,7 @@ void AniWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
     std::string bundleName = workInfo.GetBundleName();
     std::string abilityName = workInfo.GetAbilityName();
     bool isPersisted = workInfo.IsPersisted();
+    bool isPerformanceSensitive = workInfo.IsPerformanceSensitive();
     WorkCondition::Network networkType = workInfo.GetNetworkType();
     WorkCondition::Charger charger = workInfo.GetChargerType();
     int32_t batteryLevel = workInfo.GetBatteryLevel();
@@ -298,6 +301,7 @@ void AniWorkSchedulerExtension::OnWorkStop(WorkInfo& workInfo)
         SetCommonInfo(env, workInfoObject, workId, bundleName, abilityName);
         SetExtrasInfo(env, workInfoObject, getExtrasRet, extrasStr);
         SetPersistedInfo(env, workInfoObject, isPersisted);
+        SetPerformanceSensitiveInfo(env, workInfoObject, isPerformanceSensitive);
         SetNetWorkInfo(env, workInfoObject, networkType);
         SetChargerTypeInfo(env, workInfoObject, charger);
         SetBatteryInfo(env, workInfoObject, batteryLevel, batteryStatus);
@@ -373,6 +377,14 @@ void AniWorkSchedulerExtension::SetPersistedInfo(ani_env* env, ani_object& workI
 {
     if (!SetPropertyOptionalByBoolean(env, workInfoObject, "isPersisted", isPersisted)) {
         WS_HILOGE("Set isPersisted failed");
+    }
+}
+
+void AniWorkSchedulerExtension::SetPerformanceSensitiveInfo(ani_env* env, ani_object& workInfoObject,
+    bool isPerformanceSensitive)
+{
+    if (!SetPropertyOptionalByBoolean(env, workInfoObject, "isPerformanceSensitive", isPerformanceSensitive)) {
+        WS_HILOGE("Set isPerformanceSensitive failed");
     }
 }
 
@@ -490,7 +502,7 @@ bool AniWorkSchedulerExtension::SetPropertyOptionalByInt(
         return false;
     }
     if ((env->Object_SetPropertyByName_Int(object, name, value)) != ANI_OK) {
-        WS_HILOGE("set '%{public}s' faild", name);
+        WS_HILOGE("set '%{public}s' failed", name);
         return false;
     }
     return true;
@@ -507,18 +519,18 @@ bool AniWorkSchedulerExtension::SetPropertyOptionalByString(
     ani_string stringObj;
     ani_status status = ANI_OK;
     if ((status = GetAniStringByString(env, value, stringObj)) != ANI_OK) {
-        WS_HILOGE("GetAniStringByString faild. status %{public}d", status);
+        WS_HILOGE("GetAniStringByString failed. status %{public}d", status);
         return false;
     }
     if (stringObj == nullptr) {
-        WS_HILOGE("CreateString faild");
+        WS_HILOGE("CreateString failed");
         return false;
     }
     return SetPropertyByRef(env, object, name, static_cast<ani_ref>(stringObj));
 }
 
 ani_status AniWorkSchedulerExtension::GetAniStringByString(
-    ani_env* env, const std::string str, ani_string& aniStr)
+    ani_env* env, const std::string& str, ani_string& aniStr)
 {
     if (env == nullptr) {
         WS_HILOGE("GetAniStringByString fail, env is nullptr");
@@ -542,7 +554,7 @@ bool AniWorkSchedulerExtension::SetPropertyOptionalByEnum(
     }
     ani_ref IntObj = CreateInt(env, value);
     if (IntObj == nullptr) {
-        WS_HILOGE("CreateInt faild");
+        WS_HILOGE("CreateInt failed");
         return false;
     }
     return SetPropertyByRef(env, object, name, IntObj);
@@ -553,17 +565,17 @@ ani_object AniWorkSchedulerExtension::CreateInt(ani_env *env, int32_t value)
     ani_class cls;
     ani_status status = ANI_ERROR;
     if ((status = env->FindClass(CLASSNAME_INT, &cls)) != ANI_OK) {
-        WS_HILOGE("FindClass '%{public}s' faild. status %{public}d", CLASSNAME_INT, status);
+        WS_HILOGE("FindClass '%{public}s' failed. status %{public}d", CLASSNAME_INT, status);
         return nullptr;
     }
     ani_method ctor;
     if ((status = env->Class_FindMethod(cls, "<ctor>", "i:", &ctor)) != ANI_OK) {
-        WS_HILOGE("Class_FindMethod '%{public}s' faild. status %{public}d", CLASSNAME_INT, status);
+        WS_HILOGE("Class_FindMethod '%{public}s' failed. status %{public}d", CLASSNAME_INT, status);
         return nullptr;
     }
     ani_object outObj;
     if ((status = env->Object_New(cls, ctor, &outObj, value)) != ANI_OK) {
-        WS_HILOGE("Object_New '%{public}s' faild. status %{public}d", CLASSNAME_INT, status);
+        WS_HILOGE("Object_New '%{public}s' failed. status %{public}d", CLASSNAME_INT, status);
         return nullptr;
     }
     return outObj;
@@ -579,7 +591,7 @@ bool AniWorkSchedulerExtension::SetPropertyOptionalByBoolean(
     }
     ani_ref boolObj = CreateBoolean(env, value);
     if (boolObj == nullptr) {
-        WS_HILOGE("CreateBoolean faild");
+        WS_HILOGE("CreateBoolean failed");
         return false;
     }
     return SetPropertyByRef(env, object, name, boolObj);
@@ -616,7 +628,7 @@ bool AniWorkSchedulerExtension::SetPropertyByRef(ani_env *env, ani_object &objec
         return false;
     }
     if ((status = env->Object_SetPropertyByName_Ref(object, name, value)) != ANI_OK) {
-        WS_HILOGE("set '%{public}s' faild. status %{public}d", name, status);
+        WS_HILOGE("set '%{public}s' failed. status %{public}d", name, status);
         return false;
     }
     return true;

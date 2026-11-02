@@ -53,6 +53,7 @@ public:
         earliestStartTime_ = workInfo.earliestStartTime_;
         deepIdleTime_ = workInfo.deepIdleTime_;
         triggerType_ = workInfo.triggerType_;
+        isPerformanceSensitive_ = workInfo.isPerformanceSensitive_;
     }
     ~WorkInfo() override;
     /**
@@ -388,6 +389,18 @@ public:
      * @return The trigger type.
      */
     int32_t GetTriggerType() const;
+    /**
+     * @brief Request high priority.
+     *
+     * @param isPerformanceSensitive The high priority flag.
+     */
+    void RequestPerformanceSensitive(bool isPerformanceSensitive);
+    /**
+     * @brief Check whether the work is high priority.
+     *
+     * @return High priority or not.
+     */
+    bool IsPerformanceSensitive() const;
 private:
     int32_t workId_;
     std::string bundleName_;
@@ -398,6 +411,7 @@ private:
     std::map<WorkCondition::Type, std::shared_ptr<Condition>> conditionMap_;
     bool callBySystemApp_ {false};
     bool preinstalled_ {false};
+    bool isPerformanceSensitive_ {false};
     std::string uriKey_;
     int32_t appIndex_;
     int32_t saId_;
@@ -409,6 +423,9 @@ private:
     int32_t triggerType_ {WorkCondition::Type::UNKNOWN};
 private:
     static bool UnmarshallCondition(Parcel &parcel, WorkInfo* read, uint32_t mapsize);
+    bool MarshallCondition(Parcel &parcel) const;
+    static bool ReadBaseFields(Parcel &parcel, WorkInfo* read);
+    static bool ReadExtras(Parcel &parcel, WorkInfo* read);
     void ParseConditionToJsonStr(nlohmann::json &root);
     void ParseConditionFromJsonStr(const nlohmann::json &value);
     void ParseParametersFromJsonStr(const nlohmann::json &value);

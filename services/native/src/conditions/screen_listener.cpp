@@ -124,7 +124,7 @@ bool ScreenListener::Start()
             saIdTimeInfoMap_[entry.first] = SaTimerInfo(entry.second.first, entry.second.second);
         }
     }
-    saIdTimeInfoMap_[DEFAULT_SA_ID] = SaTimerInfo(MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN, 0);
+    saIdTimeInfoMap_[DEFAULT_SA_ID] = SaTimerInfo(g_deepIdleScreenOffTimeMin.load(), 0);
     this->commonEventSubscriber = CreateScreenEventSubscriber(*this);
     return EventFwk::CommonEventManager::SubscribeCommonEvent(this->commonEventSubscriber);
 }

@@ -779,6 +779,24 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     return true;
 }
 
+bool WorkSchedulerService::CheckPerformanceSensitiveCondition(WorkInfo& workInfo)
+{
+    if (!workInfo.IsPerformanceSensitive()) {
+        return true;
+    }
+    if (workInfo.GetDeepIdle() != WorkCondition::DeepIdle::DEEP_IDLE_IN ||
+        workInfo.GetChargerType() >= WorkCondition::Charger::CHARGING_UNPLUGGED) {
+        WS_HILOGE("isPerformanceSensitive requires isDeepIdle and isCharging to be true.");
+        return false;
+    }
+    uint32_t timeInterval = workInfo.GetTimeInterval();
+    if (timeInterval > 0 && timeInterval < ONE_DAY_MS) {
+        WS_HILOGE("isPerformanceSensitive repeat work, repeatCycleTime must be >= 24h.");
+        return false;
+    }
+    return true;
+}
+
 int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
@@ -802,6 +820,9 @@ int32_t WorkSchedulerService::StartWorkInner(const WorkInfo& workInfo, int32_t u
     }
     if (!CheckCondition(workInfo_)) {
         return E_REPEAT_CYCLE_TIME_ERR;
+    }
+    if (!CheckPerformanceSensitiveCondition(workInfo_)) {
+        return E_PERFORMANCE_SENSITIVE_CONDITION_ERR;
     }
     time_t baseTime;
     (void)time(&baseTime);
@@ -834,6 +855,10 @@ void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
 {
     WS_HILOGD("come in");
     if (workInfo.GetUid() > 0) {
+        if (!CheckPerformanceSensitiveCondition(workInfo)) {
+            WS_HILOGE("check performance sensitive condition failed.");
+            return;
+        }
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
         if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid()) == ERR_OK) {
             workQueueManager_->AddWork(workStatus);
@@ -1215,6 +1240,8 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
         .append("    -thermalLevel (number): set the thermal level.\n")
+        .append("    -high_perf_duration (number): set high perf duration, unit ms, max 600000.\n")
+        .append("    -idle_time (number): set deep idle screen off time, unit ms, default 1860000.\n")
         .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n")
         .append("    -b (bundleName) (abilityName): run backgroundloader task for App.\n");
     DumpCommonUsage(result);
@@ -1385,9 +1412,25 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
     } else if (key == "-thermalLevel") {
         workPolicyManager_->SetThermalLevelByDump(std::atoi(value.c_str()));
         result.append("Set thermal level success.");
+    } else if (key == "-high_perf_duration") {
+        DumpSetHighPerfDuration(value, result);
+    } else if (key == "-idle_time") {
+        workQueueManager_->SetIdleTime(std::atoi(value.c_str()));
+        result.append("Set deep idle screen off time success.");
     } else {
         result.append("Error params.");
     }
+}
+
+void WorkSchedulerService::DumpSetHighPerfDuration(const std::string& value, std::string& result)
+{
+    uint64_t duration = static_cast<uint64_t>(std::atoi(value.c_str()));
+    if (duration > MAX_HIGH_PERF_DURATION) {
+        result.append("Duration exceeds max value.");
+        return;
+    }
+    WorkStatus::SetHighPerfDuration(duration);
+    result.append("Set high perf duration success.");
 }
 
 void WorkSchedulerService::DumpParamRestore(std::string &result)

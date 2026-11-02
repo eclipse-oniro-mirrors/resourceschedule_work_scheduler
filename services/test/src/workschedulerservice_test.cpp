@@ -2324,5 +2324,87 @@ HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_WorkNotExist_001, TestSize.
     int32_t ret = workSchedulerService_->StopAndCancelWork(workInfo);
     EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
 }
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_001
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns true when not performance sensitive.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_001, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20001);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_002
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns false when perf sensitive without deepIdle and charging.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_002, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20002);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_003
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns true when perf sensitive with deepIdle and charging.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_003, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20003);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    workInfo.RequestDeepIdle(true);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_004
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns false when repeat cycle time less than 24h.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_004, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20004);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    workInfo.RequestDeepIdle(true);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    workInfo.RequestRepeatCycle(60 * 60 * 1000);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_005
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns true when repeat cycle time >= 24h.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_005, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20005);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    workInfo.RequestDeepIdle(true);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    workInfo.RequestRepeatCycle(ONE_DAY_MS);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_TRUE(ret);
+}
 }
 }

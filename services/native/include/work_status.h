@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <mutex>
+#include <vector>
 
 #include "timer.h"
 #include "work_info.h"
@@ -172,6 +173,10 @@ public:
      */
     static void ClearUidLastTimeMap(int32_t uid);
     /**
+     * @brief Get high priority last time by uid.
+     */
+    static bool GetPerformanceSensitiveLastTime(int32_t uid, time_t &lastTime);
+    /**
      * @brief Set min interval by dump.
      */
     void SetMinIntervalByDump(int64_t interval);
@@ -229,8 +234,18 @@ public:
     void InitRunningFields(uint64_t startTime, uint64_t watchdogTime);
     uint64_t PauseRunning(uint64_t currentTime);
     void ResumeRunning(uint64_t currentTime);
+    void StartHighPerfTimer();
+    void StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &runningWorks);
+    static uint64_t GetHighPerfDuration();
+    static void SetHighPerfDuration(uint64_t duration);
+    static uint64_t GetLastHighPerfEndTime();
 
 private:
+    struct HighPerfTimerState {
+        uint64_t startTime {0};
+        uint64_t duration {0};
+        uint64_t lastEndTime {0};
+    };
     static int32_t GetDumpAppGroup(int32_t uid);
     static bool GetUidLastTime(int32_t uid, time_t &lastTime);
     void MarkTimeout();
@@ -243,14 +258,19 @@ private:
     int GetPriority();
     bool IsTimerReady(WorkCondition::Type type);
     bool IsConditionReady();
+    bool IsPerformanceSensitiveReady();
+    bool IsMinIntervalReady();
     bool IsStandbyExemption();
     bool CheckEarliestStartTime();
     int64_t HandleMinInterval(int64_t interval, int32_t group);
+    static bool IsSameDay(uint64_t currentTimeMs, uint64_t lastTimeMs);
+    void ReportDelayTaskPerf(int32_t uid, int32_t type);
 
 private:
-    static ffrt::mutex s_uid_last_time_mutex;
+    static ffrt::mutex mutex_;
     static std::map<int32_t, time_t> s_uid_last_time_map;
-    static ffrt::mutex dumpAppGroupMutex_;
+    static std::map<int32_t, time_t> performanceSensitiveLastTimeMap_;
+    static HighPerfTimerState highPerfState_;
     static std::map<int32_t, int32_t> dumpAppGroupMap_;
     bool groupChanged_;
     std::atomic<bool> timeout_ {false};
