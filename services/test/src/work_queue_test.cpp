@@ -165,8 +165,8 @@ HWTEST_F(WorkQueueTest, ParseCondition_008, TestSize.Level1)
 HWTEST_F(WorkQueueTest, ParseCondition_009, TestSize.Level1)
 {
     WorkCondition::Type type = WorkCondition::Type::UNKNOWN;
-    std::shared_ptr<DetectorValue> value = 
-        std::make_shared<DetectorValue>(98, 88, true, "non_default");
+    std::shared_ptr<DetectorValue> value =
+        std::make_shared<DetectorValue>(99, 88, true, "non_default");
     std::shared_ptr<Condition> ret = workQueue_->ParseCondition(type, value);
     EXPECT_EQ(ret->enumVal, 0);
     EXPECT_EQ(ret->intVal, 0);
