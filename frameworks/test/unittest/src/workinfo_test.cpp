@@ -644,7 +644,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest023, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, WorkSchedUtils001, Function | MediumTest | Level2)
 {
     int32_t res = WorkSchedUtils::GetCurrentAccountId();
-    EXPECT_NE(res, -1);
+    EXPECT_GE(res, 0);
 }
 
 /**
@@ -751,11 +751,12 @@ HWTEST_F (WorkInfoTest, EarliestStartTime001, Function | MediumTest | Level2)
  */
 HWTEST_F (WorkInfoTest, GetCreateTime001, Function | MediumTest | Level2)
 {
+    uint64_t before = WorkSchedUtils::GetCurrentTimeMs();
     WorkInfo workInfo;
+    uint64_t after = WorkSchedUtils::GetCurrentTimeMs();
     uint64_t createTime = workInfo.GetCreateTime();
-    uint64_t now = WorkSchedUtils::GetCurrentTimeMs();
-    EXPECT_LE(createTime, now);
-    EXPECT_GE(createTime, now - 5000);
+    EXPECT_GE(createTime, before);
+    EXPECT_LE(createTime, after);
 }
 
 /**
@@ -766,11 +767,16 @@ HWTEST_F (WorkInfoTest, GetCreateTime001, Function | MediumTest | Level2)
  */
 HWTEST_F (WorkInfoTest, ParseToJsonStr001, Function | MediumTest | Level2)
 {
+    uint64_t before = WorkSchedUtils::GetCurrentTimeMs();
     WorkInfo workInfo;
+    uint64_t after = WorkSchedUtils::GetCurrentTimeMs();
     workInfo.RefreshUid(100);
     std::string result = workInfo.ParseToJsonStr();
-    EXPECT_NE(result.find("earliestStartTime"), -1);
-    EXPECT_NE(result.find("createTime"), -1);
+    nlohmann::json parsed = nlohmann::json::parse(result);
+    EXPECT_EQ(parsed["earliestStartTime"].get<int32_t>(), 0);
+    EXPECT_GE(parsed["createTime"].get<uint64_t>(), before);
+    EXPECT_LE(parsed["createTime"].get<uint64_t>(), after);
+    EXPECT_EQ(parsed["uid"].get<int32_t>(), 100);
 }
 
 /**
