@@ -36,11 +36,12 @@ namespace WorkScheduler {
 
 static bool IsScreenOnOrUnlocked(const std::string &action)
 {
-    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
-        return true;
-    }
 #ifdef CAR_PLATFORM
     if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_ON) {
+        return true;
+    }
+#else
+    if (action == EventFwk::CommonEventSupport::COMMON_EVENT_SCREEN_UNLOCKED) {
         return true;
     }
 #endif
