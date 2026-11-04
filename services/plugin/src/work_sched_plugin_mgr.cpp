@@ -44,6 +44,22 @@ void WorkSchedPluginMgr::Init()
         ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE);
     PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_APP_INSTALL_UNINSTALL);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_APP_STATE_CHANGE);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_AUDIO_RENDER_STATE_CHANGE);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_AUDIO_CAPTURE_STATUS_CHANGED);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_LOCATION_STATUS_CHANGE);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_CAMERA_TORCH_STATE_CHANGE);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_TRANSIENT_TASK);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_CONTINUOUS_TASK);
+    PluginMgr::GetInstance().SubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_PROCESS_STATE_CHANGE);
     pluginEnable_.store(true);
     WS_HILOGI("WorkSchedPluginMgr init succeed");
 }
@@ -59,6 +75,22 @@ void WorkSchedPluginMgr::Disable()
         ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE);
     PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
         ResType::RES_TYPE_APP_INSTALL_UNINSTALL);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_APP_STATE_CHANGE);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_AUDIO_RENDER_STATE_CHANGE);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_AUDIO_CAPTURE_STATUS_CHANGED);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_LOCATION_STATUS_CHANGE);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_CAMERA_TORCH_STATE_CHANGE);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_TRANSIENT_TASK);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_CONTINUOUS_TASK);
+    PluginMgr::GetInstance().UnSubscribeResource(std::string(LIB_NAME),
+        ResType::RES_TYPE_PROCESS_STATE_CHANGE);
     pluginEnable_.store(false);
 }
 

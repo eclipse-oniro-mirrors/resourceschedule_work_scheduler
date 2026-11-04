@@ -15,6 +15,7 @@
 
 #include "background_loader/background_loader_database.h"
 
+#include <cstdint>
 #include <sys/stat.h>
 #include "work_sched_hilog.h"
 #include "work_sched_utils.h"
@@ -27,13 +28,12 @@ const char* PERSISTED_PATH = "/data/service/el1/public/WorkScheduler";
 
 const char* SQL_CREATE_TASK_TABLE =
     "CREATE TABLE IF NOT EXISTS BackgroundLoaderTask ("
-    "taskKey TEXT PRIMARY KEY NOT NULL, "
+    "uid INTEGER PRIMARY KEY NOT NULL, "
     "bundleName TEXT NOT NULL, "
     "abilityName TEXT NOT NULL, "
     "appIndex INTEGER NOT NULL, "
     "taskId INTEGER NOT NULL, "
     "status INTEGER NOT NULL DEFAULT 0, "
-    "uid INTEGER NOT NULL DEFAULT 0, "
     "timeoutCount INTEGER NOT NULL DEFAULT 0, "
     "pid INTEGER NOT NULL DEFAULT -1);";
 
@@ -46,20 +46,20 @@ const char* SQL_CREATE_BLOCKLIST_TABLE =
     "taskKey TEXT PRIMARY KEY NOT NULL);";
 
 const char* SQL_DELETE_TASK =
-    "DELETE FROM BackgroundLoaderTask WHERE taskKey = ?;";
+    "DELETE FROM BackgroundLoaderTask WHERE uid = ?;";
 
 const char* SQL_UPSERT_TASK =
     "INSERT INTO BackgroundLoaderTask "
-    "(taskKey, bundleName, abilityName, appIndex, taskId, status, uid, timeoutCount, pid) "
-    "VALUES (?,?,?,?,?,?,?,?,?) "
-    "ON CONFLICT(taskKey) DO UPDATE SET "
+    "(uid, bundleName, abilityName, appIndex, taskId, status, timeoutCount, pid) "
+    "VALUES (?,?,?,?,?,?,?,?) "
+    "ON CONFLICT(uid) DO UPDATE SET "
     "bundleName = excluded.bundleName, abilityName = excluded.abilityName, "
     "appIndex = excluded.appIndex, taskId = excluded.taskId, "
-    "status = excluded.status, uid = excluded.uid, "
-    "timeoutCount = excluded.timeoutCount, pid = excluded.pid;";
+    "status = excluded.status, timeoutCount = excluded.timeoutCount, "
+    "pid = excluded.pid;";
 
 const char* SQL_QUERY_ALL_TASKS =
-    "SELECT taskKey, bundleName, abilityName, appIndex, taskId, status, uid, timeoutCount, pid "
+    "SELECT uid, bundleName, abilityName, appIndex, taskId, status, timeoutCount, pid "
     "FROM BackgroundLoaderTask;";
 
 const char* SQL_INSERT_BLOCKLIST =
@@ -88,13 +88,13 @@ bool BackgroundLoaderDatabase::Init()
         return false;
     }
     if (!CheckAndMigrateDatabase()) {
-        WS_HILOGE("check and migrate database failed.");
+        BL_HILOGE("check and migrate database failed.");
         sqlite3_close(db_);
         db_ = nullptr;
         return false;
     }
     if (!CreateTables()) {
-        WS_HILOGE("create tables failed.");
+        BL_HILOGE("create tables failed.");
         sqlite3_close(db_);
         db_ = nullptr;
         return false;
@@ -108,12 +108,12 @@ bool BackgroundLoaderDatabase::OpenDatabase()
         return true;
     }
     if (mkdir(PERSISTED_PATH, S_IRWXU) != 0 && errno != EEXIST) {
-        WS_HILOGE("crete db dir failed, errno=%{public}d", errno);
+        BL_HILOGE("crete db dir failed, errno=%{public}d", errno);
         return false;
     }
     std::string realPath;
     if (!WorkSchedUtils::ConvertFullPath(PERSISTED_PATH, realPath)) {
-        WS_HILOGE("get real dir path failed.");
+        BL_HILOGE("get real dir path failed.");
         return false;
     }
     std::string dbPath = realPath + BACKGROUND_LOADER_DB_FILE;
@@ -121,7 +121,7 @@ bool BackgroundLoaderDatabase::OpenDatabase()
         SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX, nullptr);
     if (ret != SQLITE_OK) {
         const char* msg = db_ != nullptr ? sqlite3_errmsg(db_) : "unknown";
-        WS_HILOGE("open db failed, ret=%{public}d, msg=%{public}s", ret, msg);
+        BL_HILOGE("open db failed, ret=%{public}d, msg=%{public}s", ret, msg);
         if (db_ != nullptr) {
             sqlite3_close(db_);
             db_ = nullptr;
@@ -129,7 +129,7 @@ bool BackgroundLoaderDatabase::OpenDatabase()
         return false;
     }
     chmod(dbPath.c_str(), S_IRUSR | S_IWUSR);
-    WS_HILOGI("open db success, path=%{public}s", dbPath.c_str());
+    BL_HILOGI("open db success, path=%{public}s", dbPath.c_str());
     return true;
 }
 
@@ -139,15 +139,15 @@ bool BackgroundLoaderDatabase::CreateTables()
         return false;
     }
     if (!ExecuteSql(SQL_CREATE_TASK_TABLE)) {
-        WS_HILOGE("create task table failed.");
+        BL_HILOGE("create task table failed.");
         return false;
     }
     if (!ExecuteSql(SQL_CREATE_TASK_INDEX)) {
-        WS_HILOGE("create task index failed.");
+        BL_HILOGE("create task index failed.");
         return false;
     }
     if (!ExecuteSql(SQL_CREATE_BLOCKLIST_TABLE)) {
-        WS_HILOGE("create blocklist table failed.");
+        BL_HILOGE("create blocklist table failed.");
         return false;
     }
     return true;
@@ -161,7 +161,7 @@ bool BackgroundLoaderDatabase::CheckAndMigrateDatabase()
     sqlite3_stmt* stmt = nullptr;
     int32_t ret = sqlite3_prepare_v2(db_, "PRAGMA user_version;", -1, &stmt, nullptr);
     if (ret != SQLITE_OK) {
-        WS_HILOGE("prepare pragma user_version failed, ret=%{public}d", ret);
+        BL_HILOGE("prepare pragma user_version failed, ret=%{public}d", ret);
         return false;
     }
     int32_t currentVersion = 0;
@@ -173,10 +173,10 @@ bool BackgroundLoaderDatabase::CheckAndMigrateDatabase()
     if (currentVersion < BACKGROUND_LOADER_DB_VERSION) {
         std::string sql = "PRAGMA user_version = " + std::to_string(BACKGROUND_LOADER_DB_VERSION) + ";";
         if (!ExecuteSql(sql)) {
-            WS_HILOGE("set user_version failed");
+            BL_HILOGE("set user_version failed");
             return false;
         }
-        WS_HILOGI("database upgrade from %{public}d to %{public}d", currentVersion, BACKGROUND_LOADER_DB_VERSION);
+        BL_HILOGI("database upgrade from %{public}d to %{public}d", currentVersion, BACKGROUND_LOADER_DB_VERSION);
     }
     return true;
 }
@@ -189,7 +189,7 @@ bool BackgroundLoaderDatabase::ExecuteSql(const std::string &sql)
     char* errMsg = nullptr;
     int32_t ret = sqlite3_exec(db_, sql.c_str(), nullptr, nullptr, &errMsg);
     if (ret != SQLITE_OK) {
-        WS_HILOGE("execute sql failed, ret=%{public}d, msg=%{public}s", ret, errMsg != nullptr ? errMsg : "null");
+        BL_HILOGE("execute sql failed, ret=%{public}d, msg=%{public}s", ret, errMsg != nullptr ? errMsg : "null");
         if (errMsg != nullptr) {
             sqlite3_free(errMsg);
         }
@@ -209,23 +209,44 @@ bool BackgroundLoaderDatabase::ExecuteSingleTextSql(const char* sql, const std::
     sqlite3_stmt* stmt = nullptr;
     int32_t ret = sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
     if (ret != SQLITE_OK) {
-        WS_HILOGE("prepare sql failed, ret=%{public}d", ret);
+        BL_HILOGE("prepare sql failed, ret=%{public}d", ret);
         return false;
     }
     sqlite3_bind_text(stmt, 1, param.c_str(), -1, SQLITE_TRANSIENT);
     ret = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
     if (ret != SQLITE_DONE) {
-        WS_HILOGE("step failed, ret=%{public}d", ret);
+        BL_HILOGE("step failed, ret=%{public}d", ret);
         return false;
     }
     return true;
 }
 
-bool BackgroundLoaderDatabase::DeleteTask(const std::string &taskKey)
+bool BackgroundLoaderDatabase::ExecuteSingleIntSql(const char* sql, int32_t param)
+{
+    if (db_ == nullptr) {
+        return false;
+    }
+    sqlite3_stmt* stmt = nullptr;
+    int32_t ret = sqlite3_prepare_v2(db_, sql, -1, &stmt, nullptr);
+    if (ret != SQLITE_OK) {
+        BL_HILOGE("prepare sql failed, ret=%{public}d", ret);
+        return false;
+    }
+    sqlite3_bind_int(stmt, 1, param);
+    ret = sqlite3_step(stmt);
+    sqlite3_finalize(stmt);
+    if (ret != SQLITE_DONE) {
+        BL_HILOGE("step failed, ret=%{public}d", ret);
+        return false;
+    }
+    return true;
+}
+
+bool BackgroundLoaderDatabase::DeleteTask(int32_t uid)
 {
     std::lock_guard<ffrt::mutex> lock(mutex_);
-    return ExecuteSingleTextSql(SQL_DELETE_TASK, taskKey);
+    return ExecuteSingleIntSql(SQL_DELETE_TASK, uid);
 }
 
 bool BackgroundLoaderDatabase::UpsertTask(const TaskRow& row)
@@ -237,22 +258,21 @@ bool BackgroundLoaderDatabase::UpsertTask(const TaskRow& row)
     sqlite3_stmt* stmt = nullptr;
     int32_t ret = sqlite3_prepare_v2(db_, SQL_UPSERT_TASK, -1, &stmt, nullptr);
     if (ret != SQLITE_OK) {
-        WS_HILOGE("prepare upsert failed, ret=%{public}d", ret);
+        BL_HILOGE("prepare upsert failed, ret=%{public}d", ret);
         return false;
     }
-    sqlite3_bind_text(stmt, BIND_TASK_KEY, row.taskKey.c_str(), -1, SQLITE_TRANSIENT);
+    sqlite3_bind_int(stmt, BIND_UID, row.uid);
     sqlite3_bind_text(stmt, BIND_BUNDLE_NAME, row.bundleName.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_text(stmt, BIND_ABILITY_NAME, row.abilityName.c_str(), -1, SQLITE_TRANSIENT);
     sqlite3_bind_int(stmt, BIND_APP_INDEX, row.appIndex);
     sqlite3_bind_int(stmt, BIND_TASK_ID, row.taskId);
     sqlite3_bind_int(stmt, BIND_STATUS, row.status);
-    sqlite3_bind_int(stmt, BIND_UID, row.uid);
     sqlite3_bind_int(stmt, BIND_TIMEOUT_COUNT, row.timeoutCount);
     sqlite3_bind_int(stmt, BIND_PID, row.pid);
     ret = sqlite3_step(stmt);
     sqlite3_finalize(stmt);
     if (ret != SQLITE_DONE) {
-        WS_HILOGE("upsert step failed, ret=%{public}d", ret);
+        BL_HILOGE("upsert step failed, ret=%{public}d", ret);
         return false;
     }
     return true;
@@ -268,22 +288,20 @@ bool BackgroundLoaderDatabase::QueryAllTasks(std::vector<TaskRow> &rows)
     sqlite3_stmt* stmt = nullptr;
     int32_t ret = sqlite3_prepare_v2(db_, SQL_QUERY_ALL_TASKS, -1, &stmt, nullptr);
     if (ret != SQLITE_OK) {
-        WS_HILOGE("prepare query all tasks failed, ret=%{public}d", ret);
+        BL_HILOGE("prepare query all tasks failed, ret=%{public}d", ret);
         return false;
     }
     int32_t stepRet = sqlite3_step(stmt);
     while (stepRet == SQLITE_ROW) {
         TaskRow row;
-        const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, IDX_TASK_KEY));
-        row.taskKey = text != nullptr ? text : "";
-        text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, IDX_BUNDLE_NAME));
+        row.uid = sqlite3_column_int(stmt, IDX_UID);
+        const char* text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, IDX_BUNDLE_NAME));
         row.bundleName = text != nullptr ? text : "";
         text = reinterpret_cast<const char*>(sqlite3_column_text(stmt, IDX_ABILITY_NAME));
         row.abilityName = text != nullptr ? text : "";
         row.appIndex = sqlite3_column_int(stmt, IDX_APP_INDEX);
         row.taskId = sqlite3_column_int(stmt, IDX_TASK_ID);
         row.status = sqlite3_column_int(stmt, IDX_STATUS);
-        row.uid = sqlite3_column_int(stmt, IDX_UID);
         row.timeoutCount = sqlite3_column_int(stmt, IDX_TIMEOUT_COUNT);
         row.pid = sqlite3_column_int(stmt, IDX_PID);
         rows.push_back(row);
@@ -291,7 +309,7 @@ bool BackgroundLoaderDatabase::QueryAllTasks(std::vector<TaskRow> &rows)
     }
     sqlite3_finalize(stmt);
     if (stepRet != SQLITE_DONE) {
-        WS_HILOGE("query all tasks step failed, ret=%{public}d", stepRet);
+        BL_HILOGE("query all tasks step failed, ret=%{public}d", stepRet);
         return false;
     }
     return true;
@@ -318,7 +336,7 @@ bool BackgroundLoaderDatabase::QueryAllBlockList(std::unordered_set<std::string>
     sqlite3_stmt* stmt = nullptr;
     int32_t ret = sqlite3_prepare_v2(db_, SQL_QUERY_ALL_BLOCKLIST, -1, &stmt, nullptr);
     if (ret != SQLITE_OK) {
-        WS_HILOGE("prepare query all blocklist failed, ret=%{public}d", ret);
+        BL_HILOGE("prepare query all blocklist failed, ret=%{public}d", ret);
         return false;
     }
     int32_t stepRet = sqlite3_step(stmt);
@@ -331,7 +349,7 @@ bool BackgroundLoaderDatabase::QueryAllBlockList(std::unordered_set<std::string>
     }
     sqlite3_finalize(stmt);
     if (stepRet != SQLITE_DONE) {
-        WS_HILOGE("query all blocklist step failed, ret=%{public}d", stepRet);
+        BL_HILOGE("query all blocklist step failed, ret=%{public}d", stepRet);
         return false;
     }
     return true;

@@ -41,6 +41,7 @@
           "device_standby",
           "device_usage_statistics",
           "access_token",
+          "audio_framework",
           "netmanager_base",
           "time_service",
           "init",
