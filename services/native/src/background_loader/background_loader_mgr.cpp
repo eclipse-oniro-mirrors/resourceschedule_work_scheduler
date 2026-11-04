@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 #include <string_ex.h>
+#include <vector>
 
 #include "background_loader/ability_connect_callback.h"
 #include "ability_manager_client.h"
