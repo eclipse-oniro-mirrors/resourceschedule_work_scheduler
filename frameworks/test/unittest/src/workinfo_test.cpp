@@ -644,7 +644,7 @@ HWTEST_F (WorkInfoTest, WorkInfoTest023, Function | MediumTest | Level2)
 HWTEST_F (WorkInfoTest, WorkSchedUtils001, Function | MediumTest | Level2)
 {
     int32_t res = WorkSchedUtils::GetCurrentAccountId();
-    EXPECT_GE(res, 0);
+    EXPECT_EQ(res, 100);
 }
 
 /**
@@ -755,8 +755,9 @@ HWTEST_F (WorkInfoTest, GetCreateTime001, Function | MediumTest | Level2)
     WorkInfo workInfo;
     uint64_t after = WorkSchedUtils::GetCurrentTimeMs();
     uint64_t createTime = workInfo.GetCreateTime();
-    EXPECT_GE(createTime, before);
-    EXPECT_LE(createTime, after);
+    EXPECT_TRUE(createTime >= before && createTime <= after);
+    WorkInfo workInfo2;
+    EXPECT_GE(workInfo2.GetCreateTime(), createTime);
 }
 
 /**
