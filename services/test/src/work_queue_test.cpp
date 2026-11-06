@@ -333,7 +333,6 @@ HWTEST_F(WorkQueueTest, CheckUnCurModeWork_001, TestSize.Level1)
     std::string paraName = "persist.sceneboard.ispcmode";
     bool isPcMode = OHOS::system::GetBoolParameter(paraName, false);
     std::string isOrNotPcMode = "";
-    std::string bundleName = "true";
     workQueue_->ClearAll();
     auto workInfo_ = WorkInfo();
     workInfo_.SetWorkId(1);
