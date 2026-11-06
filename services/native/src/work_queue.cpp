@@ -221,6 +221,19 @@ list<shared_ptr<WorkStatus>> WorkQueue::GetWorkList()
     return workList_;
 }
 
+void WorkQueue::CheckUnCurModeWork()
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
+    for (auto it : workList_) {
+        if (it->IsCurrentMode()) {
+            continue;
+        }
+        it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+        CancelWork(it);
+        WS_HILOGI("current mode is not matched,workId: %{public}s.", it->workId_.c_str());
+    }
+}
+
 void WorkQueue::RemoveUnReady()
 {
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);

@@ -234,6 +234,7 @@ public:
     void InitRunningFields(uint64_t startTime, uint64_t watchdogTime);
     uint64_t PauseRunning(uint64_t currentTime);
     void ResumeRunning(uint64_t currentTime);
+    bool IsCurrentMode();
     void StartHighPerfTimer();
     void StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &runningWorks);
     static uint64_t GetHighPerfDuration();

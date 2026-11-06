@@ -19,6 +19,7 @@
 #include "work_queue.h"
 #include "work_status.h"
 #include "work_scheduler_service.h"
+#include "parameters.h"
 
 using namespace testing::ext;
 
@@ -319,6 +320,43 @@ HWTEST_F(WorkQueueTest, GetWorkList_001, TestSize.Level1)
     workQueue_->Push(workStatus);
     std::list<std::shared_ptr<WorkStatus>> ret = workQueue_->GetWorkList();
     EXPECT_TRUE(ret.size() == 1);
+}
+
+/**
+ * @tc.name: CheckUnCurModeWork_001
+ * @tc.desc: Test WorkQueue CheckUnCurModeWork.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, CheckUnCurModeWork_001, TestSize.Level1)
+{
+    std::string paraName = "persist.sceneboard.ispcmode";
+    bool isPcMode = OHOS::system::GetBoolParameter(paraName, false);
+    std::string isOrNotPcMode = "";
+    std::string bundleName = "true";
+    workQueue_->ClearAll();
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(1);
+    std::string bundleName = "com.example.workStatus";
+    std::string abilityName = "workStatusAbility";
+    workInfo_.SetElement(bundleName, abilityName);
+    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
+    workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workQueue_->Push(workStatus);
+    if (!isPcMode) {
+        isOrNotPcMode = "false";
+    } else {
+        isOrNotPcMode = "true";
+    }
+    OHOS::system::SetParameter(paraName, isOrNotPcMode);
+    workQueue_->CheckUnCurModeWork();
+    EXPECT_TRUE(workQueue_->GetWorkList().size() == 0);
+    if (isPcMode) {
+        isOrNotPcMode = "true";
+    } else {
+        isOrNotPcMode = "false";
+    }
+    OHOS::system::SetParameter(paraName, isOrNotPcMode);
 }
 
 /**

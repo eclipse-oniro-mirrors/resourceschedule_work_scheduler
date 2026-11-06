@@ -413,6 +413,7 @@ void WorkPolicyManager::CheckWorkToRun()
         WS_HILOGE("wss_ expired");
         return;
     }
+    CheckUnCurModeWork();
     RemoveAllUnReady();
     if (handler_ == nullptr) {
         WS_HILOGE("handler lock() returns nullptr");
@@ -454,6 +455,11 @@ void WorkPolicyManager::CheckWorkToRun()
         SendRetrigger(DELAY_TIME_LONG);
     }
     WS_HILOGD("out");
+}
+
+void WorkPolicyManager::CheckUnCurModeWork()
+{
+    conditionReadyQueue_->CheckUnCurModeWork();
 }
 
 void WorkPolicyManager::RemoveAllUnReady()
