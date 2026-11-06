@@ -345,7 +345,7 @@ HWTEST_F(WorkQueueTest, CheckUnCurModeWork_001, TestSize.Level1)
     workQueue_->CheckUnCurModeWork();
     auto workList = workQueue_->GetWorkList();
     ASSERT_EQ(workList.size(), 1u);
-    EXPECT_EQ(workList.front()->GetStatus(), WorkStatus::Status::WAIT_CONDITION);   
+    EXPECT_EQ(workList.front()->GetStatus(), WorkStatus::Status::WAIT_CONDITION);
     OHOS::system::SetParameter(paraName, isPcMode ? "true" : "false");
 }
 
