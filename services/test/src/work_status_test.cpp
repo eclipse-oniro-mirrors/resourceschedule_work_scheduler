@@ -49,8 +49,8 @@ public:
     static void TearDownTestCase() {}
     void SetUp() {}
     void TearDown();
-    void SetTabletModeParam(bool isPcMode，const std::string& paramKey);
-    void SetPcModeParam(bool isPcMode，const std::string& paramKey);
+    void SetTabletModeParam(bool isPcMode);
+    void SetPcModeParam(bool isPcMode);
     static std::shared_ptr<WorkStatus> workStatus_;
     static std::shared_ptr<WorkInfo> workInfo_;
 };
@@ -79,8 +79,9 @@ void WorkStatusTest::SetUpTestCase()
     workStatus_ = std::make_shared<WorkStatus>(*(workInfo_.get()), -1);
 }
 
-void WorkStatusTest::SetTabletModeParam(bool isPcMode, const std::string& paramKey)
+void WorkStatusTest::SetTabletModeParam(bool isPcMode)
 {
+    std::string paraName = "persist.sceneboard.ispcmode";
     if (isPcMode) {
         OHOS::system::SetParameter(paramKey, "false");
     } else {
@@ -88,8 +89,9 @@ void WorkStatusTest::SetTabletModeParam(bool isPcMode, const std::string& paramK
     }
 }
  
-void WorkStatusTest::SetPcModeParam(bool isPcMode, const std::string& paramKey)
+void WorkStatusTest::SetPcModeParam(bool isPcMode)
 {
+    std::string paraName = "persist.sceneboard.ispcmode";
     if (isPcMode) {
         OHOS::system::SetParameter(paramKey, "true");
     } else {
@@ -200,7 +202,7 @@ HWTEST_F(WorkStatusTest, IsCurrentMode_003, TestSize.Level1)
     bool expectedResult = (mainModeWork == mainMode);
     EXPECT_EQ(workStatus_->IsCurrentMode(), expectedResult);
  
-    SetTabletModeParam(isDefaultPcMode, paraName);
+    SetTabletModeParam(isDefaultPcMode);
     isCurrentPcMode = OHOS::system::GetBoolParameter(paraName, false);
     pcMode = isCurrentPcMode ? 1 : 0;
     mainMode = (pcMode == deviceMainMode) ? true : false;
@@ -208,21 +210,21 @@ HWTEST_F(WorkStatusTest, IsCurrentMode_003, TestSize.Level1)
     EXPECT_EQ(workStatus_->IsCurrentMode(), expectedResult);
  
     mainModeWork = false;
-    SetPcModeParam(isDefaultPcMode, paraName);
+    SetPcModeParam(isDefaultPcMode);
     isCurrentPcMode = OHOS::system::GetBoolParameter(paraName, false);
     pcMode = isCurrentPcMode ? 1 : 0;
     mainMode = (pcMode == deviceMainMode) ? true : false;
     expectedResult = (mainModeWork == mainMode);
     EXPECT_EQ(workStatus_->IsCurrentMode(), expectedResult);
  
-    SetTabletModeParam(isDefaultPcMode, paraName);
+    SetTabletModeParam(isDefaultPcMode);
     isCurrentPcMode = OHOS::system::GetBoolParameter(paraName, false);
     pcMode = isCurrentPcMode ? 1 : 0;
     mainMode = (pcMode == deviceMainMode) ? true : false;
     expectedResult = (mainModeWork == mainMode);
     EXPECT_EQ(workStatus_->IsCurrentMode(), expectedResult);
  
-    SetPcModeParam(isDefaultPcMode, paraName);
+    SetPcModeParam(isDefaultPcMode);
 }
 
 /**
