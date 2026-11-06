@@ -83,9 +83,9 @@ void WorkStatusTest::SetTabletModeParam(bool isPcMode)
 {
     std::string paraName = "persist.sceneboard.ispcmode";
     if (isPcMode) {
-        OHOS::system::SetParameter(paramKey, "false");
+        OHOS::system::SetParameter(paraName, "false");
     } else {
-        OHOS::system::SetParameter(paramKey, "true");
+        OHOS::system::SetParameter(paraName, "true");
     }
 }
  
@@ -93,9 +93,9 @@ void WorkStatusTest::SetPcModeParam(bool isPcMode)
 {
     std::string paraName = "persist.sceneboard.ispcmode";
     if (isPcMode) {
-        OHOS::system::SetParameter(paramKey, "true");
+        OHOS::system::SetParameter(paraName, "true");
     } else {
-        OHOS::system::SetParameter(paramKey, "false");
+        OHOS::system::SetParameter(paraName, "false");
     }
 }
 
