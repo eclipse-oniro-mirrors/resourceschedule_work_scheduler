@@ -1,4 +1,4 @@
-﻿# 延迟任务代码设计
+# 延迟任务代码设计
 
 > 文档版本：v1.1
 > 更新时间：2026-10-23
@@ -446,6 +446,11 @@ WorkPolicyManager --> WorkQueue : 管理就绪队列
 - 恢复：服务启动时 `InitPersistedWork()` 从 JSON 文件读取，`ReadPersistedWorks()` 解析
 - 预安装任务：`InitPreinstalledWork()` 从配置文件加载，`ReadPreinstalledWorks()` 解析
 - 云配置更新：`SetWorkSchedulerConfig` 接收云配置，更新最小重复时间、豁免应用列表、预安装任务等
+
+### 任务就绪检查机制
+ 
+- `WorkStatus::IsReady()`是任务进入调度队列前的核心校验入口。该方法按顺序执行一系列检查，只有全部通过的任务才会被标记为“就绪”并加入。
+- 为了支持PC、平板单设备多形态的任务隔离调度，新增了`IsCurrentMode()`检查，该逻辑确保任务仅在与其“所属模式”一致的设备形态下被调度，避免跨形态的资源竞争。
 
 ## DFX 实现设计
 
