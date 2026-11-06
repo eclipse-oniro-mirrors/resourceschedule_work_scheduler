@@ -231,9 +231,6 @@ void WorkQueue::CheckUnCurModeWork()
         it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
         WS_HILOGI("current mode is not matched,workId: %{public}s.", it->workId_.c_str());
     }
-    workList_.remove_if([](shared_ptr<WorkStatus> value) {
-        return (value->GetStatus() != WorkStatus::Status::WAIT_CONDITION);
-    });
 }
 
 void WorkQueue::RemoveUnReady()
