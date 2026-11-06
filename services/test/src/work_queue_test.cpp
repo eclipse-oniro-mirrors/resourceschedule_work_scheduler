@@ -332,7 +332,6 @@ HWTEST_F(WorkQueueTest, CheckUnCurModeWork_001, TestSize.Level1)
 {
     std::string paraName = "persist.sceneboard.ispcmode";
     bool isPcMode = OHOS::system::GetBoolParameter(paraName, false);
-    std::string isOrNotPcMode = "";
     workQueue_->ClearAll();
     auto workInfo_ = WorkInfo();
     workInfo_.SetWorkId(1);
@@ -340,22 +339,14 @@ HWTEST_F(WorkQueueTest, CheckUnCurModeWork_001, TestSize.Level1)
     std::string abilityName = "workStatusAbility";
     workInfo_.SetElement(bundleName, abilityName);
     auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
-    workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
     workQueue_->Push(workStatus);
-    if (!isPcMode) {
-        isOrNotPcMode = "false";
-    } else {
-        isOrNotPcMode = "true";
-    }
-    OHOS::system::SetParameter(paraName, isOrNotPcMode);
+    OHOS::system::SetParameter(paraName, isPcMode ? "false" : "true");
     workQueue_->CheckUnCurModeWork();
-    EXPECT_TRUE(workQueue_->GetWorkList().size() == 0);
-    if (isPcMode) {
-        isOrNotPcMode = "true";
-    } else {
-        isOrNotPcMode = "false";
-    }
-    OHOS::system::SetParameter(paraName, isOrNotPcMode);
+    auto workList = workQueue_->GetWorkList();
+    ASSERT_EQ(workList.size(), 1u);
+    EXPECT_EQ(workList.front()->GetStatus(), WorkStatus::Status::WAIT_CONDITION);   
+    OHOS::system::SetParameter(paraName, isPcMode ? "true" : "false");
 }
 
 /**
