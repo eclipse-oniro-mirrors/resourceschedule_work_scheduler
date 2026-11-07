@@ -801,7 +801,7 @@ int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
     int32_t timerId = SetTimer();
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     int32_t ret = StartWorkInner(workInfo, uid);
     CancelTimer(timerId);
     return ret;
@@ -895,7 +895,7 @@ int32_t WorkSchedulerService::StopWork(const WorkInfo& workInfo)
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (checkBundle_.load() && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
@@ -944,7 +944,7 @@ int32_t WorkSchedulerService::StopAndCancelWork(const WorkInfo& workInfo)
         return E_SERVICE_NOT_READY;
     }
     WorkInfo workInfo_ = workInfo;
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (checkBundle_.load() && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
@@ -990,7 +990,7 @@ int32_t WorkSchedulerService::StopAndClearWorks()
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    StopAndClearWorksByUid(IPCSkeleton::GetCallingUid());
+    StopAndClearWorksByUid(IPCSkeleton::GetCallingAppUid());
     return ERR_OK;
 }
 
@@ -1022,7 +1022,7 @@ int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId, bool &result)
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     return workPolicyManager_->IsLastWorkTimeout(workId, uid, result);
 }
 
@@ -1034,7 +1034,7 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
 int32_t WorkSchedulerService::ObtainAllWorks(std::vector<WorkInfo>& workInfos)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::ObtainAllWorks");
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (!ready_.load()) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -1072,7 +1072,7 @@ int32_t WorkSchedulerService::ObtainWorksByUidAndWorkIdForInner(int32_t uid,
 int32_t WorkSchedulerService::GetWorkStatus(int32_t workId, WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::GetWorkStatus");
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (!ready_.load()) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -2486,7 +2486,7 @@ int32_t WorkSchedulerService::SetExecFrequency(const FrequencyInfo& frequencyInf
         return E_INTERVAL_ERROR;
     }
 
-    int32_t callingUid = IPCSkeleton::GetCallingUid();
+    int32_t callingUid = IPCSkeleton::GetCallingAppUid();
     SetExecFrequencyInner(callingUid, frequencyInfo);
     // 刷新持久化数据
     RefreshPersistedInfos();
@@ -2509,7 +2509,7 @@ int32_t WorkSchedulerService::ResetExecFrequency(const int32_t uid)
         WS_HILOGE("ResetExecFrequency not allowed.");
         return E_PERMISSION_DENIED;
     }
-    int32_t callingUid = IPCSkeleton::GetCallingUid();
+    int32_t callingUid = IPCSkeleton::GetCallingAppUid();
     if (GetExecFrequency(uid, callingUid) == -1) {
         WS_HILOGE("uid: %{public}d is invalid, not set exec frequency.", uid);
         return E_UID_ERROR;
