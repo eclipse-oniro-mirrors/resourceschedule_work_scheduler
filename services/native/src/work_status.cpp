@@ -54,8 +54,11 @@ WorkStatus::HighPerfTimerState WorkStatus::highPerfState_;
 const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
 const int32_t ACTIVE_GROUP = 10;
+const int32_t APP_INDEX_MINOR_MODE = 10000;
 const string SWITCH_ON = "1";
 const string DELIMITER = ",";
+const string DEVICE_TYPE_PC = "2in1";
+const string DEVICE_TYPE_TABLET = "tablet";
 ffrt::mutex WorkStatus::mutex_;
 std::map<int32_t, int32_t> WorkStatus::dumpAppGroupMap_;
 
@@ -255,6 +258,28 @@ bool WorkStatus::IsSameUser()
     return true;
 }
 
+bool WorkStatus::IsCurrentMode()
+{
+    std::string deviceType = OHOS::system::GetParameter("const.product.devicetype", "");
+    // 非PC & 非平板
+    if (deviceType != DEVICE_TYPE_PC && deviceType != DEVICE_TYPE_TABLET) {
+        return true;
+    }
+    // 当前任务所属任务模式是否主模式
+    bool mainModeWork = workInfo_->GetAppIndex() < APP_INDEX_MINOR_MODE ? true : false;
+    // 当前模式是否PC模式，1代表pc模式，0代表非pc模式
+    int32_t pcMode = OHOS::system::GetBoolParameter("persist.sceneboard.ispcmode", false) ? 1 : 0;
+    // 设备主模式，0：主tablet, 1: 主2in1
+    int32_t deviceMainMode = OHOS::system::GetIntParameter("const.sceneboard.mainmode", -1);
+    if (deviceMainMode == -1) {
+        return true;
+    }
+    // 当前模式是否主模式
+    bool mainMode = pcMode == deviceMainMode;
+    // 当前模式与当前任务所属模式是否一致
+    return mainModeWork == mainMode;
+}
+
 bool WorkStatus::IsUriKeySwitchOn()
 {
     if (!workInfo_->IsPreinstalled()) {
@@ -279,6 +304,10 @@ bool WorkStatus::IsReady()
     conditionStatus_.clear();
     if (!IsSameUser()) {
         conditionStatus_ += DELIMITER + "notSameUser";
+        return false;
+    }
+    if (!IsCurrentMode()) {
+        conditionStatus_ += DELIMITER + "notCurrentMode";
         return false;
     }
     if (IsRunning()) {

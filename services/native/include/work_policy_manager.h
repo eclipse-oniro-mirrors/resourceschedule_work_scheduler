@@ -336,6 +336,7 @@ private:
     void AddToRunningQueue(std::shared_ptr<WorkStatus> workStatus);
     void RemoveConditionUnReady();
     std::shared_ptr<WorkStatus> GetWorkToRun();
+    void CheckUnCurModeWork();
     void RemoveAllUnReady();
     uint32_t NewWatchdogId();
     void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
