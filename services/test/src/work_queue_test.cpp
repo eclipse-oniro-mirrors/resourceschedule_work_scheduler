@@ -330,6 +330,17 @@ HWTEST_F(WorkQueueTest, GetWorkList_001, TestSize.Level1)
  */
 HWTEST_F(WorkQueueTest, CheckUnCurModeWork_001, TestSize.Level1)
 {
+    std::string deviceTypePc = "2in1";
+    std::string deviceTypeTablet = "tablet";
+    std::string deviceType = OHOS::system::GetParameter("const.product.devicetype", "");
+    if (deviceType != deviceTypePc && deviceType != deviceTypeTablet) {
+        GTEST_SKIP() << "Device is not PC or tablet.";
+    }
+    int32_t deviceMainMode = OHOS::system::GetIntParameter("const.sceneboard.mainmode", -1);
+    if (deviceMainMode == -1) {
+        GTEST_SKIP() << "Get device mainmode failed.";
+    }
+
     std::string paraName = "persist.sceneboard.ispcmode";
     bool isPcMode = OHOS::system::GetBoolParameter(paraName, false);
     workQueue_->ClearAll();
