@@ -136,7 +136,7 @@ HWTEST_F(WorkStatusTest, isSameUser_002, TestSize.Level1)
     bool result = workStatus_->IsSameUser();
     EXPECT_TRUE(result);
 }
-
+ 
 /**
  * @tc.name: IsCurrentMode_001
  * @tc.desc: Test WorkStatus IsCurrentMode.
@@ -144,22 +144,6 @@ HWTEST_F(WorkStatusTest, isSameUser_002, TestSize.Level1)
  * @tc.require: I95QHG
  */
 HWTEST_F(WorkStatusTest, IsCurrentMode_001, TestSize.Level1)
-{
-    std::string deviceTypePc = "2in1";
-    std::string deviceTypeTablet = "tablet";
-    std::string deviceType = OHOS::system::GetParameter("const.product.devicetype", "");
-    if (deviceType != deviceTypePc && deviceType != deviceTypeTablet) {
-        EXPECT_TRUE(workStatus_->IsCurrentMode());
-    }
-}
- 
-/**
- * @tc.name: IsCurrentMode_002
- * @tc.desc: Test WorkStatus IsCurrentMode.
- * @tc.type: FUNC
- * @tc.require: I95QHG
- */
-HWTEST_F(WorkStatusTest, IsCurrentMode_002, TestSize.Level1)
 {
     std::string deviceTypePc = "2in1";
     std::string deviceTypeTablet = "tablet";
@@ -175,12 +159,12 @@ HWTEST_F(WorkStatusTest, IsCurrentMode_002, TestSize.Level1)
 }
  
 /**
- * @tc.name: IsCurrentMode_003
+ * @tc.name: IsCurrentMode_002
  * @tc.desc: Test WorkStatus IsCurrentMode.
  * @tc.type: FUNC
  * @tc.require: I95QHG
  */
-HWTEST_F(WorkStatusTest, IsCurrentMode_003, TestSize.Level1)
+HWTEST_F(WorkStatusTest, IsCurrentMode_002, TestSize.Level1)
 {
     std::string deviceTypePc = "2in1";
     std::string deviceTypeTablet = "tablet";
