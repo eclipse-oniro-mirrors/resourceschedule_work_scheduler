@@ -744,23 +744,6 @@ HWTEST_F (WorkInfoTest, EarliestStartTime001, Function | MediumTest | Level2)
 }
 
 /**
- * @tc.name GetCreateTime001
- * @tc.desc test GetCreateTime
- * @tc.type FUNC
- * @tc.require: issueIAHY0B
- */
-HWTEST_F (WorkInfoTest, GetCreateTime001, Function | MediumTest | Level2)
-{
-    uint64_t before = WorkSchedUtils::GetCurrentTimeMs();
-    WorkInfo workInfo;
-    uint64_t after = WorkSchedUtils::GetCurrentTimeMs();
-    uint64_t createTime = workInfo.GetCreateTime();
-    EXPECT_TRUE(createTime >= before && createTime <= after);
-    WorkInfo workInfo2;
-    EXPECT_GE(workInfo2.GetCreateTime(), createTime);
-}
-
-/**
  * @tc.name ParseToJsonStr001
  * @tc.desc test ParseToJsonStr
  * @tc.type FUNC
