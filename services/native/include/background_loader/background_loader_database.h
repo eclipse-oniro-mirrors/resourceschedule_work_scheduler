@@ -33,25 +33,23 @@ inline const std::string BACKGROUND_LOADER_TABLE_INDEX = "BackgroundLoaderTaskIn
 inline const std::string BLOCK_LIST_TABLE = "BlockList";
 
 // Table columns
-inline const std::string COL_TASK_KEY = "taskKey";
+inline const std::string COL_UID = "uid";
 inline const std::string COL_BUNDLE_NAME = "bundleName";
 inline const std::string COL_ABILITY_NAME = "abilityName";
 inline const std::string COL_APP_INDEX = "appIndex";
 inline const std::string COL_TASK_ID = "taskId";
 inline const std::string COL_STATUS = "status";
-inline const std::string COL_UID = "uid";
 inline const std::string COL_TIMEOUT_COUNT = "timeoutCount";
 inline const std::string COL_PID = "pid";
 
 // Result column indices for sqlite3_column_* (0-based, matches SELECT column order)
 enum : int32_t {
-    IDX_TASK_KEY = 0,
+    IDX_UID = 0,
     IDX_BUNDLE_NAME,
     IDX_ABILITY_NAME,
     IDX_APP_INDEX,
     IDX_TASK_ID,
     IDX_STATUS,
-    IDX_UID,
     IDX_TIMEOUT_COUNT,
     IDX_PID
 };
@@ -62,25 +60,23 @@ enum : int32_t {
 
 // Bind parameter indices for sqlite3_bind_* (1-based, matches INSERT column order)
 enum : int32_t {
-    BIND_TASK_KEY = 1,
+    BIND_UID = 1,
     BIND_BUNDLE_NAME,
     BIND_ABILITY_NAME,
     BIND_APP_INDEX,
     BIND_TASK_ID,
     BIND_STATUS,
-    BIND_UID,
     BIND_TIMEOUT_COUNT,
     BIND_PID
 };
 
 struct TaskRow {
-    std::string taskKey;
+    int32_t uid {0};
     std::string bundleName;
     std::string abilityName;
     int32_t appIndex {-1};
     int32_t taskId {0};
     int32_t status {0};
-    int32_t uid {0};
     int32_t timeoutCount {0};
     int32_t pid {-1};
 };
@@ -92,7 +88,7 @@ public:
 
     bool Init();
 
-    bool DeleteTask(const std::string &taskKey);
+    bool DeleteTask(int32_t uid);
     bool UpsertTask(const TaskRow &row);
     bool QueryAllTasks(std::vector<TaskRow> &rows);
 
@@ -106,6 +102,7 @@ private:
     bool CheckAndMigrateDatabase();
     bool ExecuteSql(const std::string &sql);
     bool ExecuteSingleTextSql(const char* sql, const std::string& param);
+    bool ExecuteSingleIntSql(const char* sql, int32_t param);
 
     sqlite3* db_ {nullptr};
     ffrt::mutex mutex_;

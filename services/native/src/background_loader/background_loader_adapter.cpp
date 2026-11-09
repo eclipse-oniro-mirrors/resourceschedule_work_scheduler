@@ -36,7 +36,39 @@ void BackgroundLoaderAdapter::DispatchResource(const std::shared_ptr<ResourceSch
             break;
         }
         case ResType::RES_TYPE_APP_INSTALL_UNINSTALL: {
-            BackgroundLoaderMgr::GetInstance().HandleAppChangeEvent(resData->value, resData->payload);
+            BackgroundLoaderMgr::GetInstance().HandleAppInstallUninstall(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_APP_STATE_CHANGE: {
+            BackgroundLoaderMgr::GetInstance().HandleAppStateChangeEvent(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_AUDIO_RENDER_STATE_CHANGE: {
+            BackgroundLoaderMgr::GetInstance().HandleAppAudioRenderStateChangeEvent(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_AUDIO_CAPTURE_STATUS_CHANGED: {
+            BackgroundLoaderMgr::GetInstance().HandleAppAudioCaptureStateChangeEvent(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_LOCATION_STATUS_CHANGE: {
+            BackgroundLoaderMgr::GetInstance().HandleAppLocationStateEvent(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_CAMERA_TORCH_STATE_CHANGE: {
+            BackgroundLoaderMgr::GetInstance().HandleAppTorchStateEvent(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_TRANSIENT_TASK: {
+            BackgroundLoaderMgr::GetInstance().HandleTransientTaskEvent(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_CONTINUOUS_TASK: {
+            BackgroundLoaderMgr::GetInstance().HandleContinuousTaskEvent(resData->value, resData->payload);
+            break;
+        }
+        case ResType::RES_TYPE_PROCESS_STATE_CHANGE: {
+            BackgroundLoaderMgr::GetInstance().HandleProcessDiedEvent(resData->value, resData->payload);
             break;
         }
         default:

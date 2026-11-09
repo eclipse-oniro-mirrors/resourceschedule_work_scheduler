@@ -41,4 +41,24 @@
     ((void)HILOG_IMPL(LOG_CORE, LOG_DEBUG, WORKSCHEDULER_MGR_LOG_DOMAIN, WORKSCHEDULER_MGR_LOG_TAG, \
     "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
 
+#ifndef BACKGROUND_LOADER_LOG_TAG
+#define BACKGROUND_LOADER_LOG_TAG "BG_LOADER"
+#endif
+
+#define BL_HILOGF(fmt, ...)            \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_FATAL, WORKSCHEDULER_MGR_LOG_DOMAIN, BACKGROUND_LOADER_LOG_TAG, \
+    "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
+#define BL_HILOGE(fmt, ...)            \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_ERROR, WORKSCHEDULER_MGR_LOG_DOMAIN, BACKGROUND_LOADER_LOG_TAG, \
+    "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
+#define BL_HILOGW(fmt, ...)            \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_WARN, WORKSCHEDULER_MGR_LOG_DOMAIN, BACKGROUND_LOADER_LOG_TAG, \
+    "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
+#define BL_HILOGI(fmt, ...)            \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_INFO, WORKSCHEDULER_MGR_LOG_DOMAIN, BACKGROUND_LOADER_LOG_TAG, \
+    fmt, ##__VA_ARGS__))
+#define BL_HILOGD(fmt, ...)            \
+    ((void)HILOG_IMPL(LOG_CORE, LOG_DEBUG, WORKSCHEDULER_MGR_LOG_DOMAIN, BACKGROUND_LOADER_LOG_TAG, \
+    "[%{public}s:%{public}d]" fmt, __FUNCTION__, __LINE__, ##__VA_ARGS__))
+
 #endif // FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_HILOG_H

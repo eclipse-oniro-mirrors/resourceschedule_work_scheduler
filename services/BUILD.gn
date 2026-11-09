@@ -97,8 +97,10 @@ ohos_shared_library("workschedservice") {
     "ability_base:zuri",
     "ability_runtime:ability_connect_callback_stub",
     "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
     "ability_runtime:wantagent_innerkits",
     "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
     "access_token:libtokenid_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -155,6 +157,10 @@ ohos_shared_library("workschedservice") {
   if (workscheduler_hicollie_enable) {
     external_deps += [ "hicollie:libhicollie" ]
     defines += [ "HICOLLIE_ENABLE" ]
+  }
+  if (workscheduler_with_multimedia_audio_framework_enable) {
+    external_deps += [ "audio_framework:audio_client" ]
+    defines += [ "WORKSCHEDULER_AUDIO_FRAMEWORK_ENABLE" ]
   }
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
@@ -231,8 +237,10 @@ ohos_static_library("workschedservice_static") {
     "ability_base:zuri",
     "ability_runtime:ability_connect_callback_stub",
     "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
     "ability_runtime:wantagent_innerkits",
     "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
     "access_token:libtokenid_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -289,6 +297,10 @@ ohos_static_library("workschedservice_static") {
   if (workscheduler_hicollie_enable) {
     external_deps += [ "hicollie:libhicollie" ]
     defines += [ "HICOLLIE_ENABLE" ]
+  }
+  if (workscheduler_with_multimedia_audio_framework_enable) {
+    external_deps += [ "audio_framework:audio_client" ]
+    defines += [ "WORKSCHEDULER_AUDIO_FRAMEWORK_ENABLE" ]
   }
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
