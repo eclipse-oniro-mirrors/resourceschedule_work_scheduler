@@ -361,6 +361,7 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(int32_t uid)
                               static_cast<int32_t>(ResType::BackgroundLoaderState::DELETE));
     }
     ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
+    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_FINISH));
     UpsertTaskToDb(uid, taskInfoCopy);
     // 超时任务已执行完毕, 清理handle表残留引用（handle 已被ffrt消费，无需cancel)
     {
@@ -516,6 +517,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
         return;
     }
     BL_HILOGI("send request to %{public}s success", bundleName.c_str());
+    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_START));
     UpsertTaskToDb(uid, taskInfoCopy);
     PostTimeoutTask(uid);
     BackgroundLoaderHiSysEvent::ReportRecordSysEvent(taskInfoCopy, "Send onStart", "");
@@ -803,6 +805,7 @@ ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo&
     if (ret != ERR_OK) {
         return ret;
     }
+    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_FINISH));
     ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 0, ERR_OK);
     UpsertTaskToDb(uid, taskInfoCopy);
     BackgroundLoaderHiSysEvent::ReportRecordSysEvent(taskInfoCopy, "Finish Task", "");
@@ -1556,6 +1559,13 @@ void BackgroundLoaderMgr::ReportTaskFinishEvent(const std::string &bundleName, i
     payload["appIndex"] = std::to_string(appIndex);
     payload["errCode"] = std::to_string(errCode);
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, value, payload);
+}
+
+void BackgroundLoaderMgr::ReportTaskStatus(const TaskInfo& taskInfo, int32_t status)
+{
+    nlohmann::json payload;
+    payload["pid"] = taskInfo.pid_;
+    ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_STATUS_CHANGE, value, payload);
 }
 
 }  // namespace WorkScheduler
