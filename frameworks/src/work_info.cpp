@@ -628,17 +628,29 @@ bool WorkInfo::ParseElementFromJson(const nlohmann::json &value)
 
 void WorkInfo::ParseParametersFromJsonStr(const nlohmann::json &value)
 {
-    nlohmann::json extrasJson = value["parameters"];
-    nlohmann::json extrasType = value["parametersType"];
+    if (!value.is_object()) {
+        WS_HILOGE("value is not object");
+        return;
+    }
+    auto paramsIt = value.find("parameters");
+    auto typeIt = value.find("parametersType");
+    if (paramsIt == value.end() || !paramsIt->is_object() ||
+        typeIt == value.end() || !typeIt->is_object()) {
+        WS_HILOGE("invalid parameters json");
+        return;
+    }
+    const nlohmann::json &extrasJson = paramsIt.value();        // 引用，避免拷贝
+    const nlohmann::json &extrasType = typeIt.value();
     AAFwk::WantParams extras;
     int typeId = INVALID_VALUE;
     for (const auto &[key, parameter] : extrasJson.items()) {
-        if (extrasType[key].is_number_integer()) {
+        typeId = INVALID_VALUE;                                 // 每轮重置，避免脏值残留
+        if (extrasType.contains(key) && extrasType[key].is_number_integer()) {
             typeId = extrasType[key].get<int32_t>();
         }
-        if (typeId != INVALID_VALUE && extrasJson[key].is_string()) {
+        if (typeId != INVALID_VALUE && parameter.is_string()) {
             sptr<AAFwk::IInterface> exInterface = AAFwk::WantParams::GetInterfaceByType(typeId,
-                extrasJson[key].get<std::string>());
+                parameter.get<std::string>());
             extras.SetParam(key, exInterface);
         }
     }
