@@ -1176,7 +1176,7 @@ void WorkStatus::StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>
     }
     bool isHighPerfWorkExist = false;
     for (const auto &work : runningWorks) {
-        if (work && work->workId_ != workId_ && work->workInfo_->IsPerformanceSensitive()) {
+        if (work && work->workId_ != workId_ && work->workInfo_->IsPerformanceSensitive() && !work->IsPaused()) {
             isHighPerfWorkExist = true;
             break;
         }

@@ -893,6 +893,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGI("Pause Running Work Scheduler Work, uid:%{public}d", uid);
     bool hasWorkWithUid = false;
+    auto runningWorks = GetAllRunningWorkStatus();
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         auto workStatus = it->second;
@@ -908,7 +909,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
                 " newWatchdogTime:%{public}" PRIu64,
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime);
             watchdog_->RemoveWatchdog(it->first);
-            workStatus->StopHighPerfTimer(GetAllRunningWorkStatus());
+            workStatus->StopHighPerfTimer(runningWorks);
         }
     }
 
