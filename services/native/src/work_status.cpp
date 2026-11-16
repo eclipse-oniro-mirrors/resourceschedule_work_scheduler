@@ -1226,5 +1226,15 @@ void WorkStatus::ReportDelayTaskPerf(int32_t uid, int32_t type)
     payload["uid"] = std::to_string(uid);
     ReportDataInProcess(ResourceSchedule::ResType::RES_TYPE_DELAY_TASK_PERF, type, payload);
 }
+
+bool WorkStatus::MarkRunningIfConditionReady()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    if (currentStatus_ != Status::CONDITION_READY) {
+        return false;
+    }
+    currentStatus_ = Status::RUNNING;
+    return true;
+}
 } // namespace WorkScheduler
 } // namespace OHOS
