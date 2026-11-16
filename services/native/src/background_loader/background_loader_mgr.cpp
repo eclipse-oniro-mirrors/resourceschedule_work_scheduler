@@ -51,6 +51,9 @@ namespace {
 constexpr std::string_view TIMEOUT_MESSAGE = "timeOut";
 constexpr std::string_view ON_START = "onStart";
 constexpr std::string_view ON_STOP = "onStop";
+constexpr std::string_view FINISH_BY_FINISH_TASK = "finishTask";
+constexpr std::string_view FINISH_BY_ONSTOP = "onStop";
+constexpr int64_t ON_STOP_STATUS_FRLRAY_US = 6000000;
 constexpr int32_t DEFAULT_INVAL_VALUE = -1;
 constexpr int32_t REPORT_DATA_MAX_RETRY = 3;
 constexpr int32_t REPORT_DATA_RETRY_DELAY_US = 2000000;
@@ -350,24 +353,31 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(int32_t uid)
     if (!IsTimeoutTriggeredLocked(uid, taskInfoCopy, shouldAddToBlockList)) {
         return;
     }
+    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_FINISH),
+        std::string(FINISH_BYON_STOP));
     // 先发 stop 事件，(依赖abilityMap_中的remoteObject)，保持status状态为RUNNNING
     // 避免被并发的解注册导致abilityMap_被清理
     SendOnStop(taskInfoCopy, static_cast<int32_t>(StopCode::TIMEOUT_ERROR), std::string(TIMEOUT_MESSAGE));
-    // stop 事件发送完成后再刷新status, abilityMap_被清理
-    MarkTimeOutStatusLocked(uid, shouldAddToBlockList, taskInfoCopy);
     if (shouldAddToBlockList) {
         AddToBlockList(taskInfoCopy.bundleName_, uid, static_cast<int32_t>(BlockListReason::TIMEOUT));
         ReportTaskChangeEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_,
                               static_cast<int32_t>(ResType::BackgroundLoaderState::DELETE));
     }
-    ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
-    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_FINISH));
-    UpsertTaskToDb(uid, taskInfoCopy);
     // 超时任务已执行完毕, 清理handle表残留引用（handle 已被ffrt消费，无需cancel)
     {
         std::lock_guard<ffrt::mutex> lock(timeoutTaskLock_);
         timeoutTaskMap_.erase(uid);
     }
+    if (ffrtQueue_ ==nullptr) {
+        ffrtQueue_ = std::make_unique<ffrt::queue>("background_loader_queue");
+    }
+    ffrtQueue_->submit(
+        [this, uid, shouldAddToBlockList, taskInfoCopy]() mutable {
+            MarkTimeOutStatusLocked(uid, shouldAddToBlockList, taskInfoCopy);
+            ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
+            UpsertTaskToDb(uid, taskInfoCopy);
+        },
+        ffrt::stak_attr().delay(ON_STOP_STATUS_FRLRAY_US));
 }
 
 void BackgroundLoaderMgr::PostTimeoutTask(int32_t uid)
@@ -517,7 +527,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
         return;
     }
     BL_HILOGI("send request to %{public}s success", bundleName.c_str());
-    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_START));
+    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_START), "");
     UpsertTaskToDb(uid, taskInfoCopy);
     PostTimeoutTask(uid);
     BackgroundLoaderHiSysEvent::ReportRecordSysEvent(taskInfoCopy, "Send onStart", "");
@@ -805,7 +815,8 @@ ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo&
     if (ret != ERR_OK) {
         return ret;
     }
-    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_FINISH));
+    ReportTaskStatus(taskInfoCopy, static<int32_t>(ResType::BackgroundLoaderTaskStatus::TASK_FINISH),
+        std::string(FINISH_BY_FINISH_TASK));
     ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 0, ERR_OK);
     UpsertTaskToDb(uid, taskInfoCopy);
     BackgroundLoaderHiSysEvent::ReportRecordSysEvent(taskInfoCopy, "Finish Task", "");
@@ -1561,11 +1572,14 @@ void BackgroundLoaderMgr::ReportTaskFinishEvent(const std::string &bundleName, i
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, value, payload);
 }
 
-void BackgroundLoaderMgr::ReportTaskStatus(const TaskInfo& taskInfo, int32_t status)
+void BackgroundLoaderMgr::ReportTaskStatus(const TaskInfo& taskInfo, int32_t status, const std::string& finishType)
 {
     nlohmann::json payload;
     payload["pid"] = taskInfo.pid_;
-    ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_STATUS_CHANGE, value, payload);
+    if (status == static_cast<int32_t>(ResType::BackgroundLoaderTaskStatus::TASK_FINISH)) {
+        payload["finishType"] = finishType;
+    }
+    ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_STATUS_CHANGE, status, payload);
 }
 
 }  // namespace WorkScheduler
