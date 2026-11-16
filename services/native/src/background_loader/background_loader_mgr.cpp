@@ -353,7 +353,7 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(int32_t uid)
     if (!IsTimeoutTriggeredLocked(uid, taskInfoCopy, shouldAddToBlockList)) {
         return;
     }
-    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_FINISH),
+    ReportTaskStatus(taskInfoCopy, static_cast<int32_t>(ResType::BackgroundLoaderTaskStatus::TASK_FINISH),
         std::string(FINISH_BYON_STOP));
     // 先发 stop 事件，(依赖abilityMap_中的remoteObject)，保持status状态为RUNNNING
     // 避免被并发的解注册导致abilityMap_被清理
@@ -377,7 +377,7 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(int32_t uid)
             ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
             UpsertTaskToDb(uid, taskInfoCopy);
         },
-        ffrt::stak_attr().delay(ON_STOP_STATUS_FRLRAY_US));
+        ffrt::task_attr().delay(ON_STOP_STATUS_FRLRAY_US));
 }
 
 void BackgroundLoaderMgr::PostTimeoutTask(int32_t uid)
@@ -527,7 +527,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
         return;
     }
     BL_HILOGI("send request to %{public}s success", bundleName.c_str());
-    ReportTaskStatus(taskInfoCopy, static<int32_t> (ResType::BackgroundLoaderTaskStatus::TASK_START), "");
+    ReportTaskStatus(taskInfoCopy, static_cast<int32_t>(ResType::BackgroundLoaderTaskStatus::TASK_START), "");
     UpsertTaskToDb(uid, taskInfoCopy);
     PostTimeoutTask(uid);
     BackgroundLoaderHiSysEvent::ReportRecordSysEvent(taskInfoCopy, "Send onStart", "");
@@ -815,7 +815,7 @@ ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo&
     if (ret != ERR_OK) {
         return ret;
     }
-    ReportTaskStatus(taskInfoCopy, static<int32_t>(ResType::BackgroundLoaderTaskStatus::TASK_FINISH),
+    ReportTaskStatus(taskInfoCopy, static_cast<int32_t>(ResType::BackgroundLoaderTaskStatus::TASK_FINISH),
         std::string(FINISH_BY_FINISH_TASK));
     ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 0, ERR_OK);
     UpsertTaskToDb(uid, taskInfoCopy);
