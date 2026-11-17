@@ -136,8 +136,14 @@ void WorkGuardThread::CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyMan
                     ", workId:" + workStatus->workId_);
             }
         } else {
-            WS_HILOGI("Orphan task found: workId=%{public}s is RUNNING but no connection, cleaning state.",
-                workStatus->workId_.c_str());
+            WS_HILOGI("Orphan task found: workId=%{public}s is RUNNING but no connection, isSameUser:%{public}d",
+                workStatus->workId_.c_str(), workStatus->IsSameUser());
+            bool stopRet = StopRunningExtension(workStatus->bundleName_, workStatus->abilityName_,
+                workStatus->uid_);
+            if (!stopRet) {
+                WS_HILOGE("StopRunningExtension failed, bundleName:%{public}s, abilityName:%{public}s, uid:%{public}d",
+                    workStatus->bundleName_.c_str(), workStatus->abilityName_.c_str(), workStatus->uid_);
+            }
             policyManager->CleanOrphanWork(workStatus);
             WorkSchedUtil::HiSysEventException(EventErrorCode::TASK_GUARD,
                 "orphan work cleaned, bundleName:" + workStatus->bundleName_ +

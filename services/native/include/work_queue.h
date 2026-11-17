@@ -114,6 +114,10 @@ public:
      */
     void CheckUnCurModeWork();
     /**
+     * @brief check unCurrent user work.
+     */
+    void CheckUnCurUserWork();
+    /**
      * @brief Remove unready.
      */
     void RemoveUnReady();

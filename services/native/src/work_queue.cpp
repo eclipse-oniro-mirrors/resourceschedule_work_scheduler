@@ -315,5 +315,19 @@ void WorkQueue::SetMinIntervalByDump(int64_t interval)
         it->SetMinIntervalByDump(interval);
     }
 }
+
+void WorkQueue::CheckUnCurUserWork()
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
+    for (auto it = workList_.begin(); it != workList_.end();) {
+        if ((*it)->IsSameUser()) {
+            it++;
+            continue;
+        }
+        (*it)->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+        WS_HILOGI("current user is not matched,workId: %{public}s.", (*it)->workId_.c_str());
+        it = workList_.erase(it);
+    }
+}
 } // namespace WorkScheduler
 } // namespace OHOS
