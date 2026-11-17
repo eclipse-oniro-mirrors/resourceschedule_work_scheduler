@@ -1568,7 +1568,7 @@ void BackgroundLoaderMgr::ReportTaskFinishEvent(const std::string &bundleName, i
     ReportDataInProcess(ResType::RES_TYPE_BACKGROUND_LOADER_TASK_FINISH, value, payload);
 }
 
-void BackgroundLoaderMgr::ReportTaskStatus(const TaskInfo& taskInfo, int32_t status, delayFinish)
+void BackgroundLoaderMgr::ReportTaskStatus(const TaskInfo& taskInfo, int32_t status, bool delayFinish)
 {
     nlohmann::json payload;
     payload["pid"] = taskInfo.pid_;
