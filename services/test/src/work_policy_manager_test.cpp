@@ -1179,7 +1179,8 @@ HWTEST_F(WorkPolicyManagerTest, NewWatchdogId_001, TestSize.Level1)
 {
     workPolicyManager_->watchdogId_ = MAX_WATCHDOG_ID;
     uint32_t ret = workPolicyManager_->NewWatchdogId();
-    EXPECT_EQ(ret, INIT_WATCHDOG_ID);
+    EXPECT_EQ(ret, MAX_WATCHDOG_ID);
+    EXPECT_EQ(workPolicyManager_->watchdogId_.load(), INIT_WATCHDOG_ID);
 }
 
 /**

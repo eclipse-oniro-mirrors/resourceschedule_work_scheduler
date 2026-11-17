@@ -240,6 +240,7 @@ public:
     static uint64_t GetHighPerfDuration();
     static void SetHighPerfDuration(uint64_t duration);
     static uint64_t GetLastHighPerfEndTime();
+    bool MarkRunningIfConditionReady();
 
 private:
     struct HighPerfTimerState {

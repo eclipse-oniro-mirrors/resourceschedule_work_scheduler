@@ -44,7 +44,6 @@ namespace WorkScheduler {
 WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>& wss) : wss_(wss)
 {
     conditionReadyQueue_ = std::make_shared<WorkQueue>();
-    watchdogId_ = INIT_WATCHDOG_ID;
     dumpSetMemory_ = INIT_DUMP_SET_MEMORY;
     watchdogTime_.store(WATCHDOG_TIME);
     dumpSetCpu_ = INIT_DUMP_SET_CPU;
@@ -414,17 +413,17 @@ void WorkPolicyManager::CheckWorkToRun()
         return;
     }
     handler_->RemoveEvent(WorkEventHandler::RETRIGGER_MSG);
-    shared_ptr<WorkStatus> topWork = GetWorkToRun();
-    if (topWork == nullptr) {
-        WS_HILOGD("no condition ready work not running, return.");
-        return;
-    }
     WorkSchedSystemPolicy systemPolicy;
     int32_t runningCount = GetRunningCount();
     int32_t allowRunningCount = GetMaxRunningCount(systemPolicy);
     if (HasSystemPolicyEventSend() && allowRunningCount == MAX_RUNNING_COUNT && runningCount < MAX_RUNNING_COUNT) {
         SetSystemPolicyEventSend(false);
         WorkSchedUtil::HiSysEventSystemPolicyLimit(systemPolicy);
+    }
+    shared_ptr<WorkStatus> topWork = GetWorkToRun();
+    if (topWork == nullptr) {
+        WS_HILOGD("no condition ready work not running, return.");
+        return;
     }
     if (runningCount < allowRunningCount || IsSpecialScene(topWork, runningCount)) {
         if (topWork->workInfo_->IsSA()) {
@@ -434,6 +433,7 @@ void WorkPolicyManager::CheckWorkToRun()
         }
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
+        RevertToConditionReady(topWork);
         if (runningCount == MAX_RUNNING_COUNT) {
             systemPolicy.policyName = "OVER_LIMIT";
         }
@@ -473,6 +473,7 @@ void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
     auto wss = wss_.lock();
     if (wss == nullptr) {
         WS_HILOGE("wss_ lock failed");
+        RevertToConditionReady(topWork);
         return;
     }
     wss->UpdateWorkBeforeRealStart(topWork);
@@ -490,6 +491,8 @@ void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
         }
         workConnManager_->WriteStartWorkEvent(topWork);
         return;
+    } else {
+        RevertToConditionReady(topWork);
     }
     WS_HILOGE("startSA %{public}d workId:%{public}s failed",
         topWork->workInfo_->GetSaId(), topWork->workId_.c_str());
@@ -501,10 +504,10 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
     auto wss = wss_.lock();
     if (wss == nullptr) {
         WS_HILOGE("wss_ lock failed");
+        RevertToConditionReady(topWork);
         return;
     }
     UpdateWatchdogTime(wss, topWork);
-    topWork->MarkStatus(WorkStatus::Status::RUNNING);
     RemoveFromReadyQueue(topWork);
     if (IsNeedDiscreteScheduled() && topWork->IsNeedDiscreteScheduled()) {
         WS_HILOGI("Discrete scheduled work id: %{public}s", topWork->workId_.c_str());
@@ -707,10 +710,12 @@ void WorkPolicyManager::Dump(string& result)
 
 uint32_t WorkPolicyManager::NewWatchdogId()
 {
-    if (watchdogId_ == MAX_WATCHDOG_ID) {
-        watchdogId_ = INIT_WATCHDOG_ID;
-    }
-    return watchdogId_++;
+    uint32_t cur = watchdogId_.load(std::memory_order_relaxed);
+    uint32_t next;
+    do {
+        next = (cur >= MAX_WATCHDOG_ID) ? INIT_WATCHDOG_ID : cur + 1;
+    } while (!watchdogId_.compare_exchange_weak(cur, next, std::memory_order_relaxed));
+    return cur;
 }
 
 int32_t WorkPolicyManager::GetDumpSetMemory()
@@ -1099,6 +1104,12 @@ void WorkPolicyManager::CleanOrphanWork(std::shared_ptr<WorkStatus> workStatus)
         workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
     }
     RemoveWatchDog(workStatus);
+}
+
+void WorkPolicyManager::RevertToConditionReady(std::shared_ptr<WorkStatus> topWork)
+{
+    topWork->MarkStatus(WorkStatus::Status::CONDITION_READY);
+    conditionReadyQueue_->Push(topWork);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

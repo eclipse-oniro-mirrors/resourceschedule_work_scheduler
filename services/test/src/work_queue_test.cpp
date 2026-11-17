@@ -296,7 +296,7 @@ HWTEST_F(WorkQueueTest, GetWorkToRunByPriority_001, TestSize.Level1)
     workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
     workQueue_->Push(workStatus);
     auto ret = workQueue_->GetWorkToRunByPriority();
-    EXPECT_EQ(ret->GetStatus(), WorkStatus::Status::CONDITION_READY);
+    EXPECT_EQ(ret->GetStatus(), WorkStatus::Status::RUNNING);
     EXPECT_EQ(ret->priority_, 10001);
 }
 

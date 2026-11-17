@@ -198,7 +198,7 @@ shared_ptr<WorkStatus> WorkQueue::GetWorkToRunByPriority()
     auto work = workList_.begin();
     shared_ptr<WorkStatus> workStatus = nullptr;
     while (work != workList_.end()) {
-        if ((*work)->GetStatus() == WorkStatus::CONDITION_READY) {
+        if ((*work)->MarkRunningIfConditionReady()) {
             workStatus = *work;
             workStatus->priority_++;
             break;
