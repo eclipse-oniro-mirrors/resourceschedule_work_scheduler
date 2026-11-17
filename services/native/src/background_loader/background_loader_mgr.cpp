@@ -354,7 +354,7 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(int32_t uid)
         return;
     }
     ReportTaskStatus(taskInfoCopy, static_cast<int32_t>(ResType::BackgroundLoaderTaskStatus::TASK_FINISH),
-        std::string(FINISH_BYON_STOP));
+        std::string(FINISH_BY_ONSTOP));
     // 先发 stop 事件，(依赖abilityMap_中的remoteObject)，保持status状态为RUNNNING
     // 避免被并发的解注册导致abilityMap_被清理
     SendOnStop(taskInfoCopy, static_cast<int32_t>(StopCode::TIMEOUT_ERROR), std::string(TIMEOUT_MESSAGE));
