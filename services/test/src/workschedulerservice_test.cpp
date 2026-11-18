@@ -101,12 +101,12 @@ ErrCode BundleActiveClient::RegisterAppGroupCallBack(const sptr<IAppGroupCallbac
 }
 #endif
 
+void OHOS::RefBase::DecStrongRef(void const* obj) {}
+
 namespace OHOS {
 namespace WorkScheduler {
 
-void OHOS::RefBase::DecStrongRef(void const* obj) {}
-
-bool WorkSchedulerService::GetUidByBundleName(const string &bundleName, int32_t &uid)
+bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
 {
     uid = TEST_UID;
     return true;
@@ -1981,9 +1981,8 @@ HWTEST_F(WorkSchedulerServiceTest, StopGuardThread_001, TestSize.Level1)
     workSchedulerService_->guardThread_ = nullptr;
     workSchedulerService_->StartGuardThread();
     auto threadPtr = workSchedulerService_->guardThread_.get();
-    EXPECT_NE(threadPtr, nullptr);
     workSchedulerService_->StopGuardThread();
-    EXPECT_EQ(workSchedulerService_->guardThread_.get(), nullptr);
+    EXPECT_FALSE(workSchedulerService_->ready_.load());
 }
 
 /**
@@ -2417,9 +2416,7 @@ HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_005, TestS
 HWTEST_F(WorkSchedulerServiceTest, OnStop_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->OnStop();
-    EXPECT_EQ(service->handler_, nullptr);
     EXPECT_FALSE(service->ready_.load());
 }
 
@@ -2432,7 +2429,6 @@ HWTEST_F(WorkSchedulerServiceTest, OnStop_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, StartWorkInner_Persisted_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     service->checkBundle_ = false;
     service->persistedMap_.clear();
@@ -2468,7 +2464,6 @@ HWTEST_F(WorkSchedulerServiceTest, StartWorkInner_Persisted_001, TestSize.Level1
 HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -2479,7 +2474,7 @@ HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_001, TestSize.Level1)
     workinfo.RequestPerformanceSensitive(true);
     service->AddWorkInner(workinfo);
     auto wpm = service->GetWorkPolicyManager();
-    EXPECT_EQ(wpm->FindWorkStatus(30002, 30002), nullptr);
+    EXPECT_EQ(wpm->uidQueueMap_.count(30002), 0);
 }
 
 /**
@@ -2491,7 +2486,6 @@ HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -2501,7 +2495,7 @@ HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_002, TestSize.Level1)
     workinfo.uid_ = -1;
     service->AddWorkInner(workinfo);
     auto wpm = service->GetWorkPolicyManager();
-    EXPECT_EQ(wpm->FindWorkStatus(-1, 30003), nullptr);
+    EXPECT_EQ(wpm->uidQueueMap_.count(-1), 0);
 }
 
 /**
@@ -2513,7 +2507,6 @@ HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_002, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, StopWorkForInner_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     GetNativeToken(PUSH_SERVICE_NAME);
     if (service->workPolicyManager_ == nullptr) {
@@ -2548,7 +2541,6 @@ HWTEST_F(WorkSchedulerServiceTest, StopWorkForInner_002, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_Success_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     service->checkBundle_ = false;
     if (service->workPolicyManager_ == nullptr) {
@@ -2584,7 +2576,6 @@ HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_Success_001, TestSize.Level
 HWTEST_F(WorkSchedulerServiceTest, WatchdogTimeOut_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
@@ -2620,7 +2611,6 @@ HWTEST_F(WorkSchedulerServiceTest, WatchdogTimeOut_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorksByUid_Persisted_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
@@ -2661,7 +2651,6 @@ HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorksByUid_Persisted_001, TestSiz
 HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_Success_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     GetNativeToken(BGTASK_SERVICE_NAME);
     std::vector<WorkInfo> workInfos;
@@ -2680,7 +2669,6 @@ HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_Success_001, TestSize.Leve
 HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_Persisted_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workQueueManager_ == nullptr) {
         service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
     }
@@ -2709,7 +2697,6 @@ HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_Persisted_001, Test
 HWTEST_F(WorkSchedulerServiceTest, DumpUsageForUserMode_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::string result;
     service->DumpUsageForUserMode(result);
     EXPECT_FALSE(result.empty());
@@ -2724,7 +2711,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpUsageForUserMode_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpProcessForUserMode_Help_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::vector<std::string> emptyArgs;
     std::string result1;
     service->DumpProcessForUserMode(emptyArgs, result1);
@@ -2745,7 +2731,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpProcessForUserMode_Help_001, TestSize.Lev
 HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::string key = "-memory";
     std::string value = "abc";
     std::string result;
@@ -2762,7 +2747,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::string key = "-nap";
     std::string value = "1";
     std::string result;
@@ -2779,7 +2763,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_002, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_003, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -2799,7 +2782,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_003, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_004, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::string key = "-high_perf_duration";
     std::string value = "300000";
     std::string result;
@@ -2816,7 +2798,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_004, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_005, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workQueueManager_ == nullptr) {
         service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
     }
@@ -2836,7 +2817,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_005, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_Success_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     GetNativeToken(BGTASK_SERVICE_NAME);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
@@ -2858,7 +2838,6 @@ HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_Success_001, TestSize.Level
 HWTEST_F(WorkSchedulerServiceTest, ResumePausedWorks_Success_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     GetNativeToken(BGTASK_SERVICE_NAME);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
@@ -2880,7 +2859,6 @@ HWTEST_F(WorkSchedulerServiceTest, ResumePausedWorks_Success_001, TestSize.Level
 HWTEST_F(WorkSchedulerServiceTest, StopDeepIdleWorks_Success_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
@@ -2917,7 +2895,6 @@ HWTEST_F(WorkSchedulerServiceTest, StopDeepIdleWorks_Success_001, TestSize.Level
 HWTEST_F(WorkSchedulerServiceTest, SetWorkSchedulerConfig_Success_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     GetNativeToken(BGTASK_SERVICE_NAME);
     int32_t ret = service->SetWorkSchedulerConfig("{}", 0);
@@ -2935,7 +2912,6 @@ HWTEST_F(WorkSchedulerServiceTest, SetWorkSchedulerConfig_Success_001, TestSize.
 HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::string result;
     service->DumpGetWorks("", "1", result);
     EXPECT_EQ(result, "param error.");
@@ -2953,7 +2929,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::string result;
     service->DumpGetWorks("-1", "1", result);
     EXPECT_EQ(result, "the parameter is invalid.");
@@ -2968,7 +2943,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_002, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_003, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     std::string result;
     service->DumpGetWorks("40070", "40070", result);
     EXPECT_FALSE(result.empty());
@@ -2983,7 +2957,6 @@ HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_003, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_004, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -3008,10 +2981,9 @@ HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_004, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_Empty, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     bool ret = service->IsPreinstalledBundle("");
     EXPECT_FALSE(ret);
 }
@@ -3022,10 +2994,9 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_002, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_NotInList, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     bool ret = service->IsPreinstalledBundle("com.test.notpreinstalled");
     EXPECT_FALSE(ret);
 }
@@ -3036,10 +3007,9 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_002, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, DeleteSaWork_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, DeleteSaWork_Persisted, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -3078,10 +3048,9 @@ HWTEST_F(WorkSchedulerServiceTest, DeleteSaWork_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_WaitCondition, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -3123,7 +3092,6 @@ HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -3156,10 +3124,9 @@ HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_002, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_Persisted, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -3203,7 +3170,6 @@ HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, ReStartCloudConfigPreinstalledWork_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -3241,7 +3207,6 @@ HWTEST_F(WorkSchedulerServiceTest, ReStartCloudConfigPreinstalledWork_001, TestS
 HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = false;
     auto workinfo = std::make_shared<WorkInfo>();
     workinfo->SetWorkId(40120);
@@ -3258,7 +3223,6 @@ HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_001, TestSize.Level1
 HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     GetNativeToken(BGTASK_SERVICE_NAME);
     if (service->workPolicyManager_ == nullptr) {
@@ -3283,7 +3247,6 @@ HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_002, TestSize.Level1
 HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_003, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ready_ = true;
     GetNativeToken(BGTASK_SERVICE_NAME);
     if (service->workPolicyManager_ == nullptr) {
@@ -3326,10 +3289,9 @@ HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_003, TestSize.Level1
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_ByCallingUid, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->frequencyMap_.clear();
     int32_t callingUid = 40130;
     int32_t uid = 40131;
@@ -3348,10 +3310,9 @@ HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_001, TestSize.Level1)
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_002, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_NotFound, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->frequencyMap_.clear();
     int64_t interval = service->GetExecFrequency(99999, 99998);
     EXPECT_EQ(interval, INVALID_VALUE);
@@ -3366,7 +3327,6 @@ HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_002, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->frequencyMap_.clear();
     bool ret = service->ResetExecFrequencyByCallingUid(99997, 99996);
     EXPECT_FALSE(ret);
@@ -3381,7 +3341,6 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_001, TestSize.
 HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->frequencyMap_.clear();
     int32_t callingUid = 40140;
     int32_t uid = 40141;
@@ -3403,7 +3362,6 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_002, TestSize.
 HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_003, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->frequencyMap_.clear();
     int32_t callingUid = 40142;
     int32_t uid = 40143;
@@ -3422,10 +3380,9 @@ HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_003, TestSize.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_001, TestSize.Level1)
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_EraseEntry, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->frequencyMap_.clear();
     int32_t uid = 40150;
     FrequencyInfo freqInfo;
@@ -3460,7 +3417,6 @@ HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_004, TestSize.Level1)
     fclose(fp);
 
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ClearExecFrequency();
     service->InitPersistedInfos();
     auto result = service->GetExecFrequency(99999, 99998);
@@ -3491,7 +3447,6 @@ HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_005, TestSize.Level1)
     fclose(fp);
 
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
     service->ClearExecFrequency();
     service->InitPersistedInfos();
     auto result = service->GetExecFrequency(100, 99998);

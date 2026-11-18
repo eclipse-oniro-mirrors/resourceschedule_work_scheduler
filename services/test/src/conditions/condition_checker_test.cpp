@@ -184,6 +184,7 @@ HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_001, TestSize.Level1)
     auto checker = std::make_shared<ConditionChecker>(workQueueManager_);
     checker->CheckNetworkStatus();
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -205,6 +206,7 @@ HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_002, TestSize.Level1)
     auto checker = std::make_shared<ConditionChecker>(workQueueManager_);
     checker->CheckAllStatus();
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
     workQueueManager_->RemoveWork(workStatus);
 }
 #endif // COMMUNICATION_NETMANAGER_BASE_ENABLE

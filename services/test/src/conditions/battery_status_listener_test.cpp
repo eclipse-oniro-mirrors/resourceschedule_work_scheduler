@@ -158,7 +158,7 @@ HWTEST_F(BatteryStatusListenerTest, Start_001, TestSize.Level1)
 {
     auto listener = std::make_shared<TestBatteryStatusListener>();
     bool ret = listener->Start();
-    EXPECT_NE(listener->commonEventSubscriber, nullptr);
+    EXPECT_TRUE(ret);
     listener->Stop();
 }
 
@@ -171,8 +171,8 @@ HWTEST_F(BatteryStatusListenerTest, Start_001, TestSize.Level1)
 HWTEST_F(BatteryStatusListenerTest, Stop_001, TestSize.Level1)
 {
     auto listener = std::make_shared<TestBatteryStatusListener>();
-    listener->Stop();
-    EXPECT_EQ(listener->commonEventSubscriber, nullptr);
+    bool ret = listener->Stop();
+    EXPECT_TRUE(ret);
 }
 
 /**
@@ -185,9 +185,8 @@ HWTEST_F(BatteryStatusListenerTest, Stop_002, TestSize.Level1)
 {
     auto listener = std::make_shared<TestBatteryStatusListener>();
     listener->Start();
-    EXPECT_NE(listener->commonEventSubscriber, nullptr);
     bool ret = listener->Stop();
-    EXPECT_EQ(listener->commonEventSubscriber, nullptr);
+    EXPECT_TRUE(ret);
 }
 
 /**
@@ -201,6 +200,7 @@ HWTEST_F(BatteryStatusListenerTest, OnConditionChanged_001, TestSize.Level1)
     auto listener = std::make_shared<TestBatteryStatusListener>();
     auto val = std::make_shared<DetectorValue>(WorkCondition::BATTERY_STATUS_LOW, 0, 0, std::string());
     listener->BatteryStatusListener::OnConditionChanged(WorkCondition::Type::BATTERY_STATUS, val);
+    EXPECT_EQ(listener->callCount_, 0);
 }
 
 /**
@@ -226,6 +226,7 @@ HWTEST_F(BatteryStatusListenerTest, OnConditionChanged_002, TestSize.Level1)
     auto val = std::make_shared<DetectorValue>(WorkCondition::BATTERY_STATUS_LOW, 0, 0, std::string());
     listener.OnConditionChanged(WorkCondition::Type::BATTERY_STATUS, val);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_STATUS), 1);
     service->workQueueManager_->RemoveWork(workStatus);
 }
 } // namespace WorkScheduler

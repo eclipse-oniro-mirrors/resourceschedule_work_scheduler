@@ -238,6 +238,7 @@ HWTEST_F(ScreenListenerTest, StartTimer_001, TestSize.Level1)
     auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
     listener->saIdTimeInfoMap_.clear();
     listener->StartTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_.size(), 0);
 }
 
 /**
@@ -252,6 +253,7 @@ HWTEST_F(ScreenListenerTest, StartTimer_002, TestSize.Level1)
     listener->saIdTimeInfoMap_.clear();
     listener->saIdTimeInfoMap_[DEFAULT_SA_ID] = ScreenListener::SaTimerInfo(30000, 100);
     listener->StartTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_.count(DEFAULT_SA_ID), 1);
 }
 
 /**
@@ -282,6 +284,7 @@ HWTEST_F(ScreenListenerTest, StartTimer_004, TestSize.Level1)
     listener->saIdTimeInfoMap_.clear();
     listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 200);
     listener->StartTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_[100].timerId_, 200);
 }
 
 /**
@@ -295,6 +298,7 @@ HWTEST_F(ScreenListenerTest, StopTimer_001, TestSize.Level1)
     auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
     listener->saIdTimeInfoMap_.clear();
     listener->StopTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_.size(), 0);
 }
 
 /**
@@ -310,6 +314,7 @@ HWTEST_F(ScreenListenerTest, StopTimer_002, TestSize.Level1)
     listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 200);
     listener->saIdTimeInfoMap_[100].timerId_ = 500;
     listener->StopTimer();
+    EXPECT_LE(listener->saIdTimeInfoMap_[100].timerId_, 500);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

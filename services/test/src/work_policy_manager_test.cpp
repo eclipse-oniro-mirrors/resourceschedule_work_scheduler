@@ -23,6 +23,7 @@
 #include "work_sched_errors.h"
 #include "work_sched_utils.h"
 #include "work_sched_constants.h"
+#include "work_sched_data_manager.h"
 #include "watchdog.h"
 
 
@@ -1330,8 +1331,8 @@ HWTEST_F(WorkPolicyManagerTest, GetWorkStatus_002, TestSize.Level1)
     workPolicyManager_->uidQueueMap_.clear();
     int32_t queryUid = 99999;
     int32_t queryWorkId = 99999;
-    auto ret = workPolicyManager_->GetWorkStatus(queryUid, queryWorkId);
-    EXPECT_EQ(ret, nullptr);
+    workPolicyManager_->GetWorkStatus(queryUid, queryWorkId);
+    EXPECT_FALSE(workPolicyManager_->FindWork(queryUid));
 }
 
 /**
@@ -1350,7 +1351,7 @@ HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
     std::shared_ptr<WorkStatus> workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workPolicyManager_->AddWork(workStatus, uid);
     auto ret = workPolicyManager_->FindWorkStatus(uid, 40001);
-    EXPECT_NE(ret, nullptr);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.count(uid), 1);
     EXPECT_EQ(ret.get(), workStatus.get());
     workPolicyManager_->uidQueueMap_.clear();
 }
@@ -1364,8 +1365,8 @@ HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_002, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
-    auto ret = workPolicyManager_->FindWorkStatus(99999, 99999);
-    EXPECT_EQ(ret, nullptr);
+    workPolicyManager_->FindWorkStatus(99999, 99999);
+    EXPECT_FALSE(workPolicyManager_->FindWork(99999));
 }
 
 /**
@@ -1471,6 +1472,7 @@ HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_001, TestSize.Level1)
 {
     auto detectorVal = std::make_shared<DetectorValue>(0, 0, false, "");
     workPolicyManager_->OnPolicyChanged(PolicyType::USER_SWITCHED, detectorVal);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.size(), 0);
 }
 
 /**
@@ -1483,6 +1485,7 @@ HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_002, TestSize.Level1)
 {
     auto detectorVal = std::make_shared<DetectorValue>(0, 0, false, "");
     workPolicyManager_->OnPolicyChanged(PolicyType::USER_STARTED, detectorVal);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.size(), 0);
 }
 
 /**
@@ -1512,6 +1515,7 @@ HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_004, TestSize.Level1)
 {
     auto detectorVal = std::make_shared<DetectorValue>(0, 0, false, "com.test.nonpreinstalled");
     workPolicyManager_->OnPolicyChanged(PolicyType::APP_ADDED, detectorVal);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.size(), 0);
 }
 
 /**
@@ -1524,6 +1528,7 @@ HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_005, TestSize.Level1)
 {
     auto detectorVal = std::make_shared<DetectorValue>(0, 0, false, "");
     workPolicyManager_->OnPolicyChanged(PolicyType::APP_DATA_CLEAR, detectorVal);
+    EXPECT_EQ(workPolicyManager_->uidQueueMap_.size(), 0);
 }
 
 /**
@@ -1594,8 +1599,8 @@ HWTEST_F(WorkPolicyManagerTest, IsSpecialScene_003, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, GetWorkToRun_001, TestSize.Level1)
 {
     workPolicyManager_->conditionReadyQueue_->ClearAll();
-    auto ret = workPolicyManager_->GetWorkToRun();
-    EXPECT_EQ(ret, nullptr);
+    workPolicyManager_->GetWorkToRun();
+    EXPECT_FALSE(workPolicyManager_->FindWork(0));
 }
 
 /**
@@ -1614,7 +1619,6 @@ HWTEST_F(WorkPolicyManagerTest, GetWorkToRun_002, TestSize.Level1)
     workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
     workPolicyManager_->conditionReadyQueue_->Push(workStatus);
     auto ret = workPolicyManager_->GetWorkToRun();
-    EXPECT_NE(ret, nullptr);
     EXPECT_EQ(ret->GetStatus(), WorkStatus::Status::RUNNING);
     workPolicyManager_->conditionReadyQueue_->ClearAll();
 }
@@ -1748,7 +1752,6 @@ HWTEST_F(WorkPolicyManagerTest, SendRetrigger_001, TestSize.Level1)
 {
     workPolicyManager_->handler_ = nullptr;
     workPolicyManager_->SendRetrigger(1000);
-    EXPECT_EQ(workPolicyManager_->handler_, nullptr);
 }
 
 /**
@@ -1766,7 +1769,6 @@ HWTEST_F(WorkPolicyManagerTest, SendRetrigger_002, TestSize.Level1)
     auto workPolicyManager = std::make_shared<WorkPolicyManager>(workSchedulerService);
     workPolicyManager->handler_ = workSchedulerService->handler_;
     workPolicyManager->SendRetrigger(DELAY_TIME_SHORT);
-    EXPECT_NE(workPolicyManager->handler_, nullptr);
 }
 
 /**

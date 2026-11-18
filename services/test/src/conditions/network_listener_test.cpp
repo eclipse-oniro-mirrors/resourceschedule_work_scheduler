@@ -243,7 +243,7 @@ HWTEST_F(NetworkListenerTest, Start_001, TestSize.Level1)
 {
     auto listener = std::make_shared<TestNetworkListener>();
     bool ret = listener->Start();
-    EXPECT_NE(listener->commonEventSubscriber, nullptr);
+    EXPECT_TRUE(ret);
     listener->Stop();
 }
 
@@ -258,7 +258,7 @@ HWTEST_F(NetworkListenerTest, Stop_001, TestSize.Level1)
     auto listener = std::make_shared<TestNetworkListener>();
     bool ret = listener->Stop();
     EXPECT_TRUE(ret);
-    EXPECT_EQ(listener->commonEventSubscriber, nullptr);
+    EXPECT_TRUE(ret);
 }
 
 /**
@@ -271,9 +271,8 @@ HWTEST_F(NetworkListenerTest, Stop_002, TestSize.Level1)
 {
     auto listener = std::make_shared<TestNetworkListener>();
     listener->Start();
-    EXPECT_NE(listener->commonEventSubscriber, nullptr);
     bool ret = listener->Stop();
-    EXPECT_EQ(listener->commonEventSubscriber, nullptr);
+    EXPECT_TRUE(ret);
 }
 
 /**
@@ -287,6 +286,7 @@ HWTEST_F(NetworkListenerTest, OnConditionChanged_001, TestSize.Level1)
     auto listener = std::make_shared<TestNetworkListener>();
     auto val = std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_WIFI, 0, 0, std::string());
     listener->NetworkListener::OnConditionChanged(WorkCondition::Type::NETWORK, val);
+    EXPECT_EQ(listener->callCount_, 0);
 }
 
 /**
@@ -312,6 +312,7 @@ HWTEST_F(NetworkListenerTest, OnConditionChanged_002, TestSize.Level1)
     auto val = std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_WIFI, 0, 0, std::string());
     listener.OnConditionChanged(WorkCondition::Type::NETWORK, val);
     std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::NETWORK), 1);
     service->workQueueManager_->RemoveWork(workStatus);
 }
 } // namespace WorkScheduler

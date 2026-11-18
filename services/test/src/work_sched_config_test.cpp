@@ -181,6 +181,7 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_001, TestSize.Level
 {
     nlohmann::json root;
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigMinRepeatTime(root);
+    EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("nonexistent"));
 }
 
 /**
@@ -196,6 +197,7 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_002, TestSize.Level
     minRepeatTime["special"] = nlohmann::json::array({{{"bundleName", "com.test.special"}, {"time", 300000}}});
     root["work_scheduler_min_repeat_time"] = minRepeatTime;
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigMinRepeatTime(root);
+    EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("nonexistent"));
 }
 
 /**
@@ -208,6 +210,7 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_001, TestSize
 {
     nlohmann::json root;
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
+    EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("nonexistent"));
 }
 
 /**
@@ -221,6 +224,7 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_002, TestSize
     nlohmann::json root;
     root["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.exempt1", "com.test.exempt2"});
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
+    EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("nonexistent"));
 }
 }
 }

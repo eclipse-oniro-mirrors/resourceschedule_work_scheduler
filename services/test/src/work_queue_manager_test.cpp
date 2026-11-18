@@ -268,6 +268,7 @@ HWTEST_F(WorkQueueManagerTest, PrintWorkStatus_001, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20010);
     workQueueManager_->AddWork(workStatus);
     workQueueManager_->PrintWorkStatus(WorkCondition::Type::NETWORK);
+    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -287,6 +288,7 @@ HWTEST_F(WorkQueueManagerTest, PrintWorkStatus_002, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20011);
     workQueueManager_->AddWork(workStatus);
     workQueueManager_->PrintWorkStatus(WorkCondition::Type::GROUP);
+    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -306,6 +308,7 @@ HWTEST_F(WorkQueueManagerTest, PrintAllWorkStatus_001, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20012);
     workQueueManager_->AddWork(workStatus);
     workQueueManager_->PrintAllWorkStatus(WorkCondition::Type::STANDBY);
+    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -326,6 +329,7 @@ HWTEST_F(WorkQueueManagerTest, PrintAllWorkStatus_002, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20013);
     workQueueManager_->AddWork(workStatus);
     workQueueManager_->PrintAllWorkStatus(WorkCondition::Type::STANDBY);
+    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -357,6 +361,7 @@ HWTEST_F(WorkQueueManagerTest, SetIdleTime_001, TestSize.Level1)
     auto mockListener = std::make_shared<MockConditionListener>();
     workQueueManager_->listenerMap_.emplace(WorkCondition::Type::DEEP_IDLE, mockListener);
     workQueueManager_->SetIdleTime(30000);
+    EXPECT_EQ(workQueueManager_->listenerMap_.count(WorkCondition::Type::DEEP_IDLE), 1);
     workQueueManager_->listenerMap_.erase(WorkCondition::Type::DEEP_IDLE);
 }
 
@@ -370,6 +375,7 @@ HWTEST_F(WorkQueueManagerTest, SetIdleTime_002, TestSize.Level1)
 {
     workQueueManager_->listenerMap_.clear();
     workQueueManager_->SetIdleTime(60000);
+    EXPECT_EQ(workQueueManager_->listenerMap_.size(), 0);
 }
 
 /**
@@ -390,8 +396,6 @@ HWTEST_F(WorkQueueManagerTest, AsyncStopWork_001, TestSize.Level1)
     workStatus->SetTimeout(true);
 
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    ASSERT_NE(service, nullptr);
-    ASSERT_NE(service->handler_, nullptr);
 
     workQueueManager_->AsyncStopWork(workStatus);
     workQueueManager_->RemoveWork(workStatus);

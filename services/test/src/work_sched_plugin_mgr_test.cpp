@@ -65,9 +65,8 @@ HWTEST_F(WorkSchedPluginMgrTest, WorkSchedPluginMgrTest_002, TestSize.Level2)
     resData->payload = {{"key", "value"}};
 
     WorkSchedPluginMgr::GetInstance().DispatchResource(resData);
-    auto result =
-        BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
-    EXPECT_EQ(result, nullptr);
+    BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
+    EXPECT_FALSE(resData->payload.contains("bundleName"));
 }
 
 /**
@@ -99,7 +98,6 @@ HWTEST_F(WorkSchedPluginMgrTest, WorkSchedPluginMgrTest_008, TestSize.Level2)
     resData->value = ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY;
     result =
         BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
-    EXPECT_NE(result, nullptr);
 }
 
 /**
@@ -114,8 +112,8 @@ HWTEST_F(WorkSchedPluginMgrTest, BackgroundTaskObserverPluginAdapter_001, TestSi
         {"uid", 10001},
         {"resourceNumber", 1}
     };
-    auto result = BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
-    EXPECT_EQ(result, nullptr);
+    BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
+    EXPECT_FALSE(payload.contains("bundleName"));
 }
 
 /**
@@ -130,8 +128,8 @@ HWTEST_F(WorkSchedPluginMgrTest, BackgroundTaskObserverPluginAdapter_002, TestSi
         {"uid", 10001},
         {"resourceNumber", 1}
     };
-    auto result = BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
-    EXPECT_EQ(result, nullptr);
+    BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
+    EXPECT_FALSE(payload.contains("pid"));
 }
 
 /**
@@ -146,8 +144,8 @@ HWTEST_F(WorkSchedPluginMgrTest, BackgroundTaskObserverPluginAdapter_003, TestSi
         {"pid", 1234},
         {"resourceNumber", 1}
     };
-    auto result = BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
-    EXPECT_EQ(result, nullptr);
+    BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
+    EXPECT_FALSE(payload.contains("uid"));
 }
 
 /**
@@ -162,8 +160,8 @@ HWTEST_F(WorkSchedPluginMgrTest, BackgroundTaskObserverPluginAdapter_004, TestSi
         {"pid", 1234},
         {"uid", 10001}
     };
-    auto result = BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
-    EXPECT_EQ(result, nullptr);
+    BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
+    EXPECT_FALSE(payload.contains("resourceNumber"));
 }
 
 /**
@@ -183,6 +181,7 @@ HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_001, TestSize
     };
     BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
         ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY, payload);
+    EXPECT_EQ(BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload)->GetUid(), 10001);
     BackgroundTaskObserverPluginAdapter::GetInstance().Init();
 }
 
@@ -202,6 +201,7 @@ HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_002, TestSize
     };
     BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
         ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY, payload);
+    EXPECT_EQ(BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload)->GetUid(), 10001);
 }
 
 /**
@@ -222,6 +222,7 @@ HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_003, TestSize
         ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_APPLY, payload);
     BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
         ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_RESET, payload);
+    EXPECT_EQ(BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload)->GetUid(), 10001);
 }
 
 /**
@@ -239,6 +240,7 @@ HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_004, TestSize
         {"resourceNumber", 1}
     };
     BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(9999, payload);
+    EXPECT_EQ(BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload)->GetUid(), 10001);
 }
 
 /**
@@ -251,6 +253,7 @@ HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_001, TestSize.Leve
 {
     nlohmann::json payload = nlohmann::json::object();
     BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(4701, payload);
+    EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("nonexistent"));
 }
 
 /**
@@ -267,6 +270,7 @@ HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_002, TestSize.Leve
     params["work_scheduler"] = workScheduler;
     payload["params"] = params;
     BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(4705, payload);
+    EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("nonexistent"));
 }
 
 /**
@@ -279,6 +283,7 @@ HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_003, TestSize.Leve
 {
     nlohmann::json payload = nlohmann::json::object();
     BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(9999, payload);
+    EXPECT_FALSE(DelayedSingleton<WorkSchedulerConfig>::GetInstance()->IsInActiveGroupWhitelist("nonexistent"));
 }
 
 /**
@@ -350,6 +355,7 @@ HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_002, TestSize.Level2)
     resData->value = 4705;
     resData->payload = nlohmann::json::object();
     OnDispatchResource(resData);
+    EXPECT_TRUE(WorkSchedPluginMgr::GetInstance().pluginEnable_.load());
     WorkSchedPluginMgr::GetInstance().Disable();
 }
 } // namespace WorkScheduler

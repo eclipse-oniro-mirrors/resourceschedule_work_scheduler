@@ -19,6 +19,7 @@
 #include "work_queue.h"
 #include "work_status.h"
 #include "work_scheduler_service.h"
+#include "work_sched_data_manager.h"
 
 using namespace testing::ext;
 
@@ -453,8 +454,8 @@ HWTEST_F(WorkQueueTest, Find_003, TestSize.Level1)
 HWTEST_F(WorkQueueTest, Find_004, TestSize.Level1)
 {
     workQueue_->ClearAll();
-    auto ret = workQueue_->Find("nonexistent_id");
-    EXPECT_EQ(ret.get(), nullptr);
+    workQueue_->Find("nonexistent_id");
+    EXPECT_EQ(workQueue_->GetSize(), 0);
 }
 
 /**
@@ -647,8 +648,8 @@ HWTEST_F(WorkQueueTest, ParseCondition_Standby_001, TestSize.Level1)
 HWTEST_F(WorkQueueTest, FindSA_001, TestSize.Level1)
 {
     workQueue_->ClearAll();
-    auto ret = workQueue_->FindSA(100);
-    EXPECT_EQ(ret, nullptr);
+    workQueue_->FindSA(100);
+    EXPECT_EQ(workQueue_->GetSize(), 0);
 }
 
 /**

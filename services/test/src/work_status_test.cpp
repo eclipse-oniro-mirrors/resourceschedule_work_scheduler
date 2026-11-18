@@ -26,6 +26,7 @@
 #include "work_sched_constants.h"
 #include "frequency_info.h"
 #include "parameters.h"
+#include "string_wrapper.h"
 
 using namespace testing::ext;
 

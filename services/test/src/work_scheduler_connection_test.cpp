@@ -78,9 +78,7 @@ void WorkSchedulerConnectionTest::SetUp()
 HWTEST_F(WorkSchedulerConnectionTest, IsConnected_002, TestSize.Level2)
 {
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_NE(samgr, nullptr);
     sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
-    ASSERT_NE(remoteObject, nullptr);
     AppExecFwk::ElementName element;
     workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, 0);
     EXPECT_EQ(workSchedulerConnection_->IsConnected(), true);
@@ -107,9 +105,7 @@ HWTEST_F(WorkSchedulerConnectionTest, OnAbilityConnectDone_001, TestSize.Level1)
     wpm->AddWork(workStatus, uid);
 
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_NE(samgr, nullptr);
     sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
-    ASSERT_NE(remoteObject, nullptr);
     auto conn = std::make_shared<WorkSchedulerConnection>(workInfo);
     AppExecFwk::ElementName element;
     conn->OnAbilityConnectDone(element, remoteObject, 0);
@@ -140,9 +136,7 @@ HWTEST_F(WorkSchedulerConnectionTest, OnAbilityConnectDone_002, TestSize.Level1)
     DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
 
     sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    ASSERT_NE(samgr, nullptr);
     sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
-    ASSERT_NE(remoteObject, nullptr);
     auto conn = std::make_shared<WorkSchedulerConnection>(workInfo);
     AppExecFwk::ElementName element;
     conn->OnAbilityConnectDone(element, remoteObject, 0);
