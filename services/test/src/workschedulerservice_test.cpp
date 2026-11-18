@@ -55,7 +55,9 @@
 #include "work_conn_manager.h"
 #include "background_loader_task_info.h"
 #include "work_sched_constants.h"
+#include "work_sched_utils.h"
 #include "frequency_info.h"
+#include "ipc_skeleton.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
 namespace OHOS {
@@ -105,6 +107,11 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+    static const std::string PUSH_SERVICE_NAME = "push_manager_service";
+    static const std::string BGTASK_SERVICE_NAME = "resource_schedule_service";
+    const int32_t TEST_UID = 40000;
+}
 
 bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
 {
@@ -113,13 +120,6 @@ bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int
 }
 
 using namespace testing::ext;
-namespace OHOS {
-namespace WorkScheduler {
-namespace {
-    static const std::string PUSH_SERVICE_NAME = "push_manager_service";
-    static const std::string BGTASK_SERVICE_NAME = "resource_schedule_service";
-    const int32_t TEST_UID = 40000;
-}
 class WorkSchedulerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase() {}

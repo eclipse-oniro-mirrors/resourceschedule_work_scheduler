@@ -15,6 +15,7 @@
 
 #include <gtest/gtest.h>
 #include "work_sched_plugin_mgr.h"
+#include "work_sched_config.h"
 #include "res_data.h"
 #include "res_type.h"
 #include "background_task_observer_plugin_adapter.h"
@@ -24,6 +25,10 @@ using namespace OHOS::ResourceSchedule;
 
 namespace OHOS {
 namespace WorkScheduler {
+
+extern "C" bool OnPluginInit(std::string& libName);
+extern "C" void OnPluginDisable();
+extern "C" void OnDispatchResource(const std::shared_ptr<ResourceSchedule::ResData>& resData);
 
 class WorkSchedPluginMgrTest : public testing::Test {
 public:
