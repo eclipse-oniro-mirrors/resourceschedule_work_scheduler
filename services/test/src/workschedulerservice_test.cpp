@@ -108,7 +108,7 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 bool WorkSchedulerService::GetUidByBundleName(const string &bundleName, int32_t &uid)
 {
-    uid = 40000;
+    uid = TEST_UID;
     return true;
 }
 
@@ -118,6 +118,7 @@ namespace WorkScheduler {
 namespace {
     static const std::string PUSH_SERVICE_NAME = "push_manager_service";
     static const std::string BGTASK_SERVICE_NAME = "resource_schedule_service";
+    const int32_t TEST_UID = 40000;
 }
 class WorkSchedulerServiceTest : public testing::Test {
 public:
