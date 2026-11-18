@@ -137,7 +137,7 @@ void WorkGuardThread::CheckRunningWorkStatus(const std::shared_ptr<WorkPolicyMan
             }
         } else if (WorkSchedUtils::GetCurrentAccountId() == workStatus->userId_) {
             WS_HILOGI("Orphan task found: workId=%{public}s is RUNNING but no connection, cleaning state.",
-            workStatus->workId_.c_str());
+                workStatus->workId_.c_str());
             policyManager->CleanOrphanWork(workStatus);
             WorkSchedUtil::HiSysEventException(EventErrorCode::TASK_GUARD,
                 "orphan work cleaned, bundleName:" + workStatus->bundleName_ +
