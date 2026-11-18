@@ -26,6 +26,8 @@
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
 #include "work_sched_hilog.h"
+#include "work_info.h"
+#include "work_status.h"
 
 using namespace testing::ext;
 
@@ -178,6 +180,88 @@ HWTEST_F(BatteryLevelListenerTest, OnReceiveEvent_006, TestSize.Level1)
     subscriber_->OnReceiveEvent(BuildBatteryChangedEvent(60));
     EXPECT_EQ(listener_->callCount_, 1);
     EXPECT_EQ(listener_->lastVal_->intVal, 60);
+}
+
+/**
+ * @tc.name: Start_001
+ * @tc.desc: Test BatteryLevelListener Start creates subscriber and subscribes.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, Start_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    bool ret = listener->Start();
+    EXPECT_NE(listener->commonEventSubscriber, nullptr);
+    listener->Stop();
+}
+
+/**
+ * @tc.name: Stop_001
+ * @tc.desc: Test BatteryLevelListener Stop when subscriber is null.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, Stop_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    bool ret = listener->Stop();
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(listener->commonEventSubscriber, nullptr);
+}
+
+/**
+ * @tc.name: Stop_002
+ * @tc.desc: Test BatteryLevelListener Stop when subscriber is not null.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, Stop_002, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    listener->Start();
+    EXPECT_NE(listener->commonEventSubscriber, nullptr);
+    bool ret = listener->Stop();
+    EXPECT_EQ(listener->commonEventSubscriber, nullptr);
+}
+
+/**
+ * @tc.name: OnConditionChanged_001
+ * @tc.desc: Test BatteryLevelListener OnConditionChanged with null workQueueManager.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, OnConditionChanged_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    auto val = std::make_shared<DetectorValue>(50, 0, 0, std::string());
+    listener->BatteryLevelListener::OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
+}
+
+/**
+ * @tc.name: OnConditionChanged_002
+ * @tc.desc: Test BatteryLevelListener OnConditionChanged with valid workQueueManager.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, OnConditionChanged_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9920);
+    workInfo->SetElement("com.test.batlevel", "BatLevelAbility");
+    workInfo->RequestBatteryLevel(40);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10020);
+    service->workQueueManager_->AddWork(workStatus);
+
+    BatteryLevelListener listener(service->workQueueManager_, service);
+    auto val = std::make_shared<DetectorValue>(50, 0, 0, std::string());
+    listener.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    service->workQueueManager_->RemoveWork(workStatus);
 }
 } // namespace WorkScheduler
 } // namespace OHOS

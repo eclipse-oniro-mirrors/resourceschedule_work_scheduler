@@ -24,6 +24,8 @@
 #include "work_scheduler_service.h"
 #include "work_policy_manager.h"
 #include "work_conn_manager.h"
+#include "work_sched_data_manager.h"
+#include "work_status.h"
 
 using namespace testing::ext;
 using namespace std;
@@ -82,6 +84,70 @@ HWTEST_F(WorkSchedulerConnectionTest, IsConnected_002, TestSize.Level2)
     AppExecFwk::ElementName element;
     workSchedulerConnection_->OnAbilityConnectDone(element, remoteObject, 0);
     EXPECT_EQ(workSchedulerConnection_->IsConnected(), true);
+}
+
+/**
+ * @tc.name: OnAbilityConnectDone_001
+ * @tc.desc: Test OnAbilityConnectDone resets debugTask when workStatus is debug.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerConnectionTest, OnAbilityConnectDone_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    auto wpm = service->GetWorkPolicyManager();
+    wpm->uidQueueMap_.clear();
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(WORK_ID);
+    workInfo->SetElement("com.unittest.bundleName", "unittestAbility");
+    int32_t uid = 200;
+    workInfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, uid);
+    workStatus->SetDebugTask(true);
+    wpm->AddWork(workStatus, uid);
+
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    ASSERT_NE(samgr, nullptr);
+    sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+    ASSERT_NE(remoteObject, nullptr);
+    auto conn = std::make_shared<WorkSchedulerConnection>(workInfo);
+    AppExecFwk::ElementName element;
+    conn->OnAbilityConnectDone(element, remoteObject, 0);
+    EXPECT_EQ(conn->IsConnected(), true);
+    EXPECT_FALSE(workStatus->IsDebugTask());
+    wpm->uidQueueMap_.clear();
+}
+
+/**
+ * @tc.name: OnAbilityConnectDone_002
+ * @tc.desc: Test OnAbilityConnectDone cancels work when exited deep idle in user mode.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerConnectionTest, OnAbilityConnectDone_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    auto wpm = service->GetWorkPolicyManager();
+    wpm->uidQueueMap_.clear();
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(WORK_ID + 1);
+    workInfo->SetElement("com.unittest.deepidle", "DeepIdleAbility");
+    int32_t uid = 201;
+    workInfo->RefreshUid(uid);
+    workInfo->RequestDeepIdle(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, uid);
+    wpm->AddWork(workStatus, uid);
+    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+
+    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
+    ASSERT_NE(samgr, nullptr);
+    sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
+    ASSERT_NE(remoteObject, nullptr);
+    auto conn = std::make_shared<WorkSchedulerConnection>(workInfo);
+    AppExecFwk::ElementName element;
+    conn->OnAbilityConnectDone(element, remoteObject, 0);
+    EXPECT_EQ(conn->IsConnected(), true);
+    wpm->uidQueueMap_.clear();
 }
 }
 }

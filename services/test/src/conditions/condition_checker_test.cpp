@@ -164,5 +164,49 @@ HWTEST_F(ConditionCheckerTest, CheckChargerStatus_001, TestSize.Level1)
     workQueueManager_->RemoveWork(workStatus);
 }
 #endif // POWERMGR_BATTERY_MANAGER_ENABLE
+
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
+/**
+ * @tc.name: CheckNetworkStatus_001
+ * @tc.desc: Test ConditionChecker CheckNetworkStatus runs without crash.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9901);
+    workInfo->SetElement("com.example.checker", "CheckerAbility");
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10001);
+    workQueueManager_->AddWork(workStatus);
+
+    auto checker = std::make_shared<ConditionChecker>(workQueueManager_);
+    checker->CheckNetworkStatus();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    workQueueManager_->RemoveWork(workStatus);
+}
+
+/**
+ * @tc.name: CheckNetworkStatus_002
+ * @tc.desc: Test ConditionChecker CheckAllStatus includes CheckNetworkStatus.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9904);
+    workInfo->SetElement("com.example.checker", "CheckerAbility");
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10004);
+    workQueueManager_->AddWork(workStatus);
+
+    auto checker = std::make_shared<ConditionChecker>(workQueueManager_);
+    checker->CheckAllStatus();
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    workQueueManager_->RemoveWork(workStatus);
+}
+#endif // COMMUNICATION_NETMANAGER_BASE_ENABLE
 } // namespace WorkScheduler
 } // namespace OHOS

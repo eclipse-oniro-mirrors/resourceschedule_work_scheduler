@@ -136,5 +136,91 @@ HWTEST_F(WorkSchedConfigTest, InitActiveGroupWhitelist_002, TestSize.Level2)
     auto result7 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
     EXPECT_TRUE(result7);
 }
+
+/**
+ * @tc.name: UpdateBgMgrCloudConfig_001
+ * @tc.desc: Test UpdateBgMgrCloudConfig returns false when payload invalid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateBgMgrCloudConfig_001, TestSize.Level2)
+{
+    nlohmann::json payload;
+    auto result = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateBgMgrCloudConfig(payload);
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: UpdateBgMgrCloudConfig_002
+ * @tc.desc: Test UpdateBgMgrCloudConfig returns true and calls all update functions.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateBgMgrCloudConfig_002, TestSize.Level2)
+{
+    nlohmann::json payload;
+    nlohmann::json params = nlohmann::json::object();
+    nlohmann::json workScheduler = nlohmann::json::object();
+    workScheduler["work_scheduler_min_repeat_time"] = nlohmann::json::object({{"special", nlohmann::json::array()}});
+    workScheduler["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.exempt"});
+    workScheduler["work_scheduler_preinstalled_works"] = nlohmann::json::object();
+    params["work_scheduler"] = workScheduler;
+    payload["params"] = params;
+
+    auto result = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateBgMgrCloudConfig(payload);
+    EXPECT_TRUE(result);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigMinRepeatTime_001
+ * @tc.desc: Test UpdateCloudConfigMinRepeatTime returns early when no key.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_001, TestSize.Level2)
+{
+    nlohmann::json root;
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigMinRepeatTime(root);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigMinRepeatTime_002
+ * @tc.desc: Test UpdateCloudConfigMinRepeatTime with valid special array.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_002, TestSize.Level2)
+{
+    nlohmann::json root;
+    nlohmann::json minRepeatTime = nlohmann::json::object();
+    minRepeatTime["special"] = nlohmann::json::array({{{"bundleName", "com.test.special"}, {"time", 300000}}});
+    root["work_scheduler_min_repeat_time"] = minRepeatTime;
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigMinRepeatTime(root);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigEngExemptionBundles_001
+ * @tc.desc: Test UpdateCloudConfigEngExemptionBundles returns early when no key.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_001, TestSize.Level2)
+{
+    nlohmann::json root;
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigEngExemptionBundles_002
+ * @tc.desc: Test UpdateCloudConfigEngExemptionBundles with valid array.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_002, TestSize.Level2)
+{
+    nlohmann::json root;
+    root["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.exempt1", "com.test.exempt2"});
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
+}
 }
 }

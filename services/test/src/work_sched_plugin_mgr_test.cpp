@@ -165,5 +165,192 @@ HWTEST_F(WorkSchedPluginMgrTest, BackgroundTaskObserverPluginAdapter_004, TestSi
     auto result = BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
     EXPECT_EQ(result, nullptr);
 }
-}  // namespace WorkScheduler
-}  // namespace OHOS
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_001
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged returns when observer is null.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_001, TestSize.Level2)
+{
+    BackgroundTaskObserverPluginAdapter::GetInstance().UnInit();
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 1}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY, payload);
+    BackgroundTaskObserverPluginAdapter::GetInstance().Init();
+}
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_002
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged APP_EFFICIENCY_RESOURCES_APPLY.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_002, TestSize.Level2)
+{
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 1}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY, payload);
+}
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_003
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged PROC_EFFICIENCY_RESOURCES_APPLY and RESET.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_003, TestSize.Level2)
+{
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 1}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_APPLY, payload);
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_RESET, payload);
+}
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_004
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged unknown stateType default case.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_004, TestSize.Level2)
+{
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 1}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(9999, payload);
+}
+
+/**
+ * @tc.name: HandleCloudConfigUpdateEvent_001
+ * @tc.desc: Test HandleCloudConfigUpdateEvent with SUSPEND_MANAGER_SYSTEM_ABILITY_ID.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_001, TestSize.Level2)
+{
+    nlohmann::json payload = nlohmann::json::object();
+    BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(4701, payload);
+}
+
+/**
+ * @tc.name: HandleCloudConfigUpdateEvent_002
+ * @tc.desc: Test HandleCloudConfigUpdateEvent with BACKGROUND_TASK_MANAGER_SERVICE_ID.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_002, TestSize.Level2)
+{
+    nlohmann::json payload;
+    nlohmann::json params = nlohmann::json::object();
+    nlohmann::json workScheduler = nlohmann::json::object();
+    params["work_scheduler"] = workScheduler;
+    payload["params"] = params;
+    BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(4705, payload);
+}
+
+/**
+ * @tc.name: HandleCloudConfigUpdateEvent_003
+ * @tc.desc: Test HandleCloudConfigUpdateEvent with unknown stateType.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_003, TestSize.Level2)
+{
+    nlohmann::json payload = nlohmann::json::object();
+    BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(9999, payload);
+}
+
+/**
+ * @tc.name: OnPluginInit_001
+ * @tc.desc: Test extern C OnPluginInit with matching lib name.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnPluginInit_001, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Disable();
+    std::string libName = "libworkschedservice.z.so";
+    bool ret = OnPluginInit(libName);
+    EXPECT_TRUE(ret);
+    WorkSchedPluginMgr::GetInstance().Disable();
+}
+
+/**
+ * @tc.name: OnPluginInit_002
+ * @tc.desc: Test extern C OnPluginInit with non-matching lib name.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnPluginInit_002, TestSize.Level2)
+{
+    std::string libName = "libinvalid.z.so";
+    bool ret = OnPluginInit(libName);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: OnPluginDisable_001
+ * @tc.desc: Test extern C OnPluginDisable.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnPluginDisable_001, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Init();
+    OnPluginDisable();
+    EXPECT_FALSE(WorkSchedPluginMgr::GetInstance().pluginEnable_.load());
+}
+
+/**
+ * @tc.name: OnDispatchResource_001
+ * @tc.desc: Test extern C OnDispatchResource with null data.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_001, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Init();
+    OnDispatchResource(nullptr);
+    EXPECT_TRUE(WorkSchedPluginMgr::GetInstance().pluginEnable_.load());
+    WorkSchedPluginMgr::GetInstance().Disable();
+}
+
+/**
+ * @tc.name: OnDispatchResource_002
+ * @tc.desc: Test extern C OnDispatchResource with RSS_CLOUD_CONFIG_UPDATE.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_002, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Init();
+    auto resData = std::make_shared<ResourceSchedule::ResData>();
+    resData->resType = ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE;
+    resData->value = 4705;
+    resData->payload = nlohmann::json::object();
+    OnDispatchResource(resData);
+    WorkSchedPluginMgr::GetInstance().Disable();
+}
+} // namespace WorkScheduler
+} // namespace OHOS

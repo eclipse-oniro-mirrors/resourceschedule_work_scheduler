@@ -226,5 +226,90 @@ HWTEST_F(ScreenListenerTest, OnReceiveEvent_InvalidAction_001, TestSize.Level1)
     subscriber_->OnReceiveEvent(data);
     EXPECT_EQ(testListener_->callCount_, 0);
 }
+
+/**
+ * @tc.name: StartTimer_001
+ * @tc.desc: Test ScreenListener StartTimer with empty saIdTimeInfoMap.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->StartTimer();
+}
+
+/**
+ * @tc.name: StartTimer_002
+ * @tc.desc: Test ScreenListener StartTimer with DEFAULT_SA_ID entry.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_002, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[DEFAULT_SA_ID] = ScreenListener::SaTimerInfo(30000, 100);
+    listener->StartTimer();
+}
+
+/**
+ * @tc.name: StartTimer_003
+ * @tc.desc: Test ScreenListener StartTimer skips when timer already exists.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_003, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[DEFAULT_SA_ID] = ScreenListener::SaTimerInfo(30000, 100);
+    listener->saIdTimeInfoMap_[DEFAULT_SA_ID].timerId_ = 999;
+    listener->StartTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_[DEFAULT_SA_ID].timerId_, 999);
+}
+
+/**
+ * @tc.name: StartTimer_004
+ * @tc.desc: Test ScreenListener StartTimer with null service_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_004, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(nullptr);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 200);
+    listener->StartTimer();
+}
+
+/**
+ * @tc.name: StopTimer_001
+ * @tc.desc: Test ScreenListener StopTimer with empty saIdTimeInfoMap.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StopTimer_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->StopTimer();
+}
+
+/**
+ * @tc.name: StopTimer_002
+ * @tc.desc: Test ScreenListener StopTimer with timerId > 0 entry.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StopTimer_002, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 200);
+    listener->saIdTimeInfoMap_[100].timerId_ = 500;
+    listener->StopTimer();
+}
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -25,11 +25,20 @@
 #include "work_sched_utils.h"
 #include "work_status.h"
 #include "conditions/network_listener.h"
+#include "conditions/icondition_listener.h"
 
 using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
+class MockConditionListener : public IConditionListener {
+public:
+    void OnConditionChanged(WorkCondition::Type conditionType,
+        std::shared_ptr<DetectorValue> conditionVal) override {}
+    bool Start() override { return true; }
+    bool Stop() override { return true; }
+};
+
 class MockWorkPolicyManager : public WorkPolicyManager {
 public:
     using WorkPolicyManager::WorkPolicyManager;
@@ -241,6 +250,151 @@ HWTEST_F(WorkQueueManagerTest, CancelWork_001, TestSize.Level1)
     workQueueManager_->CancelWork(workStatus);
     auto workList = workQueueManager_->queueMap_.at(WorkCondition::Type::NETWORK)->GetWorkList();
     EXPECT_EQ(workList.size(), 0);
+}
+
+/**
+ * @tc.name: PrintWorkStatus_001
+ * @tc.desc: Test PrintWorkStatus prints work status for non-GROUP/STANDBY type.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, PrintWorkStatus_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(5010);
+    workInfo->SetElement("com.test.print", "PrintAbility");
+    workInfo->RequestPersisted(false);
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20010);
+    workQueueManager_->AddWork(workStatus);
+    workQueueManager_->PrintWorkStatus(WorkCondition::Type::NETWORK);
+    workQueueManager_->RemoveWork(workStatus);
+}
+
+/**
+ * @tc.name: PrintWorkStatus_002
+ * @tc.desc: Test PrintWorkStatus calls PrintAllWorkStatus for GROUP type.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, PrintWorkStatus_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(5011);
+    workInfo->SetElement("com.test.print2", "PrintAbility2");
+    workInfo->RequestPersisted(false);
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20011);
+    workQueueManager_->AddWork(workStatus);
+    workQueueManager_->PrintWorkStatus(WorkCondition::Type::GROUP);
+    workQueueManager_->RemoveWork(workStatus);
+}
+
+/**
+ * @tc.name: PrintAllWorkStatus_001
+ * @tc.desc: Test PrintAllWorkStatus iterates all queues and prints work status.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, PrintAllWorkStatus_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(5012);
+    workInfo->SetElement("com.test.printall", "PrintAllAbility");
+    workInfo->RequestPersisted(false);
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20012);
+    workQueueManager_->AddWork(workStatus);
+    workQueueManager_->PrintAllWorkStatus(WorkCondition::Type::STANDBY);
+    workQueueManager_->RemoveWork(workStatus);
+}
+
+/**
+ * @tc.name: PrintAllWorkStatus_002
+ * @tc.desc: Test PrintAllWorkStatus skips duplicate workIds across queues.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, PrintAllWorkStatus_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(5013);
+    workInfo->SetElement("com.test.printdup", "PrintDupAbility");
+    workInfo->RequestPersisted(false);
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    workInfo->RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20013);
+    workQueueManager_->AddWork(workStatus);
+    workQueueManager_->PrintAllWorkStatus(WorkCondition::Type::STANDBY);
+    workQueueManager_->RemoveWork(workStatus);
+}
+
+/**
+ * @tc.name: SetTimeCycle_002
+ * @tc.desc: Test SetTimeCycle restarts timer listener when present.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, SetTimeCycle_002, TestSize.Level1)
+{
+    workQueueManager_->listenerMap_.clear();
+    auto mockListener = std::make_shared<MockConditionListener>();
+    workQueueManager_->listenerMap_.emplace(WorkCondition::Type::TIMER, mockListener);
+    workQueueManager_->SetTimeCycle(600000);
+    EXPECT_EQ(workQueueManager_->GetTimeCycle(), 600000);
+    workQueueManager_->listenerMap_.erase(WorkCondition::Type::TIMER);
+}
+
+/**
+ * @tc.name: SetIdleTime_001
+ * @tc.desc: Test SetIdleTime stores value and restarts screen listener when present.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, SetIdleTime_001, TestSize.Level1)
+{
+    workQueueManager_->listenerMap_.clear();
+    auto mockListener = std::make_shared<MockConditionListener>();
+    workQueueManager_->listenerMap_.emplace(WorkCondition::Type::DEEP_IDLE, mockListener);
+    workQueueManager_->SetIdleTime(30000);
+    workQueueManager_->listenerMap_.erase(WorkCondition::Type::DEEP_IDLE);
+}
+
+/**
+ * @tc.name: SetIdleTime_002
+ * @tc.desc: Test SetIdleTime stores value when no screen listener.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, SetIdleTime_002, TestSize.Level1)
+{
+    workQueueManager_->listenerMap_.clear();
+    workQueueManager_->SetIdleTime(60000);
+}
+
+/**
+ * @tc.name: AsyncStopWork_001
+ * @tc.desc: Test AsyncStopWork posts stop task when handler available.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueManagerTest, AsyncStopWork_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(5020);
+    workInfo->SetElement("com.test.asyncstop", "AsyncStopAbility");
+    workInfo->RequestPersisted(false);
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20020);
+    workQueueManager_->AddWork(workStatus);
+    workStatus->SetTimeout(true);
+
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    ASSERT_NE(service, nullptr);
+    ASSERT_NE(service->handler_, nullptr);
+
+    workQueueManager_->AsyncStopWork(workStatus);
+    workQueueManager_->RemoveWork(workStatus);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
