@@ -347,8 +347,6 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
     }
     switch (policyType) {
         case PolicyType::USER_SWITCHED: {
-            StopUnCurUserRunningWork();
-            CheckUnCurUserWork();
             service->InitPreinstalledWork();
             break;
         }
@@ -1112,38 +1110,6 @@ void WorkPolicyManager::RevertToConditionReady(std::shared_ptr<WorkStatus> topWo
 {
     topWork->MarkStatus(WorkStatus::Status::CONDITION_READY);
     conditionReadyQueue_->Push(topWork);
-}
-
-void WorkPolicyManager::CheckUnCurUserWork()
-{
-    conditionReadyQueue_->CheckUnCurUserWork();
-}
- 
-void WorkPolicyManager::StopUnCurUserRunningWork()
-{
-    auto service = wss_.lock();
-    if (service == nullptr) {
-        WS_HILOGE("wss_ lock failed");
-        return;
-    }
-    std::list<shared_ptr<WorkStatus>> runningWorks;
-    {
-        std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
-        for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
-            auto workStatus = it->second;
-            if (workStatus && workStatus->IsRunning()) {
-                runningWorks.push_back(workStatus);
-            }
-        }
-    }
-    for (auto &workStatus : runningWorks) {
-        if (workStatus->IsSameUser()) {
-            continue;
-        }
-        WS_HILOGI("stop unCurrent user running work, bundleName:%{public}s, workId:%{public}s",
-            workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
-        service->StopWorkInner(workStatus, workStatus->uid_, false, false);
-    }
 }
 } // namespace WorkScheduler
 } // namespace OHOS

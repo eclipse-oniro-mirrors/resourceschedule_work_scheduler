@@ -235,7 +235,6 @@ public:
     uint64_t PauseRunning(uint64_t currentTime);
     void ResumeRunning(uint64_t currentTime);
     bool IsCurrentMode();
-    bool IsSameUser();
     void StartHighPerfTimer();
     void StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &runningWorks);
     static uint64_t GetHighPerfDuration();
@@ -252,6 +251,7 @@ private:
     static int32_t GetDumpAppGroup(int32_t uid);
     static bool GetUidLastTime(int32_t uid, time_t &lastTime);
     void MarkTimeout();
+    bool IsSameUser();
     bool SetMinInterval();
     bool IsBatteryAndNetworkReady(WorkCondition::Type type);
     bool IsStorageReady(WorkCondition::Type type);

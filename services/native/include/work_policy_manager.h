@@ -338,8 +338,6 @@ private:
     void RemoveConditionUnReady();
     std::shared_ptr<WorkStatus> GetWorkToRun();
     void CheckUnCurModeWork();
-    void CheckUnCurUserWork();
-    void StopUnCurUserRunningWork();
     void RemoveAllUnReady();
     uint32_t NewWatchdogId();
     void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
