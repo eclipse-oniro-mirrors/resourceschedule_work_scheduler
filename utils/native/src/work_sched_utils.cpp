@@ -145,8 +145,6 @@ bool WorkSchedUtils::CheckExtensionInfos(const string &bundleName, const string 
     if (!bundleMgr->GetBundleInfo(bundleName,
         BundleFlag::GET_BUNDLE_WITH_EXTENSION_INFO,
         bundleInfo, uid / UID_TRANSFORM_DIVISOR)) {
-        auto findIter = std::find_if(bundleInfo.extensionInfos.begin(), bundleInfo.extensionInfos.end(),
-            [&](const auto &info) {
         WS_HILOGE("GetBundleInfo failed, bundleName: %{public}s", bundleName.c_str());
         return false;
     }
