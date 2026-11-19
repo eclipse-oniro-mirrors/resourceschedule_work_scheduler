@@ -178,6 +178,7 @@ private:
     ErrCode DeleteTaskFromDb(int32_t uid);
     void ReportRestoredTasks(const std::vector<std::pair<std::string, int32_t>>& restoreKeys);
     bool IsResSchedReady();
+    void ReportTaskStatus(const TaskInfo& taskInfo, int32_t status, bool delayFinish);
 
     std::atomic<bool> isReady_ {false};
     ffrt::mutex taskLock_;

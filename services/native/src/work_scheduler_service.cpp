@@ -556,9 +556,9 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
     }
     InitWorkInner();
     int32_t maxTimeoutCount = BACKGROUND_LOADER_TIMEOUT_COUNT;
-    int32_t backgroundLoaderTimeoutMs = BACKGROUND_LOADER_TIMEOUT_US;
-    LoadBackgroundLoaderFromFile(BACKGROUND_LOADER_FILE_PATH, maxTimeoutCount, backgroundLoaderTimeoutMs);
-    BackgroundLoaderMgr::GetInstance().Init(maxTimeoutCount, backgroundLoaderTimeoutMs);
+    int32_t backgroundLoaderTimeoutUs = BACKGROUND_LOADER_TIMEOUT_US;
+    LoadBackgroundLoaderFromFile(BACKGROUND_LOADER_FILE_PATH, maxTimeoutCount, backgroundLoaderTimeoutUs);
+    BackgroundLoaderMgr::GetInstance().Init(maxTimeoutCount, backgroundLoaderTimeoutUs);
 
     if (!Publish(wss)) {
         WS_HILOGE("OnStart register to system ability manager failed!");
