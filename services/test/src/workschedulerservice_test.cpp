@@ -42,6 +42,7 @@
 #ifdef DEVICE_STANDBY_ENABLE
 #include "standby_service_client.h"
 #include "allow_type.h"
+#include "work_standby_state_change_callback.h"
 #endif
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 #include "scheduler_bg_task_subscriber.h"
@@ -111,6 +112,7 @@ namespace {
     static const std::string PUSH_SERVICE_NAME = "push_manager_service";
     static const std::string BGTASK_SERVICE_NAME = "resource_schedule_service";
     const int32_t TEST_UID = 40000;
+    bool g_isNativeToken = false;
 }
 
 bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
@@ -118,6 +120,24 @@ bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int
     uid = TEST_UID;
     return true;
 }
+
+bool WorkSchedulerService::CheckProcessName()
+{
+    return g_isNativeToken;
+}
+
+bool WorkSchedulerService::CheckCallingServiceName()
+{
+    return g_isNativeToken;
+}
+
+class MocStopWorkConnManager : public WorkConnManager {
+public:
+    bool StopWork(std::shared_ptr<WorkStatus>, bool isTimeOut) override
+    {
+        return true;
+    }
+};
 
 using namespace testing::ext;
 class WorkSchedulerServiceTest : public testing::Test {
@@ -1980,9 +2000,9 @@ HWTEST_F(WorkSchedulerServiceTest, StopGuardThread_001, TestSize.Level1)
 {
     workSchedulerService_->guardThread_ = nullptr;
     workSchedulerService_->StartGuardThread();
-    auto threadPtr = workSchedulerService_->guardThread_.get();
+    EXPECT_NE(workSchedulerService_->guardThread_, nullptr);
     workSchedulerService_->StopGuardThread();
-    EXPECT_FALSE(workSchedulerService_->ready_.load());
+    EXPECT_EQ(workSchedulerService_->guardThread_, nullptr);
 }
 
 /**
@@ -2580,9 +2600,7 @@ HWTEST_F(WorkSchedulerServiceTest, WatchdogTimeOut_001, TestSize.Level1)
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
-    if (service->workPolicyManager_->workConnManager_ == nullptr) {
-        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
-    }
+    service->workPolicyManager_->workConnManager_ = std::make_shared<MocStopWorkConnManager>();
     if (service->workQueueManager_ == nullptr) {
         service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
     }
@@ -2747,6 +2765,15 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+#ifdef DEVICE_STANDBY_ENABLE
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    if (service->standbyStateObserver_ == nullptr) {
+        service->standbyStateObserver_ = 
+            new (std::nothrow) WorkStandbyStateChangeCallback(service->standbyStateObserver_);
+    }
+#endif
     std::string key = "-nap";
     std::string value = "1";
     std::string result;

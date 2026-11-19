@@ -1662,7 +1662,7 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
 #endif
 }
 
-bool WorkSchedulerService::CheckProcessName()
+WEAK_FUNC bool WorkSchedulerService::CheckProcessName()
 {
     Security::AccessToken::AccessTokenID tokenId = OHOS::IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo callingTokenInfo;

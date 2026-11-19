@@ -24,6 +24,9 @@
 #include "conditions/battery_status_listener.h"
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
+#include "work_event_handler.h"
+#include "work_policy_manager.h"
+#include "work_conn_manager.h"
 #include "work_sched_hilog.h"
 #include "work_info.h"
 
@@ -212,8 +215,21 @@ HWTEST_F(BatteryStatusListenerTest, OnConditionChanged_001, TestSize.Level1)
 HWTEST_F(BatteryStatusListenerTest, OnConditionChanged_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->eventRunner_ == nullptr) {
+        service->eventRunner_ = AppExecFwk::EventRunner::Create("BatteryLevelListenerTest",
+            AppExecFwk::ThreadMode::FFRT);
+    }
+    if (service->handler_ == nullptr) {
+        service->handler_ = std::make_shared<WorkEventHandler>(service->eventRunner_, service);
+    }
     if (service->workQueueManager_ == nullptr) {
         service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
     }
     auto workInfo = std::make_shared<WorkInfo>();
     workInfo->SetWorkId(9910);

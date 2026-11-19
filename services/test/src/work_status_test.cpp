@@ -1265,10 +1265,13 @@ HWTEST_F(WorkStatusTest, OnConditionChanged_001, TestSize.Level1)
     std::shared_ptr<Condition> cond2 = std::make_shared<Condition>();
     cond2->enumVal = WorkCondition::Network::NETWORK_TYPE_MOBILE;
     WorkCondition::Type type = WorkCondition::Type::NETWORK;
+    std::list<std::string> restrictList = {"com.test.cond"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
     int32_t ret = workStatus.OnConditionChanged(type, cond2);
     EXPECT_EQ(ret, E_GROUP_CHANGE_NOT_MATCH_HAP);
     EXPECT_EQ(workStatus.conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal,
         WorkCondition::Network::NETWORK_TYPE_MOBILE);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
     workStatus.conditionMap_.clear();
 }
 

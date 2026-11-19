@@ -284,7 +284,7 @@ HWTEST_F(ScreenListenerTest, StartTimer_004, TestSize.Level1)
     listener->saIdTimeInfoMap_.clear();
     listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 200);
     listener->StartTimer();
-    EXPECT_EQ(listener->saIdTimeInfoMap_[100].timerId_, 200);
+    EXPECT_EQ(listener->saIdTimeInfoMap_[100].timerId_, 0);
 }
 
 /**

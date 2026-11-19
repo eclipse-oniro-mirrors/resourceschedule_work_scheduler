@@ -1146,6 +1146,8 @@ HWTEST_F(WorkPolicyManagerTest, WatchdogTimeOut_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, WatchdogTimeOut_002, TestSize.Level1)
 {
     std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workSchedulerService->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workSchedulerService->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
     workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
     workPolicyManager_->watchdogIdMap_.clear();
     uint32_t watchdogId = 2;
@@ -1500,7 +1502,12 @@ HWTEST_F(WorkPolicyManagerTest, OnPolicyChanged_003, TestSize.Level1)
     WorkStatus::s_uid_last_time_map[uid] = 100;
     WorkStatus::performanceSensitiveLastTimeMap_[uid] = 100;
     auto detectorVal = std::make_shared<DetectorValue>(uid, 0, false, "com.test.removed");
-    workPolicyManager_->OnPolicyChanged(PolicyType::APP_REMOVED, detectorVal);
+    auto service = std::make_shared<WorkSchedulerService>();
+    auto manager = std::make_shared<WorkPolicyManager>(service);
+    service->workPolicyManager_ = manager;
+    service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    manager->workConnManager_ = std::make_shared<WorkConnManager>();
+    manager->OnPolicyChanged(PolicyType::APP_REMOVED, detectorVal);
     EXPECT_EQ(WorkStatus::s_uid_last_time_map.count(uid), 0);
     EXPECT_EQ(WorkStatus::performanceSensitiveLastTimeMap_.count(uid), 0);
 }
@@ -1565,7 +1572,9 @@ HWTEST_F(WorkPolicyManagerTest, IsSpecialScene_002, TestSize.Level1)
     DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(true);
     std::list<std::string> whitelist = {"com.test.whitelist"};
     DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyWhitelist(whitelist);
-    bool ret = workPolicyManager_->IsSpecialScene(workStatus, 0);
+    auto service = std::make_shared<WorkSchedulerService>();
+    auto manager = std::make_shared<WorkPolicyManager>(service);
+    bool ret = manager->IsSpecialScene(workStatus, 0);
     EXPECT_TRUE(ret);
     DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyWhitelist();
     DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(false);
@@ -1675,6 +1684,7 @@ HWTEST_F(WorkPolicyManagerTest, RealStartSA_002, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, RealStartWork_002, TestSize.Level1)
 {
     std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    workSchedulerService->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService);
     auto workPolicyManager = std::make_shared<WorkPolicyManager>(workSchedulerService);
     workPolicyManager->workConnManager_ = std::make_shared<WorkConnManager>();
     WorkInfo workinfo;
