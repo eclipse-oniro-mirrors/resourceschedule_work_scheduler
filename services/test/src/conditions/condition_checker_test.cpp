@@ -29,6 +29,10 @@
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include "battery_srv_client.h"
 #endif
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
+#include "net_conn_client.h"
+using namespace OHOS::NetManagerStandard;
+#endif
 
 using namespace testing::ext;
 

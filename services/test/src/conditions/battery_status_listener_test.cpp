@@ -14,7 +14,9 @@
  */
 
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+#include <chrono>
 #include <functional>
+#include <thread>
 #include <gtest/gtest.h>
 
 #include "common_event_manager.h"
@@ -29,6 +31,7 @@
 #include "work_conn_manager.h"
 #include "work_sched_hilog.h"
 #include "work_info.h"
+#include "work_status.h"
 
 using namespace testing::ext;
 
@@ -87,6 +90,36 @@ static EventFwk::CommonEventData BuildBatteryStatusEvent(const std::string &acti
     EventFwk::CommonEventData data;
     data.SetWant(want);
     return data;
+}
+
+/**
+ * @brief Poll until the work's condition of the given type is published or the timeout elapses.
+ *
+ * WorkQueueManager::OnConditionChanged() publishes via handler->PostTask(), so the update is
+ * asynchronous. A bounded polling wait is used instead of a fixed sleep so a loaded runner cannot
+ * cause a spurious failure. Reads are guarded by conditionMapMutex_ to avoid racing the async writer.
+ *
+ * @return true if the condition was observed before the timeout, false otherwise.
+ */
+static bool WaitForCondition(const std::shared_ptr<WorkStatus>& workStatus,
+    WorkCondition::Type type, int32_t timeoutMs)
+{
+    const int32_t intervalMs = 10;
+    int32_t waitedMs = 0;
+    while (true)
+    {
+        {
+            std::lock_guard<frrt::mutex> lock(workStatus->conditionMapMutex_);
+            if (workStatus->conditionMap_.count(type) > 0) {
+                return true;
+            }
+        }
+        if (waitedMs > timeoutMs) {
+            return false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
+        waitedMs += intervalMs;
+    }
 }
 
 /**
@@ -200,10 +233,47 @@ HWTEST_F(BatteryStatusListenerTest, Stop_002, TestSize.Level1)
  */
 HWTEST_F(BatteryStatusListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->eventRunner_ == nullptr) {
+        service->eventRunner_ = AppExecFwk::EventRunner::Create("BatteryStatusListenerTest",
+            AppExecFwk::ThreadMode::FFRT);
+    }
+    if (service->handler_ == nullptr) {
+        service->handler_ = std::make_shared<WorkEventHandler>(service->eventRunner_, service);
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9911);
+    workInfo->SetElement("com.test.battery", "BatteryAbility");
+    workInfo->RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10011);
+    service->workQueueManager_->AddWork(workStatus);
+
     auto listener = std::make_shared<TestBatteryStatusListener>();
     auto val = std::make_shared<DetectorValue>(WorkCondition::BATTERY_STATUS_LOW, 0, 0, std::string());
     listener->BatteryStatusListener::OnConditionChanged(WorkCondition::Type::BATTERY_STATUS, val);
-    EXPECT_EQ(listener->callCount_, 0);
+    {
+        std::lock_gurad<frrt::mutex> lock(workStatus->conditionMapMutex_);
+        EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_STATUS), 0);
+
+    }
+
+    BatteryStatusListener realListener(service->workQueueManager_);
+    realListener.OnConditionChanged(WorkCondition::Type::BATTERY_STATUS, val)
+    EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::BATTERY_STATUS, 2000));
+    {
+        std::lock_gurad<frrt::mutex> lock(workStatus->conditionMapMutex_);
+        EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_STATUS), 1);
+    }
+    service->workQueueManager_->RemoveWork(workStatus);
 }
 
 /**
@@ -216,7 +286,7 @@ HWTEST_F(BatteryStatusListenerTest, OnConditionChanged_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
     if (service->eventRunner_ == nullptr) {
-        service->eventRunner_ = AppExecFwk::EventRunner::Create("BatteryLevelListenerTest",
+        service->eventRunner_ = AppExecFwk::EventRunner::Create("BatteryStatusListenerTest",
             AppExecFwk::ThreadMode::FFRT);
     }
     if (service->handler_ == nullptr) {

@@ -131,9 +131,9 @@ bool WorkSchedulerService::CheckCallingServiceName()
     return g_isNativeToken;
 }
 
-class MocStopWorkConnManager : public WorkConnManager {
+class MockStopWorkConnManager : public WorkConnManager {
 public:
-    bool StopWork(std::shared_ptr<WorkStatus>, bool isTimeOut) override
+    bool StopWork(std::shared_ptr<WorkStatus> workStatus, bool isTimeOut) override
     {
         return true;
     }
@@ -146,6 +146,7 @@ public:
     static void TearDownTestCase() {}
     void SetUp()
     {
+        g_isNativeToken = false;
         auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
         if (service != nullptr) {
             if (service->handler_ == nullptr) {
@@ -182,8 +183,11 @@ public:
 
 void GetNativeToken(const std::string &name)
 {
+    g_isNativeToken = true;
     auto tokenId = Security::AccessToken::AccessTokenKit::GetNativeTokenId(name);
-    SetSelfTokenID(tokenId);
+    if (tokenId != Security::AccessToken::INVALID_TOKENID) {
+        SetSelfTokenID(tokenId);
+    }
 }
 
 std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ =
@@ -2600,7 +2604,7 @@ HWTEST_F(WorkSchedulerServiceTest, WatchdogTimeOut_001, TestSize.Level1)
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
-    service->workPolicyManager_->workConnManager_ = std::make_shared<MocStopWorkConnManager>();
+    service->workPolicyManager_->workConnManager_ = std::make_shared<MocKStopWorkConnManager>();
     if (service->workQueueManager_ == nullptr) {
         service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
     }
@@ -2770,8 +2774,8 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_002, TestSize.Level1)
         service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
     }
     if (service->standbyStateObserver_ == nullptr) {
-        service->standbyStateObserver_ = 
-            new (std::nothrow) WorkStandbyStateChangeCallback(service->standbyStateObserver_);
+        service->standbyStateObserver_ =
+            new (std::nothrow) WorkStandbyStateChangeCallback(service->workQueueManager_);
     }
 #endif
     std::string key = "-nap";

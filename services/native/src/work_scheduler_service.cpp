@@ -1675,7 +1675,7 @@ WEAK_FUNC bool WorkSchedulerService::CheckProcessName()
     return true;
 }
 
-bool WorkSchedulerService::CheckCallingServiceName()
+WEAK_FUNC bool WorkSchedulerService::CheckCallingServiceName()
 {
     Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo callingTokenInfo;

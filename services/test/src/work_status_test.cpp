@@ -1317,8 +1317,11 @@ HWTEST_F(WorkStatusTest, OnConditionChanged_003, TestSize.Level1)
     cond->strVal = "com.test.group";
     cond->enumVal = 50;
     WorkCondition::Type type = WorkCondition::Type::GROUP;
+    std::list<std::string> restrictList = {"com.test.group"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
     int32_t ret = workStatus.OnConditionChanged(type, cond);
     EXPECT_EQ(ret, E_GROUP_CHANGE_NOT_MATCH_HAP);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 /**
