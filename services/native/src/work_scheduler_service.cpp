@@ -1383,6 +1383,10 @@ std::string WorkSchedulerService::DumpExemptionBundles()
 
 void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, std::string &result)
 {
+    if (workPolicyManager_ == nullptr || workQueueManager_ == nullptr) {
+        result.append("workPolicyManager or workQueueManager is nullptr.");
+        return;
+    }
     if (!std::all_of(value.begin(), value.end(), ::isdigit)) {
         result.append("Error params.");
         return;
@@ -1404,6 +1408,10 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
         result.append("Set cpu success.");
     } else if (key == "-nap") {
 #ifdef DEVICE_STANDBY_ENABLE
+        if (standbyStateObserver_ == nullptr) {
+            result.append("standby state observer is nullptr.");
+            return;
+        }
         standbyStateObserver_->OnDeviceIdleMode(std::atoi(value.c_str()), 0);
 #endif
     } else if (key == "-count") {

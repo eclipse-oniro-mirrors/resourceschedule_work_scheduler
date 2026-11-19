@@ -210,6 +210,7 @@ bool AniWorkSchedulerExtension::CallObjectMethod(const char* name, const char* s
     va_start(args, signature);
     if ((status = env->Object_CallMethod_Void_V(etsObj_->aniObj, method, args)) != ANI_OK) {
         WS_HILOGE("status : %{public}d", status);
+        va_end(args);
         return false;
     }
     va_end(args);
