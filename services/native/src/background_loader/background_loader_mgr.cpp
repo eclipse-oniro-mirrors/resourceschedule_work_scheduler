@@ -365,14 +365,15 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(int32_t uid)
         std::lock_guard<ffrt::mutex> lock(timeoutTaskLock_);
         timeoutTaskMap_.erase(uid);
     }
-    if (ffrtQueue_ ==nullptr) {
+    if (ffrtQueue_ == nullptr) {
         ffrtQueue_ = std::make_unique<ffrt::queue>("background_loader_queue");
     }
     ffrtQueue_->submit(
-        [this, uid, shouldAddToBlockList, taskInfoCopy]() mutable {
-            MarkTimeOutStatusLocked(uid, shouldAddToBlockList, taskInfoCopy);
-            ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
-            UpsertTaskToDb(uid, taskInfoCopy);
+        [uid, shouldAddToBlockList, taskInfoCopy]() mutable {
+            auto& mgr = BackgroundLoaderMgr::GetInstance();
+            mgr.MarkTimeOutStatusLocked(uid, shouldAddToBlockList, taskInfoCopy);
+            mgr.ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
+            mgr.UpsertTaskToDb(uid, taskInfoCopy);
         },
         ffrt::task_attr().delay(ON_STOP_STATUS_FRLRAY_US));
 }
