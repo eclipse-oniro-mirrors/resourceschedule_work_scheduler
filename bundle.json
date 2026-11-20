@@ -57,7 +57,8 @@
           "ets_frontend",
           "taihe_ffi_gen",
           "node",
-          "libuv"
+          "libuv",
+          "bounds_checking_function"
         ]
       },
       "build": {
