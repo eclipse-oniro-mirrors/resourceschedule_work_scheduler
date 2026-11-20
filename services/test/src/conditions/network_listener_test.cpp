@@ -329,13 +329,15 @@ HWTEST_F(NetworkListenerTest, OnConditionChanged_001, TestSize.Level1)
     auto listener = std::make_shared<TestNetworkListener>();
     listener->workQueueManager_ = service->workQueueManager_;
     auto val = std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_WIFI, 0, 0, std::string());
+    listener->NetworkListener::OnConditionChanged(WorkCondition::Type::NETWORK, val);
 
     EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::NETWORK, 2000));
     {
         std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::NETWORK), 1);
         if (workStatus->conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
-            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal, WorkCondition::NETWORK_TYPE_WIFI);
+            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal,
+                WorkCondition::NETWORK_TYPE_WIFI);
         }
     }
     service->workQueueManager_->RemoveWork(workStatus);

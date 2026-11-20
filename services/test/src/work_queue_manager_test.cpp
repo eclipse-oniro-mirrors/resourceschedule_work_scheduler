@@ -46,18 +46,18 @@ public:
     }
     bool Stop() override
     {
-        stopCount++;
+        stopCount_++;
         return true;
     }
     int32_t startCount_ = 0;
-    int32_t stopCount = 0;
+    int32_t stopCount_ = 0;
 };
 
 /**
  * @brief Poll until the work's timeout flag is reset or the timeout elapses.
  *
- * AsyncStopWork() posts the stop task via handler->PostTask(), so the reset is asynchronous. 
- * A bounded polling wait avoid a fixed sleep that may be too short under load.
+ * AsyncStopWork() posts the stop task via handler->PostTask(), so the reset is asynchronous.
+ * A bounded polling wait avoids a fixed sleep that may be too short under load.
  */
 static bool WaitForTimeoutReset(const std::shared_ptr<WorkStatus>& workStatus, int32_t timeoutMs)
 {
@@ -367,13 +367,13 @@ HWTEST_F(WorkQueueManagerTest, PrintAllWorkStatus_001, TestSize.Level1)
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     bool originalSleep = dataManager->GetDeviceSleep();
     dataManager->SetDeviceSleep(true);
-    dataManager->OnDeviceStandyWhitelistChanged("com.test.printAll", true);
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.printall", true);
     workStatus->conditionStatus_.clear();
 
     workQueueManager_->PrintAllWorkStatus(WorkCondition::Type::STANDBY);
     EXPECT_EQ(workStatus->conditionStatus_, ",STANDBY&1");
 
-    dataManager->OnDeviceStandyWhitelistChanged("com.test.printAll", false);
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.printall", false);
     dataManager->SetDeviceSleep(originalSleep);
     workQueueManager_->RemoveWork(workStatus);
 }
@@ -438,7 +438,7 @@ HWTEST_F(WorkQueueManagerTest, SetIdleTime_001, TestSize.Level1)
     workQueueManager_->listenerMap_.emplace(WorkCondition::Type::DEEP_IDLE, mockListener);
     workQueueManager_->SetIdleTime(30000);
     EXPECT_EQ(g_deepIdleScreenOffTimeMin.load(), 30000);
-    EXPECT_EQ(mockListener->stopCount, 1);
+    EXPECT_EQ(mockListener->stopCount_, 1);
     EXPECT_EQ(mockListener->startCount_, 1);
     workQueueManager_->listenerMap_.erase(WorkCondition::Type::DEEP_IDLE);
     g_deepIdleScreenOffTimeMin.store(originalIdleTime);

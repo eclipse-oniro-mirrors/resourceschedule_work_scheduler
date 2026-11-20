@@ -31,6 +31,7 @@
 #include "string_wrapper.h"
 
 using namespace testing::ext;
+
 namespace {
 bool g_mockTimeServiceEnabled = false;
 int64_t g_mockWallTimeMs = 0;
@@ -39,7 +40,7 @@ bool g_mockCurrentTimeEnabled = false;
 uint64_t g_mockCurrentTimeMs = 0;
 } // namespace
 
-namespace OHOS{
+namespace OHOS {
 namespace MiscServices {
 int64_t TimeServiceClient::GetWallTimeMs()
 {
@@ -55,11 +56,11 @@ int64_t TimeServiceClient::GetBootTimeMs()
     if (g_mockTimeServiceEnabled) {
         return g_mockBootTimeMs;
     }
-    auto now = std::chrono::system_clock::now();
+    auto now = std::chrono::steady_clock::now();
     return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
 }
-}
-}
+} // namespace MiscServices
+} // namespace OHOS
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -2019,7 +2020,7 @@ HWTEST_F(WorkStatusTest, StartHighPerfTimer_002, TestSize.Level1)
     g_mockCurrentTimeEnabled = true;
     g_mockCurrentTimeMs = 1700000000789u;
     workStatus->StartHighPerfTimer();
-    EXPECT_NQ(WorkStatus::highPerfState_.startTime, 1700000000789u);
+    EXPECT_EQ(WorkStatus::highPerfState_.startTime, 1700000000789u);
     g_mockCurrentTimeEnabled = false;
     WorkStatus::highPerfState_.startTime = 0;
 }
@@ -2282,7 +2283,7 @@ HWTEST_F(WorkStatusTest, GetOppositeTime_001, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9120);
     g_mockTimeServiceEnabled = true;
     g_mockWallTimeMs = 1700000000123;
-    g_mockBootTimeMs = 1700000000456;
+    g_mockBootTimeMs = 1600000000456;
     WorkStatus::AddDumpAppGroup(9120, 10);
     time_t result = workStatus->getOppositeTime();
     EXPECT_EQ(result, static_cast<time_t>(1700000000123));
@@ -2304,10 +2305,10 @@ HWTEST_F(WorkStatusTest, GetOppositeTime_002, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9121);
     g_mockTimeServiceEnabled = true;
     g_mockWallTimeMs = 1700000000123;
-    g_mockBootTimeMs = 1700000000456;
+    g_mockBootTimeMs = 1600000000456;
     WorkStatus::ClearDumpAppGroup(9121);
     time_t result = workStatus->getOppositeTime();
-    EXPECT_EQ(result, static_cast<time_t>(1700000000456));
+    EXPECT_EQ(result, static_cast<time_t>(1600000000456));
     g_mockTimeServiceEnabled = false;
 }
 }

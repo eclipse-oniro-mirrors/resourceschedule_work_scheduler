@@ -200,11 +200,12 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_001, TestSize.Level
 
     nlohmann::json root;
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigMinRepeatTime(root);
-    
+
     EXPECT_EQ(service->specialMap_.count("sentinel.bundle"), 1);
     if (service->specialMap_.count("sentinel.bundle") > 0) {
         EXPECT_EQ(service->specialMap_.at("sentinel.bundle"), 1000u);
     }
+
     service->specialMap_.clear();
     service->ready_.store(originalReady);
 }
@@ -237,14 +238,14 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_002, TestSize.Level
 
     service->specialMap_.clear();
     service->minCheckTime_ = originalMinCheckTime;
-    service->workQueueManager_->SetTimeCycle(originalMinCheckTime);
+    service->workQueueManager_->SetTimeCycle(originalTimeCycle);
     service->ready_.store(originalReady);
 }
 
 /**
  * @tc.name: UpdateCloudConfigEngExemptionBundles_001
  * @tc.desc: Test UpdateCloudConfigEngExemptionBundles returns early (without delegating) when no
- *           key: the delegated target exemptionBundles_ must keep its pre-set sentinel value..
+ *           key: the delegated target exemptionBundles_ must keep its pre-set sentinel value.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
@@ -259,14 +260,15 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_001, TestSize
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
 
     EXPECT_EQ(service->exemptionBundles_.count("sentinel.bundle"), 1);
+
     service->exemptionBundles_.clear();
     service->ready_.store(originalReady);
 }
 
 /**
  * @tc.name: UpdateCloudConfigEngExemptionBundles_002
- * @tc.desc: Test UpdateCloudConfigEngExemptionBundles delegates a valid special array and the service
- *           update exemptionBundles_ to exactly {"com.test.exempt1", "com.test.exempt2"}.
+ * @tc.desc: Test UpdateCloudConfigEngExemptionBundles delegates a valid array and the service
+ *           updates exemptionBundles_ to exactly {"com.test.exempt1", "com.test.exempt2"}.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
@@ -279,7 +281,7 @@ HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_002, TestSize
     nlohmann::json root;
     root["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.exempt1", "com.test.exempt2"});
     DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
-    
+
     EXPECT_EQ(service->exemptionBundles_.size(), 2);
     EXPECT_EQ(service->exemptionBundles_.count("com.test.exempt1"), 1);
     EXPECT_EQ(service->exemptionBundles_.count("com.test.exempt2"), 1);

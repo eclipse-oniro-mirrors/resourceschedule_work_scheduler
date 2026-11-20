@@ -289,14 +289,13 @@ HWTEST_F(BatteryLevelListenerTest, OnConditionChanged_001, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10021);
     service->workQueueManager_->AddWork(workStatus);
 
-    //Negative: the test listener holds a null workQueueManager_, so the guard must not publish.
+    // Negative: the test listener holds a null workQueueManager_, so the guard must not publish.
     auto listener = std::make_shared<TestBatteryLevelListener>();
     auto val = std::make_shared<DetectorValue>(50, 0, 0, std::string());
     listener->BatteryLevelListener::OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
     {
         std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_LEVEL), 0);
-
     }
 
     BatteryLevelListener realListener(service->workQueueManager_, service);

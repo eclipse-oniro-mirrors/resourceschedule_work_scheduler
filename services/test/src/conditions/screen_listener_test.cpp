@@ -47,7 +47,7 @@ uint64_t TimeServiceClient::CreateTimer(std::shared_ptr<ITimerInfo> timerOptions
     return g_mockCreateTimerId;
 }
 
-bool TimeServiceClient::StarTimer(uint64_t timerId, uint64_t triggerTime)
+bool TimeServiceClient::StartTimer(uint64_t timerId, uint64_t triggerTime)
 {
     return true;
 }
@@ -350,7 +350,7 @@ HWTEST_F(ScreenListenerTest, StopTimer_001, TestSize.Level1)
 
 /**
  * @tc.name: StopTimer_002
- * @tc.desc: Test ScreenListener StopTimer success resets with timerId_ to 0 and failure keeps it.
+ * @tc.desc: Test ScreenListener StopTimer success resets timerId_ to 0 and failure keeps it,
  *           with DestroyTimer short-circuited when StopTimer fails.
  * @tc.type: FUNC
  * @tc.require: I8JBRY

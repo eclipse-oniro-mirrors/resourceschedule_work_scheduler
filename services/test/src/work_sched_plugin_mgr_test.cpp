@@ -284,7 +284,7 @@ HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_004, TestSize
 HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_001, TestSize.Level2)
 {
     auto cfg = DelayedSingleton<WorkSchedulerConfig>::GetInstance();
-    auto originalWritelist = cfg->activeGroupWhitelist_;
+    auto originalWhitelist = cfg->activeGroupWhitelist_;
     nlohmann::json presetWorkScheduler = nlohmann::json::object();
     presetWorkScheduler["active_group_whitelist"] = nlohmann::json::array({"test.preinstalled"});
     nlohmann::json presetParams = nlohmann::json::object();
@@ -293,12 +293,13 @@ HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_001, TestSize.Leve
     presetPayload["params"] = presetParams;
     EXPECT_TRUE(cfg->UpdateSusMgrCloudConfig(presetPayload));
     EXPECT_TRUE(cfg->IsInActiveGroupWhitelist("test.preinstalled"));
+
     BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(
         SUSPEND_MANAGER_SYSTEM_ABILITY_ID, nlohmann::json::object());
-    
+
     EXPECT_TRUE(cfg->IsInActiveGroupWhitelist("test.preinstalled"));
 
-    cfg->activeGroupWhitelist_ = originalWritelist;
+    cfg->activeGroupWhitelist_ = originalWhitelist;
 }
 
 /**
@@ -341,7 +342,8 @@ HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_002, TestSize.Leve
 HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_003, TestSize.Level2)
 {
     auto cfg = DelayedSingleton<WorkSchedulerConfig>::GetInstance();
-    auto originalWritelist = cfg->activeGroupWhitelist_;
+    auto originalWhitelist = cfg->activeGroupWhitelist_;
+
     nlohmann::json presetWorkScheduler = nlohmann::json::object();
     presetWorkScheduler["active_group_whitelist"] = nlohmann::json::array({"test.preinstalled"});
     nlohmann::json presetParams = nlohmann::json::object();
@@ -353,9 +355,10 @@ HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_003, TestSize.Leve
 
     BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(
         9999, nlohmann::json::object());
+
     EXPECT_TRUE(cfg->IsInActiveGroupWhitelist("test.preinstalled"));
 
-    cfg->activeGroupWhitelist_ = originalWritelist;
+    cfg->activeGroupWhitelist_ = originalWhitelist;
 }
 
 /**
@@ -416,7 +419,6 @@ HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_001, TestSize.Level2)
     service->exemptionBundles_.insert("com.test.sentinel");
 
     OnDispatchResource(nullptr);
-
     EXPECT_EQ(service->exemptionBundles_.size(), 1u);
     EXPECT_EQ(service->exemptionBundles_.count("com.test.sentinel"), 1u);
 
@@ -434,7 +436,7 @@ HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_001, TestSize.Level2)
 HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_002, TestSize.Level2)
 {
     WorkSchedPluginMgr::GetInstance().Init();
-    uto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
     bool originalReady = service->ready_.load();
     auto originalExemptionBundles = service->exemptionBundles_;
     service->ready_.store(true);
@@ -453,7 +455,6 @@ HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_002, TestSize.Level2)
     resData->payload = payload;
     OnDispatchResource(resData);
     EXPECT_EQ(service->exemptionBundles_.count("com.test.plugin.exempt"), 1u);
-    
     service->exemptionBundles_ = originalExemptionBundles;
     service->ready_.store(originalReady);
     WorkSchedPluginMgr::GetInstance().Disable();
