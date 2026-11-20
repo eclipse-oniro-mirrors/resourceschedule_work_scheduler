@@ -193,15 +193,12 @@ static int32_t GetExpectedNetworkType()
     }
     if (netAllCap.bearerTypes_.count(BEARER_ETHERNET) > 0) {
         return WorkCondition::NETWORK_TYPE_ETHERNET;
-
     }
     if (netAllCap.bearerTypes_.count(BEARER_WIFI) > 0) {
         return WorkCondition::NETWORK_TYPE_WIFI;
-
     }
     if (netAllCap.bearerTypes_.count(BEARER_CELLULAR) > 0) {
         return WorkCondition::NETWORK_TYPE_MOBILE;
-
     }
     return -1;
 }
@@ -209,7 +206,7 @@ static int32_t GetExpectedNetworkType()
 /**
  * @brief Poll until the work's condition of the given type is published or the timeout elapses.
  *
- * The SUT publishes via handler->PostTask(), so the update is asyncchronous. A bounded polling wait
+ * The SUT publishes via handler->PostTask(), so the update is asynchronous. A bounded polling wait
  * is used instead of a fixed sleep so a loaded runner cannot cause a spurious failure. Reads are
  * guarded by conditionMapMutex_ to avoid racing the async writer.
  *
@@ -308,7 +305,7 @@ HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_001, TestSize.Level1)
 
 /**
  * @tc.name: CheckNetworkStatus_002
- * @tc.desc: Test CheckAllStatus dispatches checkNetworkStatus/checkChargerStatus/CheckBatteryStatus
+ * @tc.desc: Test CheckAllStatus dispatches CheckNetworkStatus/CheckChargerStatus/CheckBatteryStatus
  *           and publishes each condition's concrete value to the work's condition map.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
@@ -345,7 +342,7 @@ HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_002, TestSize.Level1)
     if (chargerExpected) {
         EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::CHARGER, 2000));
     }
-    if (capacity != 1) {
+    if (capacity != -1) {
         EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::BATTERY_STATUS, 2000));
     }
     if (!chargerExpected && capacity == -1 && expectedNetworkType < 0) {
@@ -372,7 +369,7 @@ HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_002, TestSize.Level1)
     } else {
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::CHARGER), 0);
     }
-    if (capacity == 1) {
+    if (capacity == -1) {
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_STATUS), 0);
     } else {
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_STATUS), 1);

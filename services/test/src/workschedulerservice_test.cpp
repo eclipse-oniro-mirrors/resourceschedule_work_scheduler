@@ -2721,7 +2721,7 @@ HWTEST_F(WorkSchedulerServiceTest, DumpUsageForUserMode_001, TestSize.Level1)
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::string result;
     service->DumpUsageForUserMode(result);
-    const std::string expected = "usage: workscheduler dump [<option>]\n"
+    const std::string expected = "usage: workscheduler dump [<options>]\n"
         "    -h: show the help.\n"
         "    -t (bundleName) (abilityName): trigger the bundleName all works.\n"
         "    -s (saId) (uId): load or report sa.\n";
@@ -2737,7 +2737,7 @@ HWTEST_F(WorkSchedulerServiceTest, DumpUsageForUserMode_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpProcessForUserMode_Help_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    const std::string expected = "usage: workscheduler dump [<option>]\n"
+    const std::string expected = "usage: workscheduler dump [<options>]\n"
         "    -h: show the help.\n"
         "    -t (bundleName) (abilityName): trigger the bundleName all works.\n"
         "    -s (saId) (uId): load or report sa.\n";
