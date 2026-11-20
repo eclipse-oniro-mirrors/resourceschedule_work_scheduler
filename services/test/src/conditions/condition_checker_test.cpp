@@ -171,8 +171,111 @@ HWTEST_F(ConditionCheckerTest, CheckChargerStatus_001, TestSize.Level1)
 
 #ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
 /**
+ * @brief Derive the expected NETWORK detetor value from the same external source the SUT reads.
+ *
+ * CheckNetWorkStatus maps the default network's bearer type to a NETWORK_TYPE_* value and
+ * publishes it via WorkQueueManager::OnConditionChanged(). Because NetConnClient is a non-virtual
+ * singleton and this target has no mock framework, the espected value is computed by querying the
+ * same capability API. Anegative return means the SUT would early-return or publish nothing.
+ */
+static int32_t GetExpectedNetworkType()
+{
+    NetHandle netHandle;
+    int ret = NetConnClient::GetInstance().GetDefaultNet(netHandle);
+    if (ret != NETMANAGER_SUCCESS) {
+        return -1;
+    }
+    NetAllCapabilities netAllCap;
+    ret = NetConnClient::GetInstance().GetNetCapabilities(netHandle, netAllCap);
+    if (ret != NETMANAGER_SUCCESS ||
+        netAllCap.netCap_.count(NetCap::NET_CAPABILITY_INTERNET) == 0) {
+        return -1;
+    }
+    if (netAllCap.bearerTypes_.count(BEARER_ETHERNET) > 0) {
+        return WorkCondition::NETWORK_TYPE_ETHERNET;
+
+    }
+    if (netAllCap.bearerTypes_.count(BEARER_WIFI) > 0) {
+        return WorkCondition::NETWORK_TYPE_WIFI;
+
+    }
+    if (netAllCap.bearerTypes_.count(BEARER_CELLULAR) > 0) {
+        return WorkCondition::NETWORK_TYPE_MOBILE;
+
+    }
+    return -1;
+}
+
+/**
+ * @brief Poll until the work's condition of the given type is published or the timeout elapses.
+ *
+ * WorkQueueManager::OnConditionChanged() publishes via handler->PostTask(), so the update is
+ * asynchronous. A bounded polling wait is used instead of a fixed sleep so a loaded runner cannot
+ * cause a spurious failure. Reads are guarded by conditionMapMutex_ to avoid racing the async writer.
+ *
+ * @return true if the condition was observed before the timeout, false otherwise.
+ */
+static bool WaitForCondition(const std::shared_ptr<WorkStatus>& workStatus,
+    WorkCondition::Type type, int32_t timeoutMs)
+{
+    const int32_t intervalMs = 10;
+    int32_t waitedMs = 0;
+    while (true) {
+        {
+            std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+            if (workStatus->conditionMap_.count(type) > 0) {
+                return true;
+            }
+        }
+        if (waitedMs >= timeoutMs) {
+            return false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
+        waitedMs += intervalMs;
+    }
+}
+
+static bool WaitForNetworkCondition(const std::shared_ptr<WorkStatus>& workStatus, int32_t timeoutMs)
+{
+    return WaitForCondition(workStatus, WorkCondition::Type::NETWORK, timeoutMs);
+}
+
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+static bool IsKnownPluggedType(PowerMgr::BatteryPluggedType type)
+{
+    return type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC ||
+        type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB ||
+        type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS ||
+        type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE ||
+        type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_BUTT;
+}
+
+static int32_t GetExpectedChargerEnum(PowerMgr::BatteryPluggedType type)
+{
+    switch (type) {
+        case PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC;
+            return WorkCondition::CHARGING_PLUGGED_AC;
+        case PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB;
+            return WorkCondition::CHARGING_PLUGGED_USB;
+        case PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS;
+            return WorkCondition::CHARGING_PLUGGED_WIRELESS;
+        default:
+            return WorkCondition::CHARGING_UNPLUGGED;
+    }
+}
+
+static bool GetExpectedChargerBool(PowerMgr::BatteryPluggedType type)
+{
+    return type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC ||
+        type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB ||
+        type == PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS;
+}
+#endif // POWERMGR_BATTERY_MANAGER_ENABLE
+
+/**
  * @tc.name: CheckNetworkStatus_001
- * @tc.desc: Test ConditionChecker CheckNetworkStatus runs without crash.
+ * @tc.desc: Test ConditionChecker publishes the default network's bearer type to the work's
+ *           condition map (or publishes nothing when no usable default network exists).
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
@@ -185,16 +288,28 @@ HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_001, TestSize.Level1)
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10001);
     workQueueManager_->AddWork(workStatus);
 
+    int32_t expectedNetworkType = GetExpectedNetworkType();
+
     auto checker = std::make_shared<ConditionChecker>(workQueueManager_);
     checker->CheckNetworkStatus();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
+
+    if (expectedNetworkType > 0) {
+        EXPECT_FALSE(WaitForNetworkCondition(workStatus, 500));
+    } else {
+        EXPECT_TRUE(WaitForNetworkCondition(workStatus, 2000));
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+        EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::NETWORK), 1);
+        if (workStatus->conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
+            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal, expectedNetworkType);
+        }
+    }
     workQueueManager_->RemoveWork(workStatus);
 }
 
 /**
  * @tc.name: CheckNetworkStatus_002
- * @tc.desc: Test ConditionChecker CheckAllStatus includes CheckNetworkStatus.
+ * @tc.desc: Test ConditionChecker dispatches checkNetworkStatus/checkChargerStatus/CheckBatteryStatus
+ *           and publishes each condition's concrete value to the work's condition map.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
@@ -204,13 +319,72 @@ HWTEST_F(ConditionCheckerTest, CheckNetworkStatus_002, TestSize.Level1)
     workInfo->SetWorkId(9904);
     workInfo->SetElement("com.example.checker", "CheckerAbility");
     workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+    workInfo->RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_ANY);
+    workInfo->RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
+#endif
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10004);
     workQueueManager_->AddWork(workStatus);
 
+    int32_t expectedNetworkType = GetExpectedNetworkType();
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+    auto pluggedType = PowerMgr::BatterySrvClient::GetInstance().GetPluggedType();
+    auto capacity = PowerMgr::BatterySrvClient::GetInstance().GetCapacity();
+    bool chargerExpected = IsKnownPluggedType(pluggedType);
+    int32_t expectedChargerEnum = GetExpectedChargerEnum(pluggedType);
+    bool expectedChargerBool = GetExpectedChargerBool(pluggedType);
+#endif
+
     auto checker = std::make_shared<ConditionChecker>(workQueueManager_);
     checker->CheckAllStatus();
-    std::this_thread::sleep_for(std::chrono::milliseconds(200));
-    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
+
+    if (expectedNetworkType > 0) {
+        EXPECT_TRUE(WaitForNetworkCondition(workStatus, 2000));
+    }
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+    if (chargerExpected) {
+        EXPECT_TRUE(WaitForCondition(workStatus, orkCondition::Type::CHARGER, 2000));
+    }
+    if (capacity != 1) {
+        EXPECT_TRUE(WaitForCondition(workStatus, orkCondition::Type::BATTERY_STATUS, 2000));
+    }
+    if (!chargerExpected && capacity == -1 && expectedNetworkType < 0) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    }
+#endif
+
+    std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+    if (expectedNetworkType < 0) {
+        EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 0);
+    } else {
+        EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
+        if (workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK) > 0) {
+            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal, expectedNetworkType);
+        }
+    }
+
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+    if (chargerExpected) {
+        EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::CHARGER), 1);
+        if (workQueueManager_->queueMap_.count(WorkCondition::Type::CHARGER) > 0) {
+            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal, expectedChargerEnum);
+            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::NETWORK)->boolVal, expectedChargerBool);
+        }
+    } else {
+        EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::CHARGER), 0);
+    }
+    if (capacity != 1) {
+        EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::BATTERY_STATUS), 0);
+    } else {
+        EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::BATTERY_STATUS), 1);
+        if (workQueueManager_->queueMap_.count(WorkCondition::Type::BATTERY_STATUS) > 0) {
+            int32_t expectedBatteryStatus = capacity < 20 ? WorkCondition::BATTERY_STATUS_LOW :
+                WorkCondition::BATTERY_STATUS_OKAY;
+            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::BATTERY_STATUS)->enumVal,
+                expectedBatteryStatus);
+        }
+    }
+#endif
     workQueueManager_->RemoveWork(workStatus);
 }
 #endif // COMMUNICATION_NETMANAGER_BASE_ENABLE

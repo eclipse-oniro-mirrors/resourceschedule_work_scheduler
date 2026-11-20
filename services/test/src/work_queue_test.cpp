@@ -454,8 +454,8 @@ HWTEST_F(WorkQueueTest, Find_003, TestSize.Level1)
 HWTEST_F(WorkQueueTest, Find_004, TestSize.Level1)
 {
     workQueue_->ClearAll();
-    workQueue_->Find("nonexistent_id");
-    EXPECT_EQ(workQueue_->GetSize(), 0);
+    auto ret = workQueue_->Find("nonexistent_id");
+    EXPECT_EQ(ret, nullptr);
 }
 
 /**
@@ -543,7 +543,8 @@ HWTEST_F(WorkQueueTest, Dump_001, TestSize.Level1)
     workQueue_->Push(workStatus);
     std::string result;
     workQueue_->Dump(result);
-    EXPECT_FALSE(result.empty());
+    EXPECT_NE(result.find("ul_60"), std::string::npos);
+    EXPECT_NE(result.find("com.test.dump"), std::string::npos);
 }
 
 /**
@@ -648,8 +649,8 @@ HWTEST_F(WorkQueueTest, ParseCondition_Standby_001, TestSize.Level1)
 HWTEST_F(WorkQueueTest, FindSA_001, TestSize.Level1)
 {
     workQueue_->ClearAll();
-    workQueue_->FindSA(100);
-    EXPECT_EQ(workQueue_->GetSize(), 0);
+    auto = ret workQueue_->FindSA(100);
+    EXPECT_EQ(ret, nullptr);
 }
 
 /**
@@ -738,7 +739,8 @@ HWTEST_F(WorkQueueTest, OnConditionChanged_004, TestSize.Level1)
     DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(false);
     auto conditionVal = std::make_shared<DetectorValue>(0, 0, false, "");
     auto result = workQueue_->OnConditionChanged(WorkCondition::Type::STORAGE, conditionVal);
-    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result.size(), 1u);
+    EXPECT_EQ(result.front, workStatus);
     workStatus->s_uid_last_time_map.erase(9304);
 }
 }

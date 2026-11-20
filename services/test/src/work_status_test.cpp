@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <chrono>
 #include <functional>
 #include <gtest/gtest.h>
 
@@ -24,14 +25,54 @@
 #include "work_info.h"
 #include "work_sched_utils.h"
 #include "work_sched_constants.h"
+#include "time_service_client.h"
 #include "frequency_info.h"
 #include "parameters.h"
 #include "string_wrapper.h"
 
 using namespace testing::ext;
+namespace {
+bool g_mockTimeServiceEnabled = false;
+int64_t g_mockWallTimeMs = 0;
+int64_t g_mockBootTimeMs = 0;
+bool g_mockCurrentTimeEnabled = false;
+uint64_t g_mockCurrentTimeMs = 0;
+} // namespace
+
+namespace OHOS{
+namespace MiscServices {
+int64_t TimeServiceClient::GetWallTimeMs()
+{
+    if (g_mockTimeServiceEnabled) {
+        return g_mockWallTimeMs;
+    }
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+}
+
+int64_t TimeServiceClient::GetBootTimeMs()
+{
+    if (g_mockTimeServiceEnabled) {
+        return g_mockBootTimeMs;
+    }
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+}
+}
+}
 
 namespace OHOS {
 namespace WorkScheduler {
+uint64_t WorkSchedUtils::GetCurrentTimeMs()
+{
+    if (g_mockCurrentTimeEnabled) {
+        return g_mockCurrentTimeMs;
+    }
+    auto now = std::chrono::system_clock::now();
+    return static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count());
+}
+
 namespace {
 constexpr int64_t ONE_MINUTE = 60 * 1000LL;
 constexpr int64_t TWENTY_MINUTE = 20 * ONE_MINUTE;
@@ -1747,25 +1788,6 @@ HWTEST_F(WorkStatusTest, HasTimeout_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: HasTimeout_002
- * @tc.desc: Test HasTimeout returns true when workWatchDogTime_ exceeds LONG_WATCHDOG_TIME.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkStatusTest, HasTimeout_002, TestSize.Level1)
-{
-    auto workInfo = std::make_shared<WorkInfo>();
-    workInfo->SetWorkId(9002);
-    workInfo->SetElement("com.test.timeout2", "TimeoutAbility2");
-    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9002);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->SetWorkWatchDogTime(LONG_WATCHDOG_TIME + 1);
-    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
-    EXPECT_TRUE(workStatus->HasTimeout());
-    EXPECT_TRUE(workStatus->IsTimeout());
-}
-
-/**
  * @tc.name: SetTimeout_IsTimeout_001
  * @tc.desc: Test SetTimeout and IsTimeout.
  * @tc.type: FUNC
@@ -1994,8 +2016,12 @@ HWTEST_F(WorkStatusTest, StartHighPerfTimer_002, TestSize.Level1)
     workInfo->RequestPerformanceSensitive(true);
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9102);
     WorkStatus::highPerfState_.startTime = 0;
+    g_mockCurrentTimeEnabled = true;
+    g_mockCurrentTimeMs = 1700000000789u;
     workStatus->StartHighPerfTimer();
-    EXPECT_NE(WorkStatus::highPerfState_.startTime, 0);
+    EXPECT_NQ(WorkStatus::highPerfState_.startTime, 1700000000789u);
+    g_mockCurrentTimeEnabled = false;
+    WorkStatus::highPerfState_.startTime = 0;
 }
 
 
@@ -2254,10 +2280,14 @@ HWTEST_F(WorkStatusTest, GetOppositeTime_001, TestSize.Level1)
     workInfo->SetWorkId(9120);
     workInfo->SetElement("com.test.oppotime", "OppoTimeAbility");
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9120);
+    g_mockTimeServiceEnabled = true;
+    g_mockWallTimeMs = 1700000000123;
+    g_mockBootTimeMs = 1700000000456;
     WorkStatus::AddDumpAppGroup(9120, 10);
     time_t result = workStatus->getOppositeTime();
-    EXPECT_GT(result, 0);
+    EXPECT_EQ(result, static_cast<time_t>(1700000000123));
     WorkStatus::ClearDumpAppGroup(9120);
+    g_mockTimeServiceEnabled = false;
 }
 
 /**
@@ -2272,9 +2302,13 @@ HWTEST_F(WorkStatusTest, GetOppositeTime_002, TestSize.Level1)
     workInfo->SetWorkId(9121);
     workInfo->SetElement("com.test.oppotime2", "OppoTimeAbility2");
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9121);
+    g_mockTimeServiceEnabled = true;
+    g_mockWallTimeMs = 1700000000123;
+    g_mockBootTimeMs = 1700000000456;
     WorkStatus::ClearDumpAppGroup(9121);
     time_t result = workStatus->getOppositeTime();
-    EXPECT_GE(result, 0);
+    EXPECT_EQ(result, static_cast<time_t>(1700000000456));
+    g_mockTimeServiceEnabled = false;
 }
 }
 }

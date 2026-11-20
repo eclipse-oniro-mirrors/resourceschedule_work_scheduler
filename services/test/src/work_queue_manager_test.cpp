@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
+#include <chrono>
 #include <functional>
+#include <thread>
 #include <gtest/gtest.h>
 
 #include "work_queue_manager.h"
@@ -23,6 +25,8 @@
 #include "work_sched_hilog.h"
 #include "work_info.h"
 #include "work_sched_utils.h"
+#include "work_sched_constants.h"
+#include "work_sched_data_manager.h"
 #include "work_status.h"
 #include "conditions/network_listener.h"
 #include "conditions/icondition_listener.h"
@@ -35,9 +39,41 @@ class MockConditionListener : public IConditionListener {
 public:
     void OnConditionChanged(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal) override {}
-    bool Start() override { return true; }
-    bool Stop() override { return true; }
+    bool Start() override
+    {
+        startCount_++;
+        return true;
+    }
+    bool Stop() override
+    {
+        stopCount++;
+        return true;
+    }
+    int32_t startCount_ = 0;
+    int32_t stopCount = 0;
 };
+
+/**
+ * @brief Poll until the work's timeout flag is reset or the timeout elapses.
+ *
+ * AsyncStopWork() posts the stop task via handler->PostTask(), so the reset is asynchronous. 
+ * A bounded polling wait avoid a fixed sleep that may be too short under load.
+ */
+static bool WaitForTimeoutReset(const std::shared_ptr<WorkStatus>& workStatus, int32_t timeoutMs)
+{
+    const int32_t intervalMs = 10;
+    int32_t waitedMs = 0;
+    while (true) {
+        if (!workStatus->IsTimeout()) {
+            return true;
+        }
+        if (waitedMs >= timeoutMs) {
+            return false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
+        waitedMs += intervalMs;
+    }
+}
 
 class MockWorkPolicyManager : public WorkPolicyManager {
 public:
@@ -267,8 +303,18 @@ HWTEST_F(WorkQueueManagerTest, PrintWorkStatus_001, TestSize.Level1)
     workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20010);
     workQueueManager_->AddWork(workStatus);
+
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    bool originalSleep = dataManager->GetDeviceSleep();
+    dataManager->SetDeviceSleep(true);
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.print", true);
+    workStatus->conditionStatus_.clear();
+
     workQueueManager_->PrintWorkStatus(WorkCondition::Type::NETWORK);
-    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
+    EXPECT_EQ(workStatus->conditionStatus_, ",STANDBY&1");
+
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.print", false);
+    dataManager->SetDeviceSleep(originalSleep);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -287,8 +333,18 @@ HWTEST_F(WorkQueueManagerTest, PrintWorkStatus_002, TestSize.Level1)
     workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20011);
     workQueueManager_->AddWork(workStatus);
+
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    bool originalSleep = dataManager->GetDeviceSleep();
+    dataManager->SetDeviceSleep(true);
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.print2", true);
+    workStatus->conditionStatus_.clear();
+
     workQueueManager_->PrintWorkStatus(WorkCondition::Type::GROUP);
-    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
+    EXPECT_EQ(workStatus->conditionStatus_, ",STANDBY&1");
+
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.print2", false);
+    dataManager->SetDeviceSleep(originalSleep);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -307,8 +363,18 @@ HWTEST_F(WorkQueueManagerTest, PrintAllWorkStatus_001, TestSize.Level1)
     workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20012);
     workQueueManager_->AddWork(workStatus);
+
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    bool originalSleep = dataManager->GetDeviceSleep();
+    dataManager->SetDeviceSleep(true);
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.printAll", true);
+    workStatus->conditionStatus_.clear();
+
     workQueueManager_->PrintAllWorkStatus(WorkCondition::Type::STANDBY);
-    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
+    EXPECT_EQ(workStatus->conditionStatus_, ",STANDBY&1");
+
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.printAll", false);
+    dataManager->SetDeviceSleep(originalSleep);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -328,8 +394,17 @@ HWTEST_F(WorkQueueManagerTest, PrintAllWorkStatus_002, TestSize.Level1)
     workInfo->RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 20013);
     workQueueManager_->AddWork(workStatus);
+
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    bool originalSleep = dataManager->GetDeviceSleep();
+    dataManager->SetDeviceSleep(true);
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.printdup", true);
+    workStatus->conditionStatus_.clear();
     workQueueManager_->PrintAllWorkStatus(WorkCondition::Type::STANDBY);
-    EXPECT_EQ(workQueueManager_->queueMap_.count(WorkCondition::Type::NETWORK), 1);
+    EXPECT_EQ(workStatus->conditionStatus_, ",STANDBY&1");
+
+    dataManager->OnDeviceStandyWhitelistChanged("com.test.printdup", false);
+    dataManager->SetDeviceSleep(originalSleep);
     workQueueManager_->RemoveWork(workStatus);
 }
 
@@ -357,12 +432,16 @@ HWTEST_F(WorkQueueManagerTest, SetTimeCycle_002, TestSize.Level1)
  */
 HWTEST_F(WorkQueueManagerTest, SetIdleTime_001, TestSize.Level1)
 {
+    int32_t originalIdleTime = g_deepIdleScreenOffTimeMin.load();
     workQueueManager_->listenerMap_.clear();
     auto mockListener = std::make_shared<MockConditionListener>();
     workQueueManager_->listenerMap_.emplace(WorkCondition::Type::DEEP_IDLE, mockListener);
     workQueueManager_->SetIdleTime(30000);
-    EXPECT_EQ(workQueueManager_->listenerMap_.count(WorkCondition::Type::DEEP_IDLE), 1);
+    EXPECT_EQ(g_deepIdleScreenOffTimeMin.load(), 30000);
+    EXPECT_EQ(mockListener->stopCount, 1);
+    EXPECT_EQ(mockListener->startCount_, 1);
     workQueueManager_->listenerMap_.erase(WorkCondition::Type::DEEP_IDLE);
+    g_deepIdleScreenOffTimeMin.store(originalIdleTime);
 }
 
 /**
@@ -373,9 +452,11 @@ HWTEST_F(WorkQueueManagerTest, SetIdleTime_001, TestSize.Level1)
  */
 HWTEST_F(WorkQueueManagerTest, SetIdleTime_002, TestSize.Level1)
 {
+    int32_t originalIdleTime = g_deepIdleScreenOffTimeMin.load();
     workQueueManager_->listenerMap_.clear();
     workQueueManager_->SetIdleTime(60000);
-    EXPECT_EQ(workQueueManager_->listenerMap_.size(), 0);
+    EXPECT_EQ(g_deepIdleScreenOffTimeMin.load(), 60000);
+    g_deepIdleScreenOffTimeMin.store(originalIdleTime);
 }
 
 /**
@@ -395,9 +476,9 @@ HWTEST_F(WorkQueueManagerTest, AsyncStopWork_001, TestSize.Level1)
     workQueueManager_->AddWork(workStatus);
     workStatus->SetTimeout(true);
 
-    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-
     workQueueManager_->AsyncStopWork(workStatus);
+    EXPECT_TRUE(WaitForTimeoutReset(workStatus, 2000)) << "AsyncStopWork did not reset the timeout flag";
+    EXPECT_EQ(workStatus->IsTimeout(), false);
     workQueueManager_->RemoveWork(workStatus);
 }
 } // namespace WorkScheduler

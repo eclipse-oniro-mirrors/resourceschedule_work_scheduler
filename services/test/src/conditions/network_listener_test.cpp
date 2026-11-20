@@ -13,7 +13,9 @@
  * limitations under the License.
  */
 
+#include <chrono>
 #include <functional>
+#include <thread>
 #include <gtest/gtest.h>
 
 #include "conditions/network_listener.h"
@@ -276,17 +278,67 @@ HWTEST_F(NetworkListenerTest, Stop_002, TestSize.Level1)
 }
 
 /**
+ * @brief Poll until the work's condition of the given type is published or the timeout elapses.
+ *
+ * WorkQueueManager::OnConditionChanged() publishes via handler->PostTask(), so the update is
+ * asynchronous. A bounded polling wait is used instead of a fixed sleep so a loaded runner cannot
+ * cause a spurious failure. Reads are guarded by conditionMapMutex_ to avoid racing the async writer.
+ *
+ * @return true if the condition was observed before the timeout, false otherwise.
+ */
+static bool WaitForCondition(const std::shared_ptr<WorkStatus>& workStatus,
+    WorkCondition::Type type, int32_t timeoutMs)
+{
+    const int32_t intervalMs = 10;
+    int32_t waitedMs = 0;
+    while (true) {
+        {
+            std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+            if (workStatus->conditionMap_.count(type) > 0) {
+                return true;
+            }
+        }
+        if (waitedMs >= timeoutMs) {
+            return false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
+        waitedMs += intervalMs;
+    }
+}
+
+/**
  * @tc.name: OnConditionChanged_001
- * @tc.desc: Test NetworkListener OnConditionChanged with null workQueueManager.
+ * @tc.desc: Test the base NetworkListener::OnConditionChanged delegates to a non-null
+ *           workQueueManager and publishes the NETWORK condition to the registered work.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
 HWTEST_F(NetworkListenerTest, OnConditionChanged_001, TestSize.Level1)
 {
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9931);
+    workInfo->SetElement("com.test.networklistener", "NetworkListenerAbility");
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10031);
+    service->workQueueManager_->AddWork(workStatus);
+
     auto listener = std::make_shared<TestNetworkListener>();
+    listener->workQueueManager_ = service->workQueueManager_;
     auto val = std::make_shared<DetectorValue>(WorkCondition::NETWORK_TYPE_WIFI, 0, 0, std::string());
-    listener->NetworkListener::OnConditionChanged(WorkCondition::Type::NETWORK, val);
-    EXPECT_EQ(listener->callCount_, 0);
+
+    EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::NETWORK, 2000));
+    {
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+        EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::NETWORK), 1);
+        if (workStatus->conditionMap_.count(WorkCondition::Type::NETWORK) > 0) {
+            EXPECT_EQ(workStatus->conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal, WorkCondition::NETWORK_TYPE_WIFI);
+        }
+    }
+    service->workQueueManager_->RemoveWork(workStatus);
 }
 
 /**

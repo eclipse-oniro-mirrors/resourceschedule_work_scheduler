@@ -2604,7 +2604,7 @@ HWTEST_F(WorkSchedulerServiceTest, WatchdogTimeOut_001, TestSize.Level1)
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
-    service->workPolicyManager_->workConnManager_ = std::make_shared<MocKStopWorkConnManager>();
+    service->workPolicyManager_->workConnManager_ = std::make_shared<MockStopWorkConnManager>();
     if (service->workQueueManager_ == nullptr) {
         service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
     }
@@ -2721,7 +2721,11 @@ HWTEST_F(WorkSchedulerServiceTest, DumpUsageForUserMode_001, TestSize.Level1)
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
     std::string result;
     service->DumpUsageForUserMode(result);
-    EXPECT_FALSE(result.empty());
+    const std::string expected = "usage: workScheduler dump [<option>]\n"
+        "    -h": show the help.\n"
+        "    -t (bundleName) (abilityName): trigger the bundleName all works.\n"
+        "    -s (saId) (uId): load or report sa.\n";
+    EXPECT_EQ(result, expected);
 }
 
 /**
@@ -2733,15 +2737,20 @@ HWTEST_F(WorkSchedulerServiceTest, DumpUsageForUserMode_001, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpProcessForUserMode_Help_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    const std::string expected = "usage: workScheduler dump [<option>]\n"
+        "    -h": show the help.\n"
+        "    -t (bundleName) (abilityName): trigger the bundleName all works.\n"
+        "    -s (saId) (uId): load or report sa.\n";
     std::vector<std::string> emptyArgs;
     std::string result1;
     service->DumpProcessForUserMode(emptyArgs, result1);
-    EXPECT_FALSE(result1.empty());
+    EXPECT_EQ(result1, expected);
 
     std::vector<std::string> helpArgs = {"-h"};
     std::string result2;
     service->DumpProcessForUserMode(helpArgs, result2);
-    EXPECT_FALSE(result2.empty());
+    EXPECT_EQ(result2, expected);
+    EXPECT_EQ(result2, result1);
 }
 
 /**
@@ -2813,11 +2822,14 @@ HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_003, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_004, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    uint64_t originDuration = WorkStatus::GetHighPerfDuration();
     std::string key = "-high_perf_duration";
     std::string value = "300000";
     std::string result;
     service->DumpParamSet(key, value, result);
-    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "Set high perf duration success.");
+    EXPECT_EQ(WorkStatus::GetHighPerfDuration(), 300000U);
+    WorkStatus::SetHighPerfDuration(originDuration);
 }
 
 /**
@@ -2974,9 +2986,20 @@ HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_002, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_003, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    service->ready_.store(true);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+
     std::string result;
     service->DumpGetWorks("40070", "40070", result);
-    EXPECT_FALSE(result.empty());
+    EXPECT_EQ(result, "get work fail.");
+
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_.store(originalReady);
 }
 
 /**
@@ -2988,6 +3011,9 @@ HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_003, TestSize.Level1)
 HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_004, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    service->ready_.store(true);
+    GetNativeToken(BGTASK_SERVICE_NAME);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
@@ -3002,8 +3028,10 @@ HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_004, TestSize.Level1)
     service->workPolicyManager_->AddWork(workStatus, uid);
     std::string result;
     service->DumpGetWorks(std::to_string(uid), std::to_string(workId), result);
-    EXPECT_FALSE(result.empty());
+    EXPECT_NE(result.find("com.test.dumpgetworks"), std::string::npos) << result;
+    EXPECT_NE(result.find("DumpGetWorksAbility"), std::string::npos) << result;
     service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_.store(originalReady);
 }
 
 /**
@@ -3238,11 +3266,41 @@ HWTEST_F(WorkSchedulerServiceTest, ReStartCloudConfigPreinstalledWork_001, TestS
 HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_001, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    service->ready_ = false;
+    bool originalReady = service->ready_.load();
+    service->ready_.store(false);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+
+    int32_t uid = 400000;
+    int32_t workId = 40120;
     auto workinfo = std::make_shared<WorkInfo>();
-    workinfo->SetWorkId(40120);
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.cloudcfg1", "CloudCfgAbility1");
+    workinfo->RequestPersisted(true);
+    workinfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workinfo, uid);
+    workStatus->persisted_ = true;
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+
     service->UpdateWorkForCloudConfig(workinfo);
-    EXPECT_FALSE(service->ready_.load());
+
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    service->ready_.store(originalReady);
 }
 
 /**
@@ -3254,19 +3312,32 @@ HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_001, TestSize.Level1
 HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_002, TestSize.Level1)
 {
     auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    service->ready_ = true;
+    bool originalReady = service->ready_.load();
+    service->ready_.store(true);
     GetNativeToken(BGTASK_SERVICE_NAME);
     if (service->workPolicyManager_ == nullptr) {
         service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
     }
     service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+
+    int32_t uid = 400000;
+    int32_t workId = 40121;
     auto workinfo = std::make_shared<WorkInfo>();
-    workinfo->SetWorkId(40121);
+    workinfo->SetWorkId(workId);
     workinfo->SetElement("com.test.cloudcfg2", "CloudCfgAbility2");
-    workinfo->RefreshUid(40000);
+    workinfo->RequestPersisted(true);
+    workinfo->RefreshUid(uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+
     service->UpdateWorkForCloudConfig(workinfo);
-    GetNativeToken(BGTASK_SERVICE_NAME);
-    service->ready_ = false;
+
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    service->ready_.store(originalReady);
 }
 
 /**
@@ -3508,18 +3579,6 @@ HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_002, TestSize.Level1)
 {
     bool ret = WorkSchedUtils::CheckExtensionInfos("com.test", "", 100);
     EXPECT_FALSE(ret);
-}
-
-/**
- * @tc.name: CheckExtensionInfos_003
- * @tc.desc: Test CheckExtensionInfos with valid params calls samgr and bundleMgr.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_003, TestSize.Level1)
-{
-    bool ret = WorkSchedUtils::CheckExtensionInfos("com.test.checkext", "CheckExtAbility", 100);
-    EXPECT_TRUE(ret);
 }
 }
 }

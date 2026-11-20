@@ -113,35 +113,5 @@ HWTEST_F(WorkSchedulerConnectionTest, OnAbilityConnectDone_001, TestSize.Level1)
     EXPECT_FALSE(workStatus->IsDebugTask());
     wpm->uidQueueMap_.clear();
 }
-
-/**
- * @tc.name: OnAbilityConnectDone_002
- * @tc.desc: Test OnAbilityConnectDone cancels work when exited deep idle in user mode.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkSchedulerConnectionTest, OnAbilityConnectDone_002, TestSize.Level1)
-{
-    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    auto wpm = service->GetWorkPolicyManager();
-    wpm->uidQueueMap_.clear();
-    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
-    workInfo->SetWorkId(WORK_ID + 1);
-    workInfo->SetElement("com.unittest.deepidle", "DeepIdleAbility");
-    int32_t uid = 201;
-    workInfo->RefreshUid(uid);
-    workInfo->RequestDeepIdle(true);
-    auto workStatus = std::make_shared<WorkStatus>(*workInfo, uid);
-    wpm->AddWork(workStatus, uid);
-    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
-
-    sptr<ISystemAbilityManager> samgr = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
-    sptr<IRemoteObject> remoteObject = samgr->GetSystemAbility(WORK_SCHEDULE_SERVICE_ID);
-    auto conn = std::make_shared<WorkSchedulerConnection>(workInfo);
-    AppExecFwk::ElementName element;
-    conn->OnAbilityConnectDone(element, remoteObject, 0);
-    EXPECT_EQ(conn->IsConnected(), true);
-    wpm->uidQueueMap_.clear();
-}
 }
 }

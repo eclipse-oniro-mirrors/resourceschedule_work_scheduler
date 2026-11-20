@@ -106,15 +106,14 @@ static bool WaitForCondition(const std::shared_ptr<WorkStatus>& workStatus,
 {
     const int32_t intervalMs = 10;
     int32_t waitedMs = 0;
-    while (true)
-    {
+    while (true) {
         {
-            std::lock_guard<frrt::mutex> lock(workStatus->conditionMapMutex_);
+            std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
             if (workStatus->conditionMap_.count(type) > 0) {
                 return true;
             }
         }
-        if (waitedMs > timeoutMs) {
+        if (waitedMs >= timeoutMs) {
             return false;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
@@ -227,7 +226,8 @@ HWTEST_F(BatteryStatusListenerTest, Stop_002, TestSize.Level1)
 
 /**
  * @tc.name: OnConditionChanged_001
- * @tc.desc: Test BatteryStatusListener OnConditionChanged with null workQueueManager.
+ * @tc.desc: Test BatteryStatusListener OnConditionChanged with null workQueueManager does not
+ *           propagate the condition, verified against a positive control using a real manager.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
@@ -261,16 +261,15 @@ HWTEST_F(BatteryStatusListenerTest, OnConditionChanged_001, TestSize.Level1)
     auto val = std::make_shared<DetectorValue>(WorkCondition::BATTERY_STATUS_LOW, 0, 0, std::string());
     listener->BatteryStatusListener::OnConditionChanged(WorkCondition::Type::BATTERY_STATUS, val);
     {
-        std::lock_gurad<frrt::mutex> lock(workStatus->conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_STATUS), 0);
-
     }
 
     BatteryStatusListener realListener(service->workQueueManager_);
-    realListener.OnConditionChanged(WorkCondition::Type::BATTERY_STATUS, val)
+    realListener.OnConditionChanged(WorkCondition::Type::BATTERY_STATUS, val);
     EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::BATTERY_STATUS, 2000));
     {
-        std::lock_gurad<frrt::mutex> lock(workStatus->conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_STATUS), 1);
     }
     service->workQueueManager_->RemoveWork(workStatus);

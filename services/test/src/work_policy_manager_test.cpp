@@ -24,6 +24,7 @@
 #include "work_sched_utils.h"
 #include "work_sched_constants.h"
 #include "work_sched_data_manager.h"
+#include "event_queue.h"
 #include "watchdog.h"
 
 
@@ -1095,6 +1096,7 @@ HWTEST_F(WorkPolicyManagerTest, UpdateWatchdogTime_005, TestSize.Level1)
     std::shared_ptr<WorkStatus> topWork = std::make_shared<WorkStatus>(workInfo, uid);
     std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
     workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService);
+    workPolicyManager_->SetWatchdogTime(MEDIUM_WATCHDOG_TIME);
     workPolicyManager_->UpdateWatchdogTime(workSchedulerService, topWork);
     EXPECT_EQ(workPolicyManager_->GetWatchdogTime(), WATCHDOG_TIME);
 }
@@ -1333,8 +1335,8 @@ HWTEST_F(WorkPolicyManagerTest, GetWorkStatus_002, TestSize.Level1)
     workPolicyManager_->uidQueueMap_.clear();
     int32_t queryUid = 99999;
     int32_t queryWorkId = 99999;
-    workPolicyManager_->GetWorkStatus(queryUid, queryWorkId);
-    EXPECT_FALSE(workPolicyManager_->FindWork(queryUid));
+    auto ret = workPolicyManager_->GetWorkStatus(queryUid, queryWorkId);
+    EXPECT_EQ(ret, nullptr);
 }
 
 /**
@@ -1367,8 +1369,8 @@ HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, FindWorkStatus_002, TestSize.Level1)
 {
     workPolicyManager_->uidQueueMap_.clear();
-    workPolicyManager_->FindWorkStatus(99999, 99999);
-    EXPECT_FALSE(workPolicyManager_->FindWork(99999));
+    auto ret = workPolicyManager_->FindWorkStatus(99999, 99999);
+    EXPECT_EQ(ret, nullptr);
 }
 
 /**
@@ -1608,8 +1610,8 @@ HWTEST_F(WorkPolicyManagerTest, IsSpecialScene_003, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, GetWorkToRun_001, TestSize.Level1)
 {
     workPolicyManager_->conditionReadyQueue_->ClearAll();
-    workPolicyManager_->GetWorkToRun();
-    EXPECT_FALSE(workPolicyManager_->FindWork(0));
+    auto ret = workPolicyManager_->GetWorkToRun();
+    EXPECT_EQ(ret, nullptr);
 }
 
 /**
@@ -1649,7 +1651,7 @@ HWTEST_F(WorkPolicyManagerTest, RealStartSA_001, TestSize.Level1)
     workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
     workPolicyManager_->conditionReadyQueue_->Push(workStatus);
     workPolicyManager_->RealStartSA(workStatus);
-    EXPECT_FALSE(workStatus->IsRunning());
+    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::CONDITION_READY);
     workPolicyManager_->conditionReadyQueue_->ClearAll();
 }
 
@@ -1671,7 +1673,7 @@ HWTEST_F(WorkPolicyManagerTest, RealStartSA_002, TestSize.Level1)
     workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
     workPolicyManager_->conditionReadyQueue_->Push(workStatus);
     workPolicyManager_->RealStartSA(workStatus);
-    EXPECT_FALSE(workStatus->IsRunning());
+    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::CONDITION_READY);
     workPolicyManager_->conditionReadyQueue_->ClearAll();
 }
 
@@ -1760,8 +1762,23 @@ HWTEST_F(WorkPolicyManagerTest, AddWatchdogForWork_001, TestSize.Level1)
  */
 HWTEST_F(WorkPolicyManagerTest, SendRetrigger_001, TestSize.Level1)
 {
+    std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    auto runner = AppExecFwk::EventRunner::Create("test_sendretrigger_null", AppExecFwk::ThreadMode::FFRT);
+    workSchedulerService->eventRunner_ = runner;
+    auto handler = std::make_shared<WorkEventHandler>(runner, workSchedulerService);
+    workSchedulerService->handler_ = handler;
+    const uint32_t retriggerMsg = static_cast<uint32_t>(WorkEventHandler::RETRIGGER_MSG);
+
     workPolicyManager_->handler_ = nullptr;
     workPolicyManager_->SendRetrigger(1000);
+    EXPECT_FALSE(handler->HasInnerEvent(retriggerMsg));
+
+    workPolicyManager_->handler_ = handler;
+    workPolicyManager_->SendRetrigger(1000);
+    EXPECT_TRUE(handler->HasInnerEvent(retriggerMsg));
+
+    handler->RemoveEvent(retriggerMsg);
+    workPolicyManager_->handler_ = nullptr;
 }
 
 /**
@@ -1778,7 +1795,11 @@ HWTEST_F(WorkPolicyManagerTest, SendRetrigger_002, TestSize.Level1)
     workSchedulerService->handler_ = std::make_shared<WorkEventHandler>(runner, workSchedulerService);
     auto workPolicyManager = std::make_shared<WorkPolicyManager>(workSchedulerService);
     workPolicyManager->handler_ = workSchedulerService->handler_;
+    const uint32_t retriggerMsg = static_cast<uint32_t>(WorkEventHandler::RETRIGGER_MSG);
+    EXPECT_FALSE(workPolicyManager->handler_->HasInnerEvent(retriggerMsg));
     workPolicyManager->SendRetrigger(DELAY_TIME_SHORT);
+    EXPECT_TRUE(workPolicyManager->handler_->HasInnerEvent(retriggerMsg));
+    workPolicyManager->handler_->RemoveEvent(retriggerMsg);
 }
 
 /**
@@ -1808,15 +1829,18 @@ HWTEST_F(WorkPolicyManagerTest, IsNeedDiscreteScheduled_001, TestSize.Level1)
 HWTEST_F(WorkPolicyManagerTest, DiscreteScheduled_001, TestSize.Level1)
 {
     std::shared_ptr<WorkSchedulerService> workSchedulerService = std::make_shared<WorkSchedulerService>();
+    auto runner = AppExecFwk::EventRunner::Create("test_discrete_null", AppExecFwk::ThreadMode::FFRT);
+    workSchedulerService->eventRunner_ = runner;
+    workSchedulerService->handler_ = nullptr;
     auto workPolicyManager = std::make_shared<WorkPolicyManager>(workSchedulerService);
-    workPolicyManager->handler_ = nullptr;
     WorkInfo workinfo;
     workinfo.SetWorkId(70340);
     workinfo.SetElement("com.test.discrete1", "DiscreteAbility1");
     int32_t uid = 70340;
     auto topWork = std::make_shared<WorkStatus>(workinfo, uid);
+    ASSERT_TRUE(runner->GetEventQueue()->IsQueueEmpty());
     workPolicyManager->DiscreteScheduled(topWork);
-    EXPECT_FALSE(topWork->IsRunning());
+    EXPECT_TRUE(runner->GetEventQueue()->IsQueueEmpty());
 }
 
 /**
@@ -1840,8 +1864,10 @@ HWTEST_F(WorkPolicyManagerTest, DiscreteScheduled_002, TestSize.Level1)
     int32_t uid = 70341;
     auto topWork = std::make_shared<WorkStatus>(workinfo, uid);
     topWork->MarkStatus(WorkStatus::Status::CONDITION_READY);
+    ASSERT_TRUE(runner->GetEventQueue()->IsQueueEmpty());
     workPolicyManager->DiscreteScheduled(topWork);
-    EXPECT_FALSE(topWork->IsRunning());
+    EXPECT_FALSE(runner->GetEventQueue()->IsQueueEmpty());
+    EXPECT_EQ(topWork->GetStatus(), WorkStatus::Status::CONDITION_READY);
 }
 }
 }

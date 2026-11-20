@@ -16,8 +16,8 @@
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
 #include <chrono>
 #include <functional>
-#include <thread>
 #include <gtest/gtest.h>
+#include <thread>
 
 #include "battery_info.h"
 #include "common_event_manager.h"
@@ -105,15 +105,14 @@ static bool WaitForCondition(const std::shared_ptr<WorkStatus>& workStatus,
 {
     const int32_t intervalMs = 10;
     int32_t waitedMs = 0;
-    while (true)
-    {
+    while (true) {
         {
-            std::lock_guard<frrt::mutex> lock(workStatus->conditionMapMutex_);
+            std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
             if (workStatus->conditionMap_.count(type) > 0) {
                 return true;
             }
         }
-        if (waitedMs > timeoutMs) {
+        if (waitedMs >= timeoutMs) {
             return false;
         }
         std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
@@ -259,7 +258,7 @@ HWTEST_F(BatteryLevelListenerTest, Stop_002, TestSize.Level1)
 
 /**
  * @tc.name: OnConditionChanged_001
- * @tc.desc: Test BatteryLevelListener OnConditionChanged with null workQueueManager dose not
+ * @tc.desc: Test BatteryLevelListener OnConditionChanged with null workQueueManager does not
  *           propagate the condition, verified against a positive control using a real manager.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
@@ -285,26 +284,26 @@ HWTEST_F(BatteryLevelListenerTest, OnConditionChanged_001, TestSize.Level1)
     }
     auto workInfo = std::make_shared<WorkInfo>();
     workInfo->SetWorkId(9921);
-    workInfo->SetElement("com.test.batlevel", "BatlevelAbility");
+    workInfo->SetElement("com.test.batlevel", "BatLevelAbility");
     workInfo->RequestBatteryLevel(40);
     auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10021);
     service->workQueueManager_->AddWork(workStatus);
 
-    //Negative: the test listenner holds a null workQueueManager_, so the guard must not publish.
+    //Negative: the test listener holds a null workQueueManager_, so the guard must not publish.
     auto listener = std::make_shared<TestBatteryLevelListener>();
     auto val = std::make_shared<DetectorValue>(50, 0, 0, std::string());
     listener->BatteryLevelListener::OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
     {
-        std::lock_gurad<frrt::mutex> lock(workStatus->conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_LEVEL), 0);
 
     }
 
     BatteryLevelListener realListener(service->workQueueManager_, service);
-    realListener.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val)
+    realListener.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
     EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::BATTERY_LEVEL, 2000));
     {
-        std::lock_gurad<frrt::mutex> lock(workStatus->conditionMapMutex_);
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
         EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_LEVEL), 1);
     }
     service->workQueueManager_->RemoveWork(workStatus);
