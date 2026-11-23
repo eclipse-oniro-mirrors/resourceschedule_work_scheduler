@@ -53,9 +53,14 @@ public:
      * @param workStatus The status of work.
      */
     void WriteStartWorkEvent(std::shared_ptr<WorkStatus> workStatus);
+    /**
+     * @brief Remove connection info by workId.
+     *
+     * @param workId The work id.
+     */
+    void RemoveConnInfo(const std::string &workId);
 
 private:
-    void RemoveConnInfo(const std::string &workId);
     void AddConnInfo(const std::string &workId, sptr<WorkSchedulerConnection> &connection);
     sptr<WorkSchedulerConnection> GetConnInfo(const std::string &workId);
     bool DisConnect(sptr<WorkSchedulerConnection> connect);

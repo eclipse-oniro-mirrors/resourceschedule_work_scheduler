@@ -59,31 +59,6 @@ HWTEST_F(CpuPolicyTest, getCpuUsage_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: getCpuUsage_002
- * @tc.desc: Test CpuPolicy GetCpuUsage.
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(CpuPolicyTest, getCpuUsage_002, TestSize.Level1)
-{
-    workPolicyManager_->SetCpuUsageByDump(120);
-    int32_t cpuUsage = cpuPolicy_->GetCpuUsage();
-    EXPECT_TRUE(cpuUsage >= 0 && cpuUsage <= 100);
-}
-
-/**
- * @tc.name: getCpuUsage_003
- * @tc.desc: Test CpuPolicy GetCpuUsage.
- * @tc.type: FUNC
- * @tc.require: I974IQ
- */
-HWTEST_F(CpuPolicyTest, getCpuUsage_003, TestSize.Level1)
-{
-    int32_t cpuUsage = cpuPolicy_->GetCpuUsage();
-    EXPECT_TRUE(cpuUsage >= 0 && cpuUsage <= 100);
-}
-
-/**
  * @tc.name: getPolicyMaxRunning_001
  * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
  * @tc.type: FUNC
@@ -140,30 +115,48 @@ HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_004, TestSize.Level1)
 }
 
 /**
- * @tc.name: getPolicyMaxRunning_005
- * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
+ * @tc.name: getPolicyMaxRunning_007
+ * @tc.desc: Test CpuPolicy GetPolicyMaxRunning boundary cpu=30 (CPU_LOW).
  * @tc.type: FUNC
  * @tc.require: I974IQ
  */
-HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_005, TestSize.Level1)
+HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_007, TestSize.Level1)
 {
     WorkSchedSystemPolicy systemPolicy;
-    workPolicyManager_->SetCpuUsageByDump(120);
+    workPolicyManager_->SetCpuUsageByDump(30);
     int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
-    EXPECT_TRUE(maxRunning >= 0 && maxRunning <= 3);
+    EXPECT_EQ(maxRunning, 2);
+    EXPECT_EQ(systemPolicy.cpuUsage, 30);
 }
 
 /**
- * @tc.name: getPolicyMaxRunning_006
- * @tc.desc: Test CpuPolicy GetPolicyMaxRunning.
+ * @tc.name: getPolicyMaxRunning_008
+ * @tc.desc: Test CpuPolicy GetPolicyMaxRunning boundary cpu=50 (CPU_NORMAL).
  * @tc.type: FUNC
  * @tc.require: I974IQ
  */
-HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_006, TestSize.Level1)
+HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_008, TestSize.Level1)
 {
     WorkSchedSystemPolicy systemPolicy;
+    workPolicyManager_->SetCpuUsageByDump(50);
     int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
-    EXPECT_TRUE(maxRunning >= 0 && maxRunning <= 3);
+    EXPECT_EQ(maxRunning, 1);
+    EXPECT_EQ(systemPolicy.cpuUsage, 50);
+}
+
+/**
+ * @tc.name: getPolicyMaxRunning_009
+ * @tc.desc: Test CpuPolicy GetPolicyMaxRunning boundary cpu=60 (CPU_HIGH).
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(CpuPolicyTest, getPolicyMaxRunning_009, TestSize.Level1)
+{
+    WorkSchedSystemPolicy systemPolicy;
+    workPolicyManager_->SetCpuUsageByDump(60);
+    int32_t maxRunning = cpuPolicy_->GetPolicyMaxRunning(systemPolicy);
+    EXPECT_EQ(maxRunning, 0);
+    EXPECT_EQ(systemPolicy.cpuUsage, 60);
 }
 }
 }

@@ -115,7 +115,7 @@ bool WorkSchedUtils::IsSystemApp()
     return Security::AccessToken::TokenIdKit::IsSystemAppByFullTokenID(fullTokenId);
 }
 
-uint64_t WorkSchedUtils::GetCurrentTimeMs()
+WEAK_FUNC uint64_t WorkSchedUtils::GetCurrentTimeMs()
 {
     using namespace std;
     auto now = chrono::system_clock::now();
@@ -142,20 +142,22 @@ bool WorkSchedUtils::CheckExtensionInfos(const string &bundleName, const string 
     }
     sptr<IBundleMgr> bundleMgr = iface_cast<IBundleMgr>(remoteObject);
     BundleInfo bundleInfo;
-    if (bundleMgr->GetBundleInfo(bundleName,
+    if (!bundleMgr->GetBundleInfo(bundleName,
         BundleFlag::GET_BUNDLE_WITH_EXTENSION_INFO,
         bundleInfo, uid / UID_TRANSFORM_DIVISOR)) {
-        auto findIter = std::find_if(bundleInfo.extensionInfos.begin(), bundleInfo.extensionInfos.end(),
-            [&](const auto &info) {
-                WS_HILOGD("%{public}s %{public}s %{public}d", info.bundleName.c_str(), info.name.c_str(), info.type);
-                return info.bundleName == bundleName &&
-                    info.name == abilityName &&
-                    info.type == ExtensionAbilityType::WORK_SCHEDULER;
-            });
-        if (findIter == bundleInfo.extensionInfos.end()) {
-            WS_HILOGE("extension info is error");
-            return false;
-        }
+        WS_HILOGE("GetBundleInfo failed, bundleName: %{public}s", bundleName.c_str());
+        return false;
+    }
+    auto findIter = std::find_if(bundleInfo.extensionInfos.begin(), bundleInfo.extensionInfos.end(),
+        [&](const auto &info) {
+            WS_HILOGD("%{public}s %{public}s %{public}d", info.bundleName.c_str(), info.name.c_str(), info.type);
+            return info.bundleName == bundleName &&
+                info.name == abilityName &&
+                info.type == ExtensionAbilityType::WORK_SCHEDULER;
+        });
+    if (findIter == bundleInfo.extensionInfos.end()) {
+        WS_HILOGE("extension info is error");
+        return false;
     }
     return true;
 }

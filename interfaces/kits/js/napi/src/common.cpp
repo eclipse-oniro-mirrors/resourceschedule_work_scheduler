@@ -29,7 +29,7 @@ const int32_t TRUE_PARAM = 1;
 const int32_t FALSE_PARAM = 0;
 const int32_t BATTERY_LEVEL_MIN = 0;
 const int32_t BATTERY_LEVEL_MAX = 100;
-bool g_hasParamError = false;
+thread_local bool g_hasParamError = false;
 
 AsyncWorkData::AsyncWorkData(napi_env napiEnv)
 {
@@ -83,6 +83,10 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
 
     // Get persist param. if not set, it will be used false.
     workInfo.RequestPersisted(GetBoolProperty(env, objValue, "isPersisted", E_IS_PERSISTED_ERR));
+    // Get isPerformanceSensitive param. if not set, it will be used false.
+    bool isPerformanceSensitive = GetBoolProperty(env, objValue, "isPerformanceSensitive",
+        E_IS_PERFORMANCE_SENSITIVE_ERR);
+    workInfo.RequestPerformanceSensitive(isPerformanceSensitive);
     return true;
 }
 
@@ -443,9 +447,18 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     napi_get_boolean(env, workInfo->IsPersisted(), &napiIsPersisted);
     napi_set_named_property(env, napiWork, "isPersisted", napiIsPersisted);
 
-    GetConditionInfo(env, workInfo, napiWork);
+    // Set isPerformanceSensitive.
+    napi_value napiIsPerformanceSensitive = nullptr;
+    napi_get_boolean(env, workInfo->IsPerformanceSensitive(), &napiIsPerformanceSensitive);
+    napi_set_named_property(env, napiWork, "isPerformanceSensitive", napiIsPerformanceSensitive);
 
-    // Set timer info.
+    GetConditionInfo(env, workInfo, napiWork);
+    SetTimerAndExtrasInfo(env, workInfo, napiWork);
+    return napiWork;
+}
+
+void Common::SetTimerAndExtrasInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork)
+{
     uint32_t timeInterval = workInfo->GetTimeInterval();
     if (timeInterval > 0) {
         napi_value napiTimer = nullptr;
@@ -461,12 +474,10 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
             napi_set_named_property(env, napiWork, "repeatCount", napiCount);
         }
     }
-
     if (workInfo->GetExtras()) {
         napi_value parameters = WrapWantParams(env, *workInfo->GetExtras());
         napi_set_named_property(env, napiWork, "parameters", parameters);
     }
-    return napiWork;
 }
 
 void Common::GetConditionInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork)
@@ -611,6 +622,19 @@ void Common::HandleErrCode(const napi_env &env, int32_t errCode)
     }
 }
 
+void Common::HandleIntErrCode(const napi_env &env, int32_t errCode)
+{
+    if (errCode == ERR_OK) {
+        return;
+    }
+    WS_HILOGE("HandleErrCode errCode = %{public}d", errCode);
+    std::string errMsg = FindErrMsg(env, errCode);
+    int32_t errCodeInfo = FindErrCode(env, errCode);
+    if (errMsg != "") {
+        napi_throw_business_error(env, errCodeInfo, errMsg.c_str());
+    }
+}
+
 void Common::HandleParamErr(const napi_env &env, int32_t errCode)
 {
     if (errCode == ERR_OK) {
@@ -661,19 +685,19 @@ bool Common::GetFrequencyInfo(napi_env env, napi_value objValue, FrequencyInfo &
     int32_t uid = GetIntProperty(env, objValue, "uid", E_UID_ERROR);
     if (uid == UNSET_INT_PARAM || uid <= 0) {
         WS_HILOGE("uid is invalid, failed.");
-        HandleErrCode(env, E_UID_ERROR);
+        HandleIntErrCode(env, E_UID_ERROR);
         return false;
     }
     int32_t workId = GetIntProperty(env, objValue, "workId", E_WORKID_ERROR);
     if (workId == UNSET_INT_PARAM || workId <= 0) {
         WS_HILOGE("Work id is invalid, failed.");
-        HandleErrCode(env, E_WORKID_ERROR);
+        HandleIntErrCode(env, E_WORKID_ERROR);
         return false;
     }
     int64_t interval = static_cast<int64_t>(GetIntProperty(env, objValue, "interval", E_INTERVAL_ERROR));
     if (interval == UNSET_INT_PARAM) {
         WS_HILOGE("interval is invalid, failed.");
-        HandleErrCode(env, E_INTERVAL_ERROR);
+        HandleIntErrCode(env, E_INTERVAL_ERROR);
         return false;
     }
     frequencyInfo.SetWorkId(workId);

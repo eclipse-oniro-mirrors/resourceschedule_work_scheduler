@@ -21,7 +21,6 @@
 #include "work_sched_utils.h"
 #include "work_scheduler_service.h"
 #include "work_sched_hilog.h"
-#include "work_sched_errors.h"
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
 #include "bundle_active_client.h"
 #include "bundle_active_group_map.h"
@@ -42,6 +41,7 @@ using namespace std;
 
 extern "C" int32_t ReportSyncEventInProcess(uint32_t resType, int64_t value,
     const nlohmann::json& payload, nlohmann::json& reply);
+extern "C" void ReportDataInProcess(uint32_t resType, int64_t value, const nlohmann::json& payload);
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -49,13 +49,17 @@ static const double ONE_SECOND = 1000.0;
 static bool g_groupDebugMode = false;
 static const int64_t MIN_INTERVAL_DEFAULT = 2 * 60 * 60 * 1000;
 std::map<int32_t, time_t> WorkStatus::s_uid_last_time_map;
+std::map<int32_t, time_t> WorkStatus::performanceSensitiveLastTimeMap_;
+WorkStatus::HighPerfTimerState WorkStatus::highPerfState_;
 const int32_t DEFAULT_PRIORITY = 10000;
 const int32_t HIGH_PRIORITY = 0;
 const int32_t ACTIVE_GROUP = 10;
+const int32_t APP_INDEX_MINOR_MODE = 10000;
 const string SWITCH_ON = "1";
 const string DELIMITER = ",";
-ffrt::mutex WorkStatus::s_uid_last_time_mutex;
-ffrt::mutex WorkStatus::dumpAppGroupMutex_;
+const string DEVICE_TYPE_PC = "2in1";
+const string DEVICE_TYPE_TABLET = "tablet";
+ffrt::mutex WorkStatus::mutex_;
 std::map<int32_t, int32_t> WorkStatus::dumpAppGroupMap_;
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
@@ -208,6 +212,7 @@ void WorkStatus::MarkTimeout()
 
 void WorkStatus::MarkStatus(Status status)
 {
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
     currentStatus_ = status;
 }
 
@@ -253,6 +258,28 @@ bool WorkStatus::IsSameUser()
     return true;
 }
 
+bool WorkStatus::IsCurrentMode()
+{
+    std::string deviceType = OHOS::system::GetParameter("const.product.devicetype", "");
+    // 非PC & 非平板
+    if (deviceType != DEVICE_TYPE_PC && deviceType != DEVICE_TYPE_TABLET) {
+        return true;
+    }
+    // 当前任务所属任务模式是否主模式
+    bool mainModeWork = workInfo_->GetAppIndex() < APP_INDEX_MINOR_MODE ? true : false;
+    // 当前模式是否PC模式，1代表pc模式，0代表非pc模式
+    int32_t pcMode = OHOS::system::GetBoolParameter("persist.sceneboard.ispcmode", false) ? 1 : 0;
+    // 设备主模式，0：主tablet, 1: 主2in1
+    int32_t deviceMainMode = OHOS::system::GetIntParameter("const.sceneboard.mainmode", -1);
+    if (deviceMainMode == -1) {
+        return true;
+    }
+    // 当前模式是否主模式
+    bool mainMode = pcMode == deviceMainMode;
+    // 当前模式与当前任务所属模式是否一致
+    return mainModeWork == mainMode;
+}
+
 bool WorkStatus::IsUriKeySwitchOn()
 {
     if (!workInfo_->IsPreinstalled()) {
@@ -279,6 +306,10 @@ bool WorkStatus::IsReady()
         conditionStatus_ += DELIMITER + "notSameUser";
         return false;
     }
+    if (!IsCurrentMode()) {
+        conditionStatus_ += DELIMITER + "notCurrentMode";
+        return false;
+    }
     if (IsRunning()) {
         HasTimeout();
         conditionStatus_ += DELIMITER + "running";
@@ -291,6 +322,9 @@ bool WorkStatus::IsReady()
         conditionStatus_ += DELIMITER + "uriKeyOFF";
         return false;
     }
+    if (workInfo_->IsPerformanceSensitive() && !IsPerformanceSensitiveReady()) {
+        return false;
+    }
     if (DelayedSingleton<WorkSchedulerService>::GetInstance()->CheckEffiResApplyInfo(uid_)) {
         conditionStatus_ += DELIMITER + "effiResWhitelist";
         return true;
@@ -300,8 +334,13 @@ bool WorkStatus::IsReady()
             "minInterval:%{public}" PRId64 ", workId:%{public}s", bundleName_.c_str(), minInterval_, workId_.c_str());
         return false;
     }
-    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
+    return IsMinIntervalReady();
+}
+
+bool WorkStatus::IsMinIntervalReady()
+{
+    time_t lastTime = 0;
+    if (!GetUidLastTime(uid_, lastTime)) {
         // first run task
         if (CheckEarliestStartTime()) {
             WS_HILOGE("The initial startup time does not meet the EarliestStartTime requirement.");
@@ -310,7 +349,7 @@ bool WorkStatus::IsReady()
         conditionStatus_ += DELIMITER + "firstTrigger";
         return true;
     }
-    double del = difftime(getOppositeTime(), s_uid_last_time_map[uid_]);
+    double del = difftime(getOppositeTime(), lastTime);
     if (del < minInterval_) {
         conditionStatus_ += DELIMITER + COND_TYPE_STRING_MAP[WorkCondition::Type::GROUP] + "&" + NOT_OK + "(" +
             to_string(static_cast<long>(del)) + ":" + to_string(minInterval_) + ")";
@@ -334,6 +373,36 @@ bool WorkStatus::IsSAReady()
         return false;
     }
     WS_HILOGI("All condition ready, saId:%{public}d, workId:%{public}s", workInfo_->GetSaId(), workId_.c_str());
+    return true;
+}
+
+bool WorkStatus::IsPerformanceSensitiveReady()
+{
+    // 上次在大核运行时间和当前不是同一天，清零大核运行时长
+    if (!IsSameDay(WorkSchedUtils::GetCurrentTimeMs(), GetLastHighPerfEndTime())) {
+        SetHighPerfDuration(0);
+    }
+    // 当天大核运行时长超过10分钟，不允许执行
+    if (GetHighPerfDuration() >= MAX_HIGH_PERF_DURATION) {
+        conditionStatus_ += DELIMITER + "highPerfDuration" + "&" + NOT_OK;
+        WS_HILOGE("performance sensitive work not ready, highPerfDuration exceeds limit, workId:%{public}s, "
+            "highPerfDuration:%{public}" PRIu64, workId_.c_str(), GetHighPerfDuration());
+        return false;
+    }
+    // 该应用距上次在大核运行时间是否满足24小时
+    time_t performanceSensitiveLastTime = 0;
+    if (GetPerformanceSensitiveLastTime(uid_, performanceSensitiveLastTime)) {
+        double del = difftime(getOppositeTime(), performanceSensitiveLastTime);
+        if (del < ONE_DAY_MS) {
+            conditionStatus_ += DELIMITER + "performanceSensitive" + "&" + NOT_OK + "(" +
+                to_string(static_cast<long>(del)) + ":" + to_string(ONE_DAY_MS) + ")";
+            needRetrigger_ = true;
+            timeRetrigger_ = int(ONE_DAY_MS - del + ONE_SECOND);
+            WS_HILOGE("performance sensitive work not ready, already executed today, workId:%{public}s, del:%{public}f",
+                workId_.c_str(), del);
+            return false;
+        }
+    }
     return true;
 }
 
@@ -456,12 +525,8 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
     }
     auto workConditionMap = workInfo_->GetConditionMap();
     uint32_t intervalTime = workConditionMap->at(WorkCondition::Type::TIMER)->uintVal;
-    time_t lastTime;
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        lastTime = 0;
-    } else {
-        lastTime = s_uid_last_time_map[uid_];
-    }
+    time_t lastTime = 0;
+    GetUidLastTime(uid_, lastTime);
     double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
     double oppositedel = difftime(getOppositeTime(), lastTime);
     double del = currentdel > oppositedel ? currentdel : oppositedel;
@@ -475,12 +540,8 @@ bool WorkStatus::IsTimerReady(WorkCondition::Type type)
 
 double WorkStatus::TimeUntilLast()
 {
-    time_t lastTime;
-    if (s_uid_last_time_map.find(uid_) == s_uid_last_time_map.end()) {
-        lastTime = 0;
-    } else {
-        lastTime = s_uid_last_time_map[uid_];
-    }
+    time_t lastTime = 0;
+    GetUidLastTime(uid_, lastTime);
     double currentdel = difftime(getCurrentTime(), baseTime_) * ONE_SECOND;
     double oppositedel = difftime(getOppositeTime(), lastTime);
     return currentdel > oppositedel ? currentdel : oppositedel;
@@ -662,34 +723,64 @@ int64_t WorkStatus::GetMinInterval()
 
 void WorkStatus::UpdateUidLastTimeMap()
 {
-    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
     time_t lastTime = getOppositeTime();
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     s_uid_last_time_map[uid_] = lastTime;
+    if (workInfo_->IsPerformanceSensitive()) {
+        performanceSensitiveLastTimeMap_[uid_] = lastTime;
+    }
 }
 
 void WorkStatus::ClearUidLastTimeMap(int32_t uid)
 {
-    std::lock_guard<ffrt::mutex> lock(s_uid_last_time_mutex);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     s_uid_last_time_map.erase(uid);
+    performanceSensitiveLastTimeMap_.erase(uid);
+}
+
+bool WorkStatus::GetUidLastTime(int32_t uid, time_t &lastTime)
+{
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    auto it = s_uid_last_time_map.find(uid);
+    if (it == s_uid_last_time_map.end()) {
+        return false;
+    }
+    lastTime = it->second;
+    return true;
+}
+
+bool WorkStatus::GetPerformanceSensitiveLastTime(int32_t uid, time_t &lastTime)
+{
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    auto it = performanceSensitiveLastTimeMap_.find(uid);
+    if (it == performanceSensitiveLastTimeMap_.end()) {
+        return false;
+    }
+    lastTime = it->second;
+    return true;
 }
 
 bool WorkStatus::IsRunning()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == RUNNING;
 }
 
 bool WorkStatus::IsPaused()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return paused_;
 }
 
 bool WorkStatus::IsReadyStatus()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == CONDITION_READY;
 }
 
 bool WorkStatus::IsRemoved()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_ == REMOVED;
 }
 
@@ -713,6 +804,7 @@ bool WorkStatus::IsRepeating()
 
 WorkStatus::Status WorkStatus::GetStatus()
 {
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
     return currentStatus_;
 }
 
@@ -736,8 +828,8 @@ void WorkStatus::Dump(string& result)
     } else {
         result.append(string("\"bundleName\":") + bundleName_ + ",\n");
     }
-    result.append(string("\"status\":") + to_string(currentStatus_) + ",\n");
-    result.append(string("\"paused\":") + (paused_ ? "true" : "false") + ",\n");
+    result.append(string("\"status\":") + to_string(GetStatus()) + ",\n");
+    result.append(string("\"paused\":") + (IsPaused() ? "true" : "false") + ",\n");
     result.append(string("\"priority\":") + to_string(priority_) + ",\n");
     result.append(string("\"conditionMap\":{\n"));
     DumpCondition(result);
@@ -812,7 +904,8 @@ void WorkStatus::ToString(WorkCondition::Type type)
 
 bool WorkStatus::HasTimeout()
 {
-    if (!IsRunning() || IsPaused()) {
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    if (currentStatus_ != RUNNING || paused_) {
         return false;
     }
 
@@ -934,9 +1027,20 @@ int64_t WorkStatus::HandleMinInterval(int64_t interval, int32_t group)
     return minInterval;
 }
 
+bool WorkStatus::IsSameDay(uint64_t currentTimeMs, uint64_t lastTimeMs)
+{
+    time_t currentSec = static_cast<time_t>(currentTimeMs / 1000);
+    time_t lastSec = static_cast<time_t>(lastTimeMs / 1000);
+    struct tm currentTm = {0};
+    struct tm lastTm = {0};
+    localtime_r(&currentSec, &currentTm);
+    localtime_r(&lastSec, &lastTm);
+    return currentTm.tm_year == lastTm.tm_year && currentTm.tm_yday == lastTm.tm_yday;
+}
+
 int32_t WorkStatus::GetDumpAppGroup(int32_t uid)
 {
-    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     if (dumpAppGroupMap_.count(uid) > 0) {
         return dumpAppGroupMap_.at(uid);
     } else {
@@ -946,18 +1050,191 @@ int32_t WorkStatus::GetDumpAppGroup(int32_t uid)
 
 void WorkStatus::ClearDumpAppGroup(int32_t uid)
 {
-    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     dumpAppGroupMap_.erase(uid);
 }
 
 void WorkStatus::AddDumpAppGroup(int32_t uid, int32_t group)
 {
-    std::lock_guard<ffrt::mutex> lock(dumpAppGroupMutex_);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
     if (dumpAppGroupMap_.count(uid) > 0) {
         dumpAppGroupMap_[uid] = group;
     } else {
         dumpAppGroupMap_.emplace(uid, group);
     }
+}
+
+uint64_t WorkStatus::GetWorkStartTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return workStartTime_;
+}
+
+uint64_t WorkStatus::GetWorkWatchDogTime() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return workWatchDogTime_;
+}
+
+uint64_t WorkStatus::GetDuration() const
+{
+    std::shared_lock<ffrt::shared_mutex> lock(statusMutex_);
+    return duration_;
+}
+
+void WorkStatus::SetWorkStartTime(uint64_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = time;
+}
+
+void WorkStatus::SetWorkWatchDogTime(uint64_t time)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workWatchDogTime_ = time;
+}
+
+void WorkStatus::SetDuration(uint64_t duration)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    duration_ = duration;
+}
+
+void WorkStatus::AddDuration(uint64_t delta)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    duration_ += delta;
+}
+
+void WorkStatus::SetPaused(bool paused)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    paused_ = paused;
+}
+
+void WorkStatus::ResetRunningFields()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = 0;
+    workWatchDogTime_ = 0;
+    duration_ = 0;
+}
+
+void WorkStatus::InitRunningFields(uint64_t startTime, uint64_t watchdogTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    workStartTime_ = startTime;
+    workWatchDogTime_ = watchdogTime;
+}
+
+uint64_t WorkStatus::PauseRunning(uint64_t currentTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    uint64_t oldWatchdogTime = workWatchDogTime_;
+    uint64_t runningTime = currentTime - workStartTime_;
+    uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
+    if (newWatchdogTime > LONG_WATCHDOG_TIME) {
+        WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
+            ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
+            bundleName_.c_str(), workId_.c_str(), newWatchdogTime, oldWatchdogTime, runningTime);
+        newWatchdogTime = 0;
+    }
+    duration_ += runningTime;
+    WS_HILOGI("PauseRunning, bundleName:%{public}s, workId:%{public}s,"
+        " oldWatchdogTime:%{public}" PRIu64 ", newWatchdogTime:%{public}" PRIu64 ", duration:%{public}" PRIu64,
+        bundleName_.c_str(), workId_.c_str(), oldWatchdogTime, newWatchdogTime, duration_);
+    paused_ = true;
+    workWatchDogTime_ = newWatchdogTime;
+    return newWatchdogTime;
+}
+
+void WorkStatus::ResumeRunning(uint64_t currentTime)
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    paused_ = false;
+    workStartTime_ = currentTime;
+}
+
+void WorkStatus::StartHighPerfTimer()
+{
+    if (!workInfo_->IsPerformanceSensitive()) {
+        return;
+    }
+    ReportDelayTaskPerf(uid_, DELAY_TASK_PERF_START);
+    WS_HILOGI("Start high perf timer, workId:%{public}s", workId_.c_str());
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    if (highPerfState_.startTime != 0) {
+        return;
+    }
+    highPerfState_.startTime = WorkSchedUtils::GetCurrentTimeMs();
+}
+
+void WorkStatus::StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &runningWorks)
+{
+    if (!workInfo_->IsPerformanceSensitive()) {
+        return;
+    }
+    bool isHighPerfWorkExist = false;
+    for (const auto &work : runningWorks) {
+        if (work && work->workId_ != workId_ && work->workInfo_->IsPerformanceSensitive() && !work->IsPaused()) {
+            isHighPerfWorkExist = true;
+            break;
+        }
+    }
+    uint64_t currentTime = WorkSchedUtils::GetCurrentTimeMs();
+    if (currentTime < GetWorkStartTime() || GetWorkStartTime() == 0) {
+        WS_HILOGE("invalid currentDuration, workId:%{public}s, currentTime:%{public}" PRIu64
+            ", startTime:%{public}" PRIu64, workId_.c_str(), currentTime, GetWorkStartTime());
+        return;
+    }
+    uint64_t currentDuration = currentTime - GetWorkStartTime();
+    bool isSameDay = IsSameDay(currentTime, GetLastHighPerfEndTime());
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    // 上次在大核运行的延迟任务结束时间与本次结束时间是同一天，大核上运行的延迟任务时间累计
+    if (isSameDay) {
+        highPerfState_.duration += currentDuration;
+    } else {
+        highPerfState_.duration = currentDuration;
+    }
+    highPerfState_.startTime = isHighPerfWorkExist ? currentTime : 0;
+    highPerfState_.lastEndTime = currentTime;
+    ReportDelayTaskPerf(uid_, DELAY_TASK_PERF_END);
+    WS_HILOGI("Stop high perf timer, workId:%{public}s", workId_.c_str());
+}
+
+uint64_t WorkStatus::GetHighPerfDuration()
+{
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    return highPerfState_.duration;
+}
+
+void WorkStatus::SetHighPerfDuration(uint64_t duration)
+{
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    highPerfState_.duration = duration;
+}
+
+uint64_t WorkStatus::GetLastHighPerfEndTime()
+{
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    return highPerfState_.lastEndTime;
+}
+
+void WorkStatus::ReportDelayTaskPerf(int32_t uid, int32_t type)
+{
+    nlohmann::json payload;
+    payload["uid"] = std::to_string(uid);
+    ReportDataInProcess(ResourceSchedule::ResType::RES_TYPE_DELAY_TASK_PERF, type, payload);
+}
+
+bool WorkStatus::MarkRunningIfConditionReady()
+{
+    std::unique_lock<ffrt::shared_mutex> lock(statusMutex_);
+    if (currentStatus_ != Status::CONDITION_READY) {
+        return false;
+    }
+    currentStatus_ = Status::RUNNING;
+    return true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -144,6 +144,7 @@ public:
      * @return Napi work info.
      */
     static void GetConditionInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork);
+    static void SetTimerAndExtrasInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork);
     /**
      * @brief Get callback error value.
      *
@@ -188,6 +189,13 @@ public:
      * @param errCode The error code.
      */
     static void HandleErrCode(const napi_env &env, int32_t errCode);
+    /**
+     * @brief Handle int error code and throw error.
+     *
+     * @param env The env.
+     * @param errCode The error code.
+     */
+    static void HandleIntErrCode(const napi_env &env, int32_t errCode);
     /**
      * @brief Handle param error code and throw param error.
      *

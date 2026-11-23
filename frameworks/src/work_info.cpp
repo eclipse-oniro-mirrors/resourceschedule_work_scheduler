@@ -303,16 +303,9 @@ bool WorkInfo::IsCallBySystemApp()
     return callBySystemApp_;
 }
 
-bool WorkInfo::Marshalling(Parcel &parcel) const
+bool WorkInfo::MarshallCondition(Parcel &parcel) const
 {
-    bool ret = parcel.WriteInt32(workId_);
-    ret = ret && parcel.WriteString(bundleName_);
-    ret = ret && parcel.WriteString(abilityName_);
-    ret = ret && parcel.WriteInt32(earliestStartTime_);
-    ret = ret && parcel.WriteBool(persisted_);
-    ret = ret && parcel.WriteInt32(triggerType_);
-    ret = ret && parcel.WriteInt32(uid_);
-    ret = ret && parcel.WriteUint32(conditionMap_.size());
+    bool ret = parcel.WriteUint32(conditionMap_.size());
     for (auto it : conditionMap_) {
         switch (it.first) {
             case WorkCondition::Type::NETWORK:
@@ -348,11 +341,73 @@ bool WorkInfo::Marshalling(Parcel &parcel) const
             }
         }
     }
+    return ret;
+}
+
+bool WorkInfo::Marshalling(Parcel &parcel) const
+{
+    bool ret = parcel.WriteInt32(workId_);
+    ret = ret && parcel.WriteString(bundleName_);
+    ret = ret && parcel.WriteString(abilityName_);
+    ret = ret && parcel.WriteInt32(earliestStartTime_);
+    ret = ret && parcel.WriteBool(persisted_);
+    ret = ret && parcel.WriteInt32(triggerType_);
+    ret = ret && parcel.WriteInt32(uid_);
+    ret = ret && MarshallCondition(parcel);
+    ret = ret && parcel.WriteBool(isPerformanceSensitive_);
     ret = ret && parcel.WriteBool(extras_ ? true : false);
     if (extras_) {
         ret = ret && extras_->Marshalling(parcel);
     }
     return ret;
+}
+
+bool WorkInfo::ReadBaseFields(Parcel &parcel, WorkInfo* read)
+{
+    if (!parcel.ReadInt32(read->workId_) || !parcel.ReadString(read->bundleName_) ||
+        !parcel.ReadString(read->abilityName_)) {
+        WS_HILOGE("Failed to read the workId or bundleName or abilityName.");
+        return false;
+    }
+    if (!parcel.ReadInt32(read->earliestStartTime_) || !parcel.ReadBool(read->persisted_)) {
+        WS_HILOGE("Failed to read the earliestStartTime or persisted.");
+        return false;
+    }
+    if (!parcel.ReadInt32(read->triggerType_) || !parcel.ReadInt32(read->uid_)) {
+        WS_HILOGE("Failed to read the triggerType or uid.");
+        return false;
+    }
+    uint32_t mapsize;
+    if (!parcel.ReadUint32(mapsize) || mapsize >= MAX_SIZE) {
+        WS_HILOGE("Failed to read the mapsize or mapsize is too big.");
+        return false;
+    }
+    if (!UnmarshallCondition(parcel, read, mapsize)) {
+        WS_HILOGE("Failed to read the work condition map.");
+        return false;
+    }
+    if (!parcel.ReadBool(read->isPerformanceSensitive_)) {
+        WS_HILOGE("Failed to read the isPerformanceSensitive.");
+        return false;
+    }
+    return true;
+}
+
+bool WorkInfo::ReadExtras(Parcel &parcel, WorkInfo* read)
+{
+    bool hasExtras;
+    if (!parcel.ReadBool(hasExtras)) {
+        WS_HILOGE("Failed to read the extras existence.");
+        return false;
+    }
+    if (!hasExtras) {
+        return true;
+    }
+    sptr<AAFwk::WantParams> wantParams = AAFwk::WantParams::Unmarshalling(parcel);
+    if (wantParams != nullptr) {
+        read->extras_ = std::make_shared<AAFwk::WantParams>(*wantParams);
+    }
+    return true;
 }
 
 WorkInfo* WorkInfo::Unmarshalling(Parcel &parcel)
@@ -362,45 +417,9 @@ WorkInfo* WorkInfo::Unmarshalling(Parcel &parcel)
         WS_HILOGE("read is nullptr.");
         return nullptr;
     }
-    if (!parcel.ReadInt32(read->workId_) || !parcel.ReadString(read->bundleName_) ||
-        !parcel.ReadString(read->abilityName_)) {
-        WS_HILOGE("Failed to read the workId or bundleName or abilityName.");
+    if (!ReadBaseFields(parcel, read) || !ReadExtras(parcel, read)) {
         delete read;
         return nullptr;
-    }
-    if (!parcel.ReadInt32(read->earliestStartTime_) || !parcel.ReadBool(read->persisted_)) {
-        WS_HILOGE("Failed to read the earliestStartTime or persisted.");
-        delete read;
-        return nullptr;
-    }
-    if (!parcel.ReadInt32(read->triggerType_) || !parcel.ReadInt32(read->uid_)) {
-        WS_HILOGE("Failed to read the triggerType or uid.");
-        delete read;
-        return nullptr;
-    }
-    uint32_t mapsize;
-    if (!parcel.ReadUint32(mapsize) || mapsize >= MAX_SIZE) {
-        WS_HILOGE("Failed to read the mapsize or mapsize is too big.");
-        delete read;
-        return nullptr;
-    }
-    if (!UnmarshallCondition(parcel, read, mapsize)) {
-        WS_HILOGE("Failed to read the work condition map.");
-        delete read;
-        return nullptr;
-    }
-    bool hasExtras;
-    if (!parcel.ReadBool(hasExtras)) {
-        WS_HILOGE("Failed to read the extras existence.");
-        delete read;
-        return nullptr;
-    }
-    if (!hasExtras) {
-        return read;
-    }
-    AAFwk::WantParams *wantParams = AAFwk::WantParams::Unmarshalling(parcel);
-    if (wantParams != nullptr) {
-        read->extras_ = std::make_shared<AAFwk::WantParams>(*wantParams);
     }
     return read;
 }
@@ -474,6 +493,7 @@ std::string WorkInfo::ParseToJsonStr()
     root["persisted"] = persisted_;
     root["preinstalled"] = preinstalled_;
     root["uriKey"] = uriKey_;
+    root["isPerformanceSensitive"] = isPerformanceSensitive_;
     ParseConditionToJsonStr(root);
     if (extras_) {
         nlohmann::json extras;
@@ -577,6 +597,9 @@ bool WorkInfo::ParseFromJson(const nlohmann::json &value)
     if (IsHasBoolProp(value, "callBySystemApp")) {
         this->callBySystemApp_ = value["callBySystemApp"].get<bool>();
     }
+    if (IsHasBoolProp(value, "isPerformanceSensitive")) {
+        this->isPerformanceSensitive_ = value["isPerformanceSensitive"].get<bool>();
+    }
     if (value.contains("appIndex") && value["appIndex"].is_number_integer()) {
         this->appIndex_ = value["appIndex"].get<int32_t>();
     }
@@ -605,17 +628,29 @@ bool WorkInfo::ParseElementFromJson(const nlohmann::json &value)
 
 void WorkInfo::ParseParametersFromJsonStr(const nlohmann::json &value)
 {
-    nlohmann::json extrasJson = value["parameters"];
-    nlohmann::json extrasType = value["parametersType"];
+    if (!value.is_object()) {
+        WS_HILOGE("value is not object");
+        return;
+    }
+    auto paramsIt = value.find("parameters");
+    auto typeIt = value.find("parametersType");
+    if (paramsIt == value.end() || !paramsIt->is_object() ||
+        typeIt == value.end() || !typeIt->is_object()) {
+        WS_HILOGE("invalid parameters json");
+        return;
+    }
+    const nlohmann::json &extrasJson = paramsIt.value();        // 引用，避免拷贝
+    const nlohmann::json &extrasType = typeIt.value();
     AAFwk::WantParams extras;
     int typeId = INVALID_VALUE;
     for (const auto &[key, parameter] : extrasJson.items()) {
-        if (extrasType[key].is_number_integer()) {
+        typeId = INVALID_VALUE;                                 // 每轮重置，避免脏值残留
+        if (extrasType.contains(key) && extrasType[key].is_number_integer()) {
             typeId = extrasType[key].get<int32_t>();
         }
-        if (typeId != INVALID_VALUE && extrasJson[key].is_string()) {
+        if (typeId != INVALID_VALUE && parameter.is_string()) {
             sptr<AAFwk::IInterface> exInterface = AAFwk::WantParams::GetInterfaceByType(typeId,
-                extrasJson[key].get<std::string>());
+                parameter.get<std::string>());
             extras.SetParam(key, exInterface);
         }
     }
@@ -770,6 +805,16 @@ void WorkInfo::SetTriggerType(const int32_t triggerType)
 int32_t WorkInfo::GetTriggerType() const
 {
     return triggerType_;
+}
+
+void WorkInfo::RequestPerformanceSensitive(bool isPerformanceSensitive)
+{
+    isPerformanceSensitive_ = isPerformanceSensitive;
+}
+
+bool WorkInfo::IsPerformanceSensitive() const
+{
+    return isPerformanceSensitive_;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

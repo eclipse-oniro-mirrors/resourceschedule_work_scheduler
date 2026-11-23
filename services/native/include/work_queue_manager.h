@@ -117,6 +117,7 @@ public:
      * @brief Set min interval by dump.
      */
     void SetMinIntervalByDump(int64_t interval);
+    void SetIdleTime(int32_t idleTime);
 private:
     std::vector<std::shared_ptr<WorkStatus>> GetReayQueue(WorkCondition::Type conditionType,
         std::shared_ptr<DetectorValue> conditionVal);
@@ -125,6 +126,8 @@ private:
     void PrintAllWorkStatus(WorkCondition::Type conditionType);
     void ClearTimeOutWorkStatus();
     void AsyncStopWork(std::shared_ptr<WorkStatus> workStatus);
+    void StartListener(WorkCondition::Type type);
+    void StopListener(WorkCondition::Type type);
 
 private:
     ffrt::mutex mutex_;

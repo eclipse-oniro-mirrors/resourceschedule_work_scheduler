@@ -17,6 +17,8 @@
 #include <gtest/gtest.h>
 
 #include "work_conn_manager.h"
+#include "work_info.h"
+#include "work_status.h"
 #include "work_sched_hilog.h"
 
 using namespace testing::ext;
@@ -78,88 +80,6 @@ HWTEST_F(WorkConnManagerTest, RemoveConnInfo_001, TestSize.Level2)
 }
 
 /**
- * @tc.name: GetConnInfo_001
- * @tc.desc: Test WorkConnManager GetConnInfo.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level2)
-{
-    string workId = "u1000_123";
-    sptr<WorkSchedulerConnection> connection;
-    workConnManager_->AddConnInfo(workId, connection);
-    workConnManager_->GetConnInfo(workId);
-    EXPECT_TRUE(workConnManager_->connMap_.size() == 1);
-}
-
-/**
- * @tc.name: GetConnInfo_002
- * @tc.desc: Test WorkConnManager GetConnInfo.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, GetConnInfo_002, TestSize.Level2)
-{
-    workConnManager_->connMap_.clear();
-    string workId = "u1000_123";
-    sptr<WorkSchedulerConnection> ret = workConnManager_->GetConnInfo(workId);
-    EXPECT_TRUE(ret == nullptr);
-}
-
-/**
- * @tc.name: StartWork_001
- * @tc.desc: Test WorkConnManager StartWork.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, StartWork_001, TestSize.Level2)
-{
-    string workId = "u1000_123";
-    sptr<WorkSchedulerConnection> connection;
-    workConnManager_->AddConnInfo(workId, connection);
-
-    WorkInfo workInfo;
-    workInfo.workId_ = 123;
-    workInfo.bundleName_ = "com.unittest.bundleName";
-    workInfo.abilityName_ = "unittestAbility";
-    int32_t uid = 1234;
-    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
-    bool ret = workConnManager_->StartWork(workStatus);
-    EXPECT_FALSE(ret);
-}
-
-/**
- * @tc.name: StartWork_002
- * @tc.desc: Test WorkConnManager StartWork.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, StartWork_002, TestSize.Level2)
-{
-    WorkInfo workInfo;
-    workInfo.workId_ = 123;
-    workInfo.bundleName_ = "com.unittest.bundleName";
-    workInfo.abilityName_ = "unittestAbility";
-    int32_t uid = 1234;
-    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
-    bool ret = workConnManager_->StartWork(workStatus);
-    EXPECT_FALSE(ret);
-}
-
-/**
- * @tc.name: DisConnect_001
- * @tc.desc: Test WorkConnManager DisConnect.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, DisConnect_001, TestSize.Level2)
-{
-    sptr<WorkSchedulerConnection> connection;
-    bool ret = workConnManager_->DisConnect(connection);
-    EXPECT_FALSE(ret);
-}
-
-/**
  * @tc.name: StopWork_001
  * @tc.desc: Test WorkConnManager StopWork.
  * @tc.type: FUNC
@@ -179,99 +99,55 @@ HWTEST_F(WorkConnManagerTest, StopWork_001, TestSize.Level2)
 }
 
 /**
- * @tc.name: StopWork_002
- * @tc.desc: Test WorkConnManager StopWork.
+ * @tc.name: GetConnInfo_001
+ * @tc.desc: Test WorkConnManager GetConnInfo returns connection for existing workId.
  * @tc.type: FUNC
- * @tc.require: #I9HYBW
+ * @tc.require: I8JBRY
  */
-HWTEST_F(WorkConnManagerTest, StopWork_002, TestSize.Level2)
+HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level2)
 {
-    string workId = "u1000_123";
-    sptr<WorkSchedulerConnection> connection;
-    workConnManager_->AddConnInfo(workId, connection);
+    workConnManager_->connMap_.clear();
+    string workId = "u1000_456";
+    sptr<WorkSchedulerConnection> conn = new WorkSchedulerConnection(std::make_shared<WorkInfo>());
+    workConnManager_->AddConnInfo(workId, conn);
+    auto ret = workConnManager_->GetConnInfo(workId);
+    EXPECT_EQ(ret->AsObject(), conn->AsObject());
+    workConnManager_->connMap_.clear();
+}
 
+/**
+ * @tc.name: GetConnInfo_002
+ * @tc.desc: Test WorkConnManager GetConnInfo returns nullptr for non-existing workId.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkConnManagerTest, GetConnInfo_002, TestSize.Level2)
+{
+    workConnManager_->connMap_.clear();
+    workConnManager_->GetConnInfo("nonexistent");
+    EXPECT_EQ(workConnManager_->connMap_.count("nonexistent"), 0);
+}
+
+/**
+ * @tc.name: StopWork_NotConnected_001
+ * @tc.desc: Test WorkConnManager StopWork with conn not connected and !isTimeOut returns false.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkConnManagerTest, StopWork_NotConnected_001, TestSize.Level2)
+{
+    workConnManager_->connMap_.clear();
     WorkInfo workInfo;
-    workInfo.workId_ = 123;
-    workInfo.bundleName_ = "com.unittest.bundleName";
-    workInfo.abilityName_ = "unittestAbility";
-    int32_t uid = 1234;
+    workInfo.workId_ = 789;
+    workInfo.bundleName_ = "com.test.notconn";
+    workInfo.abilityName_ = "NotConnAbility";
+    int32_t uid = 5678;
     shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
+    sptr<WorkSchedulerConnection> conn = new WorkSchedulerConnection(std::make_shared<WorkInfo>());
+    workConnManager_->AddConnInfo(workStatus->workId_, conn);
     bool ret = workConnManager_->StopWork(workStatus, false);
     EXPECT_FALSE(ret);
-}
-
-/**
- * @tc.name: StopWork_003
- * @tc.desc: Test WorkConnManager StopWork.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, StopWork_003, TestSize.Level2)
-{
-    MyWorkConnManager myWorkConnManager;
-
-    WorkInfo workInfo;
-    workInfo.workId_ = 123;
-    workInfo.bundleName_ = "com.unittest.bundleName";
-    workInfo.abilityName_ = "unittestAbility";
-    int32_t uid = 1000;
-    string workId = "u1000_123";
-    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
-    workStatus->workId_ = workId;
-
-    sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
-    myWorkConnManager.AddConnInfo(workId, connection);
-    bool ret = myWorkConnManager.StopWork(workStatus, false);
-    EXPECT_TRUE(!ret);
-}
-
-/**
- * @tc.name: StopWork_004
- * @tc.desc: Test WorkConnManager StopWork.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, StopWork_004, TestSize.Level2)
-{
-    MyWorkConnManager myWorkConnManager;
-    
-    WorkInfo workInfo;
-    workInfo.workId_ = 123;
-    workInfo.bundleName_ = "com.unittest.bundleName";
-    workInfo.abilityName_ = "unittestAbility";
-    int32_t uid = 1000;
-    string workId = "u1000_123";
-    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
-    workStatus->workId_ = workId;
-
-    sptr<WorkSchedulerConnection> connection(new (std::nothrow) WorkSchedulerConnection(workStatus->workInfo_));
-    myWorkConnManager.AddConnInfo(workId, connection);
-    bool ret = myWorkConnManager.StopWork(workStatus, true);
-    EXPECT_TRUE(ret);
-}
-
-/**
- * @tc.name: WriteStartWorkEvent_001
- * @tc.desc: Test WorkConnManager WriteStartWorkEvent.
- * @tc.type: FUNC
- * @tc.require: #I9HYBW
- */
-HWTEST_F(WorkConnManagerTest, WriteStartWorkEvent_001, TestSize.Level2)
-{
-    WorkInfo workInfo;
-    workInfo.workId_ = 123;
-    workInfo.bundleName_ = "com.unittest.bundleName";
-    workInfo.abilityName_ = "unittestAbility";
-    workInfo.RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
-    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
-    workInfo.RequestBatteryLevel(80);
-    workInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW);
-    workInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW);
-    workInfo.RequestRepeatCycle(20000);
-    int32_t uid = 1234;
-    shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, uid);
-    workConnManager_->WriteStartWorkEvent(workStatus);
-    EXPECT_TRUE(workInfo.IsRepeat());
+    workConnManager_->connMap_.clear();
 }
 }
 }

@@ -24,8 +24,9 @@ namespace OHOS {
 namespace WorkScheduler {
 class AbilityConnectCallback : public OHOS::AAFwk::AbilityConnectionStub {
 public:
-    AbilityConnectCallback(const std::string& bundleName, const std::string&abilityName, int32_t appIndex)
-        : bundleName_(bundleName), abilityName_(abilityName), appIndex_(appIndex) {}
+    AbilityConnectCallback(const std::string& bundleName, const std::string&abilityName,
+        int32_t appIndex, int32_t uid)
+        : bundleName_(bundleName), abilityName_(abilityName), appIndex_(appIndex), uid_(uid) {}
     virtual ~AbilityConnectCallback() = default;
     void OnAbilityConnectDone(
         const OHOS::AppExecFwk::ElementName& element, const OHOS::sptr<IRemoteObject>& remoteObject,
@@ -35,6 +36,7 @@ private:
     std::string bundleName_;
     std::string abilityName_;
     int32_t appIndex_;
+    int32_t uid_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

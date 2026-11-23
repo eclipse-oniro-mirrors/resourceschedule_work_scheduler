@@ -41,6 +41,7 @@
           "device_standby",
           "device_usage_statistics",
           "access_token",
+          "audio_framework",
           "netmanager_base",
           "time_service",
           "init",
@@ -52,10 +53,12 @@
           "power_manager",
           "resource_schedule_service",
           "runtime_core",
+          "sqlite",
           "ets_frontend",
           "taihe_ffi_gen",
           "node",
-          "libuv"
+          "libuv",
+          "bounds_checking_function"
         ]
       },
       "build": {

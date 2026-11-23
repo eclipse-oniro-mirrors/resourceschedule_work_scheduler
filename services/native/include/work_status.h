@@ -20,6 +20,7 @@
 #include <string>
 #include <map>
 #include <mutex>
+#include <vector>
 
 #include "timer.h"
 #include "work_info.h"
@@ -55,10 +56,6 @@ public:
     std::string abilityName_;
     int32_t uid_;
     int32_t userId_;
-    uint64_t workStartTime_ {0};
-    uint64_t workWatchDogTime_ {0};
-    uint64_t duration_ {0};
-    bool paused_ {false};
     bool persisted_;
     int32_t priority_;
     bool needRetrigger_ {false};
@@ -176,6 +173,10 @@ public:
      */
     static void ClearUidLastTimeMap(int32_t uid);
     /**
+     * @brief Get high priority last time by uid.
+     */
+    static bool GetPerformanceSensitiveLastTime(int32_t uid, time_t &lastTime);
+    /**
      * @brief Set min interval by dump.
      */
     void SetMinIntervalByDump(int64_t interval);
@@ -221,17 +222,34 @@ public:
     double TimeUntilLast();
     bool IsDebugTask();
     void SetDebugTask(bool debugTask);
+    uint64_t GetWorkStartTime() const;
+    uint64_t GetWorkWatchDogTime() const;
+    uint64_t GetDuration() const;
+    void SetWorkStartTime(uint64_t time);
+    void SetWorkWatchDogTime(uint64_t time);
+    void SetDuration(uint64_t duration);
+    void AddDuration(uint64_t delta);
+    void SetPaused(bool paused);
+    void ResetRunningFields();
+    void InitRunningFields(uint64_t startTime, uint64_t watchdogTime);
+    uint64_t PauseRunning(uint64_t currentTime);
+    void ResumeRunning(uint64_t currentTime);
+    bool IsCurrentMode();
+    void StartHighPerfTimer();
+    void StopHighPerfTimer(const std::vector<std::shared_ptr<WorkStatus>> &runningWorks);
+    static uint64_t GetHighPerfDuration();
+    static void SetHighPerfDuration(uint64_t duration);
+    static uint64_t GetLastHighPerfEndTime();
+    bool MarkRunningIfConditionReady();
+
 private:
-    Status currentStatus_;
-    time_t baseTime_;
-    int64_t minInterval_;
-    bool groupChanged_;
-    ffrt::mutex conditionMapMutex_;
-    static ffrt::mutex s_uid_last_time_mutex;
-    static std::map<int32_t, time_t> s_uid_last_time_map;
-    std::string conditionStatus_;
-    std::atomic<bool> timeout_ {false};
-    std::atomic<bool> debugTask_ {false};
+    struct HighPerfTimerState {
+        uint64_t startTime {0};
+        uint64_t duration {0};
+        uint64_t lastEndTime {0};
+    };
+    static int32_t GetDumpAppGroup(int32_t uid);
+    static bool GetUidLastTime(int32_t uid, time_t &lastTime);
     void MarkTimeout();
     bool IsSameUser();
     bool SetMinInterval();
@@ -242,12 +260,33 @@ private:
     int GetPriority();
     bool IsTimerReady(WorkCondition::Type type);
     bool IsConditionReady();
+    bool IsPerformanceSensitiveReady();
+    bool IsMinIntervalReady();
     bool IsStandbyExemption();
     bool CheckEarliestStartTime();
     int64_t HandleMinInterval(int64_t interval, int32_t group);
-    static int32_t GetDumpAppGroup(int32_t uid);
-    static ffrt::mutex dumpAppGroupMutex_;
+    static bool IsSameDay(uint64_t currentTimeMs, uint64_t lastTimeMs);
+    void ReportDelayTaskPerf(int32_t uid, int32_t type);
+
+private:
+    static ffrt::mutex mutex_;
+    static std::map<int32_t, time_t> s_uid_last_time_map;
+    static std::map<int32_t, time_t> performanceSensitiveLastTimeMap_;
+    static HighPerfTimerState highPerfState_;
     static std::map<int32_t, int32_t> dumpAppGroupMap_;
+    bool groupChanged_;
+    std::atomic<bool> timeout_ {false};
+    std::atomic<bool> debugTask_ {false};
+    Status currentStatus_;
+    time_t baseTime_;
+    int64_t minInterval_;
+    ffrt::mutex conditionMapMutex_;
+    std::string conditionStatus_;
+    uint64_t workStartTime_ {0};
+    uint64_t workWatchDogTime_ {0};
+    uint64_t duration_ {0};
+    bool paused_ {false};
+    mutable ffrt::shared_mutex statusMutex_;
 };
 } // namespace WorkScheduler
 } // namespace OHOS
