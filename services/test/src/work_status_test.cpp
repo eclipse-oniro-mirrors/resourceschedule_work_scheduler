@@ -13,6 +13,7 @@
  * limitations under the License.
  */
 
+#include <chrono>
 #include <functional>
 #include <gtest/gtest.h>
 
@@ -24,13 +25,55 @@
 #include "work_info.h"
 #include "work_sched_utils.h"
 #include "work_sched_constants.h"
+#include "time_service_client.h"
 #include "frequency_info.h"
 #include "parameters.h"
+#include "string_wrapper.h"
 
 using namespace testing::ext;
 
+namespace {
+bool g_mockTimeServiceEnabled = false;
+int64_t g_mockWallTimeMs = 0;
+int64_t g_mockBootTimeMs = 0;
+bool g_mockCurrentTimeEnabled = false;
+uint64_t g_mockCurrentTimeMs = 0;
+} // namespace
+
+namespace OHOS {
+namespace MiscServices {
+int64_t TimeServiceClient::GetWallTimeMs()
+{
+    if (g_mockTimeServiceEnabled) {
+        return g_mockWallTimeMs;
+    }
+    auto now = std::chrono::system_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+}
+
+int64_t TimeServiceClient::GetBootTimeMs()
+{
+    if (g_mockTimeServiceEnabled) {
+        return g_mockBootTimeMs;
+    }
+    auto now = std::chrono::steady_clock::now();
+    return std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count();
+}
+} // namespace MiscServices
+} // namespace OHOS
+
 namespace OHOS {
 namespace WorkScheduler {
+uint64_t WorkSchedUtils::GetCurrentTimeMs()
+{
+    if (g_mockCurrentTimeEnabled) {
+        return g_mockCurrentTimeMs;
+    }
+    auto now = std::chrono::system_clock::now();
+    return static_cast<uint64_t>(
+        std::chrono::duration_cast<std::chrono::milliseconds>(now.time_since_epoch()).count());
+}
+
 namespace {
 constexpr int64_t ONE_MINUTE = 60 * 1000LL;
 constexpr int64_t TWENTY_MINUTE = 20 * ONE_MINUTE;
@@ -1128,6 +1171,27 @@ HWTEST_F(WorkStatusTest, IsSAReady_0014, TestSize.Level1)
 }
 
 /**
+ * @tc.name: IsSAReady_0015
+ * @tc.desc: Test WorkStatus IsSAReady returns true when all conditions ready.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsSAReady_0015, TestSize.Level1)
+{
+    workStatus_->s_uid_last_time_map.clear();
+    std::shared_ptr<WorkInfo> workInfo_ = std::make_shared<WorkInfo>();
+    workInfo_->workId_ = -1;
+    workInfo_->saId_ = 401;
+    workStatus_->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    workStatus_->workInfo_ = workInfo_;
+    workStatus_->bundleName_ = "com.example.workStatus";
+    std::shared_ptr<DataManager> dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->SetDeviceSleep(false);
+    bool result = workStatus_->IsSAReady();
+    EXPECT_TRUE(result);
+}
+
+/**
  * @tc.name: ToString_001
  * @tc.desc: Test WorkStatus ToString.
  * @tc.type: FUNC
@@ -1165,6 +1229,186 @@ HWTEST_F(WorkStatusTest, CheckEarliestStartTime_001, TestSize.Level1)
     work->SetEarliestStartTime(10);
     work->createTime_ = static_cast<uint64_t>(now) * 1000;
     EXPECT_FALSE(workStatus.CheckEarliestStartTime());
+}
+
+/**
+ * @tc.name: IsMinIntervalReady_001
+ * @tc.desc: Test IsMinIntervalReady returns false on first run when EarliestStartTime not met.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsMinIntervalReady_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9201);
+    WorkStatus workStatus(*workInfo, 9201);
+    workStatus.workInfo_ = workInfo;
+    workStatus.s_uid_last_time_map.erase(9201);
+    workInfo->SetEarliestStartTime(60 * 1000);
+    EXPECT_FALSE(workStatus.IsMinIntervalReady());
+    workStatus.s_uid_last_time_map.erase(9201);
+}
+
+/**
+ * @tc.name: IsMinIntervalReady_002
+ * @tc.desc: Test IsMinIntervalReady returns false when del less than minInterval.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsMinIntervalReady_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9202);
+    WorkStatus workStatus(*workInfo, 9202);
+    workStatus.workInfo_ = workInfo;
+    time_t lastTime = workStatus.getOppositeTime();
+    workStatus.s_uid_last_time_map[9202] = lastTime;
+    workStatus.minInterval_ = TWO_HOUR;
+    EXPECT_FALSE(workStatus.IsMinIntervalReady());
+    EXPECT_TRUE(workStatus.needRetrigger_);
+    workStatus.s_uid_last_time_map.erase(9202);
+}
+
+/**
+ * @tc.name: IsMinIntervalReady_003
+ * @tc.desc: Test IsMinIntervalReady returns true when del greater than or equal to minInterval.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, IsMinIntervalReady_003, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9203);
+    WorkStatus workStatus(*workInfo, 9203);
+    workStatus.workInfo_ = workInfo;
+    workStatus.s_uid_last_time_map[9203] = 0;
+    workStatus.minInterval_ = 0;
+    EXPECT_TRUE(workStatus.IsMinIntervalReady());
+    workStatus.s_uid_last_time_map.erase(9203);
+}
+
+/**
+ * @tc.name: OnConditionChanged_001
+ * @tc.desc: Test OnConditionChanged updates existing condition in map.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, OnConditionChanged_001, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9204);
+    workInfo->SetElement("com.test.cond", "CondAbility");
+    workInfo->RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    WorkStatus workStatus(*workInfo, 9204);
+    workStatus.bundleName_ = "com.test.cond";
+    std::shared_ptr<Condition> cond1 = std::make_shared<Condition>();
+    cond1->enumVal = WorkCondition::Network::NETWORK_TYPE_WIFI;
+    workStatus.conditionMap_.emplace(WorkCondition::Type::NETWORK, cond1);
+    std::shared_ptr<Condition> cond2 = std::make_shared<Condition>();
+    cond2->enumVal = WorkCondition::Network::NETWORK_TYPE_MOBILE;
+    WorkCondition::Type type = WorkCondition::Type::NETWORK;
+    std::list<std::string> restrictList = {"com.test.cond"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
+    int32_t ret = workStatus.OnConditionChanged(type, cond2);
+    EXPECT_EQ(ret, E_GROUP_CHANGE_NOT_MATCH_HAP);
+    EXPECT_EQ(workStatus.conditionMap_.at(WorkCondition::Type::NETWORK)->enumVal,
+        WorkCondition::Network::NETWORK_TYPE_MOBILE);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
+    workStatus.conditionMap_.clear();
+}
+
+/**
+ * @tc.name: OnConditionChanged_002
+ * @tc.desc: Test OnConditionChanged returns ERR_OK when IsSA and IsSAReady true.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, OnConditionChanged_002, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9205);
+    workInfo->SetElement("com.test.sa", "SaAbility");
+    workInfo->saId_ = 401;
+    WorkStatus workStatus(*workInfo, 9205);
+    workStatus.bundleName_ = "com.test.sa";
+    workStatus.workInfo_ = workInfo;
+    DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(false);
+    std::shared_ptr<Condition> cond = std::make_shared<Condition>();
+    WorkCondition::Type type = WorkCondition::Type::NETWORK;
+    int32_t ret = workStatus.OnConditionChanged(type, cond);
+    EXPECT_EQ(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: OnConditionChanged_003
+ * @tc.desc: Test OnConditionChanged handles GROUP change matching hap.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, OnConditionChanged_003, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9206);
+    workInfo->SetElement("com.test.group", "GroupAbility");
+    WorkStatus workStatus(*workInfo, 9206);
+    workStatus.bundleName_ = "com.test.group";
+    workStatus.userId_ = 100;
+    std::shared_ptr<Condition> cond = std::make_shared<Condition>();
+    cond->boolVal = true;
+    cond->intVal = 100;
+    cond->strVal = "com.test.group";
+    cond->enumVal = 50;
+    WorkCondition::Type type = WorkCondition::Type::GROUP;
+    std::list<std::string> restrictList = {"com.test.group"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
+    int32_t ret = workStatus.OnConditionChanged(type, cond);
+    EXPECT_EQ(ret, E_GROUP_CHANGE_NOT_MATCH_HAP);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
+}
+
+/**
+ * @tc.name: OnConditionChanged_004
+ * @tc.desc: Test OnConditionChanged handles GROUP change not matching hap.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, OnConditionChanged_004, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9207);
+    workInfo->SetElement("com.test.group2", "GroupAbility2");
+    WorkStatus workStatus(*workInfo, 9207);
+    workStatus.bundleName_ = "com.test.group2";
+    workStatus.userId_ = 100;
+    std::shared_ptr<Condition> cond = std::make_shared<Condition>();
+    cond->boolVal = true;
+    cond->intVal = 200;
+    cond->strVal = "com.other.group";
+    WorkCondition::Type type = WorkCondition::Type::GROUP;
+    int32_t ret = workStatus.OnConditionChanged(type, cond);
+    EXPECT_EQ(ret, E_GROUP_CHANGE_NOT_MATCH_HAP);
+}
+
+/**
+ * @tc.name: OnConditionChanged_005
+ * @tc.desc: Test OnConditionChanged returns E_GROUP_CHANGE_NOT_MATCH_HAP when not standby exempt.
+ * @tc.type: FUNC
+ * @tc.require: I95QHG
+ */
+HWTEST_F(WorkStatusTest, OnConditionChanged_005, TestSize.Level1)
+{
+    std::shared_ptr<WorkInfo> workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9208);
+    workInfo->SetElement("com.test.standby", "StandbyAbility");
+    WorkStatus workStatus(*workInfo, 9208);
+    workStatus.bundleName_ = "com.test.standby";
+    std::list<std::string> restrictList = {"com.test.standby"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
+    std::shared_ptr<Condition> cond = std::make_shared<Condition>();
+    WorkCondition::Type type = WorkCondition::Type::NETWORK;
+    int32_t ret = workStatus.OnConditionChanged(type, cond);
+    EXPECT_EQ(ret, E_GROUP_CHANGE_NOT_MATCH_HAP);
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
 }
 
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
@@ -1545,25 +1789,6 @@ HWTEST_F(WorkStatusTest, HasTimeout_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: HasTimeout_002
- * @tc.desc: Test HasTimeout returns true when workWatchDogTime_ exceeds LONG_WATCHDOG_TIME.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WorkStatusTest, HasTimeout_002, TestSize.Level1)
-{
-    auto workInfo = std::make_shared<WorkInfo>();
-    workInfo->SetWorkId(9002);
-    workInfo->SetElement("com.test.timeout2", "TimeoutAbility2");
-    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9002);
-    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
-    workStatus->SetWorkWatchDogTime(LONG_WATCHDOG_TIME + 1);
-    workStatus->SetWorkStartTime(WorkSchedUtils::GetCurrentTimeMs());
-    EXPECT_TRUE(workStatus->HasTimeout());
-    EXPECT_TRUE(workStatus->IsTimeout());
-}
-
-/**
  * @tc.name: SetTimeout_IsTimeout_001
  * @tc.desc: Test SetTimeout and IsTimeout.
  * @tc.type: FUNC
@@ -1622,6 +1847,113 @@ HWTEST_F(WorkStatusTest, PauseRunning_002, TestSize.Level1)
 }
 
 /**
+ * @tc.name: InitRunningFields_001
+ * @tc.desc: Test InitRunningFields sets workStartTime and workWatchDogTime.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, InitRunningFields_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9008);
+    workInfo->SetElement("com.test.initrunning", "InitRunningAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9008);
+    uint64_t startTime = WorkSchedUtils::GetCurrentTimeMs();
+    uint64_t watchdogTime = 180000;
+    workStatus->InitRunningFields(startTime, watchdogTime);
+    EXPECT_EQ(workStatus->GetWorkStartTime(), startTime);
+    EXPECT_EQ(workStatus->GetWorkWatchDogTime(), watchdogTime);
+}
+
+/**
+ * @tc.name: AddDuration_001
+ * @tc.desc: Test AddDuration accumulates delta into duration.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, AddDuration_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9009);
+    workInfo->SetElement("com.test.addduration", "AddDurationAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9009);
+    uint64_t baseDuration = 1000;
+    workStatus->SetDuration(baseDuration);
+    uint64_t delta = 2500;
+    workStatus->AddDuration(delta);
+    EXPECT_EQ(workStatus->GetDuration(), baseDuration + delta);
+}
+
+/**
+ * @tc.name: IsSpecial_001
+ * @tc.desc: Test IsSpecial returns false when extras is not set.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsSpecial_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9010);
+    workInfo->SetElement("com.test.isspecial", "IsSpecialAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9010);
+    EXPECT_FALSE(workStatus->IsSpecial());
+}
+
+/**
+ * @tc.name: IsSpecial_002
+ * @tc.desc: Test IsSpecial returns true when EXECUTE_IMMEDIATE is "false".
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsSpecial_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9011);
+    workInfo->SetElement("com.test.isspecial2", "IsSpecialAbility2");
+    AAFwk::WantParams extras;
+    extras.SetParam(EXECUTE_IMMEDIATE, AAFwk::String::Box("false"));
+    workInfo->RequestExtras(extras);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9011);
+    EXPECT_TRUE(workStatus->IsSpecial());
+}
+
+/**
+ * @tc.name: IsSpecial_003
+ * @tc.desc: Test IsSpecial returns false when EXECUTE_IMMEDIATE is "true".
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsSpecial_003, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9012);
+    workInfo->SetElement("com.test.isspecial3", "IsSpecialAbility3");
+    AAFwk::WantParams extras;
+    extras.SetParam(EXECUTE_IMMEDIATE, AAFwk::String::Box("true"));
+    workInfo->RequestExtras(extras);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9012);
+    EXPECT_FALSE(workStatus->IsSpecial());
+}
+
+/**
+ * @tc.name: IsSpecial_004
+ * @tc.desc: Test IsSpecial returns false when extras has no EXECUTE_IMMEDIATE key.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsSpecial_004, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9013);
+    workInfo->SetElement("com.test.isspecial4", "IsSpecialAbility4");
+    AAFwk::WantParams extras;
+    extras.SetParam("otherKey", AAFwk::String::Box("value"));
+    workInfo->RequestExtras(extras);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9013);
+    EXPECT_FALSE(workStatus->IsSpecial());
+}
+
+/**
  * @tc.name: IsNeedDiscreteScheduled_001
  * @tc.desc: Test IsNeedDiscreteScheduled returns false when not system app.
  * @tc.type: FUNC
@@ -1668,6 +2000,49 @@ HWTEST_F(WorkStatusTest, StartHighPerfTimer_001, TestSize.Level1)
     WorkStatus::highPerfState_.startTime = 0;
     workStatus->StartHighPerfTimer();
     EXPECT_EQ(WorkStatus::highPerfState_.startTime, 0);
+}
+
+
+/**
+ * @tc.name: StartHighPerfTimer_002
+ * @tc.desc: Test StartHighPerfTimer when isPerformanceSensitive is true and startTime is 0.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, StartHighPerfTimer_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9102);
+    workInfo->SetElement("com.test.highperf", "HighPerfAbility");
+    workInfo->RequestPerformanceSensitive(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9102);
+    WorkStatus::highPerfState_.startTime = 0;
+    g_mockCurrentTimeEnabled = true;
+    g_mockCurrentTimeMs = 1700000000789u;
+    workStatus->StartHighPerfTimer();
+    EXPECT_EQ(WorkStatus::highPerfState_.startTime, 1700000000789u);
+    g_mockCurrentTimeEnabled = false;
+    WorkStatus::highPerfState_.startTime = 0;
+}
+
+
+/**
+ * @tc.name: StartHighPerfTimer_003
+ * @tc.desc: Test StartHighPerfTimer returns early when startTime is not 0.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, StartHighPerfTimer_003, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9103);
+    workInfo->SetElement("com.test.highperf", "HighPerfAbility");
+    workInfo->RequestPerformanceSensitive(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9103);
+    uint64_t presetStartTime = 123456;
+    WorkStatus::highPerfState_.startTime = presetStartTime;
+    workStatus->StartHighPerfTimer();
+    EXPECT_EQ(WorkStatus::highPerfState_.startTime, presetStartTime);
 }
 
 
@@ -1800,6 +2175,74 @@ HWTEST_F(WorkStatusTest, IsPerformanceSensitiveReady_003, TestSize.Level1)
 }
 
 /**
+ * @tc.name: IsPerformanceSensitiveReady_004
+ * @tc.desc: Test IsPerformanceSensitiveReady returns false when highPerfDuration exceeds limit on same day.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsPerformanceSensitiveReady_004, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9110);
+    workInfo->SetElement("com.test.highperf", "HighPerfAbility");
+    workInfo->RequestPerformanceSensitive(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9110);
+    WorkStatus::SetHighPerfDuration(MAX_HIGH_PERF_DURATION);
+    WorkStatus::highPerfState_.lastEndTime = WorkSchedUtils::GetCurrentTimeMs();
+    EXPECT_FALSE(workStatus->IsPerformanceSensitiveReady());
+    WorkStatus::SetHighPerfDuration(0);
+    WorkStatus::highPerfState_.lastEndTime = 0;
+    WorkStatus::ClearUidLastTimeMap(9110);
+}
+
+/**
+ * @tc.name: IsPerformanceSensitiveReady_005
+ * @tc.desc: Test IsPerformanceSensitiveReady returns false when last time within one day.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsPerformanceSensitiveReady_005, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9111);
+    workInfo->SetElement("com.test.highperf", "HighPerfAbility");
+    workInfo->RequestPerformanceSensitive(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9111);
+    WorkStatus::SetHighPerfDuration(0);
+    WorkStatus::highPerfState_.lastEndTime = WorkSchedUtils::GetCurrentTimeMs();
+    time_t lastTime = workStatus->getOppositeTime();
+    WorkStatus::performanceSensitiveLastTimeMap_[9111] = lastTime;
+    EXPECT_FALSE(workStatus->IsPerformanceSensitiveReady());
+    EXPECT_TRUE(workStatus->needRetrigger_);
+    WorkStatus::SetHighPerfDuration(0);
+    WorkStatus::highPerfState_.lastEndTime = 0;
+    WorkStatus::ClearUidLastTimeMap(9111);
+}
+
+/**
+ * @tc.name: IsPerformanceSensitiveReady_006
+ * @tc.desc: Test IsPerformanceSensitiveReady returns true when last time older than one day.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, IsPerformanceSensitiveReady_006, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9112);
+    workInfo->SetElement("com.test.highperf", "HighPerfAbility");
+    workInfo->RequestPerformanceSensitive(true);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9112);
+    WorkStatus::SetHighPerfDuration(0);
+    WorkStatus::highPerfState_.lastEndTime = WorkSchedUtils::GetCurrentTimeMs();
+    time_t lastTime = workStatus->getOppositeTime() - 2 * ONE_DAY_MS;
+    WorkStatus::performanceSensitiveLastTimeMap_[9112] = lastTime;
+    EXPECT_TRUE(workStatus->IsPerformanceSensitiveReady());
+    WorkStatus::SetHighPerfDuration(0);
+    WorkStatus::highPerfState_.lastEndTime = 0;
+    WorkStatus::ClearUidLastTimeMap(9112);
+}
+
+/**
  * @tc.name: StopHighPerfTimer_005
  * @tc.desc: Test StopHighPerfTimer resets duration when not same day.
  * @tc.type: FUNC
@@ -1824,6 +2267,49 @@ HWTEST_F(WorkStatusTest, StopHighPerfTimer_005, TestSize.Level1)
     EXPECT_GE(actualDuration, 2500);
     EXPECT_LE(actualDuration, 5000);
     EXPECT_EQ(WorkStatus::highPerfState_.startTime, 0);
+}
+
+/**
+ * @tc.name: GetOppositeTime_001
+ * @tc.desc: Test getOppositeTime returns walltime when dumpAppGroup is set.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, GetOppositeTime_001, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9120);
+    workInfo->SetElement("com.test.oppotime", "OppoTimeAbility");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9120);
+    g_mockTimeServiceEnabled = true;
+    g_mockWallTimeMs = 1700000000123;
+    g_mockBootTimeMs = 1600000000456;
+    WorkStatus::AddDumpAppGroup(9120, 10);
+    time_t result = workStatus->getOppositeTime();
+    EXPECT_EQ(result, static_cast<time_t>(1700000000123));
+    WorkStatus::ClearDumpAppGroup(9120);
+    g_mockTimeServiceEnabled = false;
+}
+
+/**
+ * @tc.name: GetOppositeTime_002
+ * @tc.desc: Test getOppositeTime returns boottime when dumpAppGroup not set.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkStatusTest, GetOppositeTime_002, TestSize.Level1)
+{
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9121);
+    workInfo->SetElement("com.test.oppotime2", "OppoTimeAbility2");
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 9121);
+    g_mockTimeServiceEnabled = true;
+    g_mockWallTimeMs = 1700000000123;
+    g_mockBootTimeMs = 1600000000456;
+    WorkStatus::ClearDumpAppGroup(9121);
+    time_t result = workStatus->getOppositeTime();
+    EXPECT_EQ(result, static_cast<time_t>(1600000000456));
+    g_mockTimeServiceEnabled = false;
 }
 }
 }

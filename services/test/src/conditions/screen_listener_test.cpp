@@ -26,8 +26,45 @@
 #include "work_sched_hilog.h"
 #include "work_sched_constants.h"
 #include "work_event_handler.h"
+#include "time_service_client.h"
 
 using namespace testing::ext;
+
+namespace {
+uint64_t g_mockCreateTimerId = 0;
+int32_t g_mockCreateTimerCallCount = 0;
+bool g_mockStopTimerResult = true;
+bool g_mockDestroyTimerResult = true;
+int32_t g_mockStopTimerCallCount = 0;
+int32_t g_mockDestroyTimerCallCount = 0;
+} // namespace
+
+namespace OHOS {
+namespace MiscServices {
+uint64_t TimeServiceClient::CreateTimer(std::shared_ptr<ITimerInfo> timerOptions)
+{
+    g_mockCreateTimerCallCount++;
+    return g_mockCreateTimerId;
+}
+
+bool TimeServiceClient::StartTimer(uint64_t timerId, uint64_t triggerTime)
+{
+    return true;
+}
+
+bool TimeServiceClient::StopTimer(uint64_t timerId)
+{
+    g_mockStopTimerCallCount++;
+    return g_mockStopTimerResult;
+}
+
+bool TimeServiceClient::DestroyTimer(uint64_t timerId)
+{
+    g_mockDestroyTimerCallCount++;
+    return g_mockDestroyTimerResult;
+}
+} // namespace MiscServices
+} // namespace OHOS
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -225,6 +262,126 @@ HWTEST_F(ScreenListenerTest, OnReceiveEvent_InvalidAction_001, TestSize.Level1)
     auto data = BuildScreenEvent("invalid.action");
     subscriber_->OnReceiveEvent(data);
     EXPECT_EQ(testListener_->callCount_, 0);
+}
+
+/**
+ * @tc.name: StartTimer_001
+ * @tc.desc: Test ScreenListener StartTimer with empty saIdTimeInfoMap creates no timer.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    g_mockCreateTimerCallCount = 0;
+    listener->StartTimer();
+    EXPECT_EQ(g_mockCreateTimerCallCount, 0);
+    EXPECT_TRUE(listener->saIdTimeInfoMap_.empty());
+}
+
+/**
+ * @tc.name: StartTimer_002
+ * @tc.desc: Test ScreenListener StartTimer with DEFAULT_SA_ID entry creates a timer and stores its id.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_002, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[DEFAULT_SA_ID] = ScreenListener::SaTimerInfo(30000, 100);
+    g_mockCreateTimerCallCount = 0;
+    g_mockCreateTimerId = 123;
+    listener->StartTimer();
+    EXPECT_EQ(g_mockCreateTimerCallCount, 1);
+    EXPECT_EQ(listener->saIdTimeInfoMap_[DEFAULT_SA_ID].timerId_, 123u);
+    g_mockCreateTimerId = 0;
+}
+
+/**
+ * @tc.name: StartTimer_003
+ * @tc.desc: Test ScreenListener StartTimer skips when timer already exists.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_003, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[DEFAULT_SA_ID] = ScreenListener::SaTimerInfo(30000, 100);
+    listener->saIdTimeInfoMap_[DEFAULT_SA_ID].timerId_ = 999;
+    listener->StartTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_[DEFAULT_SA_ID].timerId_, 999);
+}
+
+/**
+ * @tc.name: StartTimer_004
+ * @tc.desc: Test ScreenListener StartTimer with null service_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StartTimer_004, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(nullptr);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 200);
+    listener->StartTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_[100].timerId_, 0);
+}
+
+/**
+ * @tc.name: StopTimer_001
+ * @tc.desc: Test ScreenListener StopTimer with empty saIdTimeInfoMap issues no stop/destroy calls.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StopTimer_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    g_mockStopTimerCallCount = 0;
+    g_mockDestroyTimerCallCount = 0;
+    listener->StopTimer();
+    EXPECT_EQ(g_mockStopTimerCallCount, 0);
+    EXPECT_EQ(g_mockDestroyTimerCallCount, 0);
+    EXPECT_TRUE(listener->saIdTimeInfoMap_.empty());
+}
+
+/**
+ * @tc.name: StopTimer_002
+ * @tc.desc: Test ScreenListener StopTimer success resets timerId_ to 0 and failure keeps it,
+ *           with DestroyTimer short-circuited when StopTimer fails.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(ScreenListenerTest, StopTimer_002, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestScreenListener>(workSchedulerService_);
+    listener->saIdTimeInfoMap_.clear();
+    listener->saIdTimeInfoMap_[100] = ScreenListener::SaTimerInfo(30000, 200);
+    listener->saIdTimeInfoMap_[100].timerId_ = 500;
+
+    g_mockStopTimerCallCount = 0;
+    g_mockDestroyTimerCallCount = 0;
+    g_mockStopTimerResult = true;
+    g_mockDestroyTimerResult = true;
+    listener->StopTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_[100].timerId_, 0u);
+    EXPECT_EQ(g_mockStopTimerCallCount, 1);
+    EXPECT_EQ(g_mockDestroyTimerCallCount, 1);
+
+    listener->saIdTimeInfoMap_[100].timerId_ = 500;
+    g_mockStopTimerCallCount = 0;
+    g_mockDestroyTimerCallCount = 0;
+    g_mockStopTimerResult = false;
+    listener->StopTimer();
+    EXPECT_EQ(listener->saIdTimeInfoMap_[100].timerId_, 500u);
+    EXPECT_EQ(g_mockStopTimerCallCount, 1);
+    EXPECT_EQ(g_mockDestroyTimerCallCount, 0);
+
+    g_mockStopTimerResult = true;
+    g_mockDestroyTimerResult = true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS

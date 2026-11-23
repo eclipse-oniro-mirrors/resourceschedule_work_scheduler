@@ -15,15 +15,22 @@
 
 #include <gtest/gtest.h>
 #include "work_sched_plugin_mgr.h"
+#include "work_sched_config.h"
 #include "res_data.h"
 #include "res_type.h"
 #include "background_task_observer_plugin_adapter.h"
+#include "work_scheduler_service.h"
+#include "system_ability_definition.h"
 
 using namespace testing::ext;
 using namespace OHOS::ResourceSchedule;
 
 namespace OHOS {
 namespace WorkScheduler {
+
+extern "C" bool OnPluginInit(std::string& libName);
+extern "C" void OnPluginDisable();
+extern "C" void OnDispatchResource(const std::shared_ptr<ResourceSchedule::ResData>& resData);
 
 class WorkSchedPluginMgrTest : public testing::Test {
 public:
@@ -65,8 +72,8 @@ HWTEST_F(WorkSchedPluginMgrTest, WorkSchedPluginMgrTest_002, TestSize.Level2)
     resData->payload = {{"key", "value"}};
 
     WorkSchedPluginMgr::GetInstance().DispatchResource(resData);
-    auto result =
-        BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
+    auto result = BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(
+        resData->payload);
     EXPECT_EQ(result, nullptr);
 }
 
@@ -90,16 +97,23 @@ HWTEST_F(WorkSchedPluginMgrTest, WorkSchedPluginMgrTest_008, TestSize.Level2)
     WorkSchedPluginMgr::GetInstance().DispatchResource(resData);
     auto result =
         BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
+    EXPECT_NE(result, nullptr);
+    EXPECT_EQ(result->GetUid(), 10001);
     resData->value = ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_APPLY;
     result =
         BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
+    EXPECT_NE(result, nullptr);
+    EXPECT_EQ(result->GetUid(), 10001);
     resData->value = ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_RESET;
     result =
         BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
+    EXPECT_NE(result, nullptr);
+    EXPECT_EQ(result->GetUid(), 10001);
     resData->value = ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY;
     result =
         BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(resData->payload);
     EXPECT_NE(result, nullptr);
+    EXPECT_EQ(result->GetUid(), 10001);
 }
 
 /**
@@ -165,5 +179,285 @@ HWTEST_F(WorkSchedPluginMgrTest, BackgroundTaskObserverPluginAdapter_004, TestSi
     auto result = BackgroundTaskObserverPluginAdapter::GetInstance().UnmarshallingResourceCallbackInfo(payload);
     EXPECT_EQ(result, nullptr);
 }
-}  // namespace WorkScheduler
-}  // namespace OHOS
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_001
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged returns when observer is null.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_001, TestSize.Level2)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->UpdateEffiResApplyInfo(10001, false);
+    BackgroundTaskObserverPluginAdapter::GetInstance().UnInit();
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 8}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY, payload);
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(10001));
+    BackgroundTaskObserverPluginAdapter::GetInstance().Init();
+    service->UpdateEffiResApplyInfo(10001, false);
+}
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_002
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged APP_EFFICIENCY_RESOURCES_APPLY.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_002, TestSize.Level2)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->UpdateEffiResApplyInfo(10001, false);
+    BackgroundTaskObserverPluginAdapter::GetInstance().Init();
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 8}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::APP_EFFICIENCY_RESOURCES_APPLY, payload);
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(10001));
+    service->UpdateEffiResApplyInfo(10001, false);
+}
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_003
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged PROC_EFFICIENCY_RESOURCES_APPLY and RESET.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_003, TestSize.Level2)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->UpdateEffiResApplyInfo(10001, false);
+    BackgroundTaskObserverPluginAdapter::GetInstance().Init();
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 8}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_APPLY, payload);
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(10001));
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(
+        ResType::EfficiencyResourcesStatus::PROC_EFFICIENCY_RESOURCES_RESET, payload);
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(10001));
+    service->UpdateEffiResApplyInfo(10001, false);
+}
+
+/**
+ * @tc.name: OnEfficiencyResourcesStateChanged_004
+ * @tc.desc: Test OnEfficiencyResourcesStateChanged unknown stateType default case.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnEfficiencyResourcesStateChanged_004, TestSize.Level2)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->UpdateEffiResApplyInfo(10001, false);
+    BackgroundTaskObserverPluginAdapter::GetInstance().Init();
+    nlohmann::json payload = {
+        {"bundleName", "test.bundle"},
+        {"pid", 1234},
+        {"uid", 10001},
+        {"resourceNumber", 8}
+    };
+    BackgroundTaskObserverPluginAdapter::GetInstance().OnEfficiencyResourcesStateChanged(9999, payload);
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(10001));
+    service->UpdateEffiResApplyInfo(10001, false);
+}
+
+/**
+ * @tc.name: HandleCloudConfigUpdateEvent_001
+ * @tc.desc: Test HandleCloudConfigUpdateEvent with SUSPEND_MANAGER_SYSTEM_ABILITY_ID.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_001, TestSize.Level2)
+{
+    auto cfg = DelayedSingleton<WorkSchedulerConfig>::GetInstance();
+    auto originalWhitelist = cfg->activeGroupWhitelist_;
+    nlohmann::json presetWorkScheduler = nlohmann::json::object();
+    presetWorkScheduler["active_group_whitelist"] = nlohmann::json::array({"test.preinstalled"});
+    nlohmann::json presetParams = nlohmann::json::object();
+    presetParams["work_scheduler"] = presetWorkScheduler;
+    nlohmann::json presetPayload = nlohmann::json::object();
+    presetPayload["params"] = presetParams;
+    EXPECT_TRUE(cfg->UpdateSusMgrCloudConfig(presetPayload));
+    EXPECT_TRUE(cfg->IsInActiveGroupWhitelist("test.preinstalled"));
+
+    BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(
+        SUSPEND_MANAGER_SYSTEM_ABILITY_ID, nlohmann::json::object());
+
+    EXPECT_TRUE(cfg->IsInActiveGroupWhitelist("test.preinstalled"));
+
+    cfg->activeGroupWhitelist_ = originalWhitelist;
+}
+
+/**
+ * @tc.name: HandleCloudConfigUpdateEvent_002
+ * @tc.desc: Test HandleCloudConfigUpdateEvent with BACKGROUND_TASK_MANAGER_SERVICE_ID.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_002, TestSize.Level2)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    auto originalExemptionBundles = service->exemptionBundles_;
+    service->ready_.store(true);
+    service->exemptionBundles_.clear();
+
+    nlohmann::json workScheduler = nlohmann::json::object();
+    workScheduler["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.exempt"});
+    nlohmann::json params = nlohmann::json::object();
+    params["work_scheduler"] = workScheduler;
+    nlohmann::json payload = nlohmann::json::object();
+    payload["params"] = params;
+
+    BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(
+        BACKGROUND_TASK_MANAGER_SERVICE_ID, payload);
+
+    EXPECT_EQ(service->exemptionBundles_.count("com.test.exempt"), 1u);
+    EXPECT_EQ(service->exemptionBundles_.size(), 1u);
+
+    service->exemptionBundles_ = originalExemptionBundles;
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: HandleCloudConfigUpdateEvent_003
+ * @tc.desc: Test HandleCloudConfigUpdateEvent with unknown stateType.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, HandleCloudConfigUpdateEvent_003, TestSize.Level2)
+{
+    auto cfg = DelayedSingleton<WorkSchedulerConfig>::GetInstance();
+    auto originalWhitelist = cfg->activeGroupWhitelist_;
+
+    nlohmann::json presetWorkScheduler = nlohmann::json::object();
+    presetWorkScheduler["active_group_whitelist"] = nlohmann::json::array({"test.preinstalled"});
+    nlohmann::json presetParams = nlohmann::json::object();
+    presetParams["work_scheduler"] = presetWorkScheduler;
+    nlohmann::json presetPayload = nlohmann::json::object();
+    presetPayload["params"] = presetParams;
+    EXPECT_TRUE(cfg->UpdateSusMgrCloudConfig(presetPayload));
+    EXPECT_TRUE(cfg->IsInActiveGroupWhitelist("test.preinstalled"));
+
+    BackgroundTaskObserverPluginAdapter::GetInstance().HandleCloudConfigUpdateEvent(
+        9999, nlohmann::json::object());
+
+    EXPECT_TRUE(cfg->IsInActiveGroupWhitelist("test.preinstalled"));
+
+    cfg->activeGroupWhitelist_ = originalWhitelist;
+}
+
+/**
+ * @tc.name: OnPluginInit_001
+ * @tc.desc: Test extern C OnPluginInit with matching lib name.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnPluginInit_001, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Disable();
+    std::string libName = "libworkschedservice.z.so";
+    bool ret = OnPluginInit(libName);
+    EXPECT_TRUE(ret);
+    WorkSchedPluginMgr::GetInstance().Disable();
+}
+
+/**
+ * @tc.name: OnPluginInit_002
+ * @tc.desc: Test extern C OnPluginInit with non-matching lib name.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnPluginInit_002, TestSize.Level2)
+{
+    std::string libName = "libinvalid.z.so";
+    bool ret = OnPluginInit(libName);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: OnPluginDisable_001
+ * @tc.desc: Test extern C OnPluginDisable.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnPluginDisable_001, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Init();
+    OnPluginDisable();
+    EXPECT_FALSE(WorkSchedPluginMgr::GetInstance().pluginEnable_.load());
+}
+
+/**
+ * @tc.name: OnDispatchResource_001
+ * @tc.desc: Test extern C OnDispatchResource with null data.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_001, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Init();
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    auto originalExemptionBundles = service->exemptionBundles_;
+    service->ready_.store(true);
+    service->exemptionBundles_.clear();
+    service->exemptionBundles_.insert("com.test.sentinel");
+
+    OnDispatchResource(nullptr);
+    EXPECT_EQ(service->exemptionBundles_.size(), 1u);
+    EXPECT_EQ(service->exemptionBundles_.count("com.test.sentinel"), 1u);
+
+    service->exemptionBundles_ = originalExemptionBundles;
+    service->ready_.store(originalReady);
+    WorkSchedPluginMgr::GetInstance().Disable();
+}
+
+/**
+ * @tc.name: OnDispatchResource_002
+ * @tc.desc: Test extern C OnDispatchResource with RSS_CLOUD_CONFIG_UPDATE.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedPluginMgrTest, OnDispatchResource_002, TestSize.Level2)
+{
+    WorkSchedPluginMgr::GetInstance().Init();
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    auto originalExemptionBundles = service->exemptionBundles_;
+    service->ready_.store(true);
+    service->exemptionBundles_.clear();
+
+    nlohmann::json workScheduler = nlohmann::json::object();
+    workScheduler["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.plugin.exempt"});
+    nlohmann::json params = nlohmann::json::object();
+    params["work_scheduler"] = workScheduler;
+    nlohmann::json payload = nlohmann::json::object();
+    payload["params"] = params;
+
+    auto resData = std::make_shared<ResourceSchedule::ResData>();
+    resData->resType = ResType::RES_TYPE_RSS_CLOUD_CONFIG_UPDATE;
+    resData->value = BACKGROUND_TASK_MANAGER_SERVICE_ID;
+    resData->payload = payload;
+    OnDispatchResource(resData);
+    EXPECT_EQ(service->exemptionBundles_.count("com.test.plugin.exempt"), 1u);
+    service->exemptionBundles_ = originalExemptionBundles;
+    service->ready_.store(originalReady);
+    WorkSchedPluginMgr::GetInstance().Disable();
+}
+} // namespace WorkScheduler
+} // namespace OHOS

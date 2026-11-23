@@ -124,8 +124,8 @@ HWTEST_F(WorkConnManagerTest, GetConnInfo_001, TestSize.Level2)
 HWTEST_F(WorkConnManagerTest, GetConnInfo_002, TestSize.Level2)
 {
     workConnManager_->connMap_.clear();
-    auto ret = workConnManager_->GetConnInfo("nonexistent");
-    EXPECT_EQ(ret, nullptr);
+    workConnManager_->GetConnInfo("nonexistent");
+    EXPECT_EQ(workConnManager_->connMap_.count("nonexistent"), 0);
 }
 
 /**

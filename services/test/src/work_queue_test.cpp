@@ -19,6 +19,7 @@
 #include "work_queue.h"
 #include "work_status.h"
 #include "work_scheduler_service.h"
+#include "work_sched_data_manager.h"
 
 using namespace testing::ext;
 
@@ -215,6 +216,29 @@ HWTEST_F(WorkQueueTest, Push_002, TestSize.Level1)
     workInfo_.SetElement(bundleName, abilityName);
     auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
     workQueue_->Push(workStatus);
+    EXPECT_TRUE(workQueue_->GetSize() == 1);
+}
+
+/**
+ * @tc.name: Push_003
+ * @tc.desc: Test WorkQueue Push duplicate workId does not add again.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, Push_003, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo1 = WorkInfo();
+    workInfo1.SetWorkId(1);
+    workInfo1.SetElement("com.example.dup", "DupAbility");
+    auto workStatus1 = std::make_shared<WorkStatus>(workInfo1, 1);
+    workQueue_->Push(workStatus1);
+    EXPECT_TRUE(workQueue_->GetSize() == 1);
+    auto workInfo2 = WorkInfo();
+    workInfo2.SetWorkId(1);
+    workInfo2.SetElement("com.example.dup", "DupAbility");
+    auto workStatus2 = std::make_shared<WorkStatus>(workInfo2, 1);
+    workQueue_->Push(workStatus2);
     EXPECT_TRUE(workQueue_->GetSize() == 1);
 }
 
@@ -431,7 +455,7 @@ HWTEST_F(WorkQueueTest, Find_004, TestSize.Level1)
 {
     workQueue_->ClearAll();
     auto ret = workQueue_->Find("nonexistent_id");
-    EXPECT_EQ(ret.get(), nullptr);
+    EXPECT_EQ(ret, nullptr);
 }
 
 /**
@@ -501,6 +525,26 @@ HWTEST_F(WorkQueueTest, SetMinIntervalByDump_001, TestSize.Level1)
     workQueue_->SetMinIntervalByDump(5000);
     auto workList = workQueue_->GetWorkList();
     EXPECT_EQ(workList.front()->minInterval_, 5000);
+}
+
+/**
+ * @tc.name: Dump_001
+ * @tc.desc: Test WorkQueue Dump appends work info when workList not empty.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, Dump_001, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo_ = WorkInfo();
+    workInfo_.SetWorkId(60);
+    workInfo_.SetElement("com.test.dump", "DumpAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo_, 1);
+    workQueue_->Push(workStatus);
+    std::string result;
+    workQueue_->Dump(result);
+    EXPECT_NE(result.find("u1_60"), std::string::npos);
+    EXPECT_NE(result.find("com.test.dump"), std::string::npos);
 }
 
 /**
@@ -607,6 +651,97 @@ HWTEST_F(WorkQueueTest, FindSA_001, TestSize.Level1)
     workQueue_->ClearAll();
     auto ret = workQueue_->FindSA(100);
     EXPECT_EQ(ret, nullptr);
+}
+
+/**
+ * @tc.name: OnConditionChanged_001
+ * @tc.desc: Test WorkQueue OnConditionChanged skips SA work with mismatched saId on DEEP_IDLE.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, OnConditionChanged_001, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo = WorkInfo();
+    workInfo.SetWorkId(9301);
+    workInfo.SetElement("com.test.deepidle", "DeepIdleAbility");
+    workInfo.saId_ = 401;
+    auto workStatus = std::make_shared<WorkStatus>(workInfo, 9301);
+    workQueue_->Push(workStatus);
+    auto conditionVal = std::make_shared<DetectorValue>(402, 0, false, "");
+    auto result = workQueue_->OnConditionChanged(WorkCondition::Type::DEEP_IDLE, conditionVal);
+    EXPECT_TRUE(result.empty());
+}
+
+/**
+ * @tc.name: OnConditionChanged_002
+ * @tc.desc: Test WorkQueue OnConditionChanged skips work returning E_GROUP_CHANGE_NOT_MATCH_HAP.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, OnConditionChanged_002, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo = WorkInfo();
+    workInfo.SetWorkId(9302);
+    workInfo.SetElement("com.test.restrict", "RestrictAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo, 9302);
+    workStatus->bundleName_ = "com.test.restrict";
+    workQueue_->Push(workStatus);
+    std::list<std::string> restrictList = {"com.test.restrict"};
+    DelayedSingleton<DataManager>::GetInstance()->AddDeviceStandyRestrictlist(restrictList);
+    auto conditionVal = std::make_shared<DetectorValue>(0, 0, false, "");
+    auto result = workQueue_->OnConditionChanged(WorkCondition::Type::STORAGE, conditionVal);
+    EXPECT_TRUE(result.empty());
+    DelayedSingleton<DataManager>::GetInstance()->ClearDeviceStandyRestrictlist();
+}
+
+/**
+ * @tc.name: OnConditionChanged_003
+ * @tc.desc: Test WorkQueue OnConditionChanged marks WAIT_CONDITION when not ready but IsReadyStatus.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, OnConditionChanged_003, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo = WorkInfo();
+    workInfo.SetWorkId(9303);
+    workInfo.SetElement("com.test.condready", "CondReadyAbility");
+    workInfo.RequestNetworkType(WorkCondition::Network::NETWORK_TYPE_ANY);
+    auto workStatus = std::make_shared<WorkStatus>(workInfo, 9303);
+    workStatus->bundleName_ = "com.test.condready";
+    workStatus->MarkStatus(WorkStatus::Status::CONDITION_READY);
+    workQueue_->Push(workStatus);
+    DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(false);
+    auto conditionVal = std::make_shared<DetectorValue>(0, 0, false, "");
+    auto result = workQueue_->OnConditionChanged(WorkCondition::Type::STORAGE, conditionVal);
+    EXPECT_TRUE(result.empty());
+    EXPECT_EQ(workStatus->GetStatus(), WorkStatus::Status::WAIT_CONDITION);
+}
+
+/**
+ * @tc.name: OnConditionChanged_004
+ * @tc.desc: Test WorkQueue OnConditionChanged adds work to result when needRetrigger is true.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkQueueTest, OnConditionChanged_004, TestSize.Level1)
+{
+    workQueue_->ClearAll();
+    auto workInfo = WorkInfo();
+    workInfo.SetWorkId(9304);
+    workInfo.SetElement("com.test.retrigger", "RetriggerAbility");
+    auto workStatus = std::make_shared<WorkStatus>(workInfo, 9304);
+    workStatus->bundleName_ = "com.test.retrigger";
+    workStatus->s_uid_last_time_map[9304] = workStatus->getOppositeTime();
+    workQueue_->Push(workStatus);
+    DelayedSingleton<DataManager>::GetInstance()->SetDeviceSleep(false);
+    auto conditionVal = std::make_shared<DetectorValue>(0, 0, false, "");
+    auto result = workQueue_->OnConditionChanged(WorkCondition::Type::STORAGE, conditionVal);
+    EXPECT_EQ(result.size(), 1u);
+    EXPECT_EQ(result.front(), workStatus);
+    workStatus->s_uid_last_time_map.erase(9304);
 }
 }
 }

@@ -14,8 +14,10 @@
  */
 
 #ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+#include <chrono>
 #include <functional>
 #include <gtest/gtest.h>
+#include <thread>
 
 #include "battery_info.h"
 #include "common_event_manager.h"
@@ -25,7 +27,12 @@
 #include "conditions/battery_level_listener.h"
 #include "work_queue_manager.h"
 #include "work_scheduler_service.h"
+#include "work_event_handler.h"
+#include "work_policy_manager.h"
+#include "work_conn_manager.h"
 #include "work_sched_hilog.h"
+#include "work_info.h"
+#include "work_status.h"
 
 using namespace testing::ext;
 
@@ -84,6 +91,33 @@ static EventFwk::CommonEventData BuildBatteryChangedEvent(int32_t capacity)
     EventFwk::CommonEventData data;
     data.SetWant(want);
     return data;
+}
+
+/**
+ * @brief Poll until the work's condition of the given type is published or the timeout elapses.
+ *
+ * WorkQueueManager::OnConditionChanged() publishes via handler->PostTask(), so the update is
+ * asynchronous. A bounded polling wait is used instead of a fixed sleep. Reads are guarded by
+ * conditionMapMutex_ to avoid racing the async writer.
+ */
+static bool WaitForCondition(const std::shared_ptr<WorkStatus>& workStatus,
+    WorkCondition::Type type, int32_t timeoutMs)
+{
+    const int32_t intervalMs = 10;
+    int32_t waitedMs = 0;
+    while (true) {
+        {
+            std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+            if (workStatus->conditionMap_.count(type) > 0) {
+                return true;
+            }
+        }
+        if (waitedMs >= timeoutMs) {
+            return false;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(intervalMs));
+        waitedMs += intervalMs;
+    }
 }
 
 /**
@@ -178,6 +212,140 @@ HWTEST_F(BatteryLevelListenerTest, OnReceiveEvent_006, TestSize.Level1)
     subscriber_->OnReceiveEvent(BuildBatteryChangedEvent(60));
     EXPECT_EQ(listener_->callCount_, 1);
     EXPECT_EQ(listener_->lastVal_->intVal, 60);
+}
+
+/**
+ * @tc.name: Start_001
+ * @tc.desc: Test BatteryLevelListener Start creates subscriber and subscribes.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, Start_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    bool ret = listener->Start();
+    EXPECT_TRUE(ret);
+    listener->Stop();
+}
+
+/**
+ * @tc.name: Stop_001
+ * @tc.desc: Test BatteryLevelListener Stop when subscriber is null.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, Stop_001, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    bool ret = listener->Stop();
+    EXPECT_TRUE(ret);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: Stop_002
+ * @tc.desc: Test BatteryLevelListener Stop when subscriber is not null.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, Stop_002, TestSize.Level1)
+{
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    listener->Start();
+    bool ret = listener->Stop();
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: OnConditionChanged_001
+ * @tc.desc: Test BatteryLevelListener OnConditionChanged with null workQueueManager does not
+ *           propagate the condition, verified against a positive control using a real manager.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, OnConditionChanged_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->eventRunner_ == nullptr) {
+        service->eventRunner_ = AppExecFwk::EventRunner::Create("BatteryLevelListenerTest",
+            AppExecFwk::ThreadMode::FFRT);
+    }
+    if (service->handler_ == nullptr) {
+        service->handler_ = std::make_shared<WorkEventHandler>(service->eventRunner_, service);
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9921);
+    workInfo->SetElement("com.test.batlevel", "BatLevelAbility");
+    workInfo->RequestBatteryLevel(40);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10021);
+    service->workQueueManager_->AddWork(workStatus);
+
+    // Negative: the test listener holds a null workQueueManager_, so the guard must not publish.
+    auto listener = std::make_shared<TestBatteryLevelListener>();
+    auto val = std::make_shared<DetectorValue>(50, 0, 0, std::string());
+    listener->BatteryLevelListener::OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
+    {
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+        EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_LEVEL), 0);
+    }
+
+    BatteryLevelListener realListener(service->workQueueManager_, service);
+    realListener.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
+    EXPECT_TRUE(WaitForCondition(workStatus, WorkCondition::Type::BATTERY_LEVEL, 2000));
+    {
+        std::lock_guard<ffrt::mutex> lock(workStatus->conditionMapMutex_);
+        EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_LEVEL), 1);
+    }
+    service->workQueueManager_->RemoveWork(workStatus);
+}
+
+/**
+ * @tc.name: OnConditionChanged_002
+ * @tc.desc: Test BatteryLevelListener OnConditionChanged with valid workQueueManager.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(BatteryLevelListenerTest, OnConditionChanged_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->eventRunner_ == nullptr) {
+        service->eventRunner_ = AppExecFwk::EventRunner::Create("BatteryLevelListenerTest",
+            AppExecFwk::ThreadMode::FFRT);
+    }
+    if (service->handler_ == nullptr) {
+        service->handler_ = std::make_shared<WorkEventHandler>(service->eventRunner_, service);
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    auto workInfo = std::make_shared<WorkInfo>();
+    workInfo->SetWorkId(9920);
+    workInfo->SetElement("com.test.batlevel", "BatLevelAbility");
+    workInfo->RequestBatteryLevel(40);
+    auto workStatus = std::make_shared<WorkStatus>(*workInfo, 10020);
+    service->workQueueManager_->AddWork(workStatus);
+
+    BatteryLevelListener listener(service->workQueueManager_, service);
+    auto val = std::make_shared<DetectorValue>(50, 0, 0, std::string());
+    listener.OnConditionChanged(WorkCondition::Type::BATTERY_LEVEL, val);
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    EXPECT_EQ(workStatus->conditionMap_.count(WorkCondition::Type::BATTERY_LEVEL), 1);
+    service->workQueueManager_->RemoveWork(workStatus);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
