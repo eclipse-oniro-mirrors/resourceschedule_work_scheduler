@@ -58,6 +58,7 @@ constexpr int32_t REPORT_DATA_RETRY_DELAY_US = 2000000;
 constexpr int32_t MAX_BUNDLE_NAME_LENGTH = 256;
 constexpr int32_t MAX_ABILITY_NAME_LENGTH = 256;
 constexpr int32_t MAX_TASK_MAP_SIZE = 1000;
+constexpr int32_t DEFAULT_FRAME_NUM = 0;
 constexpr std::string_view LOCATION_STATE_START = "start";
 constexpr std::string_view TORCH_STATE_ON = "ON";
 constexpr std::string_view OHOS_PERMISSION_CAMERA_BACKGROUND = "ohos.permission.CAMERA_BACKGROUND";
@@ -365,17 +366,72 @@ void BackgroundLoaderMgr::CheckAndSendOnStop(int32_t uid)
         std::lock_guard<ffrt::mutex> lock(timeoutTaskLock_);
         timeoutTaskMap_.erase(uid);
     }
+    PostDelayFinishEvent(uid, shouldAddToBlockList, taskInfoCopy);
+}
+
+void BackgroundLoaderMgr::PostDelayFinishEvent(int32_t uid, bool shouldAddToBlockList, const TaskInfo& taskInfo)
+{
     if (ffrtQueue_ == nullptr) {
         ffrtQueue_ = std::make_unique<ffrt::queue>("background_loader_queue");
     }
-    ffrtQueue_->submit(
+    // 同 uid 重复投递时先取消旧 handle，避免 handle 泄露与重复触发
+    {
+        std::lock_guard<ffrt::mutex> lock(delayFinishLock_);
+        auto it = delayFinishTaskMap_.find(uid);
+        if (it != delayFinishTaskMap_.end()) {
+            ffrtQueue_->cancel(it->second);
+            delayFinishTaskMap_.erase(it);
+            BL_HILOGW("PostDelayFinishEvent: uid %{public}d has pending delay finish event, cancel first", uid);
+        }
+    }
+    TaskInfo taskInfoCopy = taskInfo;
+    ffrt::task_handle handle = ffrtQueue_->submit_h(
         [uid, shouldAddToBlockList, taskInfoCopy]() mutable {
-            auto& mgr = BackgroundLoaderMgr::GetInstance();
-            mgr.MarkTimeOutStatusLocked(uid, shouldAddToBlockList, taskInfoCopy);
-            mgr.ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
-            mgr.UpsertTaskToDb(uid, taskInfoCopy);
+            BackgroundLoaderMgr::GetInstance().ExecuteOnStopFinish(uid, shouldAddToBlockList, taskInfoCopy);
         },
         ffrt::task_attr().delay(ON_STOP_STATUS_FRLRAY_US));
+    {
+        std::lock_guard<ffrt::mutex> lock(delayFinishLock_);
+        delayFinishTaskMap_[uid] = std::move(handle);
+    }
+    BL_HILOGI("post delay finish event success, uid: %{public}d", uid);
+}
+
+bool BackgroundLoaderMgr::CancelDelayFinishEvent(int32_t uid)
+{
+    std::lock_guard<ffrt::mutex> lock(delayFinishLock_);
+    auto it = delayFinishTaskMap_.find(uid);
+    if (it == delayFinishTaskMap_.end()) {
+        BL_HILOGD("CancelDelayFinishEvent: no delay finish event for uid: %{public}d", uid);
+        return false;
+    }
+    if (ffrtQueue_ != nullptr) {
+        ffrtQueue_->cancel(it->second);
+    }
+    delayFinishTaskMap_.erase(it);
+    BL_HILOGI("cancel delay finish event, uid: %{public}d", uid);
+    return true;
+}
+
+void BackgroundLoaderMgr::RemoveDelayFinishHandle(int32_t uid)
+{
+    std::lock_guard<ffrt::mutex> lock(delayFinishLock_);
+    delayFinishTaskMap_.erase(uid);
+}
+
+bool BackgroundLoaderMgr::IsDelayFinishPending(int32_t uid)
+{
+    std::lock_guard<ffrt::mutex> lock(delayFinishLock_);
+    return delayFinishTaskMap_.find(uid) != delayFinishTaskMap_.end();
+}
+
+void BackgroundLoaderMgr::ExecuteOnStopFinish(int32_t uid, bool shouldAddToBlockList, const TaskInfo& taskInfo)
+{
+    TaskInfo taskInfoCopy = taskInfo;
+    MarkTimeOutStatusLocked(uid, shouldAddToBlockList, taskInfoCopy);
+    ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
+    UpsertTaskToDb(uid, taskInfoCopy);
+    RemoveDelayFinishHandle(uid);
 }
 
 void BackgroundLoaderMgr::PostTimeoutTask(int32_t uid)
@@ -422,8 +478,8 @@ void BackgroundLoaderMgr::CancelTimeoutTask(int32_t uid)
     timeoutTaskMap_.erase(it);
 }
 
-bool BackgroundLoaderMgr::ParseBackgroundLoaderPayload(const nlohmann::json &payload, std::string &bundleName,
-                                                       std::string &abilityName, int32_t &appIndex)
+bool BackgroundLoaderMgr::ParseAppInfo(const nlohmann::json &payload, std::string &bundleName,
+                                       std::string &abilityName, int32_t &appIndex)
 {
     if (!ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, payload) ||
         !ResCommonUtil::ParseStringParameterFromJson("abilityName", abilityName, payload) ||
@@ -442,6 +498,47 @@ bool BackgroundLoaderMgr::ParseBackgroundLoaderPayload(const nlohmann::json &pay
     return true;
 }
 
+bool BackgroundLoaderMgr::IsValidUserId(const nlohmann::json &payload, int32_t uid, int32_t &userId)
+{
+    int32_t userIdConvert = WorkSchedUtils::GetUserIdByUid(uid);
+    if (userIdConvert == DEFAULT_INVAL_VALUE) {
+        return false;
+    }
+    if (!ResCommonUtil::ParseIntParameterFromJson("userId", userId, payload)) {
+        userId = userIdConvert;
+        return true;
+    }
+    return userId == userIdConvert;
+}
+
+bool BackgroundLoaderMgr::CheckLoadCondition(const nlohmann::json &payload, const std::string &bundleName,
+                                             int32_t appIndex, int32_t &uid, int32_t &userId)
+{
+    if (IsInBlockListLocked(bundleName)) {
+        BL_HILOGW("bundleName: %{public}s in block list", bundleName.c_str());
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        return false;
+    }
+    if (!CanBackGroundLoadLocked(bundleName, appIndex, uid)) {
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        return false;
+    }
+    if (!IsValidUserId(payload, uid, userId)) {
+        BL_HILOGW("invalid userId, bundleName: %{public}s, uid: %{public}d", bundleName.c_str(), uid);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        return false;
+    }
+    return true;
+}
+
+void BackgroundLoaderMgr::ParseFrameNum(const nlohmann::json &payload, int32_t &frameNum)
+{
+    frameNum = DEFAULT_FRAME_NUM;
+    if (!ResCommonUtil::ParseIntParameterFromJson("frameNum", frameNum, payload) || frameNum < DEFAULT_FRAME_NUM) {
+        frameNum = DEFAULT_FRAME_NUM;
+    }
+}
+
 void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& payload)
 {
     if (!isReady_.load()) {
@@ -451,35 +548,18 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
     std::string abilityName;
     std::string bundleName;
     int32_t appIndex = 0;
-    if (!ParseBackgroundLoaderPayload(payload, bundleName, abilityName, appIndex)) {
+    if (!ParseAppInfo(payload, bundleName, abilityName, appIndex)) {
         ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
         return;
     }
-    if (IsInBlockListLocked(bundleName)) {
-        BL_HILOGW("bundleName: %{public}s in block list", bundleName.c_str());
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+    int32_t uid = DEFAULT_INVAL_VALUE;
+    int32_t userId = DEFAULT_INVAL_VALUE;
+    if (!CheckLoadCondition(payload, bundleName, appIndex, uid, userId)) {
         return;
     }
-    int32_t uid = -1;
-    if (!CanBackGroundLoadLocked(bundleName, appIndex, uid)) {
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+    if (ConnectCachedAbility(bundleName, abilityName, appIndex, uid)) {
         return;
     }
-    ConnectToAbility(bundleName, abilityName, appIndex, uid);
-}
-
-void BackgroundLoaderMgr::ConnectToAbility(const std::string &bundleName, const std::string &abilityName,
-                                           int32_t appIndex, int32_t uid)
-{
-    OHOS::sptr<IRemoteObject> remoteObject = GetRemoteObjectLocked(bundleName, abilityName, appIndex);
-    if (remoteObject != nullptr) {
-        BL_HILOGI("remoteObject cached, direct SendOnstart for %{public}s", bundleName.c_str());
-        SendOnStart(remoteObject, bundleName, appIndex, uid);
-        return;
-    }
-
-    OHOS::AAFwk::Want providerWant;
-    providerWant.SetElementName(bundleName, abilityName);
     sptr<AAFwk::IAbilityConnection> connect = new(std::nothrow) AbilityConnectCallback(
         bundleName, abilityName, appIndex, uid);
     if (connect == nullptr) {
@@ -487,15 +567,39 @@ void BackgroundLoaderMgr::ConnectToAbility(const std::string &bundleName, const 
         ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
         return;
     }
-    BL_HILOGI("StartAbilityByCall start for %{public}s", bundleName.c_str());
-    int32_t ret = AAFwk::AbilityManagerClient::GetInstance()->StartAbilityByCall(providerWant, connect,
-        nullptr, DEFAULT_INVAL_VALUE, false, true);
-    if (ret != ERR_OK) {
-        BL_HILOGE("StartAbilityByCall uid: %{public}d falied ret : %{public}d", uid, ret);
+    OHOS::AAFwk::Want providerWant;
+    providerWant.SetElementName(bundleName, abilityName);
+    int32_t frameNum = DEFAULT_FRAME_NUM;
+    ParseFrameNum(payload, frameNum);
+    if (!ConnectNewAbility(providerWant, connect, userId, frameNum)) {
         ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
-        return;
     }
-    BL_HILOGI("StartAbilityByCall success for %{public}s", bundleName.c_str());
+}
+
+bool BackgroundLoaderMgr::ConnectCachedAbility(const std::string &bundleName, const std::string &abilityName,
+                                               int32_t appIndex, int32_t uid)
+{
+    OHOS::sptr<IRemoteObject> remoteObject = GetRemoteObjectLocked(bundleName, abilityName, appIndex);
+    if (remoteObject == nullptr) {
+        return false;
+    }
+    BL_HILOGI("remoteObject cached, direct SendOnstart for %{public}s", bundleName.c_str());
+    SendOnStart(remoteObject, bundleName, appIndex, uid);
+    return true;
+}
+
+bool BackgroundLoaderMgr::ConnectNewAbility(const AAFwk::Want &want,
+                                            const sptr<AAFwk::IAbilityConnection> &connect,
+                                            int32_t userId, int32_t frameNum)
+{
+    BL_HILOGI("ConnectNewAbility start, userId: %{public}d", userId);
+    int32_t ret = AAFwk::AbilityManagerClient::GetInstance()->StartAbilityForPrelaunch(want, frameNum, userId, connect);
+    if (ret != ERR_OK && ret != ERR_INVALID_VALUE) {
+        BL_HILOGE("ConnectNewAbility failed ret : %{public}d", ret);
+        return false;
+    }
+    BL_HILOGI("ConnectNewAbility success, userId: %{public}d", userId);
+    return true;
 }
 
 void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
@@ -655,7 +759,7 @@ void BackgroundLoaderMgr::HandleAppInstallUninstall(int64_t value, const nlohman
     int32_t appIndex = DEFAULT_INVAL_VALUE;
     if (!ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, payload) ||
         !ResCommonUtil::ParseIntParameterFromJson("appIndex", appIndex, payload) ||
-        !ResCommonUtil::ParseIntParameterFromJson("uid", appIndex, payload)) {
+        !ResCommonUtil::ParseIntParameterFromJson("uid", uid, payload)) {
         BL_HILOGE("HandleAppInstallUninstall parse payload fail");
         return;
     }
@@ -666,6 +770,7 @@ void BackgroundLoaderMgr::HandleAppInstallUninstall(int64_t value, const nlohman
 
 void BackgroundLoaderMgr::ClearAllByUid(int32_t uid, const std::string& bundleName, int32_t appIndex)
 {
+    CancelDelayFinishEvent(uid);
     if (RemoveFromBlockListLocked(bundleName)) {
         DeleteBlockListFromDb(bundleName);
     }
@@ -808,6 +913,10 @@ ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo&
     BL_HILOGI("FinishTaskWithCheck, taskId: %{public}d, abilityName: %{public}s", taskInfo.GetTaskId(),
               taskInfo.GetAbilityName().c_str());
     int32_t uid = IPCSkeleton::GetCallingAppUid();
+    if (IsDelayFinishPending(uid)) {
+        BL_HILOGW("task is finishing, reject finish, uid: %{public}d", uid);
+        return E_INNER_ERR;
+    }
     TaskInfo taskInfoCopy;
     ErrCode ret = FinishTaskLocked(taskInfo, uid, taskInfoCopy);
     if (ret != ERR_OK) {
@@ -831,7 +940,7 @@ ErrCode BackgroundLoaderMgr::FinishTaskLocked(const BackgroundLoaderTaskInfo& ta
     if (it == taskMap_.end()) {
         BL_HILOGE("FinishTaskLocked failed, task not found, uid: %{public}d, taskInfo: %{public}d", uid,
                   taskInfo.GetTaskId());
-        return E_CHECK_WORKINFO_FAILED;
+        return E_WORK_NOT_EXIST_FAILED;
     }
     if (it -> second.taskId_ != taskInfo.GetTaskId() || it->second.abilityName_ != taskInfo.GetAbilityName()) {
         BL_HILOGE("FinishTaskLocked failed, taskId/abilityName mismatch, uid: %{public}d, "
@@ -1174,7 +1283,7 @@ bool BackgroundLoaderMgr::SetShortTaskMarkLocked(int32_t uid, bool hasTask)
     auto it = taskMap_.find(uid);
     if (it != taskMap_.end()) {
         it->second.hasShortTask_ = hasTask;
-        BL_HILOGD("SetLongTaskMarkLocked: hasLongTask: %{public}d, uid: %{public}d",
+        BL_HILOGD("SetShortTaskMarkLocked: hasShortTask: %{public}d, uid: %{public}d",
                   static_cast<int32_t>(hasTask), uid);
         return true;
     }
@@ -1187,7 +1296,7 @@ bool BackgroundLoaderMgr::SetLongTaskMarkLocked(int32_t uid, bool hasTask)
     auto it = taskMap_.find(uid);
     if (it != taskMap_.end()) {
         it->second.hasLongTask_ = hasTask;
-        BL_HILOGD("SetLongTaskMarkLocked: hasShortTask: %{public}d, uid: %{public}d",
+        BL_HILOGD("SetLongTaskMarkLocked: hasLongTask: %{public}d, uid: %{public}d",
                   static_cast<int32_t>(hasTask), uid);
         return true;
     }
@@ -1199,7 +1308,7 @@ ErrCode BackgroundLoaderMgr::GetTaskInfoLocked(int32_t uid, int32_t taskId,
 {
     std::lock_guard<ffrt::mutex> lock(taskLock_);
     auto it = taskMap_.find(uid);
-    if (it == taskMap_.end() || it->second.taskId_ != taskInfo.GetTaskId()) {
+    if (it == taskMap_.end() || it->second.taskId_ != taskId) {
         BL_HILOGE("GetTaskInfoLocked failed, task not found, uid: %{public}d", uid);
         return E_WORK_NOT_EXIST_FAILED;
     }
@@ -1247,17 +1356,17 @@ bool BackgroundLoaderMgr::CanBackGroundLoadLocked(const std::string &bundleName,
                       bundleName.c_str(), appIndex);
             return false;
         }
-        if (!item.second.hasShortTask_) {
+        if (item.second.hasShortTask_) {
             BL_HILOGI("cannot start: has short task, skip, bundleName: %{public}s, appIndex: %{public}d",
                       bundleName.c_str(), appIndex);
             return false;
         }
-        if (!item.second.hasLongTask_) {
+        if (item.second.hasLongTask_) {
             BL_HILOGI("cannot start: has long task, skip, bundleName: %{public}s, appIndex: %{public}d",
                       bundleName.c_str(), appIndex);
             return false;
         }
-        if (!item.second.hasAudioStream_) {
+        if (item.second.hasAudioStream_) {
             BL_HILOGI("cannot start: has audio stream, skip, bundleName: %{public}s, appIndex: %{public}d",
                       bundleName.c_str(), appIndex);
             return false;
@@ -1328,10 +1437,16 @@ ProcessDiedResult BackgroundLoaderMgr::HandleProcessDiedLocked(int32_t uid, int3
         BL_HILOGD("HandleProcessDiedLocked: abnormal exit, add to block list, uid: %{public}d", uid);
         return ProcessDiedResult::RUNNING_ABNORMAL;
     }
-    // 非异常死亡，状态刷回NOT_STARTED;
-    it->second.status_ = TaskStatus::NOT_STARTED;
+    // 如果超时次数已经超过上限，按加黑处理
+    if (it->second.timeoutCount_ >= maxTimeoutCount_) {
+        it->second.status_ = TaskStatus::IN_BLOCK_LIST;
+    } else {
+        // 非异常死亡，状态刷回finish;
+        it->second.status_ = TaskStatus::FINISHED;
+    }
     taskInfoCopy = it->second;
-    BL_HILOGI("HandleProcessDiedLocked: normal exit, reset to NOT_STARTED, uid: %{public}d", uid);
+    BL_HILOGI("HandleProcessDiedLocked: normal exit, uid: %{public}d, status: %{public}d",
+              uid, static_cast<int32_t>(it->second.status_));
     return ProcessDiedResult::RUNNING_NORMAL;
 }
 
@@ -1408,7 +1523,7 @@ void BackgroundLoaderMgr::HandleContinuousTaskEvent(int64_t value, const nlohman
     }
     BL_HILOGD("continuous task event, bundleName: %{public}s, uid: %{public}d, value: %{public}lld",
               bundleName.c_str(), uid, static_cast<long long>(value));
-    SetShortTaskMarkLocked(uid, isStart);
+    SetLongTaskMarkLocked(uid, isStart);
     if (isStart) {
         HandlePerceivableIntercept(uid, BlockListReason::CONTINUOUS_TASK);
     }
@@ -1518,7 +1633,7 @@ void BackgroundLoaderMgr::HandleProcessDiedEvent(int64_t value, const nlohmann::
     int32_t exitReason = 0;
     if (!ResCommonUtil::ParseIntParameterFromJson("uid", uid, payload) ||
         !ResCommonUtil::ParseStringParameterFromJson("bundleName", bundleName, payload) ||
-        !ResCommonUtil::ParseIntParameterFromJson("pid", uid, payload) ||
+        !ResCommonUtil::ParseIntParameterFromJson("pid", pid, payload) ||
         !ResCommonUtil::ParseIntParameterFromJson("exitReason", exitReason, payload)) {
         BL_HILOGE("HandleProcessDiedEvent parse payload fail");
         return;
@@ -1527,27 +1642,29 @@ void BackgroundLoaderMgr::HandleProcessDiedEvent(int64_t value, const nlohmann::
                           ABNORMAL_EXIT_REASON.end();
     int32_t appIndex = DEFAULT_INVAL_VALUE;
     TaskInfo taskInfoCopy;
+    // 应用死亡先取消 6s 延迟 finish 事件，避免延迟任务与死亡处理冲突
+    CancelDelayFinishEvent(uid);
     ProcessDiedResult result = HandleProcessDiedLocked(uid, pid, isAbnormalExit, appIndex, taskInfoCopy);
     // 未注册到TaskMap_ 则无需后续处理
     if (result == ProcessDiedResult::NOT_REGISTERED) {
         return;
     }
+    CancelTimeoutTask(uid);
     // 进程死亡不管是否running，都移除abilityMap_中对应条目
     RemoveRemoteObjectLocked(bundleName, appIndex);
-    // pid及运行期标记已刷新，同步到数据库
-    UpsertTaskToDb(uid, taskInfoCopy);
     if (result == ProcessDiedResult::NOT_RUNNING) {
+        // 非运行状态死亡，直接同步死亡状态
+        UpsertTaskToDb(uid, taskInfoCopy);
         return;
     }
-    // 非RUNNING 状态下进程死亡： 发finish 事件 + 取消延迟超时任务
-    ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
-    CancelTimeoutTask(uid);
-    // 异常原因死亡： 加黑 + 发 delete事件
+    // 异常原因死亡：加黑 + 发 delete 事件
     if (result == ProcessDiedResult::RUNNING_ABNORMAL) {
         AddToBlockList(bundleName, uid, static_cast<int32_t>(BlockListReason::APP_CRASH));
         ReportTaskChangeEvent(bundleName, appIndex,
                               static_cast<int32_t>(ResType::BackgroundLoaderState::DELETE));
     }
+    ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+    UpsertTaskToDb(uid, taskInfoCopy);
 }
 
 void BackgroundLoaderMgr::ReportTaskChangeEvent(const std::string &bundleName, int32_t appIndex,

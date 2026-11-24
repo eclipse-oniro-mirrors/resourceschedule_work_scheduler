@@ -33,6 +33,10 @@
 #include "nlohmann/json.hpp"
 
 namespace OHOS {
+namespace AAFwk {
+class Want;
+class IAbilityConnection;
+}
 namespace WorkScheduler {
 
 namespace {
@@ -114,13 +118,24 @@ public:
     ErrCode GetTaskInfoWithCheck(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo);
 
 private:
-    void ConnectToAbility(const std::string &bundleName, const std::string &abilityName,
+    bool ConnectCachedAbility(const std::string &bundleName, const std::string &abilityName,
         int32_t appIndex, int32_t uid);
+    bool ConnectNewAbility(const AAFwk::Want &want, const sptr<AAFwk::IAbilityConnection> &connect,
+        int32_t userId, int32_t frameNum);
     void CheckAndSendOnStop(int32_t uid);
     void SendOnStop(const TaskInfo& taskInfo, int32_t stopCode, const std::string& message);
     void PostTimeoutTask(int32_t uid);
-    bool ParseBackgroundLoaderPayload(const nlohmann::json &payload, std::string &bundleName,
+    void PostDelayFinishEvent(int32_t uid, bool shouldAddToBlockList, const TaskInfo& taskInfo);
+    bool CancelDelayFinishEvent(int32_t uid);
+    void RemoveDelayFinishHandle(int32_t uid);
+    bool IsDelayFinishPending(int32_t uid);
+    void ExecuteOnStopFinish(int32_t uid, bool shouldAddToBlockList, const TaskInfo& taskInfo);
+    bool ParseAppInfo(const nlohmann::json &payload, std::string &bundleName,
         std::string &abilityName, int32_t &appIndex);
+    bool IsValidUserId(const nlohmann::json &payload, int32_t uid, int32_t &userId);
+    bool CheckLoadCondition(const nlohmann::json &payload, const std::string &bundleName,
+        int32_t appIndex, int32_t &uid, int32_t &userId);
+    void ParseFrameNum(const nlohmann::json &payload, int32_t &frameNum);
     ErrCode HandleExistingTask(const BackgroundLoaderTaskInfo& taskInfo,
         const std::string &bundleName, int32_t uid, TaskInfo &taskInfoCopy);
     ErrCode RegisterNewTask(const BackgroundLoaderTaskInfo& taskInfo,
@@ -190,6 +205,8 @@ private:
     std::unique_ptr<ffrt::queue> ffrtQueue_ {nullptr};
     ffrt::mutex timeoutTaskLock_;
     std::unordered_map<int32_t, ffrt::task_handle> timeoutTaskMap_;
+    ffrt::mutex delayFinishLock_;
+    std::unordered_map<int32_t, ffrt::task_handle> delayFinishTaskMap_;
     int32_t maxTimeoutCount_ = BACKGROUND_LOADER_TIMEOUT_COUNT;
     int32_t backgroundLoaderTimeoutUs_ = BACKGROUND_LOADER_TIMEOUT_US;
     BackgroundLoaderDatabase database_;
