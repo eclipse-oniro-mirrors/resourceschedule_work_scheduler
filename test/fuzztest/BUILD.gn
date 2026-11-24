@@ -33,5 +33,16 @@ group("fuzztest") {
     "backgroundloadergettaskinfo_fuzzer:fuzztest",
     "workschedulersetexecfrequency_fuzzer:fuzztest",
     "workschedulerresetexecfrequency_fuzzer:fuzztest",
+    "workconditionlistener_fuzzer:fuzztest",
+    "workconfigdatamanager_fuzzer:fuzztest",
+    "workinfojsonparcel_fuzzer:fuzztest",
+    "workpolicyfilterevent_fuzzer:fuzztest",
+    "workpolicylifecycle_fuzzer:fuzztest",
+    "workqueueconditionsequence_fuzzer:fuzztest",
+    "workscheducjworkinfo_fuzzer:fuzztest",
+    "workschedulerdumpcommand_fuzzer:fuzztest",
+    "workschedulerquerysequence_fuzzer:fuzztest",
+    "workschedulersadeepidle_fuzzer:fuzztest",
+    "workstatusqueue_fuzzer:fuzztest",
   ]
 }

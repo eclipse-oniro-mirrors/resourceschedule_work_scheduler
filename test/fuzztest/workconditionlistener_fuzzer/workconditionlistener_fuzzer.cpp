@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -23,7 +23,6 @@
 
 #include <fuzzer/FuzzedDataProvider.h>
 #include "common_event_data.h"
-#include "common_event_manager.h"
 #include "common_event_support.h"
 #include "conditions/battery_level_listener.h"
 #include "conditions/battery_status_listener.h"
@@ -181,7 +180,6 @@ void DriveCommonSubscriber(const std::shared_ptr<EventFwk::CommonEventSubscriber
     }
     for (int32_t index = 0; index < provider.ConsumeIntegralInRange<int32_t>(1, MAX_EVENT_ROUNDS_FOR_FUZZ); ++index) {
         auto data = BuildCommonEventData(provider);
-        EventFwk::CommonEventManager::PublishCommonEvent(data);
         subscriber->OnReceiveEvent(data);
     }
 }

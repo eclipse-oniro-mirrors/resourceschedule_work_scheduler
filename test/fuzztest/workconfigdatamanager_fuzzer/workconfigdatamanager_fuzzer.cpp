@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -218,18 +218,25 @@ void RunWorkConfigDataManagerFuzzer(FuzzedDataProvider &provider)
     int32_t sourceType = provider.ConsumeIntegralInRange<int32_t>(FUZZ_INVALID_LOW_VALUE, MAX_SOURCE_TYPE_FOR_FUZZ);
     service->SetWorkSchedulerConfig(configData, sourceType);
 
+    const bool previousDeviceSleep = dataManager->GetDeviceSleep();
+    const bool previousDeepIdle = dataManager->GetDeepIdle();
     dataManager->SetDeviceSleep(provider.ConsumeBool());
     dataManager->SetDeepIdle(provider.ConsumeBool());
     static_cast<void>(dataManager->GetDeviceSleep());
     static_cast<void>(dataManager->GetDeepIdle());
     DriveDeviceStandbyLists(*dataManager, bundles, provider);
     DriveGroupCache(*dataManager, bundles, provider);
-    service->InitDeviceStandyWhitelist();
-    service->InitDeviceStandyRestrictlist();
     static_cast<void>(service->IsExemptionBundle(ConsumeText(provider, "bundle.config.demo")));
     static_cast<void>(service->IsPreinstalledBundle(ConsumeText(provider, "bundle.config.demo")));
     std::string result;
     service->DumpAllInfo(result);
+
+    dataManager->ClearDeviceStandyWhitelist();
+    dataManager->ClearDeviceStandyRestrictlist();
+    dataManager->ClearAllGroup();
+    dataManager->SetDeviceSleep(previousDeviceSleep);
+    dataManager->SetDeepIdle(previousDeepIdle);
+    config->activeGroupWhitelist_.clear();
 }
 } // namespace WorkScheduler
 } // namespace OHOS

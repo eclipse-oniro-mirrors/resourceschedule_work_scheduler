@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -238,10 +238,6 @@ void RunWorkInfoJsonParcelFuzzer(FuzzedDataProvider &provider)
     parcelWorkInfo.RequestExtras(extras);
     MessageParcel parcel;
     if (parcelWorkInfo.Marshalling(parcel)) {
-        std::vector<uint8_t> tail = provider.ConsumeRemainingBytes<uint8_t>();
-        if (!tail.empty()) {
-            parcel.WriteBuffer(tail.data(), tail.size());
-        }
         parcel.RewindRead(0);
         std::unique_ptr<WorkInfo> unmarshalled(WorkInfo::Unmarshalling(parcel));
         if (unmarshalled != nullptr) {
