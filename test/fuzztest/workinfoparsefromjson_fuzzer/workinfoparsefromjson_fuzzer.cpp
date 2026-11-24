@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -21,9 +21,7 @@
 #include <cerrno>
 #include <string>
 
-#include "iwork_sched_service.h"
-#include "work_scheduler_service.h"
-#include "work_sched_common.h"
+#include "securec.h"
 #include "work_condition.h"
 #include "work_info.h"
 #include "nlohmann/json.hpp"
@@ -33,25 +31,12 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 namespace OHOS {
 namespace WorkScheduler {
 
-const std::u16string WORK_SCHEDULER_STUB_TOKEN = u"ohos.workscheduler.iworkschedservice";
-static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
-
-bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
-{
-    return true;
-}
-
-void InitWorkSchedulerService()
-{
-    workSchedulerService_ = DelayedSingleton<WorkSchedulerService>::GetInstance();
-    workSchedulerService_->OnStart();
-    if (!workSchedulerService_->ready_) {
-        workSchedulerService_->ready_ = true;
-    }
-    if (workSchedulerService_->checkBundle_) {
-        workSchedulerService_->checkBundle_ = false;
-    }
-}
+constexpr int32_t INVALID_SA_ID = -1;
+constexpr int32_t MOD_NETWORK = 7;
+constexpr int32_t MOD_CHARGER = 6;
+constexpr int32_t MOD_BATTERY = 4;
+constexpr int32_t MOD_STORAGE = 4;
+constexpr uint8_t MOD_TWO = 2;
 
 static int32_t GetInt32FromData(const uint8_t* data, size_t size, size_t& offset)
 {
@@ -77,10 +62,9 @@ static uint32_t GetUint32FromData(const uint8_t* data, size_t size, size_t& offs
 
 static bool GetBoolFromData(const uint8_t* data, size_t size, size_t& offset)
 {
-    constexpr uint8_t modTwo = 2;
     bool val = false;
     if (offset < size) {
-        val = (data[offset] % modTwo) == 1;
+        val = (data[offset] % MOD_TWO) == 1;
         offset += 1;
     }
     return val;
@@ -95,6 +79,30 @@ static int64_t GetInt64FromData(const uint8_t* data, size_t size, size_t& offset
         }
     }
     return val;
+}
+
+// corpus/init keeps the OAT-required '#' copyright header; skip leading comment/blank lines so
+// the seed payload placed after the header is fed to the fuzz logic unchanged.
+const uint8_t* SkipCorpusCommentHeader(const uint8_t* data, size_t size, size_t& payloadSize)
+{
+    size_t index = 0;
+    while (index < size) {
+        size_t lineEnd = index;
+        while (lineEnd < size && data[lineEnd] != '\n') {
+            ++lineEnd;
+        }
+        size_t first = index;
+        while (first < lineEnd && (data[first] == ' ' || data[first] == '\t')) {
+            ++first;
+        }
+        bool isCommentOrBlank = first == lineEnd || data[first] == '#';
+        if (!isCommentOrBlank) {
+            break;
+        }
+        index = (lineEnd < size) ? lineEnd + 1 : lineEnd;
+    }
+    payloadSize = size - index;
+    return data + index;
 }
 
 void FuzzParseFromJsonBasic(const uint8_t* data, size_t size)
@@ -125,18 +133,13 @@ void FuzzParseFromJsonWithAllConditions(const uint8_t* data, size_t size)
     root["earliestStartTime"] = GetInt32FromData(data, size, offset);
     root["createTime"] = static_cast<uint64_t>(GetInt64FromData(data, size, offset));
 
-    constexpr int32_t modNetwork = 7;
-    constexpr int32_t modCharger = 6;
-    constexpr int32_t modBattery = 4;
-    constexpr int32_t modStorage = 4;
-    
     nlohmann::json conditions;
-    conditions["network"] = GetInt32FromData(data, size, offset) % modNetwork;
+    conditions["network"] = GetInt32FromData(data, size, offset) % MOD_NETWORK;
     conditions["isCharging"] = GetBoolFromData(data, size, offset);
-    conditions["chargerType"] = GetInt32FromData(data, size, offset) % modCharger;
+    conditions["chargerType"] = GetInt32FromData(data, size, offset) % MOD_CHARGER;
     conditions["batteryLevel"] = GetInt32FromData(data, size, offset);
-    conditions["batteryStatus"] = GetInt32FromData(data, size, offset) % modBattery;
-    conditions["storage"] = GetInt32FromData(data, size, offset) % modStorage;
+    conditions["batteryStatus"] = GetInt32FromData(data, size, offset) % MOD_BATTERY;
+    conditions["storage"] = GetInt32FromData(data, size, offset) % MOD_STORAGE;
     conditions["isDeepIdle"] = GetBoolFromData(data, size, offset);
     conditions["deepIdleTime"] = GetInt32FromData(data, size, offset);
 
@@ -159,10 +162,14 @@ void FuzzParseFromJsonSaPath(const uint8_t* data, size_t size)
     size_t offset = 0;
     int32_t workId = GetInt32FromData(data, size, offset);
     int32_t saId = GetInt32FromData(data, size, offset);
-    if (saId == -1) {
+    if (saId == INVALID_SA_ID) {
         saId = 0;
     }
     bool residentSa = GetBoolFromData(data, size, offset);
+    int32_t refreshSaId = GetInt32FromData(data, size, offset);
+    if (refreshSaId == INVALID_SA_ID) {
+        refreshSaId = 0;
+    }
 
     nlohmann::json root;
     root["workId"] = workId;
@@ -171,8 +178,9 @@ void FuzzParseFromJsonSaPath(const uint8_t* data, size_t size)
     root["persisted"] = true;
 
     WorkInfo workInfo;
-    workInfo.RefreshSaId(saId);
     workInfo.ParseFromJson(root);
+    // ParseFromJson overwrites saId_ with root["saId"], so RefreshSaId runs afterwards to take effect.
+    workInfo.RefreshSaId(refreshSaId);
 
     workInfo.IsSA();
     workInfo.GetSaId();
@@ -233,8 +241,8 @@ void FuzzParseFromJsonRoundTrip(const uint8_t* data, size_t size)
     bool isCharging = GetBoolFromData(data, size, offset);
     bool isDeepIdle = GetBoolFromData(data, size, offset);
     int64_t baseTime = GetInt64FromData(data, size, offset);
-    int32_t networkType = GetInt32FromData(data, size, offset) % 7;
-    int32_t chargerType = GetInt32FromData(data, size, offset) % 6;
+    int32_t networkType = GetInt32FromData(data, size, offset) % MOD_NETWORK;
+    int32_t chargerType = GetInt32FromData(data, size, offset) % MOD_CHARGER;
 
     WorkInfo srcInfo;
     srcInfo.SetWorkId(workId);
@@ -243,17 +251,13 @@ void FuzzParseFromJsonRoundTrip(const uint8_t* data, size_t size)
     srcInfo.RequestNetworkType(WorkCondition::Network(networkType));
     srcInfo.RequestChargerType(isCharging, WorkCondition::Charger(chargerType));
     srcInfo.RequestBatteryLevel(batteryLevel);
-    constexpr int32_t mockUid = 1000;
-    constexpr int32_t mockAppIndex = 1;
-    constexpr int32_t mockEarliestStartTime = 100;
-    constexpr int32_t mockDeepIdleTime = 300;
 
     srcInfo.RequestBatteryStatus(WorkCondition::BatteryStatus::BATTERY_STATUS_LOW_OR_OKAY);
     srcInfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
     srcInfo.RequestRepeatCycle(timeInterval, cycle);
     srcInfo.RequestBaseTime(static_cast<time_t>(baseTime));
     srcInfo.RequestDeepIdle(isDeepIdle);
-    
+
     FuzzParseFromJsonRoundTripPart2(srcInfo);
 }
 
@@ -312,7 +316,7 @@ void FuzzParseFromJsonEdgeCasesPart2()
     workInfo10.ParseFromJson(boolPropWrong);
 }
 
-void FuzzParseFromJsonEdgeCases(const uint8_t* data, size_t size)
+void FuzzParseFromJsonEdgeCases()
 {
     WorkInfo workInfo1;
     nlohmann::json emptyJson;
@@ -349,28 +353,33 @@ void FuzzParseFromJsonEdgeCases(const uint8_t* data, size_t size)
 
 bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
 {
-    InitWorkSchedulerService();
-
     FuzzParseFromJsonBasic(data, size);
     FuzzParseFromJsonWithAllConditions(data, size);
     FuzzParseFromJsonSaPath(data, size);
     FuzzParseFromJsonRoundTrip(data, size);
-    FuzzParseFromJsonEdgeCases(data, size);
-
-    if (workSchedulerService_) {
-        workSchedulerService_->OnStop();
-    }
     return true;
 }
 } // namespace WorkScheduler
 } // namespace OHOS
 
 /* Fuzzer entry point */
+extern "C" int LLVMFuzzerInitialize(int *argc, char ***argv)
+{
+    (void)argc;
+    (void)argv;
+    // Fixed edge cases are exercised once here instead of every iteration, keeping the fuzz entry
+    // fully input-driven and avoiding repeated fixed overhead in the mutation budget.
+    OHOS::WorkScheduler::FuzzParseFromJsonEdgeCases();
+    return 0;
+}
+
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size)
 {
     if (data == nullptr || size == 0) {
         return 0;
     }
-    OHOS::WorkScheduler::DoSomethingInterestingWithMyAPI(data, size);
+    size_t payloadSize = 0;
+    const uint8_t* payload = OHOS::WorkScheduler::SkipCorpusCommentHeader(data, size, payloadSize);
+    OHOS::WorkScheduler::DoSomethingInterestingWithMyAPI(payload, payloadSize);
     return 0;
 }
