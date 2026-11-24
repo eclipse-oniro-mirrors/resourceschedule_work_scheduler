@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -173,10 +173,13 @@ void AddRequestCondition(FuzzData &provider, WorkInfo &workInfo, WorkCondition::
             workInfo.RequestNetworkType(static_cast<WorkCondition::Network>(PositiveMod<NETWORK_RANGE>(
                 provider.GetInt32())));
             break;
-        case WorkCondition::Type::CHARGER:
-            workInfo.RequestChargerType(provider.GetBool(),
-                static_cast<WorkCondition::Charger>(PositiveMod<CHARGER_RANGE>(provider.GetInt32())));
+        case WorkCondition::Type::CHARGER: {
+            bool isCharging = provider.GetBool();
+            WorkCondition::Charger chargerType = static_cast<WorkCondition::Charger>(
+                PositiveMod<CHARGER_RANGE>(provider.GetInt32()));
+            workInfo.RequestChargerType(isCharging, chargerType);
             break;
+        }
         case WorkCondition::Type::BATTERY_STATUS:
             workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(
                 PositiveMod<BATTERY_STATUS_RANGE>(provider.GetInt32())));
@@ -212,10 +215,15 @@ void AddExtras(FuzzData &provider, WorkInfo &workInfo)
     AAFwk::WantParams params;
     std::string executeImmediate = provider.GetBool() ? "false" : "true";
     params.SetParam("executeImmediate", AAFwk::String::Box(executeImmediate));
-    params.SetParam(provider.GetString(), AAFwk::Integer::Box(provider.GetInt32()));
-    params.SetParam(provider.GetString(), AAFwk::Boolean::Box(provider.GetBool()));
-    params.SetParam(provider.GetString(), AAFwk::Double::Box(static_cast<double>(provider.GetInt32()) /
-        static_cast<double>(DOUBLE_SCALE)));
+    std::string intKey = provider.GetString();
+    int32_t intValue = provider.GetInt32();
+    params.SetParam(intKey, AAFwk::Integer::Box(intValue));
+    std::string boolKey = provider.GetString();
+    bool boolValue = provider.GetBool();
+    params.SetParam(boolKey, AAFwk::Boolean::Box(boolValue));
+    std::string doubleKey = provider.GetString();
+    double doubleValue = static_cast<double>(provider.GetInt32()) / static_cast<double>(DOUBLE_SCALE);
+    params.SetParam(doubleKey, AAFwk::Double::Box(doubleValue));
     workInfo.RequestExtras(params);
 }
 
@@ -278,6 +286,14 @@ void PrepareDataManager(FuzzData &provider, const std::shared_ptr<WorkStatus> &w
         PositiveMod<ENUM_SPREAD>(provider.GetInt32()));
     DelayedSingleton<WorkSchedulerService>::GetInstance()->UpdateEffiResApplyInfo(
         workStatus->uid_, provider.GetBool());
+}
+
+void ResetDataManager()
+{
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->ClearDeviceStandyWhitelist();
+    dataManager->ClearDeviceStandyRestrictlist();
+    dataManager->ClearAllGroup();
 }
 
 void FillCurrentConditions(FuzzData &provider, const std::shared_ptr<WorkStatus> &workStatus)
@@ -352,6 +368,7 @@ void ExerciseStatus(FuzzData &provider, const std::shared_ptr<WorkStatus> &workS
             auto workStatus = BuildWorkStatus(provider, i);
             ExerciseStatus(provider, workStatus);
         }
+        ResetDataManager();
         return true;
     }
 } // namespace WorkScheduler

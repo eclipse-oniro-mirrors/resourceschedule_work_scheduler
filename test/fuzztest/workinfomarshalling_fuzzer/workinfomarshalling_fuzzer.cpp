@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -156,7 +156,9 @@ WorkInfo BuildWorkInfo(FuzzData &provider, bool allowExtras = true)
 {
     WorkInfo workInfo;
     workInfo.SetWorkId(provider.GetInt32());
-    workInfo.SetElement(provider.GetString(), provider.GetString());
+    std::string bundleName = provider.GetString();
+    std::string abilityName = provider.GetString();
+    workInfo.SetElement(bundleName, abilityName);
     workInfo.RequestPersisted(provider.GetBool());
     workInfo.RefreshUid(provider.GetInt32());
     workInfo.RefreshAppIndex(PositiveMod<APP_INDEX_RANGE>(provider.GetInt32()));
@@ -170,7 +172,9 @@ WorkInfo BuildWorkInfo(FuzzData &provider, bool allowExtras = true)
         workInfo.RequestNetworkType(PickEnum<WorkCondition::Network>(provider));
     }
     if (provider.GetBool()) {
-        workInfo.RequestChargerType(provider.GetBool(), PickEnum<WorkCondition::Charger>(provider));
+        bool isCharging = provider.GetBool();
+        WorkCondition::Charger charger = PickEnum<WorkCondition::Charger>(provider);
+        workInfo.RequestChargerType(isCharging, charger);
     }
     if (provider.GetBool()) {
         workInfo.RequestBatteryLevel(PositiveMod<BATTERY_LEVEL_SPREAD>(provider.GetInt32()));
@@ -217,7 +221,15 @@ void FuzzStructuredParcel(FuzzData &provider)
 {
     WorkInfo workInfoWithExtras = BuildWorkInfo(provider, true);
     MessageParcel extrasParcel;
-    workInfoWithExtras.Marshalling(extrasParcel);
+    if (workInfoWithExtras.Marshalling(extrasParcel)) {
+        extrasParcel.RewindRead(0);
+        std::unique_ptr<WorkInfo> extrasInfo(WorkInfo::Unmarshalling(extrasParcel));
+        if (extrasInfo != nullptr) {
+            std::string extrasDump;
+            extrasInfo->Dump(extrasDump);
+            extrasInfo->ParseToJsonStr();
+        }
+    }
 
     WorkInfo workInfo = BuildWorkInfo(provider, false);
     MessageParcel parcel;
@@ -226,7 +238,15 @@ void FuzzStructuredParcel(FuzzData &provider)
     std::unique_ptr<WorkInfo> read(WorkInfo::Unmarshalling(parcel));
     if (read != nullptr) {
         MessageParcel secondParcel;
-        read->Marshalling(secondParcel);
+        if (read->Marshalling(secondParcel)) {
+            secondParcel.RewindRead(0);
+            std::unique_ptr<WorkInfo> secondRead(WorkInfo::Unmarshalling(secondParcel));
+            if (secondRead != nullptr) {
+                std::string secondDump;
+                secondRead->Dump(secondDump);
+                secondRead->ParseToJsonStr();
+            }
+        }
         std::string result;
         read->Dump(result);
         read->ParseToJsonStr();
@@ -235,13 +255,17 @@ void FuzzStructuredParcel(FuzzData &provider)
 
 void FillJsonBase(FuzzData &provider, nlohmann::json &root)
 {
-    if (provider.GetBool()) {
-        root["workId"] = provider.GetInt32();
+    root["workId"] = provider.GetInt32();
+    std::string bundleName = provider.GetString();
+    if (bundleName.empty()) {
+        bundleName = "com.example.fuzz";
     }
-    if (provider.GetBool()) {
-        root["bundleName"] = provider.GetString();
-        root["abilityName"] = provider.GetString();
+    std::string abilityName = provider.GetString();
+    if (abilityName.empty()) {
+        abilityName = "FuzzAbility";
     }
+    root["bundleName"] = bundleName;
+    root["abilityName"] = abilityName;
     if (provider.GetBool()) {
         root["saId"] = provider.GetInt32();
         root["residentSa"] = provider.GetBool();

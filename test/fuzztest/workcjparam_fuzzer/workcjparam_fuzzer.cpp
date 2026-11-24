@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -268,7 +268,7 @@ void BuildCArrParameters(FuzzData &provider, CArrParameters &arrParam)
         arrParam.head = nullptr;
         return;
     }
-    arrParam.head = static_cast<CParameters *>(malloc(sizeof(CParameters) * requestCount));
+    arrParam.head = static_cast<CParameters *>(calloc(requestCount, sizeof(CParameters)));
     if (arrParam.head == nullptr) {
         arrParam.size = 0;
         return;
@@ -332,8 +332,10 @@ void FillNativeWorkInfoConditions(FuzzData &provider, WorkInfo &workInfo)
             static_cast<WorkCondition::Network>(PositiveMod<NETWORK_RANGE>(provider.GetInt32())));
     }
     if (provider.GetBool()) {
-        workInfo.RequestChargerType(provider.GetBool(),
-            static_cast<WorkCondition::Charger>(PositiveMod<CHARGER_RANGE>(provider.GetInt32())));
+        bool isCharging = provider.GetBool();
+        WorkCondition::Charger chargerType = static_cast<WorkCondition::Charger>(
+            PositiveMod<CHARGER_RANGE>(provider.GetInt32()));
+        workInfo.RequestChargerType(isCharging, chargerType);
     }
     if (provider.GetBool()) {
         workInfo.RequestBatteryLevel(PositiveMod<BATTERY_LEVEL_SPREAD>(provider.GetInt32()));
@@ -447,20 +449,20 @@ void FuzzMallocCString(FuzzData &provider)
 }
 } // namespace
 
-bool DoSomethingInterestingWithMyAPI(const uint8_t *data, size_t size)
-{
-    if (data == nullptr || size < MIN_SIZE) {
-        return false;
+    bool DoSomethingInterestingWithMyAPI(const uint8_t *data, size_t size)
+    {
+        if (data == nullptr || size < MIN_SIZE) {
+            return false;
+        }
+        FuzzData provider(data, size);
+        FuzzGetWorkInfo(provider);
+        FuzzGetConditionParts(provider);
+        FuzzGetExtrasInfo(provider);
+        FuzzParseWorkInfo(provider);
+        FuzzParseExtrasInfo(provider);
+        FuzzMallocCString(provider);
+        return true;
     }
-    FuzzData provider(data, size);
-    FuzzGetWorkInfo(provider);
-    FuzzGetConditionParts(provider);
-    FuzzGetExtrasInfo(provider);
-    FuzzParseWorkInfo(provider);
-    FuzzParseExtrasInfo(provider);
-    FuzzMallocCString(provider);
-    return true;
-}
 } // namespace WorkScheduler
 } // namespace OHOS
 

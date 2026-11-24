@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Huawei Device Co., Ltd.
+ * Copyright (c) 2026 Huawei Device Co., Ltd.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -136,17 +136,20 @@ int32_t PositiveMod(int32_t value)
 
 std::shared_ptr<DetectorValue> BuildDetectorValue(FuzzData &provider)
 {
-    return std::make_shared<DetectorValue>(
-        PositiveMod<DETECTOR_VALUE_RANGE>(provider.GetInt32()),
-        PositiveMod<DETECTOR_TIME_RANGE>(provider.GetInt32()),
-        provider.GetBool(), provider.GetString());
+    int32_t intVal = PositiveMod<DETECTOR_VALUE_RANGE>(provider.GetInt32());
+    int32_t timeVal = PositiveMod<DETECTOR_TIME_RANGE>(provider.GetInt32());
+    bool boolVal = provider.GetBool();
+    std::string strVal = provider.GetString();
+    return std::make_shared<DetectorValue>(intVal, timeVal, boolVal, strVal);
 }
 
 void FillWorkInfo(FuzzData &provider, WorkInfo &workInfo, int32_t index)
 {
     int32_t uid = BASE_UID + PositiveMod<UID_RANGE>(provider.GetInt32());
     workInfo.SetWorkId(index + 1 + PositiveMod<WORK_ID_RANGE>(provider.GetInt32()));
-    workInfo.SetElement(provider.GetString(), provider.GetString());
+    std::string bundleName = provider.GetString();
+    std::string abilityName = provider.GetString();
+    workInfo.SetElement(bundleName, abilityName);
     workInfo.RefreshUid(uid);
     workInfo.RequestPersisted(provider.GetBool());
     workInfo.SetEarliestStartTime(PositiveMod<MIN_INTERVAL_RANGE>(provider.GetInt32()));
@@ -156,8 +159,10 @@ void FillWorkInfo(FuzzData &provider, WorkInfo &workInfo, int32_t index)
             provider.GetInt32())));
     }
     if (provider.GetBool()) {
-        workInfo.RequestChargerType(provider.GetBool(), static_cast<WorkCondition::Charger>(
-            PositiveMod<CHARGER_RANGE>(provider.GetInt32())));
+        bool isCharging = provider.GetBool();
+        WorkCondition::Charger chargerType = static_cast<WorkCondition::Charger>(
+            PositiveMod<CHARGER_RANGE>(provider.GetInt32()));
+        workInfo.RequestChargerType(isCharging, chargerType);
     }
     if (provider.GetBool()) {
         workInfo.RequestBatteryStatus(static_cast<WorkCondition::BatteryStatus>(
@@ -213,12 +218,26 @@ void PrepareDataManager(FuzzData &provider)
     if (bundleName.empty()) {
         bundleName = "bundle";
     }
-    dataManager->SetDeviceSleep(provider.GetBool());
-    dataManager->SetDeepIdle(provider.GetBool());
-    dataManager->OnDeviceStandyWhitelistChanged(bundleName, provider.GetBool());
-    dataManager->OnDeviceStandyRestrictlistChanged(provider.GetString(), provider.GetBool());
-    dataManager->AddGroup(bundleName, PositiveMod<USER_ID_RANGE>(provider.GetInt32()),
-        PositiveMod<GROUP_RANGE>(provider.GetInt32()));
+    std::string restrictBundle = provider.GetString();
+    bool isSleep = provider.GetBool();
+    bool isDeepIdle = provider.GetBool();
+    bool inWhitelist = provider.GetBool();
+    bool inRestrictlist = provider.GetBool();
+    int32_t userId = PositiveMod<USER_ID_RANGE>(provider.GetInt32());
+    int32_t appGroup = PositiveMod<GROUP_RANGE>(provider.GetInt32());
+    dataManager->SetDeviceSleep(isSleep);
+    dataManager->SetDeepIdle(isDeepIdle);
+    dataManager->OnDeviceStandyWhitelistChanged(bundleName, inWhitelist);
+    dataManager->OnDeviceStandyRestrictlistChanged(restrictBundle, inRestrictlist);
+    dataManager->AddGroup(bundleName, userId, appGroup);
+}
+
+void ResetDataManager()
+{
+    auto dataManager = DelayedSingleton<DataManager>::GetInstance();
+    dataManager->ClearDeviceStandyWhitelist();
+    dataManager->ClearDeviceStandyRestrictlist();
+    dataManager->ClearAllGroup();
 }
 
 void FuzzWorkQueue(FuzzData &provider)
@@ -302,6 +321,7 @@ void FuzzWorkQueueManager(FuzzData &provider)
         PrepareDataManager(provider);
         FuzzWorkQueue(provider);
         FuzzWorkQueueManager(provider);
+        ResetDataManager();
         return true;
     }
 } // namespace WorkScheduler
