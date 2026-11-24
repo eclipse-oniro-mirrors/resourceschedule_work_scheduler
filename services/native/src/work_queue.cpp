@@ -198,7 +198,7 @@ shared_ptr<WorkStatus> WorkQueue::GetWorkToRunByPriority()
     auto work = workList_.begin();
     shared_ptr<WorkStatus> workStatus = nullptr;
     while (work != workList_.end()) {
-        if ((*work)->GetStatus() == WorkStatus::CONDITION_READY) {
+        if ((*work)->MarkRunningIfConditionReady()) {
             workStatus = *work;
             workStatus->priority_++;
             break;
@@ -219,6 +219,18 @@ list<shared_ptr<WorkStatus>> WorkQueue::GetWorkList()
 {
     std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
     return workList_;
+}
+
+void WorkQueue::CheckUnCurModeWork()
+{
+    std::lock_guard<ffrt::recursive_mutex> lock(workListMutex_);
+    for (auto it : workList_) {
+        if (it->IsCurrentMode()) {
+            continue;
+        }
+        it->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+        WS_HILOGI("current mode is not matched,workId: %{public}s.", it->workId_.c_str());
+    }
 }
 
 void WorkQueue::RemoveUnReady()

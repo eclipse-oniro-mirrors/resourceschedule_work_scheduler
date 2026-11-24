@@ -144,6 +144,7 @@ public:
      * @return Napi work info.
      */
     static void GetConditionInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork);
+    static void SetTimerAndExtrasInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork);
     /**
      * @brief Get callback error value.
      *

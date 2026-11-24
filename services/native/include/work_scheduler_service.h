@@ -34,7 +34,7 @@
 #include "work_event_handler.h"
 #include "singleton.h"
 #include "work_standby_state_change_callback.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 #include "background_loader_task_info.h"
 #include "frequency_info.h"
 #include "ffrt.h"
@@ -45,6 +45,7 @@ class WorkQueueManager;
 class WorkPolicyManager;
 class WorkBundleGroupChangeCallback;
 class SchedulerBgTaskSubscriber;
+class WorkGuardThread;
 class WorkSchedulerService final : public SystemAbility, public WorkSchedServiceStub,
     public std::enable_shared_from_this<WorkSchedulerService> {
     DISALLOW_COPY_AND_MOVE(WorkSchedulerService);
@@ -219,6 +220,13 @@ public:
     }
 
     /**
+     * @brief Check if the service is ready.
+     *
+     * @return True if the service is ready, else false.
+     */
+    bool IsReady();
+
+    /**
      * @brief Get work queue manager.
      *
      * @return Work queue manager.
@@ -282,6 +290,14 @@ public:
     void InitPreinstalledWork();
     void TriggerWorkIfConditionReady();
     /**
+     * @brief Start the guard thread for periodic orphan/timeout check.
+     */
+    void StartGuardThread();
+    /**
+     * @brief Stop the guard thread.
+     */
+    void StopGuardThread();
+    /**
      * @brief stop deepIdle works.
      *
      * @return success or fail.
@@ -324,10 +340,6 @@ public:
      */
     int32_t StopWorkForSA(int32_t saId) override;
     bool StopWorkInner(std::shared_ptr<WorkStatus> workStatus, int32_t uid, const bool needCancel, bool isTimeOut);
-    int32_t RegisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) override;
-    int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
     bool NeedCreateTimer(int32_t saId, int32_t uid, int32_t time);
     bool HasDeepIdleTime();
     void UpdateCloudConfigMinRepeatTime(const nlohmann::json &specialRoot);
@@ -345,7 +357,6 @@ private:
     bool WorkPolicyManagerInit(const std::shared_ptr<AppExecFwk::EventRunner>& runner);
     void OnAddSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
     void OnRemoveSystemAbility(int32_t systemAbilityId, const std::string& deviceId) override;
-    bool VerifyAbilityName(const std::string& bundleName, const std::string& abilityName, int32_t uid);
     bool VerifyTaskInfo(const TaskInfo& taskInfo);
     void LoadBackgroundLoaderFromFile(const char* path, int32_t& maxTimeoutCount, int32_t& backgroundLoaderTimeoutMs);
 #ifdef DEVICE_USAGE_STATISTICS_ENABLE
@@ -356,11 +367,13 @@ private:
     bool CheckWorkInfo(WorkInfo& workInfo, int32_t& uid);
     int32_t StartWorkInner(const WorkInfo& workInfo, int32_t uid);
     bool CheckCondition(WorkInfo& workInfo);
+    bool CheckPerformanceSensitiveCondition(WorkInfo& workInfo);
     bool IsBaseAbilityReady();
     void DumpUsage(std::string& result);
     void DumpCommonUsage(std::string& result);
     void DumpUsageForUserMode(std::string& result);
     void DumpParamSet(std::string& key, std::string& value, std::string& result);
+    void DumpSetHighPerfDuration(const std::string& value, std::string& result);
     void DumpProcessWorks(const std::string& bundleName, const std::string& abilityName, std::string& result);
     void DumpRunningWorks(const std::string& uidStr, const std::string& option, std::string& result);
     bool IsDebugApp(const std::string& bundleName);
@@ -389,7 +402,6 @@ private:
     void ReportUserDataSizeEvent();
     void DumpParamRestore(std::string& result);
     bool CheckPermission(const std::string &permission);
-    int32_t CheckPermissionAndTaskInfo(std::string& bundleName, int32_t& appIndex, int32_t uid);
     uint32_t GetMinCheckTime() const;
     void SetMinCheckTime(const uint32_t minCheckTime);
     void AddDeepIdleTimeToMap(const int32_t saId, const int32_t deepIdleTime, const int32_t uid);
@@ -422,6 +434,7 @@ private:
     bool CreateNodePersistedInfoFile();
     void DumpTwoParamsSet(std::vector<std::string> &argsInStr, std::string &result);
     void DumpAppGroup(const std::string& bundleName, const std::string& groupStr, std::string& result);
+    void DumpBackgroundLoader(const std::string& bundleName, const std::string& abilityName, std::string& result);
 
 private:
     std::set<int32_t> whitelist_;
@@ -438,6 +451,7 @@ private:
     std::atomic<bool> ready_ {false};
     std::shared_ptr<WorkEventHandler> handler_;
     std::shared_ptr<AppExecFwk::EventRunner> eventRunner_;
+    std::shared_ptr<WorkGuardThread> guardThread_;
     std::atomic<bool> checkBundle_ {true};
     std::set<std::string> exemptionBundles_;
     std::set<std::string> preinstalledBundles_;
@@ -457,6 +471,13 @@ private:
     ffrt::mutex frequencyMutex_;
     /* eg: {callingUid : {uid : frequencyInfo}} */
     std::map<int32_t, std::map<int32_t, FrequencyInfo>> frequencyMap_{};
+
+public:
+    // backgroundloader interfaces
+    int32_t RegisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t UnregisterTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t FinishTask(const BackgroundLoaderTaskInfo& taskInfo) override;
+    int32_t GetTaskInfo(int32_t taskId, BackgroundLoaderTaskInfo& taskInfo) override;
 };
 } // namespace WorkScheduler
 } // namespace OHOS

@@ -152,7 +152,7 @@
 | BatteryLevelListener | battery_level_listener.h | 电池电量 | 电量变化超过阈值 |
 | BatteryStatusListener | battery_status_listener.h | 电池状态 | 低电量/电量正常 |
 | ChargerListener | charger_listener.h | 充电状态 | 充电/放电/充电类型变化 |
-| ScreenListener | screen_listener.h | 屏幕状态 | 屏幕亮/灭 |
+| ScreenListener | screen_listener.h | 屏幕状态 | 屏幕亮/灭；车机亮屏等同解锁 |
 | StorageListener | storage_listener.h | 存储状态 | 存储空间低/正常 |
 | TimerListener | timer_listener.h | 定时器 | 定时周期到期 |
 | GroupListener | group_listener.h | 应用分组 | 应用分组变化 |

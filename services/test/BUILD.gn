@@ -43,6 +43,10 @@ ohos_unittest("WorkScheduleServiceTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
+    "src/conditions/battery_level_listener_test.cpp",
+    "src/conditions/battery_status_listener_test.cpp",
+    "src/conditions/charger_listener_test.cpp",
+    "src/conditions/condition_checker_test.cpp",
     "src/conditions/group_listener_test.cpp",
     "src/conditions/network_listener_test.cpp",
     "src/conditions/screen_listener_test.cpp",
@@ -57,6 +61,9 @@ ohos_unittest("WorkScheduleServiceTest") {
     "src/scheduler_bg_task_subscriber_test.cpp",
     "src/watchdog_test.cpp",
     "src/work_conn_manager_test.cpp",
+    "src/work_bundle_group_change_callback_test.cpp",
+    "src/work_datashare_helper_test.cpp",
+    "src/work_guard_thread_test.cpp",
     "src/work_policy_manager_test.cpp",
     "src/work_queue_manager_test.cpp",
     "src/work_queue_test.cpp",
@@ -89,6 +96,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "bundle_framework:appexecfwk_core",
     "c_utils:utils",
     "common_event_service:cesfwk_innerkits",
+    "data_share:datashare_consumer",
     "eventhandler:libeventhandler",
     "ffrt:libffrt",
     "googletest:gmock_main",
@@ -99,6 +107,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "resource_schedule_service:ressched_common_utils",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
     "time_service:time_client",
   ]
   defines = [ "WORK_SCHEDULER_TEST" ]
@@ -133,6 +142,9 @@ ohos_unittest("WorkScheduleServiceTest") {
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
   }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
+  }
 }
 
 ohos_unittest("BackgroundLoaderMgrTest") {
@@ -154,8 +166,9 @@ ohos_unittest("BackgroundLoaderMgrTest") {
     "-fno-omit-frame-pointer",
   ]
   sources = [
-    "src/background_loader_mgr_test.cpp",
-    "src/ability_connect_callback_test.cpp",
+    "src/background_loader/background_loader_mgr_test.cpp",
+    "src/background_loader/ability_connect_callback_test.cpp",
+    "src/background_loader/background_loader_database_test.cpp",
   ]
 
   deps = [
@@ -174,6 +187,7 @@ ohos_unittest("BackgroundLoaderMgrTest") {
     "resource_schedule_service:resschedsvc",
     "resource_schedule_service:ressched_common_utils",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
   ]
 
   defines = [ "WORK_SCHEDULER_TEST" ]

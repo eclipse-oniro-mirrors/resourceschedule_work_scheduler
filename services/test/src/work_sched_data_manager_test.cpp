@@ -137,5 +137,120 @@ HWTEST_F(DataManagerTest, SetDeviceSleep_001, TestSize.Level1)
     dataManager_->SetDeviceSleep(false);
     EXPECT_FALSE(dataManager_->GetDeviceSleep());
 }
+
+/**
+ * @tc.name: SetDeviceSleep_002
+ * @tc.desc: Test DataManager SetDeviceSleep true and GetDeviceSleep.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, SetDeviceSleep_002, TestSize.Level1)
+{
+    dataManager_->SetDeviceSleep(true);
+    EXPECT_TRUE(dataManager_->GetDeviceSleep());
+}
+
+/**
+ * @tc.name: SetDeepIdle_001
+ * @tc.desc: Test DataManager SetDeepIdle and GetDeepIdle.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, SetDeepIdle_001, TestSize.Level1)
+{
+    dataManager_->SetDeepIdle(true);
+    EXPECT_TRUE(dataManager_->GetDeepIdle());
+    dataManager_->SetDeepIdle(false);
+    EXPECT_FALSE(dataManager_->GetDeepIdle());
+}
+
+/**
+ * @tc.name: IsInDeviceStandyWhitelist_002
+ * @tc.desc: Test DataManager IsInDeviceStandyWhitelist returns true for existing bundle.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, IsInDeviceStandyWhitelist_002, TestSize.Level1)
+{
+    dataManager_->ClearDeviceStandyWhitelist();
+    dataManager_->OnDeviceStandyWhitelistChanged("bundleName1", true);
+    EXPECT_TRUE(dataManager_->IsInDeviceStandyWhitelist("bundleName1"));
+}
+
+/**
+ * @tc.name: AddDeviceStandyRestrictlist_001
+ * @tc.desc: Test DataManager AddDeviceStandyRestrictlist.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, AddDeviceStandyRestrictlist_001, TestSize.Level1)
+{
+    dataManager_->ClearDeviceStandyRestrictlist();
+    std::list<std::string> bundleNames = { "restrict1", "restrict2" };
+    dataManager_->AddDeviceStandyRestrictlist(bundleNames);
+    EXPECT_TRUE(dataManager_->IsInDeviceStandyRestrictlist("restrict1"));
+    EXPECT_TRUE(dataManager_->IsInDeviceStandyRestrictlist("restrict2"));
+}
+
+/**
+ * @tc.name: IsInDeviceStandyRestrictlist_001
+ * @tc.desc: Test DataManager IsInDeviceStandyRestrictlist returns false for non-existing.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, IsInDeviceStandyRestrictlist_001, TestSize.Level1)
+{
+    dataManager_->ClearDeviceStandyRestrictlist();
+    EXPECT_FALSE(dataManager_->IsInDeviceStandyRestrictlist("nonexist"));
+}
+
+/**
+ * @tc.name: OnDeviceStandyRestrictlistChanged_001
+ * @tc.desc: Test DataManager OnDeviceStandyRestrictlistChanged add and remove.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, OnDeviceStandyRestrictlistChanged_001, TestSize.Level1)
+{
+    dataManager_->ClearDeviceStandyRestrictlist();
+    dataManager_->OnDeviceStandyRestrictlistChanged("restrict1", true);
+    EXPECT_TRUE(dataManager_->IsInDeviceStandyRestrictlist("restrict1"));
+    dataManager_->OnDeviceStandyRestrictlistChanged("restrict1", false);
+    EXPECT_FALSE(dataManager_->IsInDeviceStandyRestrictlist("restrict1"));
+}
+
+/**
+ * @tc.name: ClearDeviceStandyRestrictlist_001
+ * @tc.desc: Test DataManager ClearDeviceStandyRestrictlist.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, ClearDeviceStandyRestrictlist_001, TestSize.Level1)
+{
+    std::list<std::string> bundleNames = { "r1", "r2", "r3" };
+    dataManager_->AddDeviceStandyRestrictlist(bundleNames);
+    dataManager_->ClearDeviceStandyRestrictlist();
+    EXPECT_FALSE(dataManager_->IsInDeviceStandyRestrictlist("r1"));
+}
+
+/**
+ * @tc.name: AddGroup_003
+ * @tc.desc: Test DataManager AddGroup updates existing key with new group.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(DataManagerTest, AddGroup_003, TestSize.Level1)
+{
+    dataManager_->ClearAllGroup();
+    int32_t userId = 202221;
+    dataManager_->AddGroup("bundleName1", userId, 10);
+    int32_t group1 = 0;
+    dataManager_->FindGroup("bundleName1", userId, group1);
+    EXPECT_EQ(group1, 10);
+    dataManager_->AddGroup("bundleName1", userId, 50);
+    int32_t group2 = 0;
+    dataManager_->FindGroup("bundleName1", userId, group2);
+    EXPECT_EQ(group2, 50);
+}
 }
 }

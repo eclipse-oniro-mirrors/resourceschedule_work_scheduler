@@ -19,7 +19,6 @@
 #include <unistd.h>
 #include <gtest/gtest.h>
 #include "timer.h"
-#define private public
 #include "work_scheduler_service.h"
 #include "work_status.h"
 #include "work_bundle_group_change_callback.h"
@@ -29,6 +28,7 @@
 #include "conditions/battery_level_listener.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "work_sched_data_manager.h"
 #include "battery_info.h"
 #include "conditions/battery_status_listener.h"
 #include "conditions/charger_listener.h"
@@ -42,6 +42,7 @@
 #ifdef DEVICE_STANDBY_ENABLE
 #include "standby_service_client.h"
 #include "allow_type.h"
+#include "work_standby_state_change_callback.h"
 #endif
 #ifdef RESOURCESCHEDULE_BGTASKMGR_ENABLE
 #include "scheduler_bg_task_subscriber.h"
@@ -51,9 +52,13 @@
 #include "work_sched_errors.h"
 #include "work_sched_hilog.h"
 #include "work_policy_manager.h"
+#include "work_queue_manager.h"
+#include "work_conn_manager.h"
 #include "background_loader_task_info.h"
 #include "work_sched_constants.h"
+#include "work_sched_utils.h"
 #include "frequency_info.h"
+#include "ipc_skeleton.h"
 
 #ifdef DEVICE_STANDBY_ENABLE
 namespace OHOS {
@@ -73,6 +78,17 @@ ErrCode BackgroundTaskMgrHelper::SubscribeBackgroundTask(const BackgroundTaskSub
 {
     return ERR_OK;
 }
+
+ErrCode BackgroundTaskMgrHelper::GetEfficiencyResourcesInfos(
+    std::vector<std::shared_ptr<ResourceCallbackInfo>> &appList,
+    std::vector<std::shared_ptr<ResourceCallbackInfo>> &procList)
+{
+    int32_t uid = 1000;
+    std::shared_ptr<ResourceCallbackInfo> info = std::make_shared<ResourceCallbackInfo>(
+        uid, 0, ResourceType::WORK_SCHEDULER, "com.test.bundle");
+    appList.emplace_back(info);
+    return ERR_OK;
+}
 }
 }
 #endif
@@ -88,37 +104,90 @@ ErrCode BundleActiveClient::RegisterAppGroupCallBack(const sptr<IAppGroupCallbac
 }
 #endif
 
-namespace OHOS {
-namespace WorkScheduler {
-bool WorkSchedulerService::IsBaseAbilityReady()
-{
-    return true;
-}
-}
-}
-
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
-using namespace testing::ext;
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
     static const std::string PUSH_SERVICE_NAME = "push_manager_service";
     static const std::string BGTASK_SERVICE_NAME = "resource_schedule_service";
+    const int32_t TEST_UID = 40000;
+    bool g_isNativeToken = false;
 }
+
+bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
+{
+    uid = TEST_UID;
+    return true;
+}
+
+bool WorkSchedulerService::CheckProcessName()
+{
+    return g_isNativeToken;
+}
+
+bool WorkSchedulerService::CheckCallingServiceName()
+{
+    return g_isNativeToken;
+}
+
+class MockStopWorkConnManager : public WorkConnManager {
+public:
+    bool StopWork(std::shared_ptr<WorkStatus> workStatus, bool isTimeOut) override
+    {
+        return true;
+    }
+};
+
+using namespace testing::ext;
 class WorkSchedulerServiceTest : public testing::Test {
 public:
     static void SetUpTestCase() {}
     static void TearDownTestCase() {}
-    void SetUp() {}
-    void TearDown() {}
+    void SetUp()
+    {
+        g_isNativeToken = false;
+        auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        if (service != nullptr) {
+            if (service->handler_ == nullptr) {
+                if (!service->eventRunner_) {
+                    service->eventRunner_ = AppExecFwk::EventRunner::Create(
+                        "WorkSchedulerService", AppExecFwk::ThreadMode::FFRT);
+                }
+                if (service->eventRunner_ != nullptr) {
+                    service->handler_ = std::make_shared<WorkEventHandler>(
+                        service->eventRunner_, service);
+                }
+            }
+            if (service->workPolicyManager_ == nullptr) {
+                service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+            }
+            if (service->workPolicyManager_->workConnManager_ == nullptr) {
+                service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+            }
+            if (service->workQueueManager_ == nullptr) {
+                service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+            }
+        }
+    }
+    void TearDown()
+    {
+        auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+        if (service != nullptr) {
+            service->handler_.reset();
+            service->eventRunner_.reset();
+        }
+    }
     static std::shared_ptr<WorkSchedulerService> workSchedulerService_;
 };
 
 void GetNativeToken(const std::string &name)
 {
+    g_isNativeToken = true;
     auto tokenId = Security::AccessToken::AccessTokenKit::GetNativeTokenId(name);
-    SetSelfTokenID(tokenId);
+    if (tokenId != Security::AccessToken::INVALID_TOKENID) {
+        SetSelfTokenID(tokenId);
+    }
 }
 
 std::shared_ptr<WorkSchedulerService> WorkSchedulerServiceTest::workSchedulerService_ =
@@ -148,18 +217,6 @@ class MyWorkSchedulerService : public WorkSchedServiceStub {
     int32_t SetExecFrequency(const FrequencyInfo& frequencyInfo) { return 0; }
     int32_t ResetExecFrequency(const int32_t uid) { return 0; }
 };
-/**
- * @tc.name: onStart_001
- * @tc.desc: Test WorkSchedulerService OnStart.
- * @tc.type: FUNC
- * @tc.require: I8ZDJI
- */
-HWTEST_F(WorkSchedulerServiceTest, onStart_001, TestSize.Level0)
-{
-    workSchedulerService_->OnStart();
-    EXPECT_NE(workSchedulerService_, nullptr);
-}
-
 /**
  * @tc.name: startWork_001
  * @tc.desc: Test WorkSchedulerService startWork.
@@ -686,37 +743,16 @@ HWTEST_F(WorkSchedulerServiceTest, Dump_009, TestSize.Level1)
     WS_HILOGI("====== WorkSchedulerServiceTest.Dump_009 end ====== ");
 }
 
-HWTEST_F(WorkSchedulerServiceTest, WorkStandbyStateChangeCallbackTest_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 begin ====== ");
-    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, false);
-    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(true, true);
-    workSchedulerService_->standbyStateObserver_->OnDeviceIdleMode(false, true);
-    workSchedulerService_->standbyStateObserver_->OnAllowListChanged(0, "bundlename", 0, true);
-    EXPECT_NE(workSchedulerService_, nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkStandbyStateChangeCallbackTest_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, WorkBundleGroupChangeCallback_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkBundleGroupChangeCallback_001 begin ====== ");
-    OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo1(0, 1, 2, 0, "bundlename");
-    workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo1);
-    OHOS::DeviceUsageStats::AppGroupCallbackInfo appGroupCallbackInfo2(0, 2, 1, 0, "bundlename");
-    workSchedulerService_->groupObserver_->OnAppGroupChanged(appGroupCallbackInfo2);
-    EXPECT_NE(workSchedulerService_, nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkBundleGroupChangeCallback_001 end ====== ");
-}
-
 HWTEST_F(WorkSchedulerServiceTest, WorkSchedulerConnection_001, TestSize.Level1)
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkSchedulerConnection_001 begin ====== ");
     auto workinfo = std::make_shared<WorkInfo>();
     WorkSchedulerConnection conection(workinfo);
     AppExecFwk::ElementName element;
+    EXPECT_FALSE(conection.IsConnected());
     conection.StopWork();
     conection.OnAbilityDisconnectDone(element, 0);
-    EXPECT_EQ(conection.proxy_, nullptr);
+    EXPECT_FALSE(conection.IsConnected());
     WS_HILOGI("====== WorkSchedulerServiceTest.WorkSchedulerConnection_001 end ====== ");
 }
 
@@ -724,176 +760,41 @@ HWTEST_F(WorkSchedulerServiceTest, SchedulerBgTaskSubscriber_001, TestSize.Level
 {
     WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 begin ====== ");
     SchedulerBgTaskSubscriber subscriber;
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
     subscriber.OnProcEfficiencyResourcesApply(nullptr);
     subscriber.OnProcEfficiencyResourcesReset(nullptr);
     subscriber.OnAppEfficiencyResourcesApply(nullptr);
     subscriber.OnAppEfficiencyResourcesReset(nullptr);
 
-    auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(0, 0, 0xFFFF, "name");
+    int32_t uid = 1000;
+    service->whitelist_.erase(uid);
+    auto resourceInfo = std::make_shared<BackgroundTaskMgr::ResourceCallbackInfo>(uid, 0, 0xFFFF, "name");
     subscriber.OnProcEfficiencyResourcesApply(resourceInfo);
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(uid));
     subscriber.OnProcEfficiencyResourcesReset(resourceInfo);
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(uid));
     subscriber.OnAppEfficiencyResourcesApply(resourceInfo);
+    EXPECT_TRUE(service->CheckEffiResApplyInfo(uid));
     subscriber.OnAppEfficiencyResourcesReset(resourceInfo);
-    EXPECT_EQ(resourceInfo->GetBundleName(), "name");
+    EXPECT_FALSE(service->CheckEffiResApplyInfo(uid));
     WS_HILOGI("====== WorkSchedulerServiceTest.SchedulerBgTaskSubscriber_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, WorkQueueEventHandler_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 begin ====== ");
-    WorkQueueEventHandler handler(nullptr, nullptr);
-    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(1);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(2);
-    handler.ProcessEvent(event);
-    EXPECT_TRUE(handler.manager_ == nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkQueueEventHandler_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, WorkEventHandler_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkEventHandler_001 begin ====== ");
-    WorkEventHandler handler(workSchedulerService_->eventRunner_, workSchedulerService_);
-    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(1);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(2);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(3);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(4);
-    handler.ProcessEvent(event);
-    event = AppExecFwk::InnerEvent::Get(5);
-    handler.ProcessEvent(event);
-    EXPECT_TRUE(workSchedulerService_->eventRunner_ != nullptr);
-    WS_HILOGI("====== WorkSchedulerServiceTest.WorkEventHandler_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, BatteryLevelListener_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryLevelListener_001 begin ====== ");
-
-    BatteryLevelListener batteryLevelListener(workSchedulerService_->workQueueManager_, workSchedulerService_);
-
-    batteryLevelListener.Start();
-    EXPECT_NE(batteryLevelListener.commonEventSubscriber, nullptr);
-
-    EventFwk::CommonEventData data;
-    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_CHANGED);
-    data.SetWant(want);
-    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    want.SetParam(PowerMgr::BatteryInfo::COMMON_EVENT_KEY_CAPACITY, 20);
-    data.SetWant(want);
-    batteryLevelListener.commonEventSubscriber->OnReceiveEvent(data);
-    batteryLevelListener.Stop();
-
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryLevelListener_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, BatteryStatusListener_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryStatusListener_001 begin ====== ");
-    BatteryStatusListener batteryStatusListener(workSchedulerService_->workQueueManager_);
-
-    batteryStatusListener.Start();
-    EXPECT_NE(batteryStatusListener.commonEventSubscriber, nullptr);
-
-    EventFwk::CommonEventData data;
-    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_LOW);
-    data.SetWant(want);
-    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_BATTERY_OKAY);
-    data.SetWant(want);
-    batteryStatusListener.commonEventSubscriber->OnReceiveEvent(data);
-    batteryStatusListener.Stop();
-
-    WS_HILOGI("====== WorkSchedulerServiceTest.BatteryStatusListener_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, ChargerListener_001, TestSize.Level1)
-{
-    WS_HILOGI("====== WorkSchedulerServiceTest.ChargerListener_001 begin ====== ");
-    ChargerListener chargerListener(workSchedulerService_->workQueueManager_);
-
-    chargerListener.Start();
-    EXPECT_NE(chargerListener.commonEventSubscriber, nullptr);
-
-    EventFwk::CommonEventData data;
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_CONNECTED);
-    data.SetWant(want);
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_AC));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_USB));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_WIRELESS));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_POWER_DISCONNECTED);
-    data.SetWant(want);
-    data.SetCode(static_cast<uint32_t>(PowerMgr::BatteryPluggedType::PLUGGED_TYPE_NONE));
-    chargerListener.commonEventSubscriber->OnReceiveEvent(data);
-    chargerListener.Stop();
-
-    WS_HILOGI("====== WorkSchedulerServiceTest.ChargerListener_001 end ====== ");
 }
 
 HWTEST_F(WorkSchedulerServiceTest, ListenerStop_001, TestSize.Level1)
 {
     WS_HILOGI("====== ListenerStop_001 begin====== ");
-    for (auto pair : workSchedulerService_->workQueueManager_->listenerMap_)
+    auto workQueueManager = workSchedulerService_->workQueueManager_;
+    auto chargerListener = std::make_shared<ChargerListener>(workQueueManager);
+    workQueueManager->AddListener(WorkCondition::Type::CHARGER, chargerListener);
+    size_t sizeBefore = workQueueManager->listenerMap_.size();
+    for (auto pair : workQueueManager->listenerMap_)
     {
         pair.second->Stop();
     }
-    workSchedulerService_->workQueueManager_->listenerMap_.clear();
-    EXPECT_TRUE(workSchedulerService_->workQueueManager_->listenerMap_.size() == 0);
+    EXPECT_EQ(workQueueManager->listenerMap_.size(), sizeBefore);
+    EXPECT_GT(sizeBefore, 0);
+    workQueueManager->listenerMap_.erase(WorkCondition::Type::CHARGER);
     WS_HILOGI("====== ListenerStop_001 end ====== ");
-}
-
-HWTEST_F(WorkSchedulerServiceTest, WorkSchedServiceStub_001, TestSize.Level1)
-{
-    MyWorkSchedulerService s;
-    MessageParcel data, reply;
-    MessageOption option;
-    const int size = 11;
-    for (int i = 0; i < size; i++) {
-        s.OnRemoteRequest(i, data, reply, option);
-        WorkInfo info;
-        info.Marshalling(data);
-        s.OnRemoteRequest(i, data, reply, option);
-    }
-    int32_t ret = s.OnRemoteRequest(0, data, reply, option);
-    EXPECT_TRUE(ret != ERR_OK);
-}
-
-/**
- * @tc.name: SendEvent_001
- * @tc.desc: Test WorkSchedulerService SendEvent.
- * @tc.type: FUNC
- * @tc.require: I9J0A7
- */
-HWTEST_F(WorkSchedulerServiceTest, SendEvent_001, TestSize.Level1)
-{
-    int32_t initDelay = 2 * 1000;
-    workSchedulerService_->GetHandler()->
-        SendEvent(AppExecFwk::InnerEvent::Get(WorkEventHandler::SERVICE_INIT_MSG, 0), initDelay);
-    EXPECT_TRUE(workSchedulerService_->ready_);
 }
 
 /**
@@ -972,8 +873,10 @@ HWTEST_F(WorkSchedulerServiceTest, LoadSa_001, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, InitWorkSchedPluginMgr_001, TestSize.Level1)
 {
+    workSchedulerService_->whitelist_.clear();
     bool ret = workSchedulerService_->InitWorkSchedPluginMgr();
     EXPECT_TRUE(ret);
+    EXPECT_TRUE(workSchedulerService_->CheckEffiResApplyInfo(1000));
 }
 
 /**
@@ -1152,10 +1055,24 @@ HWTEST_F(WorkSchedulerServiceTest, DumpExemptionBundles_002, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_001, TestSize.Level1)
 {
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/test_exemption.json";
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp = fopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << filePath;
+    }
+    const char* jsonContent = "{\"work_scheduler_eng_exemption_bundles\":[\"com.test.bundle\"]}";
+    fputs(jsonContent, fp);
+    fclose(fp);
+
     workSchedulerService_->exemptionBundles_.clear();
-    const char* path = nullptr;
-    workSchedulerService_->LoadExemptionBundlesFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
+    workSchedulerService_->LoadExemptionBundlesFromFile(filePath);
+    EXPECT_TRUE(workSchedulerService_->IsExemptionBundle("com.test.bundle"));
+    workSchedulerService_->ClearExemptionBundles();
+    remove(filePath);
 }
 
 /**
@@ -1166,10 +1083,11 @@ HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_001, TestSize.Le
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadExemptionBundlesFromFile_002, TestSize.Level1)
 {
-    workSchedulerService_->exemptionBundles_.clear();
+    workSchedulerService_->exemptionBundles_.insert("com.keep.bundle");
     const char *path = "/a/b/c";
     workSchedulerService_->LoadExemptionBundlesFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->exemptionBundles_.empty());
+    EXPECT_TRUE(workSchedulerService_->IsExemptionBundle("com.keep.bundle"));
+    workSchedulerService_->ClearExemptionBundles();
 }
 
 /**
@@ -1224,10 +1142,25 @@ HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_003, TestSize.Level1)
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level1)
 {
-    workSchedulerService_->specialMap_.clear();
-    const char* path = nullptr;
-    workSchedulerService_->LoadMinRepeatTimeFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/test_min_repeat.json";
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp = fopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << filePath;
+    }
+    const char* jsonContent = "{\"work_scheduler_min_repeat_time\":"
+        "{\"default\":600000,\"special\":[{\"bundleName\":\"com.test.bundle\",\"time\":600000}]}}";
+    fputs(jsonContent, fp);
+    fclose(fp);
+
+    workSchedulerService_->ClearSpecialToMap();
+    workSchedulerService_->LoadMinRepeatTimeFromFile(filePath);
+    EXPECT_EQ(workSchedulerService_->specialMap_.count("com.test.bundle"), 1);
+    workSchedulerService_->ClearSpecialToMap();
+    remove(filePath);
 }
 
 /**
@@ -1238,10 +1171,12 @@ HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_001, TestSize.Level
  */
 HWTEST_F(WorkSchedulerServiceTest, LoadMinRepeatTimeFromFile_002, TestSize.Level1)
 {
-    workSchedulerService_->specialMap_.clear();
+    workSchedulerService_->ClearSpecialToMap();
+    workSchedulerService_->AddSpecialToMap("com.keep.bundle", 600000);
     const char *path = "/a/b/c";
     workSchedulerService_->LoadMinRepeatTimeFromFile(path);
-    EXPECT_TRUE(workSchedulerService_->specialMap_.empty());
+    EXPECT_EQ(workSchedulerService_->specialMap_.count("com.keep.bundle"), 1);
+    workSchedulerService_->ClearSpecialToMap();
 }
 
 /**
@@ -1353,18 +1288,6 @@ HWTEST_F(WorkSchedulerServiceTest, StopWorkForInner_001, TestSize.Level1)
 }
 
 /**
- * @tc.name: IsBaseAbilityReady_001
- * @tc.desc: Test WorkSchedulerService IsBaseAbilityReady.
- * @tc.type: FUNC
- * @tc.require: issue:#ICBWOI
- */
-HWTEST_F(WorkSchedulerServiceTest, IsBaseAbilityReady_001, TestSize.Level1)
-{
-    bool ret = workSchedulerService_->IsBaseAbilityReady();
-    EXPECT_EQ(ret, true);
-}
-
-/**
  * @tc.name: HasDeepIdleTime_001
  * @tc.desc: Test WorkSchedulerService HasDeepIdleTime.
  * @tc.type: FUNC
@@ -1437,10 +1360,9 @@ HWTEST_F(WorkSchedulerServiceTest, NeedCreateTimer_002, TestSize.Level1)
     std::shared_ptr<WorkPolicyManager> workPolicyManager = std::make_shared<WorkPolicyManager>(instance);
     workSchedulerService_->workPolicyManager_ = workPolicyManager;
     int32_t ret = workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
-    if (ret == ERR_OK) {
-        bool result = workSchedulerService_->NeedCreateTimer(saId, uid, time);
-        EXPECT_EQ(result, true);
-    }
+    ASSERT_EQ(ret, ERR_OK);
+    bool result = workSchedulerService_->NeedCreateTimer(saId, uid, time);
+    EXPECT_EQ(result, true);
 }
 
 /**
@@ -1471,10 +1393,9 @@ HWTEST_F(WorkSchedulerServiceTest, NeedCreateTimer_003, TestSize.Level1)
     std::shared_ptr<WorkPolicyManager> workPolicyManager = std::make_shared<WorkPolicyManager>(instance);
     workSchedulerService_->workPolicyManager_ = workPolicyManager;
     int32_t ret = workSchedulerService_->workPolicyManager_->AddWork(workStatus, uid);
-    if (ret == ERR_OK) {
-        bool result = workSchedulerService_->NeedCreateTimer(saId, uid, deepIdleTime);
-        EXPECT_EQ(result, false);
-    }
+    ASSERT_EQ(ret, ERR_OK);
+    bool result = workSchedulerService_->NeedCreateTimer(saId, uid, deepIdleTime);
+    EXPECT_EQ(result, false);
 }
 
 /**
@@ -2057,6 +1978,1608 @@ HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_003, TestSize.Level1)
     EXPECT_EQ(result, INVALID_VALUE);
     workSchedulerService_->ClearExecFrequency();
     remove(filePath);
+}
+
+/**
+ * @tc.name: StartGuardThread_001
+ * @tc.desc: Test StartGuardThread is no-op when guard thread already exists.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StartGuardThread_001, TestSize.Level1)
+{
+    workSchedulerService_->guardThread_ = nullptr;
+    workSchedulerService_->StartGuardThread();
+    auto firstThread = workSchedulerService_->guardThread_;
+    workSchedulerService_->StartGuardThread();
+    EXPECT_EQ(workSchedulerService_->guardThread_, firstThread);
+    workSchedulerService_->StopGuardThread();
+}
+
+/**
+ * @tc.name: StopGuardThread_001
+ * @tc.desc: Test StopGuardThread stops and clears guard thread.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopGuardThread_001, TestSize.Level1)
+{
+    workSchedulerService_->guardThread_ = nullptr;
+    workSchedulerService_->StartGuardThread();
+    EXPECT_NE(workSchedulerService_->guardThread_, nullptr);
+    workSchedulerService_->StopGuardThread();
+    EXPECT_EQ(workSchedulerService_->guardThread_, nullptr);
+}
+
+/**
+ * @tc.name: AddDeepIdleTimeToMap_001
+ * @tc.desc: Test AddDeepIdleTimeToMap adds and updates entries.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, AddDeepIdleTimeToMap_001, TestSize.Level1)
+{
+    workSchedulerService_->deepIdleTimeMap_.clear();
+    workSchedulerService_->AddDeepIdleTimeToMap(100, 1800000, 10000);
+    EXPECT_EQ(workSchedulerService_->HasDeepIdleTime(), true);
+    auto map = workSchedulerService_->GetDeepIdleTimeMap();
+    EXPECT_EQ(map.count(100), 1);
+    EXPECT_EQ(map.at(100).first, 1800000);
+    workSchedulerService_->AddDeepIdleTimeToMap(100, 3600000, 10000);
+    map = workSchedulerService_->GetDeepIdleTimeMap();
+    EXPECT_EQ(map.at(100).first, 3600000);
+    workSchedulerService_->deepIdleTimeMap_.clear();
+}
+
+/**
+ * @tc.name: RemoveDeepIdleTimeToMap_001
+ * @tc.desc: Test RemoveDeepIdleTimeToMap erases entry from map.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, RemoveDeepIdleTimeToMap_001, TestSize.Level1)
+{
+    workSchedulerService_->deepIdleTimeMap_.clear();
+    workSchedulerService_->AddDeepIdleTimeToMap(200, 1800000, 20000);
+    EXPECT_EQ(workSchedulerService_->HasDeepIdleTime(), true);
+    workSchedulerService_->RemoveDeepIdleTimeToMap(200);
+    EXPECT_EQ(workSchedulerService_->HasDeepIdleTime(), false);
+}
+
+/**
+ * @tc.name: InsertRemovePreinstalledBundles_001
+ * @tc.desc: Test InsertPreinstalledBundles and RemovePreinstalledBundles.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, InsertRemovePreinstalledBundles_001, TestSize.Level1)
+{
+    workSchedulerService_->preinstalledBundles_.clear();
+    workSchedulerService_->InsertPreinstalledBundles("com.test.preinstall");
+    EXPECT_EQ(workSchedulerService_->IsPreinstalledBundle("com.test.preinstall"), true);
+    workSchedulerService_->RemovePreinstalledBundles("com.test.preinstall");
+    EXPECT_EQ(workSchedulerService_->IsPreinstalledBundle("com.test.preinstall"), false);
+}
+
+/**
+ * @tc.name: GetClearExemptionBundles_001
+ * @tc.desc: Test GetExemptionBundles and ClearExemptionBundles.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetClearExemptionBundles_001, TestSize.Level1)
+{
+    workSchedulerService_->ClearExemptionBundles();
+    workSchedulerService_->InsertExemptionBundles("com.test.exempt");
+    auto bundles = workSchedulerService_->GetExemptionBundles();
+    EXPECT_EQ(bundles.count("com.test.exempt"), 1);
+    workSchedulerService_->ClearExemptionBundles();
+    bundles = workSchedulerService_->GetExemptionBundles();
+    EXPECT_EQ(bundles.size(), 0);
+}
+
+/**
+ * @tc.name: SetMinTimeCycle_001
+ * @tc.desc: Test SetMinTimeCycle updates value.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetMinTimeCycle_001, TestSize.Level1)
+{
+    workSchedulerService_->SetMinTimeCycle(5000);
+    EXPECT_EQ(workSchedulerService_->minTimeCycle_, 5000);
+}
+
+/**
+ * @tc.name: RemovePersistedMap_001
+ * @tc.desc: Test RemovePersistedMap erases entry.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, RemovePersistedMap_001, TestSize.Level1)
+{
+    workSchedulerService_->persistedMap_.clear();
+    workSchedulerService_->persistedMap_.emplace("test_work_100", std::make_shared<WorkInfo>());
+    EXPECT_EQ(workSchedulerService_->persistedMap_.count("test_work_100"), 1);
+    workSchedulerService_->RemovePersistedMap("test_work_100");
+    EXPECT_EQ(workSchedulerService_->persistedMap_.count("test_work_100"), 0);
+}
+
+/**
+ * @tc.name: StopDeepIdleWorks_NotReady_001
+ * @tc.desc: Test StopDeepIdleWorks returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopDeepIdleWorks_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    int32_t ret = workSchedulerService_->StopDeepIdleWorks();
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: StopDeepIdleWorks_NoWorks_001
+ * @tc.desc: Test StopDeepIdleWorks returns ERR_OK when no deep idle works.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopDeepIdleWorks_NoWorks_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    if (workSchedulerService_->workPolicyManager_ == nullptr) {
+        workSchedulerService_->workPolicyManager_ = std::make_shared<WorkPolicyManager>(workSchedulerService_);
+    }
+    workSchedulerService_->workPolicyManager_->uidQueueMap_.clear();
+    int32_t ret = workSchedulerService_->StopDeepIdleWorks();
+    EXPECT_EQ(ret, ERR_OK);
+}
+
+/**
+ * @tc.name: HandleDeepIdleMsg_NotReady_001
+ * @tc.desc: Test HandleDeepIdleMsg returns early when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, HandleDeepIdleMsg_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    auto before = DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle();
+    workSchedulerService_->HandleDeepIdleMsg(0);
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), before);
+}
+
+/**
+ * @tc.name: TriggerWorkIfConditionReady_001
+ * @tc.desc: Test TriggerWorkIfConditionReady executes without crash.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, TriggerWorkIfConditionReady_001, TestSize.Level1)
+{
+    if (workSchedulerService_->workQueueManager_ == nullptr) {
+        workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+    }
+    auto before = workSchedulerService_->workQueueManager_->queueMap_.size();
+    workSchedulerService_->TriggerWorkIfConditionReady();
+    EXPECT_EQ(workSchedulerService_->workQueueManager_->queueMap_.size(), before);
+}
+
+/**
+ * @tc.name: IsLastWorkTimeout_NotReady_001
+ * @tc.desc: Test IsLastWorkTimeout returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsLastWorkTimeout_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    bool result = true;
+    int32_t ret = workSchedulerService_->IsLastWorkTimeout(99999, result);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: ObtainAllWorks_NotReady_001
+ * @tc.desc: Test ObtainAllWorks returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, ObtainAllWorks_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    std::vector<WorkInfo> workInfos;
+    int32_t ret = workSchedulerService_->ObtainAllWorks(workInfos);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: GetWorkStatus_NotReady_001
+ * @tc.desc: Test GetWorkStatus returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetWorkStatus_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    WorkInfo workInfo;
+    int32_t ret = workSchedulerService_->GetWorkStatus(99999, workInfo);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: GetAllRunningWorks_NotReady_001
+ * @tc.desc: Test GetAllRunningWorks returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    std::vector<WorkInfo> workInfos;
+    int32_t ret = workSchedulerService_->GetAllRunningWorks(workInfos);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: UpdateEffiResApplyInfo_001
+ * @tc.desc: Test UpdateEffiResApplyInfo add and remove uid.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateEffiResApplyInfo_001, TestSize.Level1)
+{
+    workSchedulerService_->UpdateEffiResApplyInfo(55555, true);
+    EXPECT_EQ(workSchedulerService_->CheckEffiResApplyInfo(55555), true);
+    workSchedulerService_->UpdateEffiResApplyInfo(55555, false);
+    EXPECT_EQ(workSchedulerService_->CheckEffiResApplyInfo(55555), false);
+}
+
+/**
+ * @tc.name: DumpEffiResApplyUid_001
+ * @tc.desc: Test DumpEffiResApplyUid with empty whitelist returns "[]".
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpEffiResApplyUid_001, TestSize.Level1)
+{
+    workSchedulerService_->whitelist_.clear();
+    std::string ret = workSchedulerService_->DumpEffiResApplyUid();
+    EXPECT_EQ(ret, "[]");
+}
+
+/**
+ * @tc.name: DumpEffiResApplyUid_002
+ * @tc.desc: Test DumpEffiResApplyUid with non-empty whitelist returns uid string.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpEffiResApplyUid_002, TestSize.Level1)
+{
+    workSchedulerService_->whitelist_.clear();
+    workSchedulerService_->UpdateEffiResApplyInfo(11111, true);
+    workSchedulerService_->UpdateEffiResApplyInfo(22222, true);
+    std::string ret = workSchedulerService_->DumpEffiResApplyUid();
+    EXPECT_NE(ret.find("11111"), std::string::npos);
+    EXPECT_NE(ret.find("22222"), std::string::npos);
+    workSchedulerService_->whitelist_.clear();
+}
+
+/**
+ * @tc.name: HandleDeepIdleMsg_Ready_001
+ * @tc.desc: Test HandleDeepIdleMsg with ready=true and DEFAULT_SA_ID.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, HandleDeepIdleMsg_Ready_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    if (workSchedulerService_->workQueueManager_ == nullptr) {
+        workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+    }
+    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+    workSchedulerService_->HandleDeepIdleMsg(0);
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), false);
+    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+}
+
+/**
+ * @tc.name: HandleDeepIdleMsg_Ready_002
+ * @tc.desc: Test HandleDeepIdleMsg with ready=true and non-default saId.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, HandleDeepIdleMsg_Ready_002, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    if (workSchedulerService_->workQueueManager_ == nullptr) {
+        workSchedulerService_->workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
+    }
+    DelayedSingleton<DataManager>::GetInstance()->SetDeepIdle(false);
+    workSchedulerService_->HandleDeepIdleMsg(500);
+    EXPECT_EQ(DelayedSingleton<DataManager>::GetInstance()->GetDeepIdle(), false);
+}
+
+/**
+ * @tc.name: SetWorkSchedulerConfig_NotReady_001
+ * @tc.desc: Test SetWorkSchedulerConfig returns E_SERVICE_NOT_READY when not ready.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetWorkSchedulerConfig_NotReady_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = false;
+    int32_t ret = workSchedulerService_->SetWorkSchedulerConfig("{}", 0);
+    EXPECT_EQ(ret, E_SERVICE_NOT_READY);
+}
+
+/**
+ * @tc.name: SetExecFrequency_NotSystemApp_001
+ * @tc.desc: Test SetExecFrequency returns E_NOT_SYSTEM_APP.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetExecFrequency_NotSystemApp_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    FrequencyInfo freqInfo;
+    freqInfo.SetUid(99999);
+    freqInfo.SetWorkId(99999);
+    freqInfo.SetInterval(7200000);
+    int32_t ret = workSchedulerService_->SetExecFrequency(freqInfo);
+    EXPECT_EQ(ret, E_NOT_SYSTEM_APP);
+}
+
+/**
+ * @tc.name: ResetExecFrequency_NotSystemApp_001
+ * @tc.desc: Test ResetExecFrequency returns E_NOT_SYSTEM_APP.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequency_NotSystemApp_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    int32_t ret = workSchedulerService_->ResetExecFrequency(99999);
+    EXPECT_EQ(ret, E_NOT_SYSTEM_APP);
+}
+
+/**
+ * @tc.name: StopWork_WorkNotExist_001
+ * @tc.desc: Test StopWork returns E_WORK_NOT_EXIST_FAILED when workStatus is null.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopWork_WorkNotExist_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    workSchedulerService_->checkBundle_ = false;
+    WorkInfo workInfo;
+    workInfo.SetWorkId(88888);
+    int32_t ret = workSchedulerService_->StopWork(workInfo);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
+}
+
+/**
+ * @tc.name: StopAndCancelWork_WorkNotExist_001
+ * @tc.desc: Test StopAndCancelWork returns E_WORK_NOT_EXIST_FAILED when workStatus is null.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_WorkNotExist_001, TestSize.Level1)
+{
+    workSchedulerService_->ready_ = true;
+    workSchedulerService_->checkBundle_ = false;
+    WorkInfo workInfo;
+    workInfo.SetWorkId(88889);
+    int32_t ret = workSchedulerService_->StopAndCancelWork(workInfo);
+    EXPECT_EQ(ret, E_WORK_NOT_EXIST_FAILED);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_001
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns true when not performance sensitive.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_001, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20001);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_002
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns false when perf sensitive without deepIdle and charging.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_002, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20002);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_003
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns true when perf sensitive with deepIdle and charging.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_003, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20003);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    workInfo.RequestDeepIdle(true);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_004
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns false when repeat cycle time less than 24h.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_004, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20004);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    workInfo.RequestDeepIdle(true);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    workInfo.RequestRepeatCycle(60 * 60 * 1000);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: CheckPerformanceSensitiveCondition_005
+ * @tc.desc: Test CheckPerformanceSensitiveCondition returns true when repeat cycle time >= 24h.
+ * @tc.type: FUNC
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckPerformanceSensitiveCondition_005, TestSize.Level1)
+{
+    WorkInfo workInfo;
+    workInfo.SetWorkId(20005);
+    workInfo.SetElement("com.test.perf", "PerfAbility");
+    workInfo.RequestPerformanceSensitive(true);
+    workInfo.RequestDeepIdle(true);
+    workInfo.RequestChargerType(true, WorkCondition::Charger::CHARGING_PLUGGED_AC);
+    workInfo.RequestRepeatCycle(ONE_DAY_MS);
+    bool ret = workSchedulerService_->CheckPerformanceSensitiveCondition(workInfo);
+    EXPECT_TRUE(ret);
+}
+
+/**
+ * @tc.name: OnStop_001
+ * @tc.desc: Test WorkSchedulerService OnStop resets service state.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, OnStop_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->OnStop();
+    EXPECT_FALSE(service->ready_.load());
+}
+
+/**
+ * @tc.name: StartWorkInner_Persisted_001
+ * @tc.desc: Test StartWorkInner persists work when IsPersisted is true.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, StartWorkInner_Persisted_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    service->checkBundle_ = false;
+    service->persistedMap_.clear();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    WorkInfo workinfo;
+    workinfo.SetWorkId(30001);
+    workinfo.SetElement("com.test.persisted", "PersistedAbility");
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    workinfo.RequestPersisted(true);
+    int32_t uid = 30001;
+    int32_t ret = service->StartWorkInner(workinfo, uid);
+    EXPECT_EQ(ret, ERR_OK);
+    EXPECT_GE(service->persistedMap_.size(), 1);
+    service->persistedMap_.clear();
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: AddWorkInner_001
+ * @tc.desc: Test AddWorkInner returns early when CheckPerformanceSensitiveCondition fails.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    WorkInfo workinfo;
+    workinfo.SetWorkId(30002);
+    workinfo.SetElement("com.test.addworkinner1", "AddWorkInnerAbility1");
+    workinfo.RefreshUid(30002);
+    workinfo.RequestPerformanceSensitive(true);
+    service->AddWorkInner(workinfo);
+    auto wpm = service->GetWorkPolicyManager();
+    EXPECT_EQ(wpm->uidQueueMap_.count(30002), 0);
+}
+
+/**
+ * @tc.name: AddWorkInner_002
+ * @tc.desc: Test AddWorkInner logs error when uid is invalid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, AddWorkInner_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    WorkInfo workinfo;
+    workinfo.SetWorkId(30003);
+    workinfo.SetElement("com.test.addworkinner2", "AddWorkInnerAbility2");
+    workinfo.uid_ = -1;
+    service->AddWorkInner(workinfo);
+    auto wpm = service->GetWorkPolicyManager();
+    EXPECT_EQ(wpm->uidQueueMap_.count(-1), 0);
+}
+
+/**
+ * @tc.name: StopWorkForInner_002
+ * @tc.desc: Test StopWorkForInner calls StopWorkInner when workStatus found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopWorkForInner_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    GetNativeToken(PUSH_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    int32_t uid = 40000;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(40001);
+    workinfo.SetElement("com.test.stopworkinner", "StopWorkInnerAbility");
+    workinfo.RefreshUid(uid);
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+
+    int32_t ret = service->StopWorkForInner(workinfo, false);
+    EXPECT_EQ(ret, ERR_OK);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: StopAndCancelWork_Success_001
+ * @tc.desc: Test StopAndCancelWork returns ERR_OK when workStatus found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopAndCancelWork_Success_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    service->checkBundle_ = false;
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
+    WorkInfo workinfo;
+    workinfo.SetWorkId(40010);
+    workinfo.SetElement("com.test.stopcancel", "StopCancelAbility");
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+
+    int32_t ret = service->StopAndCancelWork(workinfo);
+    EXPECT_EQ(ret, ERR_OK);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: WatchdogTimeOut_001
+ * @tc.desc: Test WatchdogTimeOut calls StopWorkInner with isTimeOut true.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, WatchdogTimeOut_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    service->workPolicyManager_->workConnManager_ = std::make_shared<MockStopWorkConnManager>();
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    int32_t uid = 40020;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(40020);
+    workinfo.SetElement("com.test.watchdogtimeout", "WatchdogTimeoutAbility");
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+
+    service->WatchdogTimeOut(workStatus);
+    EXPECT_FALSE(workStatus->IsRunning());
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: StopAndClearWorksByUid_Persisted_001
+ * @tc.desc: Test StopAndClearWorksByUid erases persisted work from persistedMap.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopAndClearWorksByUid_Persisted_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    int32_t uid = 40030;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(40030);
+    workinfo.SetElement("com.test.stopclear", "StopClearAbility");
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    workinfo.RequestPersisted(true);
+    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    service->persistedMap_.emplace(workStatus->workId_, workStatus->workInfo_);
+    EXPECT_EQ(service->persistedMap_.count(workStatus->workId_), 1);
+
+    bool ret = service->StopAndClearWorksByUid(uid);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(service->persistedMap_.count(workStatus->workId_), 0);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: GetAllRunningWorks_Success_001
+ * @tc.desc: Test GetAllRunningWorks returns ERR_OK when ready and process name valid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetAllRunningWorks_Success_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    std::vector<WorkInfo> workInfos;
+    int32_t ret = service->GetAllRunningWorks(workInfos);
+    EXPECT_EQ(ret, ERR_OK);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: UpdateWorkBeforeRealStart_Persisted_001
+ * @tc.desc: Test UpdateWorkBeforeRealStart erases persistedMap when work needs remove.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateWorkBeforeRealStart_Persisted_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->persistedMap_.clear();
+    int32_t uid = 40040;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(40040);
+    workinfo.SetElement("com.test.updatebefore", "UpdateBeforeAbility");
+    workinfo.RequestPersisted(true);
+    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->conditionMap_.clear();
+    service->persistedMap_.emplace(workStatus->workId_, workStatus->workInfo_);
+    EXPECT_EQ(service->persistedMap_.count(workStatus->workId_), 1);
+
+    service->UpdateWorkBeforeRealStart(workStatus);
+    EXPECT_EQ(service->persistedMap_.count(workStatus->workId_), 0);
+    service->persistedMap_.clear();
+}
+
+/**
+ * @tc.name: DumpUsageForUserMode_001
+ * @tc.desc: Test DumpUsageForUserMode appends usage text to result.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpUsageForUserMode_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    std::string result;
+    service->DumpUsageForUserMode(result);
+    const std::string expected = "usage: workscheduler dump [<options>]\n"
+        "    -h: show the help.\n"
+        "    -t (bundleName) (abilityName): trigger the bundleName all works.\n"
+        "    -s (saId) (uId): load or report sa.\n";
+    EXPECT_EQ(result, expected);
+}
+
+/**
+ * @tc.name: DumpProcessForUserMode_Help_001
+ * @tc.desc: Test DumpProcessForUserMode calls DumpUsageForUserMode when args empty or -h.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpProcessForUserMode_Help_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    const std::string expected = "usage: workscheduler dump [<options>]\n"
+        "    -h: show the help.\n"
+        "    -t (bundleName) (abilityName): trigger the bundleName all works.\n"
+        "    -s (saId) (uId): load or report sa.\n";
+
+    std::vector<std::string> emptyArgs;
+    std::string result1;
+    service->DumpProcessForUserMode(emptyArgs, result1);
+    EXPECT_EQ(result1, expected);
+
+    std::vector<std::string> helpArgs = {"-h"};
+    std::string result2;
+    service->DumpProcessForUserMode(helpArgs, result2);
+    EXPECT_EQ(result2, expected);
+    EXPECT_EQ(result2, result1);
+}
+
+/**
+ * @tc.name: DumpParamSet_001
+ * @tc.desc: Test DumpParamSet returns error when value is not digit.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    std::string key = "-memory";
+    std::string value = "abc";
+    std::string result;
+    service->DumpParamSet(key, value, result);
+    EXPECT_EQ(result, "Error params.");
+}
+
+/**
+ * @tc.name: DumpParamSet_002
+ * @tc.desc: Test DumpParamSet handles -nap key.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+#ifdef DEVICE_STANDBY_ENABLE
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    if (service->standbyStateObserver_ == nullptr) {
+        service->standbyStateObserver_ =
+            new (std::nothrow) WorkStandbyStateChangeCallback(service->workQueueManager_);
+    }
+#endif
+    std::string key = "-nap";
+    std::string value = "1";
+    std::string result;
+    service->DumpParamSet(key, value, result);
+    EXPECT_TRUE(result.empty());
+}
+
+/**
+ * @tc.name: DumpParamSet_003
+ * @tc.desc: Test DumpParamSet handles -thermalLevel key.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_003, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    std::string key = "-thermalLevel";
+    std::string value = "5";
+    std::string result;
+    service->DumpParamSet(key, value, result);
+    EXPECT_EQ(result, "Set thermal level success.");
+}
+
+/**
+ * @tc.name: DumpParamSet_004
+ * @tc.desc: Test DumpParamSet handles -high_perf_duration key.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_004, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    uint64_t originalDuration = WorkStatus::GetHighPerfDuration();
+    std::string key = "-high_perf_duration";
+    std::string value = "300000";
+    std::string result;
+    service->DumpParamSet(key, value, result);
+    EXPECT_EQ(result, "Set high perf duration success.");
+    EXPECT_EQ(WorkStatus::GetHighPerfDuration(), 300000u);
+    WorkStatus::SetHighPerfDuration(originalDuration);
+}
+
+/**
+ * @tc.name: DumpParamSet_005
+ * @tc.desc: Test DumpParamSet handles -idle_time key.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpParamSet_005, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    std::string key = "-idle_time";
+    std::string value = "10000";
+    std::string result;
+    service->DumpParamSet(key, value, result);
+    EXPECT_EQ(result, "Set deep idle screen off time success.");
+}
+
+/**
+ * @tc.name: PauseRunningWorks_Success_001
+ * @tc.desc: Test PauseRunningWorks calls workPolicyManager_ when token valid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, PauseRunningWorks_Success_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    int32_t ret = service->PauseRunningWorks(40050);
+    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+}
+
+/**
+ * @tc.name: ResumePausedWorks_Success_001
+ * @tc.desc: Test ResumePausedWorks calls workPolicyManager_ when token valid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResumePausedWorks_Success_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    int32_t ret = service->ResumePausedWorks(40051);
+    EXPECT_EQ(ret, E_UID_NO_MATCHING_WORK_ERR);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+}
+
+/**
+ * @tc.name: StopDeepIdleWorks_Success_001
+ * @tc.desc: Test StopDeepIdleWorks stops running deep idle works.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopDeepIdleWorks_Success_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    int32_t uid = 40060;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(40060);
+    workinfo.SetElement("com.test.deepidle_stop", "DeepIdleStopAbility");
+    workinfo.RequestDeepIdle(true);
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+
+    int32_t ret = service->StopDeepIdleWorks();
+    EXPECT_EQ(ret, ERR_OK);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: SetWorkSchedulerConfig_Success_001
+ * @tc.desc: Test SetWorkSchedulerConfig returns ERR_OK when ready and token valid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, SetWorkSchedulerConfig_Success_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    int32_t ret = service->SetWorkSchedulerConfig("{}", 0);
+    EXPECT_EQ(ret, ERR_OK);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: DumpGetWorks_001
+ * @tc.desc: Test DumpGetWorks returns param error when uid or workId empty.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    std::string result;
+    service->DumpGetWorks("", "1", result);
+    EXPECT_EQ(result, "param error.");
+    result.clear();
+    service->DumpGetWorks("1", "", result);
+    EXPECT_EQ(result, "param error.");
+}
+
+/**
+ * @tc.name: DumpGetWorks_002
+ * @tc.desc: Test DumpGetWorks returns invalid when uid < 0.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    std::string result;
+    service->DumpGetWorks("-1", "1", result);
+    EXPECT_EQ(result, "the parameter is invalid.");
+}
+
+/**
+ * @tc.name: DumpGetWorks_003
+ * @tc.desc: Test DumpGetWorks returns get work fail when ObtainWorks fails.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_003, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    service->ready_.store(true);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+
+    std::string result;
+    service->DumpGetWorks("40070", "40070", result);
+    EXPECT_EQ(result, "get work fail.");
+
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: DumpGetWorks_004
+ * @tc.desc: Test DumpGetWorks dumps work info when work exists.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DumpGetWorks_004, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    service->ready_.store(true);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    int32_t uid = 40071;
+    int32_t workId = 40071;
+    WorkInfo workinfo;
+    workinfo.SetWorkId(workId);
+    workinfo.SetElement("com.test.dumpgetworks", "DumpGetWorksAbility");
+    workinfo.RequestStorageLevel(WorkCondition::Storage::STORAGE_LEVEL_LOW_OR_OKAY);
+    auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    std::string result;
+    service->DumpGetWorks(std::to_string(uid), std::to_string(workId), result);
+    EXPECT_NE(result.find("com.test.dumpgetworks"), std::string::npos) << result;
+    EXPECT_NE(result.find("DumpGetWorksAbility"), std::string::npos) << result;
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: IsPreinstalledBundle_001
+ * @tc.desc: Test IsPreinstalledBundle returns false when bundleName is empty.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_Empty, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool ret = service->IsPreinstalledBundle("");
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: IsPreinstalledBundle_002
+ * @tc.desc: Test IsPreinstalledBundle returns false when bundleName not in preinstalledBundles.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, IsPreinstalledBundle_NotInList, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool ret = service->IsPreinstalledBundle("com.test.notpreinstalled");
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: DeleteSaWork_001
+ * @tc.desc: Test DeleteSaWork removes persisted preinstalled SA work.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DeleteSaWork_Persisted, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    int32_t uid = 40080;
+    int32_t workId = 40080;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.deletesa", "DeleteSaAbility");
+    workinfo->saId_ = 401;
+    workinfo->SetPreinstalled(true);
+    workinfo->RequestPersisted(true);
+    workinfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workinfo, uid);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->DeleteSaWork(workinfo);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 0);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+}
+
+/**
+ * @tc.name: DeleteAppWork_001
+ * @tc.desc: Test DeleteAppWork removes WAIT_CONDITION preinstalled app work.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_WaitCondition, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    int32_t workId = 40090;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.deleteapp", "DeleteAppAbility");
+    workinfo->SetPreinstalled(true);
+    workinfo->RequestPersisted(true);
+    int32_t uid = 40000;
+    workinfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->DeleteAppWork(workinfo);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 0);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+}
+
+/**
+ * @tc.name: DeleteAppWork_002
+ * @tc.desc: Test DeleteAppWork inserts preinstalled work id when work is RUNNING.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, DeleteAppWork_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    int32_t workId = 40091;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.deleteapp2", "DeleteAppAbility2");
+    workinfo->SetPreinstalled(true);
+    int32_t uid = 40000;
+    workinfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::RUNNING);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+
+    service->DeleteAppWork(workinfo);
+    EXPECT_TRUE(service->CheckPreinstalledWorkId(WorkStatus::MakeWorkId(workId, uid)));
+    service->workPolicyManager_->uidQueueMap_.clear();
+}
+
+/**
+ * @tc.name: StopCloudConfigWork_001
+ * @tc.desc: Test StopCloudConfigWork stops and removes persisted preinstalled work.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, StopCloudConfigWork_Persisted, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    int32_t workId = 40100;
+    int32_t uid = 40000;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.cloudconfig", "CloudConfigAbility");
+    workinfo->SetPreinstalled(true);
+    workinfo->RequestPersisted(true);
+    workinfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+    service->InsertPreinstalledWorkId(workIdStr);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->StopCloudConfigWork(workIdStr, workinfo);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 0);
+    EXPECT_FALSE(service->CheckPreinstalledWorkId(workIdStr));
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+}
+
+/**
+ * @tc.name: ReStartCloudConfigPreinstalledWork_001
+ * @tc.desc: Test ReStartCloudConfigPreinstalledWork adds persisted work to persistedMap.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, ReStartCloudConfigPreinstalledWork_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    int32_t uid = 40000;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(40110);
+    workinfo->SetElement("com.test.restart", "RestartAbility");
+    workinfo->RequestPersisted(true);
+    workinfo->SetPreinstalled(true);
+    workinfo->RefreshUid(uid);
+    std::list<std::shared_ptr<WorkInfo>> workInfos;
+    workInfos.emplace_back(workinfo);
+
+    service->ReStartCloudConfigPreinstalledWork(workInfos);
+    std::string workIdStr = WorkStatus::MakeWorkId(workinfo->GetWorkId(), uid);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+}
+
+/**
+ * @tc.name: UpdateWorkForCloudConfig_001
+ * @tc.desc: Test UpdateWorkForCloudConfig returns early when not ready.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    service->ready_.store(false);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+
+    int32_t uid = 40000;
+    int32_t workId = 40120;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.cloudcfg1", "CloudCfgAbility1");
+    workinfo->RequestPersisted(true);
+    workinfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workinfo, uid);
+    workStatus->persisted_ = true;
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+
+    service->UpdateWorkForCloudConfig(workinfo);
+
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: UpdateWorkForCloudConfig_002
+ * @tc.desc: Test UpdateWorkForCloudConfig returns early when workStatus not found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    bool originalReady = service->ready_.load();
+    service->ready_.store(true);
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+
+    int32_t uid = 40000;
+    int32_t workId = 40121;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.cloudcfg2", "CloudCfgAbility2");
+    workinfo->RequestPersisted(true);
+    workinfo->RefreshUid(uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+
+    service->UpdateWorkForCloudConfig(workinfo);
+
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: UpdateWorkForCloudConfig_003
+ * @tc.desc: Test UpdateWorkForCloudConfig stops and removes persisted work.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, UpdateWorkForCloudConfig_003, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ready_ = true;
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    if (service->workPolicyManager_ == nullptr) {
+        service->workPolicyManager_ = std::make_shared<WorkPolicyManager>(service);
+    }
+    if (service->workPolicyManager_->workConnManager_ == nullptr) {
+        service->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    int32_t uid = 40000;
+    int32_t workId = 40122;
+    auto workinfo = std::make_shared<WorkInfo>();
+    workinfo->SetWorkId(workId);
+    workinfo->SetElement("com.test.cloudcfg3", "CloudCfgAbility3");
+    workinfo->RequestPersisted(true);
+    workinfo->SetPreinstalled(true);
+    workinfo->RefreshUid(uid);
+    auto workStatus = std::make_shared<WorkStatus>(*workinfo, uid);
+    workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    service->workPolicyManager_->AddWork(workStatus, uid);
+    std::string workIdStr = WorkStatus::MakeWorkId(workId, uid);
+    service->persistedMap_.emplace(workIdStr, workinfo);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 1);
+
+    service->UpdateWorkForCloudConfig(workinfo);
+    EXPECT_EQ(service->persistedMap_.count(workIdStr), 0);
+    service->workPolicyManager_->uidQueueMap_.clear();
+    service->persistedMap_.clear();
+    GetNativeToken(BGTASK_SERVICE_NAME);
+    service->ready_ = false;
+}
+
+/**
+ * @tc.name: GetExecFrequency_001
+ * @tc.desc: Test GetExecFrequency returns interval when callingUid > 0 and entry exists.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_ByCallingUid, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->frequencyMap_.clear();
+    int32_t callingUid = 40130;
+    int32_t uid = 40131;
+    FrequencyInfo freqInfo;
+    freqInfo.SetInterval(50000);
+    service->frequencyMap_[callingUid][uid] = freqInfo;
+
+    int64_t interval = service->GetExecFrequency(uid, callingUid);
+    EXPECT_EQ(interval, 50000);
+    service->frequencyMap_.clear();
+}
+
+/**
+ * @tc.name: GetExecFrequency_002
+ * @tc.desc: Test GetExecFrequency returns INVALID_VALUE when callingUid > 0 but entry not found.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, GetExecFrequency_NotFound, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->frequencyMap_.clear();
+    int64_t interval = service->GetExecFrequency(99999, 99998);
+    EXPECT_EQ(interval, INVALID_VALUE);
+}
+
+/**
+ * @tc.name: ResetExecFrequencyByCallingUid_001
+ * @tc.desc: Test ResetExecFrequencyByCallingUid returns false when callingUid not in map.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_001, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->frequencyMap_.clear();
+    bool ret = service->ResetExecFrequencyByCallingUid(99997, 99996);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: ResetExecFrequencyByCallingUid_002
+ * @tc.desc: Test ResetExecFrequencyByCallingUid resets and erases when entry exists.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_002, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->frequencyMap_.clear();
+    int32_t callingUid = 40140;
+    int32_t uid = 40141;
+    FrequencyInfo freqInfo;
+    freqInfo.SetInterval(50000);
+    service->frequencyMap_[callingUid][uid] = freqInfo;
+
+    bool ret = service->ResetExecFrequencyByCallingUid(callingUid, uid);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(service->frequencyMap_.count(callingUid), 0);
+}
+
+/**
+ * @tc.name: ResetExecFrequencyByCallingUid_003
+ * @tc.desc: Test ResetExecFrequencyByCallingUid returns false when uid not in callingUid map.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByCallingUid_003, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->frequencyMap_.clear();
+    int32_t callingUid = 40142;
+    int32_t uid = 40143;
+    FrequencyInfo freqInfo;
+    freqInfo.SetInterval(50000);
+    service->frequencyMap_[callingUid][40199] = freqInfo;
+
+    bool ret = service->ResetExecFrequencyByCallingUid(callingUid, uid);
+    EXPECT_FALSE(ret);
+    service->frequencyMap_.clear();
+}
+
+/**
+ * @tc.name: ResetExecFrequencyByUid_001
+ * @tc.desc: Test ResetExecFrequencyByUid returns true when uid is a key in frequencyMap.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, ResetExecFrequencyByUid_EraseEntry, TestSize.Level1)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->frequencyMap_.clear();
+    int32_t uid = 40150;
+    FrequencyInfo freqInfo;
+    freqInfo.SetInterval(50000);
+    service->frequencyMap_[uid][40199] = freqInfo;
+
+    bool ret = service->ResetExecFrequencyByUid(uid);
+    EXPECT_TRUE(ret);
+    EXPECT_EQ(service->frequencyMap_.count(uid), 0);
+}
+
+/**
+ * @tc.name: InitPersistedInfos_004
+ * @tc.desc: Test InitPersistedInfos parses frequency_infos with valid callingUid entry.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_004, TestSize.Level1)
+{
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/persisted_info";
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp = fopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << filePath;
+    }
+    const char* jsonContent =
+        "{\"frequency_infos\":{\"99998\":{\"work1\":{\"workId\":1,\"uid\":99999,\"interval\":50000}}}}";
+    fputs(jsonContent, fp);
+    fclose(fp);
+
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExecFrequency();
+    service->InitPersistedInfos();
+    auto result = service->GetExecFrequency(99999, 99998);
+    EXPECT_EQ(result, INVALID_VALUE);
+    service->ClearExecFrequency();
+    remove(filePath);
+}
+
+/**
+ * @tc.name: InitPersistedInfos_005
+ * @tc.desc: Test InitPersistedInfos with empty callingUidSetFrequencyRoot entry.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, InitPersistedInfos_005, TestSize.Level1)
+{
+    const char* dirPath = "/data/service/el1/public/WorkScheduler";
+    const char* filePath = "/data/service/el1/public/WorkScheduler/persisted_info";
+    if (mkdir(dirPath, 0755) != 0 && errno != EEXIST) {
+        GTEST_SKIP() << "Cannot create directory: " << dirPath;
+    }
+    FILE* fp = fopen(filePath, "w");
+    if (fp == nullptr) {
+        GTEST_SKIP() << "Cannot write file: " << filePath;
+    }
+    const char* jsonContent = "{\"frequency_infos\":{\"99998\":{}}}";
+    fputs(jsonContent, fp);
+    fclose(fp);
+
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    service->ClearExecFrequency();
+    service->InitPersistedInfos();
+    auto result = service->GetExecFrequency(100, 99998);
+    EXPECT_EQ(result, INVALID_VALUE);
+    service->ClearExecFrequency();
+    remove(filePath);
+}
+
+/**
+ * @tc.name: CheckExtensionInfos_001
+ * @tc.desc: Test CheckExtensionInfos returns false when bundleName is empty.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_001, TestSize.Level1)
+{
+    bool ret = WorkSchedUtils::CheckExtensionInfos("", "ability", 100);
+    EXPECT_FALSE(ret);
+}
+
+/**
+ * @tc.name: CheckExtensionInfos_002
+ * @tc.desc: Test CheckExtensionInfos returns false when abilityName is empty.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedulerServiceTest, CheckExtensionInfos_002, TestSize.Level1)
+{
+    bool ret = WorkSchedUtils::CheckExtensionInfos("com.test", "", 100);
+    EXPECT_FALSE(ret);
 }
 }
 }

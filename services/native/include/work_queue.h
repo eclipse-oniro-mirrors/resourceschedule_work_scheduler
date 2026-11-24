@@ -110,6 +110,10 @@ public:
      */
     std::list<std::shared_ptr<WorkStatus>> GetWorkList();
     /**
+     * @brief check unCurrent mode work.
+     */
+    void CheckUnCurModeWork();
+    /**
      * @brief Remove unready.
      */
     void RemoveUnReady();

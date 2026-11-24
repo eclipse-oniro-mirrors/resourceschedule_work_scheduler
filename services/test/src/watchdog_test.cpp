@@ -32,20 +32,23 @@ public:
     void SetUp() {}
     void TearDown() {}
     static std::shared_ptr<Watchdog> watchdog_;
+    static std::shared_ptr<WorkPolicyManager> policy_;
 };
 
 std::shared_ptr<Watchdog> WatchdogTest::watchdog_ = nullptr;
+std::shared_ptr<WorkPolicyManager> WatchdogTest::policy_ = nullptr;
 
 void WatchdogTest::SetUpTestCase()
 {
-    std::shared_ptr<WorkSchedulerService> workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    policy_ = std::make_shared<WorkPolicyManager>(service);
     std::shared_ptr<AppExecFwk::EventRunner> runner;
-    watchdog_ = std::make_shared<Watchdog>(workSchedulerService->GetWorkPolicyManager(), runner);
+    watchdog_ = std::make_shared<Watchdog>(policy_, runner);
 }
 
 /**
  * @tc.name: watchdog_001
- * @tc.desc: Test Watchdog AddWatchdog.
+ * @tc.desc: Test Watchdog AddWatchdog with null runner returns false.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
@@ -56,60 +59,31 @@ HWTEST_F(WatchdogTest, watchdog_001, TestSize.Level3)
 }
 
 /**
- * @tc.name: watchdog_002
- * @tc.desc: Test Watchdog RemoveWatchdog.
+ * @tc.name: AddWatchdog_WithRunner_001
+ * @tc.desc: Test Watchdog AddWatchdog with valid runner returns true.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WatchdogTest, watchdog_002, TestSize.Level3)
+HWTEST_F(WatchdogTest, AddWatchdog_WithRunner_001, TestSize.Level3)
 {
-    bool result = watchdog_->AddWatchdog(1, 1);
-    EXPECT_EQ(result, false);
-    watchdog_->RemoveWatchdog(1);
+    auto runner = AppExecFwk::EventRunner::Create("TestWatchdogRunner", AppExecFwk::ThreadMode::FFRT);
+    auto wd = std::make_shared<Watchdog>(nullptr, runner);
+    bool result = wd->AddWatchdog(2, 1);
+    EXPECT_EQ(result, true);
 }
 
 /**
- * @tc.name: watchdog_003
- * @tc.desc: Test Watchdog ProcessEvent.
+ * @tc.name: ProcessEvent_ValidService_001
+ * @tc.desc: Test Watchdog ProcessEvent with valid event and non-null service_ calls WatchdogTimeOut.
  * @tc.type: FUNC
  * @tc.require: I8JBRY
  */
-HWTEST_F(WatchdogTest, watchdog_003, TestSize.Level3)
+HWTEST_F(WatchdogTest, ProcessEvent_ValidService_001, TestSize.Level3)
 {
-    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    event = nullptr;
+    auto before = policy_->watchdogIdMap_.size();
+    auto event = AppExecFwk::InnerEvent::Get(42, 0);
     watchdog_->ProcessEvent(event);
-    EXPECT_TRUE(event == nullptr);
+    EXPECT_EQ(policy_->watchdogIdMap_.size(), before);
 }
-
-/**
- * @tc.name: watchdog_004
- * @tc.desc: Test Watchdog ProcessEvent.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WatchdogTest, watchdog_004, TestSize.Level3)
-{
-    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    watchdog_->ProcessEvent(event);
-    EXPECT_TRUE(event->GetInnerEventId() == 0);
-}
-
-/**
- * @tc.name: watchdog_005
- * @tc.desc: Test Watchdog ProcessEvent.
- * @tc.type: FUNC
- * @tc.require: I8JBRY
- */
-HWTEST_F(WatchdogTest, watchdog_005, TestSize.Level3)
-{
-    AppExecFwk::InnerEvent::Pointer event = AppExecFwk::InnerEvent::Get(0);
-    watchdog_->service_ = nullptr;
-    watchdog_->ProcessEvent(event);
-    std::shared_ptr<WorkPolicyManager> service;
-    watchdog_->service_ = service;
-    EXPECT_TRUE(event->GetInnerEventId() == 0);
-}
-
 }
 }

@@ -21,11 +21,37 @@
 #include "work_queue_manager.h"
 #include "common_event_manager.h"
 #include "common_event_support.h"
+#include "matching_skills.h"
+#include "want.h"
+#include "work_sched_hilog.h"
 
 using namespace testing::ext;
 
 namespace OHOS {
 namespace WorkScheduler {
+
+class TestStorageListener : public StorageListener {
+public:
+    TestStorageListener() : StorageListener(nullptr) {}
+    ~TestStorageListener() override {}
+    void OnConditionChanged(WorkCondition::Type conditionType,
+        std::shared_ptr<DetectorValue> conditionVal) override
+    {
+        callCount_++;
+        lastType_ = conditionType;
+        lastVal_ = conditionVal;
+    }
+    void Reset()
+    {
+        callCount_ = 0;
+        lastType_ = WorkCondition::Type::UNKNOWN;
+        lastVal_ = nullptr;
+    }
+    int32_t callCount_ = 0;
+    WorkCondition::Type lastType_ = WorkCondition::Type::UNKNOWN;
+    std::shared_ptr<DetectorValue> lastVal_ = nullptr;
+};
+
 class StorageListenerTest : public testing::Test {
 public:
     static void SetUpTestCase();
@@ -34,85 +60,97 @@ public:
     void TearDown() {};
     static std::shared_ptr<WorkQueueManager> workQueueManager_;
     static std::shared_ptr<StorageListener> storageListener_;
+    static std::shared_ptr<TestStorageListener> testListener_;
+    static std::shared_ptr<StorageEventSubscriber> subscriber_;
 };
 
 std::shared_ptr<WorkQueueManager> StorageListenerTest::workQueueManager_ = nullptr;
 std::shared_ptr<StorageListener> StorageListenerTest::storageListener_ = nullptr;
+std::shared_ptr<TestStorageListener> StorageListenerTest::testListener_ = nullptr;
+std::shared_ptr<StorageEventSubscriber> StorageListenerTest::subscriber_ = nullptr;
 
 void StorageListenerTest::SetUpTestCase()
 {
     std::shared_ptr<WorkSchedulerService> workSchedulerService_ = std::make_shared<WorkSchedulerService>();
     workQueueManager_ = std::make_shared<WorkQueueManager>(workSchedulerService_);
     storageListener_ = std::make_shared<StorageListener>(workQueueManager_);
+
+    testListener_ = std::make_shared<TestStorageListener>();
+    EventFwk::MatchingSkills skill;
+    skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW);
+    skill.AddEvent(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_OK);
+    EventFwk::CommonEventSubscribeInfo info(skill);
+    subscriber_ = std::make_shared<StorageEventSubscriber>(info, *testListener_);
 }
 
-/**
- * @tc.name: OnConditionChanged_001
- * @tc.desc: Test StorageListener OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: IB7RQR
- */
-HWTEST_F(StorageListenerTest, OnConditionChanged_001, TestSize.Level1)
+static EventFwk::CommonEventData BuildStorageEvent(const std::string &action)
 {
-    storageListener_->Start();
-    EventFwk::CommonEventData data;
-    storageListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = storageListener_->Stop();
-    EXPECT_TRUE(ret);
-}
-
-/**
- * @tc.name: OnConditionChanged_002
- * @tc.desc: Test StorageListener OnConditionChanged.
- * @tc.type: FUNC
- * @tc.require: IB7RQR
- */
-HWTEST_F(StorageListenerTest, OnConditionChanged_002, TestSize.Level1)
-{
-    storageListener_->Start();
-    EventFwk::CommonEventData data;
     EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW);
+    want.SetAction(action);
+    EventFwk::CommonEventData data;
     data.SetWant(want);
-    storageListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = storageListener_->Stop();
-    EXPECT_TRUE(ret);
+    return data;
 }
 
 /**
- * @tc.name: OnConditionChanged_003
- * @tc.desc: Test StorageListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_001
+ * @tc.desc: Test StorageEventSubscriber OnReceiveEvent with STORAGE_LOW action.
  * @tc.type: FUNC
- * @tc.require: IB7RQR
+ * @tc.require: I8JBRY
  */
-HWTEST_F(StorageListenerTest, OnConditionChanged_003, TestSize.Level1)
+HWTEST_F(StorageListenerTest, OnReceiveEvent_001, TestSize.Level1)
 {
-    storageListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_OK);
-    data.SetWant(want);
-    storageListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = storageListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildStorageEvent(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastType_, WorkCondition::Type::STORAGE);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::STORAGE_LEVEL_LOW);
 }
 
 /**
- * @tc.name: OnConditionChanged_004
- * @tc.desc: Test StorageListener OnConditionChanged.
+ * @tc.name: OnReceiveEvent_002
+ * @tc.desc: Test StorageEventSubscriber OnReceiveEvent with STORAGE_OK action.
  * @tc.type: FUNC
- * @tc.require: IB7RQR
+ * @tc.require: I8JBRY
  */
-HWTEST_F(StorageListenerTest, OnConditionChanged_004, TestSize.Level1)
+HWTEST_F(StorageListenerTest, OnReceiveEvent_002, TestSize.Level1)
 {
-    storageListener_->Start();
-    EventFwk::CommonEventData data;
-    EventFwk::Want want;
-    want.SetAction(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_FULL);
-    data.SetWant(want);
-    storageListener_->commonEventSubscriber->OnReceiveEvent(data);
-    bool ret = storageListener_->Stop();
-    EXPECT_TRUE(ret);
+    testListener_->Reset();
+    auto data = BuildStorageEvent(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_OK);
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 1);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::STORAGE_LEVEL_OKAY);
 }
+
+/**
+ * @tc.name: OnReceiveEvent_003
+ * @tc.desc: Test StorageEventSubscriber OnReceiveEvent with invalid action.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(StorageListenerTest, OnReceiveEvent_003, TestSize.Level1)
+{
+    testListener_->Reset();
+    auto data = BuildStorageEvent("invalid.action");
+    subscriber_->OnReceiveEvent(data);
+    EXPECT_EQ(testListener_->callCount_, 0);
 }
+
+/**
+ * @tc.name: OnReceiveEvent_004
+ * @tc.desc: Test StorageEventSubscriber OnReceiveEvent LOW then OK sequence.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(StorageListenerTest, OnReceiveEvent_004, TestSize.Level1)
+{
+    testListener_->Reset();
+    subscriber_->OnReceiveEvent(BuildStorageEvent(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_LOW));
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::STORAGE_LEVEL_LOW);
+    subscriber_->OnReceiveEvent(BuildStorageEvent(EventFwk::CommonEventSupport::COMMON_EVENT_DEVICE_STORAGE_OK));
+    EXPECT_EQ(testListener_->callCount_, 2);
+    EXPECT_EQ(testListener_->lastVal_->intVal, WorkCondition::STORAGE_LEVEL_OKAY);
 }
+} // namespace WorkScheduler
+} // namespace OHOS

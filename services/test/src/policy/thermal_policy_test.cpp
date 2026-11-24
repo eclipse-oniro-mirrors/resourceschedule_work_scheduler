@@ -192,5 +192,38 @@ HWTEST_F(ThermalPolicyTest, GetPolicyMaxRunning_008, TestSize.Level1)
     int32_t ret = thermalPolicy_->GetPolicyMaxRunning(systemPolicy);
     EXPECT_EQ(ret, COUNT_THERMAL_NORMAL);
 }
+
+/**
+ * @tc.name: GetPolicyMaxRunning_009
+ * @tc.desc: Test ThermalPolicy GetPolicyMaxRunning with dump level exceeding all map entries.
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(ThermalPolicyTest, GetPolicyMaxRunning_009, TestSize.Level1)
+{
+    WorkSchedSystemPolicy systemPolicy;
+    workPolicyManager_->SetThermalLevelByDump(999);
+    int32_t ret = thermalPolicy_->GetPolicyMaxRunning(systemPolicy);
+    EXPECT_EQ(ret, COUNT_THERMAL_CRUCIAL);
+    EXPECT_EQ(systemPolicy.thermalLevel, 999);
+}
+
+/**
+ * @tc.name: GetPolicyMaxRunning_010
+ * @tc.desc: Test ThermalPolicy GetPolicyMaxRunning with dump level=1 (NORMAL on non-PC).
+ * @tc.type: FUNC
+ * @tc.require: I974IQ
+ */
+HWTEST_F(ThermalPolicyTest, GetPolicyMaxRunning_010, TestSize.Level1)
+{
+    WorkSchedSystemPolicy systemPolicy;
+    workPolicyManager_->SetThermalLevelByDump(1);
+    int32_t ret = thermalPolicy_->GetPolicyMaxRunning(systemPolicy);
+#ifdef PC_PLATFORM
+    EXPECT_EQ(ret, COUNT_THERMAL_CRUCIAL);
+#else
+    EXPECT_EQ(ret, COUNT_THERMAL_LOW);
+#endif
+}
 }
 }

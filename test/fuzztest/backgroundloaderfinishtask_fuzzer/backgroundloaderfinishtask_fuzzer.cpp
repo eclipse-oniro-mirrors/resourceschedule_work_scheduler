@@ -25,7 +25,7 @@
 #include "work_bundle_group_change_callback.h"
 #include "work_conn_manager.h"
 #include "background_loader_task_info.h"
-#include "background_loader_mgr.h"
+#include "background_loader/background_loader_mgr.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
@@ -80,7 +80,7 @@ namespace WorkScheduler {
         if (workSchedulerService_->backgroundLoaderMgr_ == nullptr) {
             workSchedulerService_->backgroundLoaderMgr_ = std::make_shared<BackgroundLoaderMgr>();
         }
-        BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_MS);
+        BackgroundLoaderMgr::GetInstance().Init(BACKGROUND_LOADER_TIMEOUT_COUNT, BACKGROUND_LOADER_TIMEOUT_US);
         if (workSchedulerService_->checkBundle_) {
             workSchedulerService_->checkBundle_ = false;
         }

@@ -44,7 +44,6 @@ namespace WorkScheduler {
 WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>& wss) : wss_(wss)
 {
     conditionReadyQueue_ = std::make_shared<WorkQueue>();
-    watchdogId_ = INIT_WATCHDOG_ID;
     dumpSetMemory_ = INIT_DUMP_SET_MEMORY;
     watchdogTime_.store(WATCHDOG_TIME);
     dumpSetCpu_ = INIT_DUMP_SET_CPU;
@@ -55,21 +54,18 @@ WorkPolicyManager::WorkPolicyManager(const std::shared_ptr<WorkSchedulerService>
 bool WorkPolicyManager::Init(const std::shared_ptr<AppExecFwk::EventRunner>& runner)
 {
     WS_HILOGD("Work policy manager init.");
-    if (wss_.expired()) {
-        WS_HILOGE("wss_ expired");
-        return false;
-    }
-    workConnManager_ = make_shared<WorkConnManager>();
-    if (wss_.lock() == nullptr) {
+    auto wss = wss_.lock();
+    if (wss == nullptr) {
         WS_HILOGE("wss_ lock failed");
         return false;
     }
-    handler_ = wss_.lock()->GetHandler();
+    workConnManager_ = make_shared<WorkConnManager>();
+    handler_ = wss->GetHandler();
     if (handler_ == nullptr) {
         WS_HILOGE("failed due to handler_ is nullptr");
         return false;
     }
-    watchdog_ = std::make_shared<Watchdog>(wss_.lock()->GetWorkPolicyManager(), runner);
+    watchdog_ = std::make_shared<Watchdog>(wss->GetWorkPolicyManager(), runner);
     return true;
 }
 
@@ -214,7 +210,7 @@ void WorkPolicyManager::RemoveFromUidQueue(std::shared_ptr<WorkStatus> workStatu
 
 void WorkPolicyManager::RemoveFromReadyQueue(std::shared_ptr<WorkStatus> workStatus)
 {
-    conditionReadyQueue_->RemoveUnReady();
+    conditionReadyQueue_->CancelWork(workStatus);
 }
 
 std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> workStatus, int32_t uid,
@@ -226,6 +222,7 @@ std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> wo
         workStatus->lastTimeout_ = isTimeOut;
         if (workConnManager_->StopWork(workStatus, isTimeOut)) {
             stopWorkSuccess = true;
+            workStatus->StopHighPerfTimer(GetAllRunningWorkStatus());
         } else {
             return {stopWorkSuccess, hasCanceled};
         }
@@ -235,9 +232,7 @@ std::pair<bool, bool> WorkPolicyManager::StopWork(std::shared_ptr<WorkStatus> wo
             RemoveFromReadyQueue(workStatus);
             hasCanceled = true;
         } else {
-            workStatus->workStartTime_ = 0;
-            workStatus->workWatchDogTime_ = 0;
-            workStatus->duration_ = 0;
+            workStatus->ResetRunningFields();
             workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
         }
     }
@@ -345,10 +340,6 @@ int32_t WorkPolicyManager::GetRunningCount()
 void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<DetectorValue> detectorVal)
 {
     WS_HILOGD("enter");
-    if (wss_.expired()) {
-        WS_HILOGE("wss_ expired");
-        return;
-    }
     auto service = wss_.lock();
     if (!service) {
         WS_HILOGE("service is null");
@@ -386,12 +377,13 @@ void WorkPolicyManager::OnPolicyChanged(PolicyType policyType, shared_ptr<Detect
 
 bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int32_t runningCount)
 {
-    if (wss_.lock() == nullptr) {
+    auto wss = wss_.lock();
+    if (wss == nullptr) {
         WS_HILOGE("wss_ lock failed");
         return false;
     }
     if (OHOS::system::GetIntParameter("const.debuggable", 0) == 1 &&
-        wss_.lock()->IsExemptionBundle(topWork->bundleName_)) {
+        wss->IsExemptionBundle(topWork->bundleName_)) {
         return true;
     }
     if (DelayedSingleton<DataManager>::GetInstance()->IsInDeviceStandyRestrictlist(topWork->bundleName_)) {
@@ -410,27 +402,28 @@ bool WorkPolicyManager::IsSpecialScene(std::shared_ptr<WorkStatus> topWork, int3
 void WorkPolicyManager::CheckWorkToRun()
 {
     WS_HILOGD("Check work to run.");
-    if (wss_.lock() == nullptr) {
+    if (wss_.expired()) {
         WS_HILOGE("wss_ expired");
         return;
     }
+    CheckUnCurModeWork();
     RemoveAllUnReady();
     if (handler_ == nullptr) {
         WS_HILOGE("handler lock() returns nullptr");
         return;
     }
     handler_->RemoveEvent(WorkEventHandler::RETRIGGER_MSG);
-    shared_ptr<WorkStatus> topWork = GetWorkToRun();
-    if (topWork == nullptr) {
-        WS_HILOGD("no condition ready work not running, return.");
-        return;
-    }
     WorkSchedSystemPolicy systemPolicy;
     int32_t runningCount = GetRunningCount();
     int32_t allowRunningCount = GetMaxRunningCount(systemPolicy);
     if (HasSystemPolicyEventSend() && allowRunningCount == MAX_RUNNING_COUNT && runningCount < MAX_RUNNING_COUNT) {
         SetSystemPolicyEventSend(false);
         WorkSchedUtil::HiSysEventSystemPolicyLimit(systemPolicy);
+    }
+    shared_ptr<WorkStatus> topWork = GetWorkToRun();
+    if (topWork == nullptr) {
+        WS_HILOGD("no condition ready work not running, return.");
+        return;
     }
     if (runningCount < allowRunningCount || IsSpecialScene(topWork, runningCount)) {
         if (topWork->workInfo_->IsSA()) {
@@ -440,6 +433,7 @@ void WorkPolicyManager::CheckWorkToRun()
         }
         SendRetrigger(DELAY_TIME_SHORT);
     } else {
+        RevertToConditionReady(topWork);
         if (runningCount == MAX_RUNNING_COUNT) {
             systemPolicy.policyName = "OVER_LIMIT";
         }
@@ -457,6 +451,11 @@ void WorkPolicyManager::CheckWorkToRun()
     WS_HILOGD("out");
 }
 
+void WorkPolicyManager::CheckUnCurModeWork()
+{
+    conditionReadyQueue_->CheckUnCurModeWork();
+}
+
 void WorkPolicyManager::RemoveAllUnReady()
 {
     conditionReadyQueue_->RemoveUnReady();
@@ -471,17 +470,15 @@ std::shared_ptr<WorkStatus> WorkPolicyManager::GetWorkToRun()
 void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
 {
     WS_HILOGI("RealStartSA %{public}d workId:%{public}s", topWork->workInfo_->GetSaId(), topWork->workId_.c_str());
-    if (wss_.expired()) {
-        WS_HILOGE("wss_ expired");
-        return;
-    }
-    if (wss_.lock() == nullptr) {
+    auto wss = wss_.lock();
+    if (wss == nullptr) {
         WS_HILOGE("wss_ lock failed");
+        RevertToConditionReady(topWork);
         return;
     }
-    wss_.lock()->UpdateWorkBeforeRealStart(topWork);
+    wss->UpdateWorkBeforeRealStart(topWork);
     RemoveFromReadyQueue(topWork);
-    bool ret = wss_.lock()->LoadSa(topWork, "");
+    bool ret = wss->LoadSa(topWork, "");
     if (ret) {
         WS_HILOGI("startSA %{public}d workId:%{public}s success",
             topWork->workInfo_->GetSaId(), topWork->workId_.c_str());
@@ -494,6 +491,8 @@ void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
         }
         workConnManager_->WriteStartWorkEvent(topWork);
         return;
+    } else {
+        RevertToConditionReady(topWork);
     }
     WS_HILOGE("startSA %{public}d workId:%{public}s failed",
         topWork->workInfo_->GetSaId(), topWork->workId_.c_str());
@@ -502,27 +501,25 @@ void WorkPolicyManager::RealStartSA(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 {
     WS_HILOGD("RealStartWork topWork ID: %{public}s", topWork->workId_.c_str());
-    if (wss_.expired()) {
-        WS_HILOGE("wss_ expired");
-        return;
-    }
-    if (wss_.lock() == nullptr) {
+    auto wss = wss_.lock();
+    if (wss == nullptr) {
         WS_HILOGE("wss_ lock failed");
+        RevertToConditionReady(topWork);
         return;
     }
-    UpdateWatchdogTime(wss_.lock(), topWork);
-    topWork->MarkStatus(WorkStatus::Status::RUNNING);
+    UpdateWatchdogTime(wss, topWork);
     RemoveFromReadyQueue(topWork);
     if (IsNeedDiscreteScheduled() && topWork->IsNeedDiscreteScheduled()) {
         WS_HILOGI("Discrete scheduled work id: %{public}s", topWork->workId_.c_str());
         DiscreteScheduled(topWork);
         return;
     }
-    wss_.lock()->UpdateWorkBeforeRealStart(topWork);
+    wss->UpdateWorkBeforeRealStart(topWork);
     bool ret = workConnManager_->StartWork(topWork);
     if (ret) {
         AddWatchdogForWork(topWork);
         topWork->UpdateUidLastTimeMap();
+        topWork->StartHighPerfTimer();
     } else {
         if (!topWork->IsRepeating()) {
             topWork->MarkStatus(WorkStatus::Status::REMOVED);
@@ -536,6 +533,11 @@ void WorkPolicyManager::RealStartWork(std::shared_ptr<WorkStatus> topWork)
 void WorkPolicyManager::UpdateWatchdogTime(const std::shared_ptr<WorkSchedulerService> &wmsptr,
     std::shared_ptr<WorkStatus> &topWork)
 {
+    if (topWork->workInfo_->IsPerformanceSensitive()) {
+        WS_HILOGD("isPerformanceSensitive, update watchdog time:%{public}d", WATCHDOG_TIME);
+        SetWatchdogTime(WATCHDOG_TIME);
+        return;
+    }
     if (topWork->workInfo_->GetDeepIdle() == WorkCondition::DeepIdle::DEEP_IDLE_IN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNKNOWN
         && topWork->workInfo_->GetChargerType() != WorkCondition::Charger::CHARGING_UNPLUGGED) {
@@ -572,8 +574,8 @@ void WorkPolicyManager::AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatu
     WS_HILOGI("AddWatchdog, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s, watchdogTime:%{public}d",
         watchId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime_.load());
     watchdog_->AddWatchdog(watchId, watchdogTime_.load());
-    workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
-    workStatus->workWatchDogTime_ = static_cast<uint64_t>(watchdogTime_.load());
+    workStatus->InitRunningFields(WorkSchedUtils::GetCurrentTimeMs(),
+        static_cast<uint64_t>(watchdogTime_.load()));
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.emplace(watchId, workStatus);
 }
@@ -590,8 +592,9 @@ void WorkPolicyManager::SendRetrigger(int32_t delaytime)
 
 void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
 {
-    if (wss_.expired()) {
-        WS_HILOGE("wss_ expired");
+    auto wss = wss_.lock();
+    if (wss == nullptr) {
+        WS_HILOGE("wss_ lock failed");
         return;
     }
     std::shared_ptr<WorkStatus> workStatus = GetWorkFromWatchdog(watchdogId);
@@ -602,11 +605,7 @@ void WorkPolicyManager::WatchdogTimeOut(uint32_t watchdogId)
     }
     WS_HILOGI("WatchdogTimeOut, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s",
         watchdogId, workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
-    if (wss_.lock() == nullptr) {
-        WS_HILOGE("wss_ lock failed");
-        return;
-    }
-    wss_.lock()->WatchdogTimeOut(workStatus);
+    wss->WatchdogTimeOut(workStatus);
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     watchdogIdMap_.erase(watchdogId);
 }
@@ -711,10 +710,12 @@ void WorkPolicyManager::Dump(string& result)
 
 uint32_t WorkPolicyManager::NewWatchdogId()
 {
-    if (watchdogId_ == MAX_WATCHDOG_ID) {
-        watchdogId_ = INIT_WATCHDOG_ID;
-    }
-    return watchdogId_++;
+    uint32_t cur = watchdogId_.load(std::memory_order_relaxed);
+    uint32_t next;
+    do {
+        next = (cur >= MAX_WATCHDOG_ID) ? INIT_WATCHDOG_ID : cur + 1;
+    } while (!watchdogId_.compare_exchange_weak(cur, next, std::memory_order_relaxed));
+    return cur;
 }
 
 int32_t WorkPolicyManager::GetDumpSetMemory()
@@ -882,6 +883,7 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
 {
     WS_HILOGI("Pause Running Work Scheduler Work, uid:%{public}d", uid);
     bool hasWorkWithUid = false;
+    auto runningWorks = GetAllRunningWorkStatus();
     std::lock_guard<ffrt::mutex> lock(watchdogIdMapMutex_);
     for (auto it = watchdogIdMap_.begin(); it != watchdogIdMap_.end(); it++) {
         auto workStatus = it->second;
@@ -892,24 +894,12 @@ int32_t WorkPolicyManager::PauseRunningWorks(int32_t uid)
                     workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
-            uint64_t oldWatchdogTime = workStatus->workWatchDogTime_;
-            uint64_t runningTime = WorkSchedUtils::GetCurrentTimeMs() - workStatus->workStartTime_;
-            uint64_t newWatchdogTime = oldWatchdogTime - runningTime;
-            if (newWatchdogTime > LONG_WATCHDOG_TIME) {
-                WS_HILOGE("bundleName:%{public}s, workId:%{public}s, invalid watchdogtime: %{public}" PRIu64
-                    ",oldWatchdogTime:%{public}" PRIu64 ", runningTime:%{public}" PRIu64,
-                    workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime, oldWatchdogTime,
-                    runningTime);
-                newWatchdogTime = 0;
-            }
-            workStatus->duration_ += runningTime;
+            uint64_t newWatchdogTime = workStatus->PauseRunning(WorkSchedUtils::GetCurrentTimeMs());
             WS_HILOGI("PauseRunningWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s,"
-                " oldWatchdogTime:%{public}" PRIu64 ", newWatchdogTime:%{public}" PRIu64 ", duration:%{public}" PRIu64,
-                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(),
-                oldWatchdogTime, newWatchdogTime, workStatus->duration_);
-            workStatus->paused_ = true;
-            workStatus->workWatchDogTime_ = newWatchdogTime;
+                " newWatchdogTime:%{public}" PRIu64,
+                it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), newWatchdogTime);
             watchdog_->RemoveWatchdog(it->first);
+            workStatus->StopHighPerfTimer(runningWorks);
         }
     }
 
@@ -934,13 +924,13 @@ int32_t WorkPolicyManager::ResumePausedWorks(int32_t uid)
                     workStatus->bundleName_.c_str(), workStatus->workId_.c_str());
                 continue;
             }
-            int32_t watchdogTime = static_cast<int32_t>(workStatus->workWatchDogTime_);
+            int32_t watchdogTime = static_cast<int32_t>(workStatus->GetWorkWatchDogTime());
             WS_HILOGI("ResumePausedWorks, watchId:%{public}u, bundleName:%{public}s, workId:%{public}s"
                 " watchdogTime:%{public}d",
                 it->first, workStatus->bundleName_.c_str(), workStatus->workId_.c_str(), watchdogTime);
-            workStatus->paused_ = false;
+            workStatus->ResumeRunning(WorkSchedUtils::GetCurrentTimeMs());
             watchdog_->AddWatchdog(it->first, watchdogTime);
-            workStatus->workStartTime_ = WorkSchedUtils::GetCurrentTimeMs();
+            workStatus->StartHighPerfTimer();
         }
     }
 
@@ -1042,11 +1032,17 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
         return;
     }
     auto task = [this, topWork]() {
-        wss_.lock()->UpdateWorkBeforeRealStart(topWork);
+        auto svc = wss_.lock();
+        if (svc == nullptr) {
+            WS_HILOGE("service is null in discrete scheduled task");
+            return;
+        }
+        svc->UpdateWorkBeforeRealStart(topWork);
         bool ret = workConnManager_->StartWork(topWork);
         if (ret) {
             AddWatchdogForWork(topWork);
             topWork->UpdateUidLastTimeMap();
+            topWork->StartHighPerfTimer();
         } else {
             if (!topWork->IsRepeating()) {
                 topWork->MarkStatus(WorkStatus::Status::REMOVED);
@@ -1068,6 +1064,52 @@ void WorkPolicyManager::DiscreteScheduled(std::shared_ptr<WorkStatus> topWork)
     srand(static_cast<uint32_t>(seed));
     int32_t delay = rand() % MAX_DELAY_SECOND + 1;
     handler->PostTask(task, delay * MILLISECOND);
+}
+
+std::vector<std::shared_ptr<WorkStatus>> WorkPolicyManager::GetAllRunningWorkStatus()
+{
+    WS_HILOGD("enter");
+    std::lock_guard<ffrt::recursive_mutex> lock(uidMapMutex_);
+    std::vector<std::shared_ptr<WorkStatus>> runningWorks;
+    auto it = uidQueueMap_.begin();
+    while (it != uidQueueMap_.end()) {
+        auto workList = it->second->GetWorkList();
+        for (const auto &work : workList) {
+            if (work && work->IsRunning()) {
+                runningWorks.push_back(work);
+            }
+        }
+        it++;
+    }
+    return runningWorks;
+}
+
+void WorkPolicyManager::CleanOrphanWork(std::shared_ptr<WorkStatus> workStatus)
+{
+    if (!workStatus) {
+        WS_HILOGE("CleanOrphanWork: workStatus is null");
+        return;
+    }
+    WS_HILOGI("CleanOrphanWork workId:%{public}s", workStatus->workId_.c_str());
+    if (workConnManager_) {
+        workConnManager_->RemoveConnInfo(workStatus->workId_);
+    }
+    workStatus->StopHighPerfTimer(GetAllRunningWorkStatus());
+    if (!workStatus->IsRepeating()) {
+        workStatus->MarkStatus(WorkStatus::Status::REMOVED);
+        RemoveFromUidQueue(workStatus, workStatus->uid_);
+        RemoveFromReadyQueue(workStatus);
+    } else {
+        workStatus->ResetRunningFields();
+        workStatus->MarkStatus(WorkStatus::Status::WAIT_CONDITION);
+    }
+    RemoveWatchDog(workStatus);
+}
+
+void WorkPolicyManager::RevertToConditionReady(std::shared_ptr<WorkStatus> topWork)
+{
+    topWork->MarkStatus(WorkStatus::Status::CONDITION_READY);
+    conditionReadyQueue_->Push(topWork);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
