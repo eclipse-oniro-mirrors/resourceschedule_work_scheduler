@@ -129,7 +129,7 @@ bool BackgroundLoaderDatabase::OpenDatabase()
         return false;
     }
     chmod(dbPath.c_str(), S_IRUSR | S_IWUSR);
-    BL_HILOGI("open db success, path=%{public}s", dbPath.c_str());
+    BL_HILOGI("open db success, path=%{private}s", dbPath.c_str());
     return true;
 }
 
