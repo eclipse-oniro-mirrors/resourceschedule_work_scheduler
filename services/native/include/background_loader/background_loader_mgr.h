@@ -23,8 +23,8 @@
 #include <atomic>
 
 #include <nocopyable.h>
+#include <errors.h>
 
-#include "work_sched_errors.h"
 #include "background_loader_task_info.h"
 #include "background_loader/background_loader_database.h"
 #include "single_instance.h"

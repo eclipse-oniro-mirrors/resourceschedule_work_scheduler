@@ -25,7 +25,7 @@
 #include "res_sched_json_util.h"
 #include "system_ability_definition.h"
 #include "want.h"
-#include "work_sched_errors.h"
+#include "background_loader/background_loader_errors.h"
 #include "work_sched_hilog.h"
 #include "bundle_mgr_proxy.h"
 #include "if_system_ability_manager.h"
@@ -47,6 +47,7 @@ using namespace OHOS::ResourceSchedule;
 using namespace OHOS::AppExecFwk;
 namespace OHOS {
 namespace WorkScheduler {
+using namespace BackgroundLoader;
 namespace {
 constexpr std::string_view TIMEOUT_MESSAGE = "timeOut";
 constexpr std::string_view ON_START = "onStart";
@@ -219,7 +220,7 @@ ErrCode BackgroundLoaderMgr::UpsertTaskToDb(int32_t uid, const TaskInfo& taskInf
     TaskRow row = ToTaskRow(taskInfo);
     if (dbQueue_ == nullptr) {
         BL_HILOGE("dbQueue_ is null, cannot upsert task, uid=%{public}d", uid);
-        return E_INNER_ERR;
+        return E_SYSTEM_SERVICE_EXCEPTION;
     }
     dbQueue_->submit([this, row, uid]() {
         if (!database_.UpsertTask(row)) {
@@ -233,7 +234,7 @@ ErrCode BackgroundLoaderMgr::DeleteTaskFromDb(int32_t uid)
 {
     if (dbQueue_ == nullptr) {
         BL_HILOGE("dbQueue_ is null, cannot delete task, uid=%{public}d", uid);
-        return E_INNER_ERR;
+        return E_SYSTEM_SERVICE_EXCEPTION;
     }
     dbQueue_->submit([this, uid]() {
         if (!database_.DeleteTask(uid)) {
@@ -247,7 +248,7 @@ ErrCode BackgroundLoaderMgr::DeleteBlockListFromDb(const std::string& bundleName
 {
     if (dbQueue_ == nullptr) {
         BL_HILOGE("dbQueue_ is null, cannot delete blockList, bundleName: %{public}s", bundleName.c_str());
-        return E_INNER_ERR;
+        return E_SYSTEM_SERVICE_EXCEPTION;
     }
     dbQueue_->submit([this, bundleName]() {
         if (!database_.DeleteBlockList(bundleName)) {
@@ -263,14 +264,14 @@ ErrCode BackgroundLoaderMgr::HandleExistingTask(const BackgroundLoaderTaskInfo& 
     // 存在：在黑名单里面 —— 不允许注册修改，返回错误码
     if (IsInBlockListLocked(bundleName)) {
         BL_HILOGE("bundleName: %{public}s is in block list, reject register", bundleName.c_str());
-        return E_CHECK_WORKINFO_FAILED;
+        return E_BACKGROUND_LOADER_PROHIBITED;
     }
     // 存在：不在黑名单里面 —— 校验 taskId 和 abilityName
     std::lock_guard<ffrt::mutex> lock(taskLock_);
     auto it = taskMap_.find(uid);
     if (it == taskMap_.end()) {
         BL_HILOGE("task not found in taskMap_, uid: %{public}d", uid);
-        return E_WORK_NOT_EXIST_FAILED;
+        return E_TASK_NOT_EXIST;
     }
     const std::string &existingAbilityName = it->second.abilityName_;
     int32_t existingTaskId = it->second.taskId_;
@@ -278,13 +279,13 @@ ErrCode BackgroundLoaderMgr::HandleExistingTask(const BackgroundLoaderTaskInfo& 
     if (existingAbilityName != taskInfo.GetAbilityName()) {
         BL_HILOGE("abilityName mismatch, esisting: %{public}s, input: %{public}s, uid: %{public}d",
                   existingAbilityName.c_str(), taskInfo.GetAbilityName().c_str(), uid);
-        return E_PARAM_ERROR;
+        return E_NOT_SPECIFIED_ABILITY_NAME;
     }
     // taskId 和 abilityName 都一致 —— 已注册过，返回重复错误码
     if (existingTaskId == taskInfo.GetTaskId()) {
         BL_HILOGE("task already registered, taskId: %{public}d, abilityName: %{public}s, uid: %{public}d",
                   taskInfo.GetTaskId(), taskInfo.GetAbilityName().c_str(), uid);
-        return E_ADD_REPEAT_WORK_ERR;
+        return E_ADD_REPEAT_TASK_ERR;
     }
     // 仅taskId不一致 —— 允许刷新 taskId
     it->second.taskId_ = taskInfo.GetTaskId();
@@ -299,8 +300,8 @@ ErrCode BackgroundLoaderMgr::RegisterNewTask(const BackgroundLoaderTaskInfo& tas
 {
     // 1. 校验黑名单
     if (IsInBlockListLocked(bundleName)) {
-        BL_HILOGE("bundleName %{public}s is in block list, regect register", bundleName.c_str());
-        return E_CHECK_WORKINFO_FAILED;
+        BL_HILOGE("bundleName %{public}s is in block list, reject register", bundleName.c_str());
+        return E_BACKGROUND_LOADER_PROHIBITED;
     }
 
     // 2. 校验敏感权限
@@ -309,7 +310,7 @@ ErrCode BackgroundLoaderMgr::RegisterNewTask(const BackgroundLoaderTaskInfo& tas
         BL_HILOGW("bundleName: %{public}s has perceivable sensitive permission, reject register", bundleName.c_str());
         AddToBlockListLocked(bundleName);
         if (dbQueue_ == nullptr) {
-            return E_CHECK_WORKINFO_FAILED;
+            return E_SYSTEM_SERVICE_EXCEPTION;
         }
         std::string blockKey = bundleName;
         dbQueue_->submit([this, blockKey]() {
@@ -317,14 +318,14 @@ ErrCode BackgroundLoaderMgr::RegisterNewTask(const BackgroundLoaderTaskInfo& tas
                 BL_HILOGE("insert blocklist to db failed, key=%{public}s", blockKey.c_str());
             }
         });
-        return E_CHECK_WORKINFO_FAILED;
+        return E_TASK_HAS_PERCEPTIBLE_PERMISSIONS;
     }
 
     // 3. 校验 abilityName 是否为主 ability
     if (!VerifyAbilityName(bundleName, taskInfo.GetAbilityName(), uid)) {
         BL_HILOGE("VerifyAbilityName failed, bundleName: %{public}s, abilityName: %{public}s", bundleName.c_str(),
                   taskInfo.GetAbilityName().c_str());
-        return E_CHECK_WORKINFO_FAILED;
+        return E_NOT_SPECIFIED_ABILITY_NAME;
     }
 
     // 4. 允许注册
@@ -336,7 +337,7 @@ ErrCode BackgroundLoaderMgr::RegisterNewTask(const BackgroundLoaderTaskInfo& tas
         .uid_ = uid,
     };
     if (!AddNewTaskLocked(uid, info)) {
-        return E_WORK_EXCEED_UPPER_LIMIT;
+        return E_BACKGROUND_LOADER_SERVICE_FAILED;
     }
     ReportTaskChangeEvent(bundleName, appIndex, static_cast<int32_t>(ResType::BackgroundLoaderState::ADD));
     UpsertTaskToDb(uid, info);
@@ -429,7 +430,7 @@ void BackgroundLoaderMgr::ExecuteOnStopFinish(int32_t uid, bool shouldAddToBlock
 {
     TaskInfo taskInfoCopy = taskInfo;
     MarkTimeOutStatusLocked(uid, shouldAddToBlockList, taskInfoCopy);
-    ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_INNER_ERR);
+    ReportTaskFinishEvent(taskInfoCopy.bundleName_, taskInfoCopy.appIndex_, 1, E_BACKGROUND_LOADER_FAILED);
     UpsertTaskToDb(uid, taskInfoCopy);
     RemoveDelayFinishHandle(uid);
 }
@@ -516,16 +517,16 @@ bool BackgroundLoaderMgr::CheckLoadCondition(const nlohmann::json &payload, cons
 {
     if (IsInBlockListLocked(bundleName)) {
         BL_HILOGW("bundleName: %{public}s in block list", bundleName.c_str());
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_BACKGROUND_LOADER_PROHIBITED);
         return false;
     }
     if (!CanBackGroundLoadLocked(bundleName, appIndex, uid)) {
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_BACKGROUND_LOADER_PROHIBITED);
         return false;
     }
     if (!IsValidUserId(payload, uid, userId)) {
         BL_HILOGW("invalid userId, bundleName: %{public}s, uid: %{public}d", bundleName.c_str(), uid);
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_BACKGROUND_LOADER_FAILED);
         return false;
     }
     return true;
@@ -549,7 +550,7 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
     std::string bundleName;
     int32_t appIndex = 0;
     if (!ParseAppInfo(payload, bundleName, abilityName, appIndex)) {
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_PARAM_NUMBER_ERR);
         return;
     }
     int32_t uid = DEFAULT_INVAL_VALUE;
@@ -564,7 +565,7 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
         bundleName, abilityName, appIndex, uid);
     if (connect == nullptr) {
         BL_HILOGE("failed to new connection");
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_SYSTEM_SERVICE_EXCEPTION);
         return;
     }
     OHOS::AAFwk::Want providerWant;
@@ -572,7 +573,7 @@ void BackgroundLoaderMgr::HandleBackgroundLoaderTask(const nlohmann::json& paylo
     int32_t frameNum = DEFAULT_FRAME_NUM;
     ParseFrameNum(payload, frameNum);
     if (!ConnectNewAbility(providerWant, connect, userId, frameNum)) {
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_SYSTEM_SERVICE_EXCEPTION);
     }
 }
 
@@ -624,7 +625,7 @@ void BackgroundLoaderMgr::SendOnStart(const sptr<IRemoteObject>& remoteObject,
         // 异常结束，标志status结束， 且发送finish事件
         MarkTaskFinishedLocked(uid, taskInfoCopy);
         UpsertTaskToDb(uid, taskInfoCopy);
-        ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+        ReportTaskFinishEvent(bundleName, appIndex, 1, E_SYSTEM_SERVICE_EXCEPTION);
         BackgroundLoaderHiSysEvent::ReportRecordSysEvent(taskInfoCopy, "Send onStart failed", "");
         return;
     }
@@ -860,13 +861,13 @@ ErrCode BackgroundLoaderMgr::RegisterTaskWithCheck(const BackgroundLoaderTaskInf
 {
     if (!isReady_.load()) {
         BL_HILOGE("BackgroundLoaderMgr service is not ready");
-        return E_SERVICE_NOT_READY;
+        return E_SYSTEM_SERVICE_NOT_READY;
     }
     std::string bundleName = "";
     int32_t appIndex = -1;
     int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (!GetAppIndexAndBundleNameByUid(uid, appIndex, bundleName)) {
-        return E_CHECK_WORKINFO_FAILED;
+        return E_SYSTEM_SERVICE_EXCEPTION;
     }
     BL_HILOGI("taskId: %{public}d, bundleName: %{public}s, abilityName: %{public}s, "
               "appIndex: %{public}d, uid: %{public}d",
@@ -886,7 +887,7 @@ ErrCode BackgroundLoaderMgr::UnregisterTaskWithCheck(const BackgroundLoaderTaskI
 {
     if (!isReady_.load()) {
         BL_HILOGE("BackgroundLoaderMgr service is not ready");
-        return E_SERVICE_NOT_READY;
+        return E_SYSTEM_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingAppUid();
     TaskInfo taskInfoCopy;
@@ -908,14 +909,14 @@ ErrCode BackgroundLoaderMgr::FinishTaskWithCheck(const BackgroundLoaderTaskInfo&
 {
     if (!isReady_.load()) {
         BL_HILOGE("BackgroundLoaderMgr service is not ready");
-        return E_SERVICE_NOT_READY;
+        return E_SYSTEM_SERVICE_NOT_READY;
     }
     BL_HILOGI("FinishTaskWithCheck, taskId: %{public}d, abilityName: %{public}s", taskInfo.GetTaskId(),
               taskInfo.GetAbilityName().c_str());
     int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (IsDelayFinishPending(uid)) {
         BL_HILOGW("task is finishing, reject finish, uid: %{public}d", uid);
-        return E_INNER_ERR;
+        return E_BACKGROUND_LOADER_FAILED;
     }
     TaskInfo taskInfoCopy;
     ErrCode ret = FinishTaskLocked(taskInfo, uid, taskInfoCopy);
@@ -940,18 +941,18 @@ ErrCode BackgroundLoaderMgr::FinishTaskLocked(const BackgroundLoaderTaskInfo& ta
     if (it == taskMap_.end()) {
         BL_HILOGE("FinishTaskLocked failed, task not found, uid: %{public}d, taskInfo: %{public}d", uid,
                   taskInfo.GetTaskId());
-        return E_WORK_NOT_EXIST_FAILED;
+        return E_TASK_NOT_EXIST;
     }
     if (it -> second.taskId_ != taskInfo.GetTaskId() || it->second.abilityName_ != taskInfo.GetAbilityName()) {
         BL_HILOGE("FinishTaskLocked failed, taskId/abilityName mismatch, uid: %{public}d, "
                   "taskId: %{public}d, abilityName: %{public}s",
                   uid, taskInfo.GetTaskId(), taskInfo.GetAbilityName().c_str());
-        return E_WORK_NOT_EXIST_FAILED;
+        return E_TASK_ID_NOT_EXIST;
     }
     if (it->second.status_ != TaskStatus::RUNNING) {
         BL_HILOGE("FinishTaskLocked failed, status not running, uid: %{public}d, status: %{public}d", it->first,
                   static_cast<int32_t>(it->second.status_));
-        return E_WORK_NOT_EXIST_FAILED;
+        return E_BACKGROUND_LOADER_FAILED;
     }
     it->second.status_ = TaskStatus::FINISHED;
     taskInfoCopy = it->second;
@@ -963,7 +964,7 @@ ErrCode BackgroundLoaderMgr::GetTaskInfoWithCheck(int32_t taskId, BackgroundLoad
 {
     if (!isReady_.load()) {
         BL_HILOGE("BackgroundLoaderMgr service is not ready");
-        return E_SERVICE_NOT_READY;
+        return E_SYSTEM_SERVICE_NOT_READY;
     }
     int32_t uid = IPCSkeleton::GetCallingAppUid();
     BL_HILOGI("GetTaskInfoWithCheck taskId: %{public}d, uid: %{public}d", taskId, uid);
@@ -973,8 +974,8 @@ ErrCode BackgroundLoaderMgr::GetTaskInfoWithCheck(int32_t taskId, BackgroundLoad
         return ret;
     }
     if (IsInBlockListLocked(bundleName)) {
-        BL_HILOGE("bundleName: %{public}s is in block lisr, get taskInfo fail", bundleName.c_str());
-        return E_INNER_ERR;
+        BL_HILOGE("bundleName: %{public}s is in block list, get taskInfo fail", bundleName.c_str());
+        return E_BACKGROUND_LOADER_PROHIBITED;
     }
     return ERR_OK;
 }
@@ -1032,7 +1033,7 @@ void BackgroundLoaderMgr::HandlePerceivableIntercept(int32_t uid, BlockListReaso
 #endif
     KillApplicationByBundleName(bundleName, appIndex);
     ReportTaskChangeEvent(bundleName, appIndex, static_cast<int32_t>(ResType::BackgroundLoaderState::DELETE));
-    ReportTaskFinishEvent(bundleName, appIndex, 1, E_CHECK_WORKINFO_FAILED);
+    ReportTaskFinishEvent(bundleName, appIndex, 1, E_BACKGROUND_LOADER_PROHIBITED);
 }
 
 void BackgroundLoaderMgr::KillApplicationByBundleName(const std::string &bundleName, int32_t appIndex)
@@ -1124,14 +1125,14 @@ ErrCode BackgroundLoaderMgr::RemoveTaskLocked(const BackgroundLoaderTaskInfo &ta
         it->second.abilityName_ != taskInfo.GetAbilityName()) {
         BL_HILOGE("RemoveTaskLocked failed, task not found, uid: %{public}d, taskId: %{public}d", uid,
                   taskInfo.GetTaskId());
-        return E_WORK_NOT_EXIST_FAILED;
+        return E_TASK_ID_NOT_EXIST;
     }
     if (it->second.status_ == TaskStatus::RUNNING) {
         BL_HILOGE("RemoveTaskLocked failed, task is running, uid: %{public}d", uid);
-        return E_INNER_ERR;
+        return E_TASK_IS_RUNNING;
     } else if (it->second.status_ == TaskStatus::IN_BLOCK_LIST) {
         BL_HILOGE("RemoveTaskLocked failed, task in block list, uid: %{public}d", uid);
-        return E_INNER_ERR;
+        return E_BACKGROUND_LOADER_PROHIBITED;
     }
     taskInfoCopy = it->second;
     taskMap_.erase(it);
@@ -1310,12 +1311,12 @@ ErrCode BackgroundLoaderMgr::GetTaskInfoLocked(int32_t uid, int32_t taskId,
     auto it = taskMap_.find(uid);
     if (it == taskMap_.end() || it->second.taskId_ != taskId) {
         BL_HILOGE("GetTaskInfoLocked failed, task not found, uid: %{public}d", uid);
-        return E_WORK_NOT_EXIST_FAILED;
+        return E_TASK_ID_NOT_EXIST;
     }
     // 黑名单中的应用， 获取信息时需要返回错误码
     if (it->second.status_ == TaskStatus::IN_BLOCK_LIST) {
         BL_HILOGE("GetTaskInfoLocked failed, task is in block list, uid: %{public}d", uid);
-        return E_INNER_ERR;
+        return E_BACKGROUND_LOADER_PROHIBITED;
     }
     TaskInfo info = it->second;
     bundleName = info.bundleName_;
@@ -1663,7 +1664,7 @@ void BackgroundLoaderMgr::HandleProcessDiedEvent(int64_t value, const nlohmann::
         ReportTaskChangeEvent(bundleName, appIndex,
                               static_cast<int32_t>(ResType::BackgroundLoaderState::DELETE));
     }
-    ReportTaskFinishEvent(bundleName, appIndex, 1, E_INNER_ERR);
+    ReportTaskFinishEvent(bundleName, appIndex, 1, E_BACKGROUND_LOADER_FAILED);
     UpsertTaskToDb(uid, taskInfoCopy);
 }
 

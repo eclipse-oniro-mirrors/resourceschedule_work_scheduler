@@ -12,10 +12,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+#include <string>
+#include <errors.h>
 
 #include "common.h"
 #include "work_sched_hilog.h"
 #include "work_sched_errors.h"
+#include "background_loader/background_loader_errors.h"
+#include "background_loader_napi_helper.h"
 #include "background_loader_task_info.h"
 #include "workscheduler_srv_client.h"
 
@@ -31,6 +35,7 @@ const char* TASK_ID = "taskId";
 
 namespace OHOS {
 namespace WorkScheduler {
+using namespace BackgroundLoader;
 struct GetTaskInfoAsyncContext : public AsyncWorkData {
     explicit GetTaskInfoAsyncContext(napi_env env) : AsyncWorkData(env) {}
     BackgroundLoaderTaskInfo taskInfo;
@@ -43,20 +48,21 @@ bool GetTaskInfo(napi_env env, napi_callback_info info, BackgroundLoaderTaskInfo
     napi_value argv[TASK_INFO_PARAMS] = {nullptr};
     napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr);
     if (argc != TASK_INFO_PARAMS) {
-        Common::HandleIntErrCode(env, E_CHECK_WORKINFO_FAILED);
+        BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, BackgroundLoader::E_PARAM_ERROR);
         return false;
     }
     if (!Common::MatchValueType(env, argv[TASK_INFO_INDEX], napi_object)) {
-        Common::HandleIntErrCode(env, E_CHECK_WORKINFO_FAILED);
+        BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, BackgroundLoader::E_PARAM_ERROR);
         return false;
     }
 
-    int32_t taskId = Common::GetIntProperty(env, argv[TASK_INFO_INDEX], TASK_ID, E_WORKID_ERR);
-    std::string abilityName = Common::GetStringProperty(env, argv[TASK_INFO_INDEX], ABILITY_NAME,
-        E_BUNDLE_OR_ABILITY_NAME_ERR);
+    int32_t taskId = BackgroundLoaderNapiHelper::GetIntProperty(env, argv[TASK_INFO_INDEX], TASK_ID,
+        BackgroundLoader::E_PARAM_ERROR);
+    std::string abilityName = BackgroundLoaderNapiHelper::GetStringProperty(env, argv[TASK_INFO_INDEX], ABILITY_NAME,
+        BackgroundLoader::E_PARAM_ERROR);
     if (abilityName == "") {
         WS_HILOGE("abilityName is invalid, failed.");
-        Common::HandleIntErrCode(env, E_CHECK_WORKINFO_FAILED);
+        BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, BackgroundLoader::E_ABILITY_NAME_INCONFORMITY);
         return false;
     }
     taskInfo.SetAbilityName(abilityName);
@@ -72,7 +78,7 @@ napi_value RegisterTask(napi_env env, napi_callback_info info)
         return Common::NapiGetNull(env);
     }
     ErrCode errCode = WorkSchedulerSrvClient::GetInstance().RegisterTask(taskInfo);
-    Common::HandleIntErrCode(env, errCode);
+    BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, errCode);
     WS_HILOGD("Register task napi end.");
     return Common::NapiGetNull(env);
 }
@@ -85,7 +91,7 @@ napi_value UnregisterTask(napi_env env, napi_callback_info info)
         return Common::NapiGetNull(env);
     }
     ErrCode errCode = WorkSchedulerSrvClient::GetInstance().UnregisterTask(taskInfo);
-    Common::HandleIntErrCode(env, errCode);
+    BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, errCode);
     WS_HILOGD("Unregister task napi end.");
     return Common::NapiGetNull(env);
 }
@@ -98,7 +104,7 @@ napi_value FinishTask(napi_env env, napi_callback_info info)
         return Common::NapiGetNull(env);
     }
     ErrCode errCode = WorkSchedulerSrvClient::GetInstance().FinishTask(taskInfo);
-    Common::HandleIntErrCode(env, errCode);
+    BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, errCode);
     WS_HILOGD("Finish task napi end.");
     return Common::NapiGetNull(env);
 }
@@ -137,8 +143,9 @@ void HandlePromiseMode(napi_env env, GetTaskInfoAsyncContext* context, napi_valu
     if (context->errorCode == ERR_OK) {
         napi_resolve_deferred(env, context->deferred, result);
     } else {
-        std::string errMsg = Common::FindErrMsg(env, context->errorCode);
-        int32_t errCodeInfo = Common::FindErrCode(env, context->errorCode);
+        int32_t errCodeInfo = 0;
+        std::string errMsg = "";
+        ResolveErrorInfo(context->errorCode, errCodeInfo, errMsg);
         napi_value error = nullptr;
         napi_value eCode = nullptr;
         napi_value eMsg = nullptr;
@@ -169,22 +176,22 @@ void GetTaskInfoComplete(napi_env env, napi_status status, void* data)
 napi_value GetTaskInfo(napi_env env, napi_callback_info info)
 {
     WS_HILOGD("Get task info begin.");
-    constexpr uint32_t TASK_ID_INDEX = 0;
-    constexpr uint32_t GET_TASK_INFO_MAX_PARAMS = 1;
-    size_t argc = GET_TASK_INFO_MAX_PARAMS;
-    napi_value argv[GET_TASK_INFO_MAX_PARAMS] = {nullptr};
+    constexpr uint32_t taskIdIndex = 0;
+    constexpr uint32_t getTaskInfoMaxParams = 1;
+    size_t argc = getTaskInfoMaxParams;
+    napi_value argv[getTaskInfoMaxParams] = {nullptr};
     NAPI_CALL(env, napi_get_cb_info(env, info, &argc, argv, nullptr, nullptr));
-    if (argc != GET_TASK_INFO_MAX_PARAMS) {
-        Common::HandleIntErrCode(env, E_CHECK_WORKINFO_FAILED);
+    if (argc != getTaskInfoMaxParams) {
+        BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, BackgroundLoader::E_PARAM_ERROR);
         return Common::NapiGetNull(env);
     }
-    if (!Common::MatchValueType(env, argv[TASK_ID_INDEX], napi_number)) {
-        Common::HandleIntErrCode(env, E_CHECK_WORKINFO_FAILED);
+    if (!Common::MatchValueType(env, argv[taskIdIndex], napi_number)) {
+        BackgroundLoaderNapiHelper::HandleBackgroundLoaderError(env, BackgroundLoader::E_PARAM_ERROR);
         return Common::NapiGetNull(env);
     }
 
     int32_t taskId = 0;
-    NAPI_CALL(env, napi_get_value_int32(env, argv[TASK_ID_INDEX], &taskId));
+    NAPI_CALL(env, napi_get_value_int32(env, argv[taskIdIndex], &taskId));
 
     auto* context = new (std::nothrow) GetTaskInfoAsyncContext(env);
     if (context == nullptr) {

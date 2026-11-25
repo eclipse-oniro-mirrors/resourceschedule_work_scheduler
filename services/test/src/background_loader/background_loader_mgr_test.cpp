@@ -20,7 +20,7 @@
 #include "background_loader/background_loader_mgr.h"
 #include "background_loader/ability_connect_callback.h"
 #include "background_loader_task_info.h"
-#include "work_sched_errors.h"
+#include "background_loader/background_loader_errors.h"
 #include "res_type.h"
 #include "ipc_skeleton.h"
 #include "ability_state.h"
@@ -30,6 +30,7 @@ using namespace testing::ext;
 using namespace OHOS::ResourceSchedule;
 namespace OHOS {
 namespace WorkScheduler {
+using namespace BackgroundLoader;
 namespace {
 constexpr int32_t TEST_SLEEP_TIME = 10;
 
@@ -489,7 +490,7 @@ HWTEST_F(BackgroundLoaderMgrTest, CanBackGroundLoadLocked_008, TestSize.Level1)
 
 /**
  * @tc.name: RemoveTaskLocked_001
- * @tc.desc: Test RemoveTaskLocked returns E_WORK_NOT_EXIST_FAILED when the task is absent.
+ * @tc.desc: Test RemoveTaskLocked returns E_TASK_ID_NOT_EXIST when the task is absent.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_001, TestSize.Level1)
@@ -497,12 +498,12 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_001, TestSize.Level1)
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_TASK_ID_NOT_EXIST);
 }
 
 /**
  * @tc.name: RemoveTaskLocked_002
- * @tc.desc: Test RemoveTaskLocked returns E_WORK_NOT_EXIST_FAILED on taskId mismatch.
+ * @tc.desc: Test RemoveTaskLocked returns E_TASK_ID_NOT_EXIST on taskId mismatch.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_002, TestSize.Level1)
@@ -511,12 +512,12 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_002, TestSize.Level1)
     InsertTask(1001, MakeTask(1001, "com.test.bundle", "TestAbility", 0, 1));
     BackgroundLoaderTaskInfo taskInfo(2, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_TASK_ID_NOT_EXIST);
 }
 
 /**
  * @tc.name: RemoveTaskLocked_003
- * @tc.desc: Test RemoveTaskLocked returns E_INNER_ERR for a RUNNING task.
+ * @tc.desc: Test RemoveTaskLocked returns E_TASK_IS_RUNNING for a RUNNING task.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_003, TestSize.Level1)
@@ -527,12 +528,12 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_003, TestSize.Level1)
     InsertTask(1001, info);
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_INNER_ERR);
+    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_TASK_IS_RUNNING);
 }
 
 /**
  * @tc.name: RemoveTaskLocked_004
- * @tc.desc: Test RemoveTaskLocked returns E_INNER_ERR for an IN_BLOCK_LIST task.
+ * @tc.desc: Test RemoveTaskLocked returns E_BACKGROUND_LOADER_PROHIBITED for an IN_BLOCK_LIST task.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_004, TestSize.Level1)
@@ -543,7 +544,7 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_004, TestSize.Level1)
     InsertTask(1001, info);
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_INNER_ERR);
+    EXPECT_EQ(mgr.RemoveTaskLocked(taskInfo, 1001, copy), E_BACKGROUND_LOADER_PROHIBITED);
 }
 
 /**
@@ -565,7 +566,7 @@ HWTEST_F(BackgroundLoaderMgrTest, RemoveTaskLocked_005, TestSize.Level1)
 
 /**
  * @tc.name: FinishTaskLocked_001
- * @tc.desc: Test FinishTaskLocked returns E_WORK_NOT_EXIST_FAILED when absent.
+ * @tc.desc: Test FinishTaskLocked returns E_TASK_NOT_EXIST when absent.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, FinishTaskLocked_001, TestSize.Level1)
@@ -573,12 +574,12 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTaskLocked_001, TestSize.Level1)
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.FinishTaskLocked(taskInfo, 1001, copy), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.FinishTaskLocked(taskInfo, 1001, copy), E_TASK_NOT_EXIST);
 }
 
 /**
  * @tc.name: FinishTaskLocked_002
- * @tc.desc: Test FinishTaskLocked returns E_WORK_NOT_EXIST_FAILED on taskId mismatch.
+ * @tc.desc: Test FinishTaskLocked returns E_TASK_ID_NOT_EXIST on taskId mismatch.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, FinishTaskLocked_002, TestSize.Level1)
@@ -587,12 +588,12 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTaskLocked_002, TestSize.Level1)
     InsertTask(1001, MakeTask(1001, "com.test.bundle", "TestAbility", 0, 1));
     BackgroundLoaderTaskInfo taskInfo(2, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.FinishTaskLocked(taskInfo, 1001, copy), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.FinishTaskLocked(taskInfo, 1001, copy), E_TASK_ID_NOT_EXIST);
 }
 
 /**
  * @tc.name: FinishTaskLocked_003
- * @tc.desc: Test FinishTaskLocked returns E_WORK_NOT_EXIST_FAILED when not RUNNING.
+ * @tc.desc: Test FinishTaskLocked returns E_BACKGROUND_LOADER_FAILED when not RUNNING.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, FinishTaskLocked_003, TestSize.Level1)
@@ -601,7 +602,7 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTaskLocked_003, TestSize.Level1)
     InsertTask(1001, MakeTask(1001, "com.test.bundle", "TestAbility", 0, 1));
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.FinishTaskLocked(taskInfo, 1001, copy), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.FinishTaskLocked(taskInfo, 1001, copy), E_BACKGROUND_LOADER_FAILED);
 }
 
 /**
@@ -624,7 +625,7 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTaskLocked_004, TestSize.Level1)
 
 /**
  * @tc.name: GetTaskInfoLocked_001
- * @tc.desc: Test GetTaskInfoLocked returns E_WORK_NOT_EXIST_FAILED when absent.
+ * @tc.desc: Test GetTaskInfoLocked returns E_TASK_ID_NOT_EXIST when absent.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoLocked_001, TestSize.Level1)
@@ -632,12 +633,12 @@ HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoLocked_001, TestSize.Level1)
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     BackgroundLoaderTaskInfo taskInfo;
     std::string bundleName;
-    EXPECT_EQ(mgr.GetTaskInfoLocked(1001, 1, taskInfo, bundleName), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.GetTaskInfoLocked(1001, 1, taskInfo, bundleName), E_TASK_ID_NOT_EXIST);
 }
 
 /**
  * @tc.name: GetTaskInfoLocked_002
- * @tc.desc: Test GetTaskInfoLocked returns E_INNER_ERR for an IN_BLOCK_LIST task.
+ * @tc.desc: Test GetTaskInfoLocked returns E_BACKGROUND_LOADER_PROHIBITED for an IN_BLOCK_LIST task.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoLocked_002, TestSize.Level1)
@@ -648,7 +649,7 @@ HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoLocked_002, TestSize.Level1)
     InsertTask(1001, info);
     BackgroundLoaderTaskInfo taskInfo;
     std::string bundleName;
-    EXPECT_EQ(mgr.GetTaskInfoLocked(1001, 5, taskInfo, bundleName), E_INNER_ERR);
+    EXPECT_EQ(mgr.GetTaskInfoLocked(1001, 5, taskInfo, bundleName), E_BACKGROUND_LOADER_PROHIBITED);
 }
 
 /**
@@ -670,7 +671,7 @@ HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoLocked_003, TestSize.Level1)
 
 /**
  * @tc.name: GetTaskInfoLocked_004
- * @tc.desc: Test GetTaskInfoLocked returns E_WORK_NOT_EXIST_FAILED on taskId mismatch.
+ * @tc.desc: Test GetTaskInfoLocked returns E_TASK_ID_NOT_EXIST on taskId mismatch.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoLocked_004, TestSize.Level1)
@@ -679,7 +680,7 @@ HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoLocked_004, TestSize.Level1)
     InsertTask(1001, MakeTask(1001, "com.test.bundle", "TestAbility", 0, 5));
     BackgroundLoaderTaskInfo taskInfo;
     std::string bundleName;
-    EXPECT_EQ(mgr.GetTaskInfoLocked(1001, 6, taskInfo, bundleName), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.GetTaskInfoLocked(1001, 6, taskInfo, bundleName), E_TASK_ID_NOT_EXIST);
 }
 
 /**
@@ -1047,16 +1048,16 @@ HWTEST_F(BackgroundLoaderMgrTest, ClearAllByUid_DelayFinish_001, TestSize.Level1
 
 /**
  * @tc.name: DbQueueNull_001
- * @tc.desc: Test db access helpers return E_INNER_ERR when the db queue is null.
+ * @tc.desc: Test db access helpers return E_SYSTEM_SERVICE_EXCEPTION when the db queue is null.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, DbQueueNull_001, TestSize.Level1)
 {
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     mgr.dbQueue_.reset();
-    EXPECT_EQ(mgr.UpsertTaskToDb(1001, MakeTask(1001, "b", "a", 0, 1)), E_INNER_ERR);
-    EXPECT_EQ(mgr.DeleteTaskFromDb(1001), E_INNER_ERR);
-    EXPECT_EQ(mgr.DeleteBlockListFromDb("b"), E_INNER_ERR);
+    EXPECT_EQ(mgr.UpsertTaskToDb(1001, MakeTask(1001, "b", "a", 0, 1)), E_SYSTEM_SERVICE_EXCEPTION);
+    EXPECT_EQ(mgr.DeleteTaskFromDb(1001), E_SYSTEM_SERVICE_EXCEPTION);
+    EXPECT_EQ(mgr.DeleteBlockListFromDb("b"), E_SYSTEM_SERVICE_EXCEPTION);
 }
 
 /**
@@ -1322,12 +1323,12 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleExistingTask_001, TestSize.Level1)
     mgr.AddToBlockListLocked("com.test.bundle");
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_CHECK_WORKINFO_FAILED);
+    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_BACKGROUND_LOADER_PROHIBITED);
 }
 
 /**
  * @tc.name: HandleExistingTask_002
- * @tc.desc: Test HandleExistingTask returns E_WORK_NOT_EXIST_FAILED when absent.
+ * @tc.desc: Test HandleExistingTask returns E_TASK_NOT_EXIST when absent.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, HandleExistingTask_002, TestSize.Level1)
@@ -1335,12 +1336,12 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleExistingTask_002, TestSize.Level1)
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_TASK_NOT_EXIST);
 }
 
 /**
  * @tc.name: HandleExistingTask_003
- * @tc.desc: Test HandleExistingTask returns E_PARAM_ERROR on abilityName mismatch.
+ * @tc.desc: Test HandleExistingTask returns E_NOT_SPECIFIED_ABILITY_NAME on abilityName mismatch.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, HandleExistingTask_003, TestSize.Level1)
@@ -1349,12 +1350,12 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleExistingTask_003, TestSize.Level1)
     InsertTask(1001, MakeTask(1001, "com.test.bundle", "OldAbility", 0, 1));
     BackgroundLoaderTaskInfo taskInfo(2, "NewAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_PARAM_ERROR);
+    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_NOT_SPECIFIED_ABILITY_NAME);
 }
 
 /**
  * @tc.name: HandleExistingTask_004
- * @tc.desc: Test HandleExistingTask returns E_ADD_REPEAT_WORK_ERR for a duplicate taskId.
+ * @tc.desc: Test HandleExistingTask returns E_ADD_REPEAT_TASK_ERR for a duplicate taskId.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, HandleExistingTask_004, TestSize.Level1)
@@ -1363,7 +1364,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleExistingTask_004, TestSize.Level1)
     InsertTask(1001, MakeTask(1001, "com.test.bundle", "TestAbility", 0, 1));
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
     TaskInfo copy;
-    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_ADD_REPEAT_WORK_ERR);
+    EXPECT_EQ(mgr.HandleExistingTask(taskInfo, "com.test.bundle", 1001, copy), E_ADD_REPEAT_TASK_ERR);
 }
 
 /**
@@ -1391,7 +1392,7 @@ HWTEST_F(BackgroundLoaderMgrTest, RegisterNewTask_001, TestSize.Level1)
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     mgr.AddToBlockListLocked("com.test.bundle");
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
-    EXPECT_EQ(mgr.RegisterNewTask(taskInfo, "com.test.bundle", 0, 1001), E_CHECK_WORKINFO_FAILED);
+    EXPECT_EQ(mgr.RegisterNewTask(taskInfo, "com.test.bundle", 0, 1001), E_BACKGROUND_LOADER_PROHIBITED);
 }
 
 /**
@@ -1419,7 +1420,7 @@ HWTEST_F(BackgroundLoaderMgrTest, ReportEvents_001, TestSize.Level1)
     InsertTask(1001, info);
 
     mgr.ReportTaskChangeEvent("com.test.bundle", 0, static_cast<int32_t>(ResType::BackgroundLoaderState::ADD));
-    mgr.ReportTaskFinishEvent("com.test.bundle", 0, 1, E_INNER_ERR);
+    mgr.ReportTaskFinishEvent("com.test.bundle", 0, 1, E_BACKGROUND_LOADER_FAILED);
     mgr.ReportTaskStatus(info, 0, false);
     mgr.ReportTaskStatus(info, 1, true);
     EXPECT_EQ(mgr.taskMap_.at(1001).status_, TaskStatus::RUNNING);
@@ -1828,7 +1829,7 @@ HWTEST_F(BackgroundLoaderMgrTest, ExecuteOnStopFinish_001, TestSize.Level1)
 
 /**
  * @tc.name: FinishTaskWithCheck_DelayFinish_001
- * @tc.desc: Test FinishTaskWithCheck returns E_INNER_ERR while the delay finish event is pending.
+ * @tc.desc: Test FinishTaskWithCheck returns E_BACKGROUND_LOADER_FAILED while the delay finish event is pending.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, FinishTaskWithCheck_DelayFinish_001, TestSize.Level1)
@@ -1841,7 +1842,7 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTaskWithCheck_DelayFinish_001, TestSize.
     mgr.PostDelayFinishEvent(uid, false, info);
 
     BackgroundLoaderTaskInfo taskInfo(5, "TestAbility");
-    EXPECT_EQ(mgr.FinishTaskWithCheck(taskInfo), E_INNER_ERR);
+    EXPECT_EQ(mgr.FinishTaskWithCheck(taskInfo), E_BACKGROUND_LOADER_FAILED);
     mgr.CancelDelayFinishEvent(uid);
 }
 
@@ -1942,7 +1943,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleProcessDiedEvent_Abnormal_001, TestSize.
 
 /**
  * @tc.name: RegisterTaskWithCheck_NotReady_001
- * @tc.desc: Test RegisterTaskWithCheck returns E_SERVICE_NOT_READY when not ready.
+ * @tc.desc: Test RegisterTaskWithCheck returns E_SYSTEM_SERVICE_NOT_READY when not ready.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, RegisterTaskWithCheck_NotReady_001, TestSize.Level1)
@@ -1950,12 +1951,12 @@ HWTEST_F(BackgroundLoaderMgrTest, RegisterTaskWithCheck_NotReady_001, TestSize.L
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     mgr.isReady_.store(false);
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
-    EXPECT_EQ(mgr.RegisterTaskWithCheck(taskInfo), E_SERVICE_NOT_READY);
+    EXPECT_EQ(mgr.RegisterTaskWithCheck(taskInfo), E_SYSTEM_SERVICE_NOT_READY);
 }
 
 /**
  * @tc.name: UnregisterTaskWithCheck_NotReady_001
- * @tc.desc: Test UnregisterTaskWithCheck returns E_SERVICE_NOT_READY when not ready.
+ * @tc.desc: Test UnregisterTaskWithCheck returns E_SYSTEM_SERVICE_NOT_READY when not ready.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, UnregisterTaskWithCheck_NotReady_001, TestSize.Level1)
@@ -1963,19 +1964,19 @@ HWTEST_F(BackgroundLoaderMgrTest, UnregisterTaskWithCheck_NotReady_001, TestSize
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     mgr.isReady_.store(false);
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
-    EXPECT_EQ(mgr.UnregisterTaskWithCheck(taskInfo), E_SERVICE_NOT_READY);
+    EXPECT_EQ(mgr.UnregisterTaskWithCheck(taskInfo), E_SYSTEM_SERVICE_NOT_READY);
 }
 
 /**
  * @tc.name: UnregisterTaskWithCheck_NoTask_001
- * @tc.desc: Test UnregisterTaskWithCheck returns E_WORK_NOT_EXIST_FAILED when absent.
+ * @tc.desc: Test UnregisterTaskWithCheck returns E_TASK_ID_NOT_EXIST when absent.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, UnregisterTaskWithCheck_NoTask_001, TestSize.Level1)
 {
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
-    EXPECT_EQ(mgr.UnregisterTaskWithCheck(taskInfo), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.UnregisterTaskWithCheck(taskInfo), E_TASK_ID_NOT_EXIST);
 }
 
 /**
@@ -1998,7 +1999,7 @@ HWTEST_F(BackgroundLoaderMgrTest, UnregisterTaskWithCheck_Success_001, TestSize.
 
 /**
  * @tc.name: FinishTaskWithCheck_NotReady_001
- * @tc.desc: Test FinishTaskWithCheck returns E_SERVICE_NOT_READY when not ready.
+ * @tc.desc: Test FinishTaskWithCheck returns E_SYSTEM_SERVICE_NOT_READY when not ready.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, FinishTaskWithCheck_NotReady_001, TestSize.Level1)
@@ -2006,19 +2007,19 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTaskWithCheck_NotReady_001, TestSize.Lev
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     mgr.isReady_.store(false);
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
-    EXPECT_EQ(mgr.FinishTaskWithCheck(taskInfo), E_SERVICE_NOT_READY);
+    EXPECT_EQ(mgr.FinishTaskWithCheck(taskInfo), E_SYSTEM_SERVICE_NOT_READY);
 }
 
 /**
  * @tc.name: FinishTaskWithCheck_NoTask_001
- * @tc.desc: Test FinishTaskWithCheck returns E_CHECK_WORKINFO_FAILED when absent.
+ * @tc.desc: Test FinishTaskWithCheck returns E_TASK_NOT_EXIST when absent.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, FinishTaskWithCheck_NoTask_001, TestSize.Level1)
 {
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     BackgroundLoaderTaskInfo taskInfo(1, "TestAbility");
-    EXPECT_EQ(mgr.FinishTaskWithCheck(taskInfo), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.FinishTaskWithCheck(taskInfo), E_TASK_NOT_EXIST);
 }
 
 /**
@@ -2041,7 +2042,7 @@ HWTEST_F(BackgroundLoaderMgrTest, FinishTaskWithCheck_Success_001, TestSize.Leve
 
 /**
  * @tc.name: GetTaskInfoWithCheck_NotReady_001
- * @tc.desc: Test GetTaskInfoWithCheck returns E_SERVICE_NOT_READY when not ready.
+ * @tc.desc: Test GetTaskInfoWithCheck returns E_SYSTEM_SERVICE_NOT_READY when not ready.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoWithCheck_NotReady_001, TestSize.Level1)
@@ -2049,19 +2050,19 @@ HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoWithCheck_NotReady_001, TestSize.Le
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     mgr.isReady_.store(false);
     BackgroundLoaderTaskInfo taskInfo;
-    EXPECT_EQ(mgr.GetTaskInfoWithCheck(1, taskInfo), E_SERVICE_NOT_READY);
+    EXPECT_EQ(mgr.GetTaskInfoWithCheck(1, taskInfo), E_SYSTEM_SERVICE_NOT_READY);
 }
 
 /**
  * @tc.name: GetTaskInfoWithCheck_NoTask_001
- * @tc.desc: Test GetTaskInfoWithCheck returns E_WORK_NOT_EXIST_FAILED when absent.
+ * @tc.desc: Test GetTaskInfoWithCheck returns E_TASK_ID_NOT_EXIST when absent.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoWithCheck_NoTask_001, TestSize.Level1)
 {
     auto& mgr = BackgroundLoaderMgr::GetInstance();
     BackgroundLoaderTaskInfo taskInfo;
-    EXPECT_EQ(mgr.GetTaskInfoWithCheck(1, taskInfo), E_WORK_NOT_EXIST_FAILED);
+    EXPECT_EQ(mgr.GetTaskInfoWithCheck(1, taskInfo), E_TASK_ID_NOT_EXIST);
 }
 
 /**
@@ -2293,7 +2294,7 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleContinuousTaskEvent_Start_001, TestSize.
 
 /**
  * @tc.name: GetTaskInfoWithCheck_BlockList_001
- * @tc.desc: Test GetTaskInfoWithCheck returns E_INNER_ERR for a block listed bundle.
+ * @tc.desc: Test GetTaskInfoWithCheck returns E_BACKGROUND_LOADER_PROHIBITED for a block listed bundle.
  * @tc.type: FUNC
  */
 HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoWithCheck_BlockList_001, TestSize.Level1)
@@ -2304,7 +2305,7 @@ HWTEST_F(BackgroundLoaderMgrTest, GetTaskInfoWithCheck_BlockList_001, TestSize.L
     mgr.AddToBlockListLocked("com.test.bundle");
 
     BackgroundLoaderTaskInfo taskInfo;
-    EXPECT_EQ(mgr.GetTaskInfoWithCheck(5, taskInfo), E_INNER_ERR);
+    EXPECT_EQ(mgr.GetTaskInfoWithCheck(5, taskInfo), E_BACKGROUND_LOADER_PROHIBITED);
 }
 } // namespace WorkScheduler
 } // namespace OHOS
