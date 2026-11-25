@@ -27,8 +27,14 @@ void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+constexpr int32_t DEFAULT_UID = 10008;
+}
+
 bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
 {
+    (void)bundleName;
+    uid = DEFAULT_UID;
     return true;
 }
 
@@ -52,8 +58,6 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
 {
     MessageParcel dataMessageParcel;
     dataMessageParcel.WriteInterfaceToken(WORK_SCHEDULER_STUB_TOKEN);
-    dataMessageParcel.WriteBuffer(data, size);
-    dataMessageParcel.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
     g_workSchedulerService = DelayedSingleton<WorkSchedulerService>::GetInstance();

@@ -31,8 +31,8 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
-constexpr size_t NETWORK_TYPE_COUNT = 8;
-constexpr size_t CHARGER_TYPE_COUNT = 5;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
+constexpr size_t CHARGER_TYPE_COUNT = 6;
 constexpr size_t BATTERY_STATUS_COUNT = 4;
 constexpr size_t STORAGE_LEVEL_COUNT = 4;
 constexpr size_t OFFSET_UID = 0;

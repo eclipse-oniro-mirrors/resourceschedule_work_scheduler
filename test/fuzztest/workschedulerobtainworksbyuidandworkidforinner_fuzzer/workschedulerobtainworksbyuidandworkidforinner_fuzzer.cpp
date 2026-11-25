@@ -23,13 +23,22 @@
 #include "iwork_sched_service.h"
 #include "work_scheduler_service.h"
 #include "work_condition.h"
+#include "work_queue_manager.h"
+#include "work_policy_manager.h"
+#include "work_conn_manager.h"
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
 
 namespace OHOS {
 namespace WorkScheduler {
+namespace {
+constexpr int32_t DEFAULT_UID = 10008;
+}
+
 bool WorkSchedulerService::GetUidByBundleName(const std::string &bundleName, int32_t &uid)
 {
+    (void)bundleName;
+    uid = DEFAULT_UID;
     return true;
 }
 
@@ -55,6 +64,18 @@ void InitService()
     if (!g_workSchedulerService->ready_) {
         g_workSchedulerService->ready_ = true;
     }
+    if (g_workSchedulerService->workQueueManager_ == nullptr) {
+        g_workSchedulerService->workQueueManager_ =
+            std::make_shared<WorkQueueManager>(g_workSchedulerService);
+    }
+    if (g_workSchedulerService->workPolicyManager_ == nullptr) {
+        g_workSchedulerService->workPolicyManager_ =
+            std::make_shared<WorkPolicyManager>(g_workSchedulerService);
+        g_workSchedulerService->workPolicyManager_->Init(g_workSchedulerService->eventRunner_);
+    }
+    if (g_workSchedulerService->workPolicyManager_->workConnManager_ == nullptr) {
+        g_workSchedulerService->workPolicyManager_->workConnManager_ = std::make_shared<WorkConnManager>();
+    }
     if (g_workSchedulerService->checkBundle_) {
         g_workSchedulerService->checkBundle_ = false;
     }
@@ -65,8 +86,6 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
 {
     MessageParcel dataMessageParcel;
     dataMessageParcel.WriteInterfaceToken(WORK_SCHEDULER_STUB_TOKEN);
-    dataMessageParcel.WriteBuffer(data, size);
-    dataMessageParcel.RewindRead(0);
     MessageParcel reply;
     MessageOption option;
     uint32_t code =

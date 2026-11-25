@@ -39,7 +39,7 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
-constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
 constexpr size_t OFFSET_FIND_WORK_ID = 1;
 constexpr size_t OFFSET_FIND_SA = 2;
 constexpr size_t OFFSET_GET_STATUS = 3;
@@ -180,8 +180,17 @@ bool DoSomethingInterestingWithMyAPI(const uint8_t* data, size_t size)
         return false;
     }
 
+    service->OnStart();
+    service->InitWorkSchedPluginMgr();
+    if (!service->ready_) {
+        service->ready_ = true;
+    }
+
     auto policyMgr = std::make_shared<WorkPolicyManager>(service);
     if (policyMgr == nullptr) {
+        return false;
+    }
+    if (!policyMgr->Init(service->eventRunner_)) {
         return false;
     }
 

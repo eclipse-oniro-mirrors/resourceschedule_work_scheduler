@@ -30,7 +30,7 @@
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
-constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
 constexpr size_t BYTE_CHECK_INDEX_1 = 1;
 constexpr size_t OFFSET_UID = 2;
 constexpr size_t OFFSET_WORK_ID = 3;

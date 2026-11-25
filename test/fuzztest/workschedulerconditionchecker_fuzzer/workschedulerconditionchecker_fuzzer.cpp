@@ -27,15 +27,49 @@
 #include "work_info.h"
 #include "work_condition.h"
 #include "work_status.h"
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
+#include "net_conn_client.h"
+#endif
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+#include "battery_srv_client.h"
+#endif
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
+
+#ifdef COMMUNICATION_NETMANAGER_BASE_ENABLE
+namespace OHOS {
+namespace NetManagerStandard {
+int32_t NetConnClient::GetDefaultNet(NetHandle &netHandle)
+{
+    (void)netHandle;
+    return -1;
+}
+} // namespace NetManagerStandard
+} // namespace OHOS
+#endif
+
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+namespace OHOS {
+namespace PowerMgr {
+int32_t BatterySrvClient::GetCapacity()
+{
+    return -1;
+}
+
+BatteryPluggedType BatterySrvClient::GetPluggedType()
+{
+    return BatteryPluggedType::PLUGGED_TYPE_NONE;
+}
+} // namespace PowerMgr
+} // namespace OHOS
+#endif
 
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
 constexpr size_t POPULATE_WORK_COUNT = 4;
-constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
 
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)

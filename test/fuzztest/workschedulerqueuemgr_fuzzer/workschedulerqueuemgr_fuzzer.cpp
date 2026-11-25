@@ -37,7 +37,7 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
-constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
 constexpr int32_t ADD_WORK_COUNT = 4;
 constexpr int32_t CLEAR_WORK_COUNT = 3;
 

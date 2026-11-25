@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstring>
+#include <sstream>
 
 #include "securec.h"
 #include <string>
@@ -30,9 +31,9 @@
 namespace OHOS {
 namespace WorkScheduler {
 namespace {
-constexpr size_t MAX_FUZZ_STRING_LEN = 512;
-constexpr size_t NETWORK_TYPE_COUNT = 8;
-constexpr size_t CHARGER_TYPE_COUNT = 7;
+constexpr size_t MAX_FUZZ_STRING_LEN = 1024;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
+constexpr size_t CHARGER_TYPE_COUNT = 6;
 constexpr size_t BATTERY_STATUS_COUNT = 4;
 constexpr size_t STORAGE_LEVEL_COUNT = 4;
 constexpr size_t BYTE_CHECK_INDEX_1 = 1;
@@ -124,7 +125,16 @@ void FuzzMarshallingRoundTrip(WorkInfo& workInfo)
 void FuzzJsonPaths(WorkInfo& workInfo, const uint8_t* data, size_t size)
 {
     std::string jsonStr = FuzzString(data, size);
-    nlohmann::json jsonObj = nlohmann::json::parse(jsonStr, nullptr, false);
+    std::string jsonBody;
+    std::istringstream stream(jsonStr);
+    std::string line;
+    while (std::getline(stream, line)) {
+        if (line.empty() || line[0] == '#') {
+            continue;
+        }
+        jsonBody.append(line);
+    }
+    nlohmann::json jsonObj = nlohmann::json::parse(jsonBody, nullptr, false);
     if (jsonObj.is_discarded()) {
         return;
     }

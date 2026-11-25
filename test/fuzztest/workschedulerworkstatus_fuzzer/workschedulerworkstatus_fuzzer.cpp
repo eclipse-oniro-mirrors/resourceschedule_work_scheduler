@@ -31,7 +31,8 @@ namespace OHOS {
 namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
-constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
+constexpr size_t CONDITION_TYPE_COUNT = 10;
 constexpr size_t BATTERY_STATUS_COUNT = 4;
 constexpr size_t STORAGE_LEVEL_COUNT = 4;
 constexpr size_t BYTE_CHECK_INDEX_1 = 1;
@@ -76,7 +77,7 @@ void FuzzConditionChange(WorkStatus& workStatus, const uint8_t* data, size_t siz
     condition->intVal = FuzzInt32(data, size, sizeof(int32_t));
     condition->boolVal = (size > 1) && ((data[1] & 1) != 0);
     WorkCondition::Type type = static_cast<WorkCondition::Type>(
-        FuzzInt32(data, size, sizeof(int32_t) * 2) % NETWORK_TYPE_COUNT);
+        FuzzInt32(data, size, sizeof(int32_t) * 2) % CONDITION_TYPE_COUNT);
     workStatus.OnConditionChanged(type, condition);
 }
 } // namespace

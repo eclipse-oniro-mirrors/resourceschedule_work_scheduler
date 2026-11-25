@@ -29,8 +29,28 @@
 #include "policy/cpu_policy.h"
 #include "policy/memory_policy.h"
 #include "policy/power_mode_policy.h"
+#include "power_mgr_client.h"
+#include "power_mode_info.h"
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+#include "battery_srv_client.h"
+#endif
 
 void OHOS::RefBase::DecStrongRef(void const* obj) {}
+
+namespace OHOS {
+namespace PowerMgr {
+PowerMode PowerMgrClient::GetDeviceMode()
+{
+    return PowerMode::NORMAL_MODE;
+}
+#ifdef POWERMGR_BATTERY_MANAGER_ENABLE
+BatteryChargeState BatterySrvClient::GetChargingStatus()
+{
+    return BatteryChargeState::CHARGE_STATE_NONE;
+}
+#endif
+} // namespace PowerMgr
+} // namespace OHOS
 
 namespace OHOS {
 namespace WorkScheduler {
@@ -70,7 +90,7 @@ std::string FuzzString(const uint8_t* data, size_t size, size_t maxLen = STRING_
 
 void FuzzSystemPolicyStruct(const uint8_t* data, size_t size)
 {
-    WorkSchedSystemPolicy policy;
+    WorkSchedSystemPolicy policy{};
     policy.cpuUsage = FuzzInt32(data, size);
     policy.memAvailable = FuzzInt32(data, size, sizeof(int32_t) * OFFSET_MEM_AVAILABLE);
     policy.thermalLevel = FuzzInt32(data, size, sizeof(int32_t) * OFFSET_THERMAL_LEVEL);
@@ -136,21 +156,21 @@ void FuzzPolicyGetMaxRunning(const uint8_t* data, size_t size)
 
     // Test CpuPolicy
     CpuPolicy cpuPolicy(policyMgr);
-    WorkSchedSystemPolicy cpuSysPolicy;
+    WorkSchedSystemPolicy cpuSysPolicy{};
     cpuSysPolicy.cpuUsage = FuzzInt32(data, size);
     (void)cpuPolicy.GetPolicyMaxRunning(cpuSysPolicy);
     (void)cpuSysPolicy.GetInfo();
 
     // Test MemoryPolicy
     MemoryPolicy memPolicy(policyMgr);
-    WorkSchedSystemPolicy memSysPolicy;
+    WorkSchedSystemPolicy memSysPolicy{};
     memSysPolicy.memAvailable = FuzzInt32(data, size, sizeof(int32_t));
     (void)memPolicy.GetPolicyMaxRunning(memSysPolicy);
     (void)memSysPolicy.GetInfo();
 
     // Test PowerModePolicy
     PowerModePolicy powerPolicy(policyMgr);
-    WorkSchedSystemPolicy powerSysPolicy;
+    WorkSchedSystemPolicy powerSysPolicy{};
     powerSysPolicy.powerMode = FuzzUint32(data, size, sizeof(int32_t) * OFFSET_THERMAL_LEVEL);
     (void)powerPolicy.GetPolicyMaxRunning(powerSysPolicy);
     (void)powerSysPolicy.GetInfo();

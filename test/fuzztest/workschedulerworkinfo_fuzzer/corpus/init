@@ -11,4 +11,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FUZZ
+{"workId":1,"bundleName":"fuzz_bundle","abilityName":"fuzz_ability","persisted":true,"uid":10008,"conditions":{"network":2,"storage":2,"batteryStatus":2}}

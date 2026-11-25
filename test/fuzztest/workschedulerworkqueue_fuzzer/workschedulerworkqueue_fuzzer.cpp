@@ -34,7 +34,7 @@ namespace WorkScheduler {
 namespace {
 constexpr int32_t DEFAULT_UID = 10008;
 constexpr size_t MAX_WORK_COUNT = 16;
-constexpr size_t NETWORK_TYPE_COUNT = 8;
+constexpr size_t NETWORK_TYPE_COUNT = 7;
 
 
 int32_t FuzzInt32(const uint8_t* data, size_t size, size_t offset = 0)
