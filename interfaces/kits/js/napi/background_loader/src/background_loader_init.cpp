@@ -19,9 +19,7 @@
 
 namespace OHOS {
 namespace WorkScheduler {
-#ifdef __cplusplus
-extern "C" {
-#endif
+EXTERN_C_START
 
 napi_value InitBackgroundLoaderApi(napi_env env, napi_value exports)
 {
@@ -108,8 +106,6 @@ __attribute__((constructor)) void RegisterBackgroundLoaderModule(void)
 {
     napi_module_register(&g_backgroundLoaderModule);
 }
-#ifdef __cplusplus
-}
-#endif
+EXTERN_C_END
 }  // namespace WorkScheduler
 }  // namespace OHOS

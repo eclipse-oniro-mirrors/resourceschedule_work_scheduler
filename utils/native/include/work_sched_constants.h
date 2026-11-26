@@ -16,6 +16,8 @@
 #ifndef FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H
 #define FOUNDATION_RESOURCESCHEDULE_WORKSCHEDULER_UTILS_CONSTANTS_H
 
+#include <atomic>
+
 namespace OHOS {
 namespace WorkScheduler {
 // services\native\src\work_policy_manager.cpp
@@ -30,6 +32,8 @@ inline constexpr int32_t INIT_DUMP_SET_MEMORY = -1;
 inline constexpr int32_t WATCHDOG_TIME = 2 * 60 * 1000;
 inline constexpr int32_t MEDIUM_WATCHDOG_TIME = 10 * 60 * 1000;
 inline constexpr int32_t LONG_WATCHDOG_TIME = 20 * 60 * 1000;
+inline constexpr uint64_t MAX_HIGH_PERF_DURATION = 10 * 60 * 1000;
+inline constexpr uint32_t ONE_DAY_MS = 24 * 60 * 60 * 1000;
 inline constexpr int32_t INIT_DUMP_SET_CPU = 0;
 inline constexpr int32_t INVALID_VALUE = -1;
 inline constexpr int32_t DUMP_SET_MAX_COUNT_LIMIT = 100;
@@ -42,11 +46,14 @@ inline constexpr uint32_t TIME_CYCLE = 10 * 60 * 1000; // 10min
 // services\native\src\work_status.cpp
 inline const std::string OK = "1";
 inline const std::string NOT_OK = "0";
+inline constexpr int32_t DELAY_TASK_PERF_START = 1;
+inline constexpr int32_t DELAY_TASK_PERF_END = 0;
 // watchdog timeout threshold
 inline constexpr int32_t WATCHDOG_TIMEOUT_THRESHOLD_MS = 500;
 
 // services\native\src\conditions\screen_listener.cpp
-inline constexpr int MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN = 31 * 60 * 1000;
+inline constexpr int32_t MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN = 31 * 60 * 1000;
+inline std::atomic<int32_t> g_deepIdleScreenOffTimeMin {MIN_DEEP_IDLE_SCREEN_OFF_TIME_MIN};
 
 enum EventErrorCode {
     CONNECT_ABILITY = 1,

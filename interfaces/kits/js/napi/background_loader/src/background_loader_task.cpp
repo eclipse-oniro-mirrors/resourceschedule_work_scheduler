@@ -31,15 +31,10 @@ const char* TASK_ID = "taskId";
 
 namespace OHOS {
 namespace WorkScheduler {
-struct GetTaskInfoAsyncContext {
-    napi_env env;
-    napi_async_work asyncWork;
-    napi_deferred deferred;
-    napi_ref callback;
-    bool isCallback;
+struct GetTaskInfoAsyncContext : public AsyncWorkData {
+    explicit GetTaskInfoAsyncContext(napi_env env) : AsyncWorkData(env) {}
     BackgroundLoaderTaskInfo taskInfo;
-    int32_t taskId;
-    ErrCode errCode;
+    int32_t taskId {0};
 };
 
 bool GetTaskInfo(napi_env env, napi_callback_info info, BackgroundLoaderTaskInfo& taskInfo)
@@ -108,43 +103,13 @@ napi_value FinishTask(napi_env env, napi_callback_info info)
     return Common::NapiGetNull(env);
 }
 
-GetTaskInfoAsyncContext* CreateGetTaskInfoAsyncContext(napi_env env)
-{
-    auto* context = new (std::nothrow) GetTaskInfoAsyncContext();
-    if (context == nullptr) {
-        WS_HILOGE("failed to create GetTaskInfoAsyncContext");
-        return nullptr;
-    }
-    context->env = env;
-    context->asyncWork = nullptr;
-    context->deferred = nullptr;
-    context->callback = nullptr;
-    context->isCallback = false;
-    context->errCode = ERR_OK;
-    return context;
-}
-
-void DeleteGetTaskInfoAsyncContext(GetTaskInfoAsyncContext* context)
-{
-    if (context == nullptr) {
-        return;
-    }
-    if (context->callback != nullptr) {
-        napi_delete_reference(context->env, context->callback);
-    }
-    if (context->asyncWork != nullptr) {
-        napi_delete_async_work(context->env, context->asyncWork);
-    }
-    delete context;
-}
-
 void GetTaskInfoExecute(napi_env env, void* data)
 {
     auto* context = static_cast<GetTaskInfoAsyncContext*>(data);
     if (context == nullptr) {
         return;
     }
-    context->errCode = WorkSchedulerSrvClient::GetInstance().GetTaskInfo(context->taskId, context->taskInfo);
+    context->errorCode = WorkSchedulerSrvClient::GetInstance().GetTaskInfo(context->taskId, context->taskInfo);
 }
 
 napi_value CreateTaskInfoResult(napi_env env, const BackgroundLoaderTaskInfo& taskInfo)
@@ -169,11 +134,11 @@ void HandlePromiseMode(napi_env env, GetTaskInfoAsyncContext* context, napi_valu
     if (context->deferred == nullptr) {
         return;
     }
-    if (context->errCode == ERR_OK) {
+    if (context->errorCode == ERR_OK) {
         napi_resolve_deferred(env, context->deferred, result);
     } else {
-        std::string errMsg = Common::FindErrMsg(env, context->errCode);
-        int32_t errCodeInfo = Common::FindErrCode(env, context->errCode);
+        std::string errMsg = Common::FindErrMsg(env, context->errorCode);
+        int32_t errCodeInfo = Common::FindErrCode(env, context->errorCode);
         napi_value error = nullptr;
         napi_value eCode = nullptr;
         napi_value eMsg = nullptr;
@@ -192,13 +157,13 @@ void GetTaskInfoComplete(napi_env env, napi_status status, void* data)
     if (context == nullptr) {
         return;
     }
+    std::unique_ptr<GetTaskInfoAsyncContext> callbackPtr {context};
 
     napi_value result = nullptr;
-    if (context->errCode == ERR_OK) {
+    if (context->errorCode == ERR_OK) {
         result = CreateTaskInfoResult(env, context->taskInfo);
     }
     HandlePromiseMode(env, context, result);
-    DeleteGetTaskInfoAsyncContext(context);
 }
 
 napi_value GetTaskInfo(napi_env env, napi_callback_info info)
@@ -218,14 +183,15 @@ napi_value GetTaskInfo(napi_env env, napi_callback_info info)
         return Common::NapiGetNull(env);
     }
 
-    auto* context = CreateGetTaskInfoAsyncContext(env);
+    int32_t taskId = 0;
+    NAPI_CALL(env, napi_get_value_int32(env, argv[TASK_ID_INDEX], &taskId));
+
+    auto* context = new (std::nothrow) GetTaskInfoAsyncContext(env);
     if (context == nullptr) {
         napi_throw_error(env, nullptr, "failed to create context");
         return Common::NapiGetNull(env);
     }
-
-    int32_t taskId;
-    NAPI_CALL(env, napi_get_value_int32(env, argv[TASK_ID_INDEX], &taskId));
+    std::unique_ptr<GetTaskInfoAsyncContext> contextPtr {context};
     context->taskId = taskId;
 
     napi_value promise = nullptr;
@@ -235,7 +201,8 @@ napi_value GetTaskInfo(napi_env env, napi_callback_info info)
     NAPI_CALL(env, napi_create_string_utf8(env, "GetTaskInfo", NAPI_AUTO_LENGTH, &resource));
     NAPI_CALL(env, napi_create_async_work(env, nullptr, resource, GetTaskInfoExecute, GetTaskInfoComplete,
         static_cast<void*>(context), &context->asyncWork));
-    napi_queue_async_work(env, context->asyncWork);
+    NAPI_CALL(env, napi_queue_async_work(env, context->asyncWork));
+    contextPtr.release();
 
     WS_HILOGD("Get task info napi end.");
     return promise;

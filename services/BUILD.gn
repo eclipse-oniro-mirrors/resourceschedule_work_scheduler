@@ -43,6 +43,8 @@ ohos_shared_library("workschedservice") {
   sources = [
     "native/src/background_loader/ability_connect_callback.cpp",
     "native/src/background_loader/background_loader_mgr.cpp",
+    "native/src/background_loader/background_loader_database.cpp",
+    "native/src/background_loader/background_loader_hisysevent_report.cpp",
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
     "native/src/conditions/charger_listener.cpp",
@@ -95,8 +97,10 @@ ohos_shared_library("workschedservice") {
     "ability_base:zuri",
     "ability_runtime:ability_connect_callback_stub",
     "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
     "ability_runtime:wantagent_innerkits",
     "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
     "access_token:libtokenid_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -116,6 +120,7 @@ ohos_shared_library("workschedservice") {
     "resource_schedule_service:ressched_common_utils",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
     "time_service:time_client",
   ]
 
@@ -153,8 +158,15 @@ ohos_shared_library("workschedservice") {
     external_deps += [ "hicollie:libhicollie" ]
     defines += [ "HICOLLIE_ENABLE" ]
   }
+  if (workscheduler_with_multimedia_audio_framework_enable) {
+    external_deps += [ "audio_framework:audio_client" ]
+    defines += [ "WORKSCHEDULER_AUDIO_FRAMEWORK_ENABLE" ]
+  }
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
+  }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
   }
   subsystem_name = "resourceschedule"
   part_name = "${worksched_native_part_name}"
@@ -171,6 +183,8 @@ ohos_static_library("workschedservice_static") {
   sources = [
     "native/src/background_loader/ability_connect_callback.cpp",
     "native/src/background_loader/background_loader_mgr.cpp",
+    "native/src/background_loader/background_loader_database.cpp",
+    "native/src/background_loader/background_loader_hisysevent_report.cpp",
     "native/src/conditions/battery_level_listener.cpp",
     "native/src/conditions/battery_status_listener.cpp",
     "native/src/conditions/charger_listener.cpp",
@@ -223,8 +237,10 @@ ohos_static_library("workschedservice_static") {
     "ability_base:zuri",
     "ability_runtime:ability_connect_callback_stub",
     "ability_runtime:ability_manager",
+    "ability_runtime:app_manager",
     "ability_runtime:wantagent_innerkits",
     "access_token:libaccesstoken_sdk",
+    "access_token:libprivacy_sdk",
     "access_token:libtokenid_sdk",
     "bundle_framework:appexecfwk_base",
     "bundle_framework:appexecfwk_core",
@@ -244,6 +260,7 @@ ohos_static_library("workschedservice_static") {
     "resource_schedule_service:ressched_common_utils",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
     "time_service:time_client",
   ]
 
@@ -281,8 +298,15 @@ ohos_static_library("workschedservice_static") {
     external_deps += [ "hicollie:libhicollie" ]
     defines += [ "HICOLLIE_ENABLE" ]
   }
+  if (workscheduler_with_multimedia_audio_framework_enable) {
+    external_deps += [ "audio_framework:audio_client" ]
+    defines += [ "WORKSCHEDULER_AUDIO_FRAMEWORK_ENABLE" ]
+  }
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
+  }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
   }
 
   subsystem_name = "resourceschedule"

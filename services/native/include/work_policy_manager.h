@@ -333,9 +333,11 @@ private:
     void AddToReadyQueue(std::shared_ptr<std::vector<std::shared_ptr<WorkStatus>>> workStatusVector);
     void RealStartWork(std::shared_ptr<WorkStatus> workStatus);
     void RealStartSA(std::shared_ptr<WorkStatus> workStatus);
+    void RevertToConditionReady(std::shared_ptr<WorkStatus> workStatus);
     void AddToRunningQueue(std::shared_ptr<WorkStatus> workStatus);
     void RemoveConditionUnReady();
     std::shared_ptr<WorkStatus> GetWorkToRun();
+    void CheckUnCurModeWork();
     void RemoveAllUnReady();
     uint32_t NewWatchdogId();
     void AddWatchdogForWork(std::shared_ptr<WorkStatus> workStatus);
@@ -369,7 +371,7 @@ private:
     ffrt::mutex watchdogIdMapMutex_;
     std::map<uint32_t, std::shared_ptr<WorkStatus>> watchdogIdMap_;
 
-    uint32_t watchdogId_;
+    std::atomic<uint32_t> watchdogId_ {INIT_WATCHDOG_ID};
     int32_t dumpSetMemory_;
     std::atomic<int32_t> watchdogTime_ {WATCHDOG_TIME};
     int32_t dumpSetCpu_;

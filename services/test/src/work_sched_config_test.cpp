@@ -19,6 +19,8 @@
 #include "res_sched_signature_validator.h"
 #include "work_sched_config.h"
 #include "work_sched_hilog.h"
+#include "work_queue_manager.h"
+#include "work_scheduler_service.h"
  
 using namespace testing::ext;
  
@@ -37,6 +39,17 @@ const std::string APP2 = "test2";
 const std::string APP3 = "test3";
 const std::string APP4 = "test4";
 const std::string APP5 = "test5";
+
+std::shared_ptr<WorkSchedulerService> PrepareReadyService(bool &originalReady)
+{
+    auto service = DelayedSingleton<WorkSchedulerService>::GetInstance();
+    if (service->workQueueManager_ == nullptr) {
+        service->workQueueManager_ = std::make_shared<WorkQueueManager>(service);
+    }
+    originalReady = service->ready_.load();
+    service->ready_.store(true);
+    return service;
+}
 }
  
 class WorkSchedConfigTest : public testing::Test {
@@ -135,6 +148,146 @@ HWTEST_F(WorkSchedConfigTest, InitActiveGroupWhitelist_002, TestSize.Level2)
     payload["params"] = workSchedulerParam;
     auto result7 = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateSusMgrCloudConfig(payload);
     EXPECT_TRUE(result7);
+}
+
+/**
+ * @tc.name: UpdateBgMgrCloudConfig_001
+ * @tc.desc: Test UpdateBgMgrCloudConfig returns false when payload invalid.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateBgMgrCloudConfig_001, TestSize.Level2)
+{
+    nlohmann::json payload;
+    auto result = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateBgMgrCloudConfig(payload);
+    EXPECT_FALSE(result);
+}
+
+/**
+ * @tc.name: UpdateBgMgrCloudConfig_002
+ * @tc.desc: Test UpdateBgMgrCloudConfig returns true and calls all update functions.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateBgMgrCloudConfig_002, TestSize.Level2)
+{
+    nlohmann::json payload;
+    nlohmann::json params = nlohmann::json::object();
+    nlohmann::json workScheduler = nlohmann::json::object();
+    workScheduler["work_scheduler_min_repeat_time"] = nlohmann::json::object({{"special", nlohmann::json::array()}});
+    workScheduler["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.exempt"});
+    workScheduler["work_scheduler_preinstalled_works"] = nlohmann::json::object();
+    params["work_scheduler"] = workScheduler;
+    payload["params"] = params;
+
+    auto result = DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateBgMgrCloudConfig(payload);
+    EXPECT_TRUE(result);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigMinRepeatTime_001
+ * @tc.desc: Test UpdateCloudConfigMinRepeatTime returns early (without delegating) when no key:
+ *           the delegated target specialMap_ must keep its pre-set sentinel value.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_001, TestSize.Level2)
+{
+    bool originalReady = false;
+    auto service = PrepareReadyService(originalReady);
+    service->specialMap_.clear();
+    service->specialMap_.emplace("sentinel.bundle", 1000u);
+
+    nlohmann::json root;
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigMinRepeatTime(root);
+
+    EXPECT_EQ(service->specialMap_.count("sentinel.bundle"), 1);
+    if (service->specialMap_.count("sentinel.bundle") > 0) {
+        EXPECT_EQ(service->specialMap_.at("sentinel.bundle"), 1000u);
+    }
+
+    service->specialMap_.clear();
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigMinRepeatTime_002
+ * @tc.desc: Test UpdateCloudConfigMinRepeatTime delegates a valid special array and the service
+ *           maps "com.test.special" to 300000 in specialMap_.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigMinRepeatTime_002, TestSize.Level2)
+{
+    bool originalReady = false;
+    auto service = PrepareReadyService(originalReady);
+    service->specialMap_.clear();
+    uint32_t originalTimeCycle = service->workQueueManager_->GetTimeCycle();
+    uint32_t originalMinCheckTime = service->minCheckTime_;
+
+    nlohmann::json root;
+    nlohmann::json minRepeatTime = nlohmann::json::object();
+    minRepeatTime["special"] = nlohmann::json::array({{{"bundleName", "com.test.special"}, {"time", 300000u}}});
+    root["work_scheduler_min_repeat_time"] = minRepeatTime;
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigMinRepeatTime(root);
+
+    EXPECT_EQ(service->specialMap_.count("com.test.special"), 1);
+    if (service->specialMap_.count("com.test.special") > 0) {
+        EXPECT_EQ(service->specialMap_.at("com.test.special"), 300000u);
+    }
+
+    service->specialMap_.clear();
+    service->minCheckTime_ = originalMinCheckTime;
+    service->workQueueManager_->SetTimeCycle(originalTimeCycle);
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigEngExemptionBundles_001
+ * @tc.desc: Test UpdateCloudConfigEngExemptionBundles returns early (without delegating) when no
+ *           key: the delegated target exemptionBundles_ must keep its pre-set sentinel value.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_001, TestSize.Level2)
+{
+    bool originalReady = false;
+    auto service = PrepareReadyService(originalReady);
+    service->exemptionBundles_.clear();
+    service->exemptionBundles_.insert("sentinel.bundle");
+
+    nlohmann::json root;
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
+
+    EXPECT_EQ(service->exemptionBundles_.count("sentinel.bundle"), 1);
+
+    service->exemptionBundles_.clear();
+    service->ready_.store(originalReady);
+}
+
+/**
+ * @tc.name: UpdateCloudConfigEngExemptionBundles_002
+ * @tc.desc: Test UpdateCloudConfigEngExemptionBundles delegates a valid array and the service
+ *           updates exemptionBundles_ to exactly {"com.test.exempt1", "com.test.exempt2"}.
+ * @tc.type: FUNC
+ * @tc.require: I8JBRY
+ */
+HWTEST_F(WorkSchedConfigTest, UpdateCloudConfigEngExemptionBundles_002, TestSize.Level2)
+{
+    bool originalReady = false;
+    auto service = PrepareReadyService(originalReady);
+    service->exemptionBundles_.clear();
+
+    nlohmann::json root;
+    root["work_scheduler_eng_exemption_bundles"] = nlohmann::json::array({"com.test.exempt1", "com.test.exempt2"});
+    DelayedSingleton<WorkSchedulerConfig>::GetInstance()->UpdateCloudConfigEngExemptionBundles(root);
+
+    EXPECT_EQ(service->exemptionBundles_.size(), 2);
+    EXPECT_EQ(service->exemptionBundles_.count("com.test.exempt1"), 1);
+    EXPECT_EQ(service->exemptionBundles_.count("com.test.exempt2"), 1);
+
+    service->exemptionBundles_.clear();
+    service->ready_.store(originalReady);
 }
 }
 }

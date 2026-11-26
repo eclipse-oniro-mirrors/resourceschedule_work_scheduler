@@ -22,6 +22,7 @@
 #include "work_conn_manager.h"
 #include "work_status.h"
 #include "work_info.h"
+#include "work_sched_utils.h"
 
 using namespace testing::ext;
 
@@ -248,7 +249,7 @@ HWTEST_F(WorkGuardThreadTest, CheckRunningWorkStatus_001, TestSize.Level1)
     workinfo.SetWorkId(10000);
     workinfo.SetElement("com.test.demo", "WorkExt");
     workinfo.RequestDeepIdle(true);
-    int32_t uid = 10000;
+    int32_t uid = WorkSchedUtils::GetCurrentAccountId() * 200000 + 10000;
     auto workStatus = std::make_shared<WorkStatus>(workinfo, uid);
     workStatus->MarkStatus(WorkStatus::Status::RUNNING);
     service_->workPolicyManager_->AddWork(workStatus, uid);

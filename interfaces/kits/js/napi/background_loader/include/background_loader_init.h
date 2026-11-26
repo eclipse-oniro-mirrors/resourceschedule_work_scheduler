@@ -19,6 +19,8 @@
 #include "napi/native_api.h"
 #include "napi/native_node_api.h"
 
+namespace OHOS {
+namespace WorkScheduler {
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,9 +34,6 @@ napi_value EnumBackgroundLoaderStopCodeConstructor(napi_env env, napi_callback_i
 #ifdef __cplusplus
 }
 #endif
-
-namespace OHOS {
-namespace WorkScheduler {
 
 enum StopCode : uint32_t {
     SUCCESS = 0,

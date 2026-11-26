@@ -83,6 +83,10 @@ bool Common::GetBaseWorkInfo(napi_env env, napi_value objValue, WorkInfo &workIn
 
     // Get persist param. if not set, it will be used false.
     workInfo.RequestPersisted(GetBoolProperty(env, objValue, "isPersisted", E_IS_PERSISTED_ERR));
+    // Get isPerformanceSensitive param. if not set, it will be used false.
+    bool isPerformanceSensitive = GetBoolProperty(env, objValue, "isPerformanceSensitive",
+        E_IS_PERFORMANCE_SENSITIVE_ERR);
+    workInfo.RequestPerformanceSensitive(isPerformanceSensitive);
     return true;
 }
 
@@ -443,9 +447,18 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
     napi_get_boolean(env, workInfo->IsPersisted(), &napiIsPersisted);
     napi_set_named_property(env, napiWork, "isPersisted", napiIsPersisted);
 
-    GetConditionInfo(env, workInfo, napiWork);
+    // Set isPerformanceSensitive.
+    napi_value napiIsPerformanceSensitive = nullptr;
+    napi_get_boolean(env, workInfo->IsPerformanceSensitive(), &napiIsPerformanceSensitive);
+    napi_set_named_property(env, napiWork, "isPerformanceSensitive", napiIsPerformanceSensitive);
 
-    // Set timer info.
+    GetConditionInfo(env, workInfo, napiWork);
+    SetTimerAndExtrasInfo(env, workInfo, napiWork);
+    return napiWork;
+}
+
+void Common::SetTimerAndExtrasInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork)
+{
     uint32_t timeInterval = workInfo->GetTimeInterval();
     if (timeInterval > 0) {
         napi_value napiTimer = nullptr;
@@ -461,12 +474,10 @@ napi_value Common::GetNapiWorkInfo(napi_env env, std::shared_ptr<WorkInfo> &work
             napi_set_named_property(env, napiWork, "repeatCount", napiCount);
         }
     }
-
     if (workInfo->GetExtras()) {
         napi_value parameters = WrapWantParams(env, *workInfo->GetExtras());
         napi_set_named_property(env, napiWork, "parameters", parameters);
     }
-    return napiWork;
 }
 
 void Common::GetConditionInfo(napi_env env, std::shared_ptr<WorkInfo> &workInfo, napi_value &napiWork)

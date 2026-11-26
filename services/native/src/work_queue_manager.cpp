@@ -331,6 +331,17 @@ void WorkQueueManager::SetMinIntervalByDump(int64_t interval)
     }
 }
 
+void WorkQueueManager::SetIdleTime(int32_t idleTime)
+{
+    g_deepIdleScreenOffTimeMin.store(idleTime);
+    std::lock_guard<ffrt::mutex> lock(mutex_);
+    auto screenListener = listenerMap_.find(WorkCondition::Type::DEEP_IDLE);
+    if (screenListener != listenerMap_.end()) {
+        screenListener->second->Stop();
+        screenListener->second->Start();
+    }
+}
+
 void WorkQueueManager::AsyncStopWork(std::shared_ptr<WorkStatus> workStatus)
 {
     auto service = wss_.lock();

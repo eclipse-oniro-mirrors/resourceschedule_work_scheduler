@@ -70,6 +70,7 @@ ohos_fuzztest("BackgroundLoaderFinishTaskFuzzTest") {
     "ipc:ipc_single",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
   ]
 
   resource_config_file = "${worksched_test_path}/resource/ohos_test.xml"

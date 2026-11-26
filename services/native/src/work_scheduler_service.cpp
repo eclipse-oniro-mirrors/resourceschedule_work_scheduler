@@ -556,9 +556,9 @@ bool WorkSchedulerService::Init(const std::shared_ptr<AppExecFwk::EventRunner>& 
     }
     InitWorkInner();
     int32_t maxTimeoutCount = BACKGROUND_LOADER_TIMEOUT_COUNT;
-    int32_t backgroundLoaderTimeoutMs = BACKGROUND_LOADER_TIMEOUT_US;
-    LoadBackgroundLoaderFromFile(BACKGROUND_LOADER_FILE_PATH, maxTimeoutCount, backgroundLoaderTimeoutMs);
-    BackgroundLoaderMgr::GetInstance().Init(maxTimeoutCount, backgroundLoaderTimeoutMs);
+    int32_t backgroundLoaderTimeoutUs = BACKGROUND_LOADER_TIMEOUT_US;
+    LoadBackgroundLoaderFromFile(BACKGROUND_LOADER_FILE_PATH, maxTimeoutCount, backgroundLoaderTimeoutUs);
+    BackgroundLoaderMgr::GetInstance().Init(maxTimeoutCount, backgroundLoaderTimeoutUs);
 
     if (!Publish(wss)) {
         WS_HILOGE("OnStart register to system ability manager failed!");
@@ -779,11 +779,29 @@ bool WorkSchedulerService::CheckCondition(WorkInfo& workInfo)
     return true;
 }
 
+bool WorkSchedulerService::CheckPerformanceSensitiveCondition(WorkInfo& workInfo)
+{
+    if (!workInfo.IsPerformanceSensitive()) {
+        return true;
+    }
+    if (workInfo.GetDeepIdle() != WorkCondition::DeepIdle::DEEP_IDLE_IN ||
+        workInfo.GetChargerType() >= WorkCondition::Charger::CHARGING_UNPLUGGED) {
+        WS_HILOGE("isPerformanceSensitive requires isDeepIdle and isCharging to be true.");
+        return false;
+    }
+    uint32_t timeInterval = workInfo.GetTimeInterval();
+    if (timeInterval > 0 && timeInterval < ONE_DAY_MS) {
+        WS_HILOGE("isPerformanceSensitive repeat work, repeatCycleTime must be >= 24h.");
+        return false;
+    }
+    return true;
+}
+
 int32_t WorkSchedulerService::StartWork(const WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::StartWork");
     int32_t timerId = SetTimer();
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     int32_t ret = StartWorkInner(workInfo, uid);
     CancelTimer(timerId);
     return ret;
@@ -802,6 +820,9 @@ int32_t WorkSchedulerService::StartWorkInner(const WorkInfo& workInfo, int32_t u
     }
     if (!CheckCondition(workInfo_)) {
         return E_REPEAT_CYCLE_TIME_ERR;
+    }
+    if (!CheckPerformanceSensitiveCondition(workInfo_)) {
+        return E_PERFORMANCE_SENSITIVE_CONDITION_ERR;
     }
     time_t baseTime;
     (void)time(&baseTime);
@@ -834,6 +855,10 @@ void WorkSchedulerService::AddWorkInner(WorkInfo& workInfo)
 {
     WS_HILOGD("come in");
     if (workInfo.GetUid() > 0) {
+        if (!CheckPerformanceSensitiveCondition(workInfo)) {
+            WS_HILOGE("check performance sensitive condition failed.");
+            return;
+        }
         shared_ptr<WorkStatus> workStatus = make_shared<WorkStatus>(workInfo, workInfo.GetUid());
         if (workPolicyManager_->AddWork(workStatus, workInfo.GetUid()) == ERR_OK) {
             workQueueManager_->AddWork(workStatus);
@@ -870,7 +895,7 @@ int32_t WorkSchedulerService::StopWork(const WorkInfo& workInfo)
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (checkBundle_.load() && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
@@ -919,7 +944,7 @@ int32_t WorkSchedulerService::StopAndCancelWork(const WorkInfo& workInfo)
         return E_SERVICE_NOT_READY;
     }
     WorkInfo workInfo_ = workInfo;
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (checkBundle_.load() && !CheckWorkInfo(workInfo_, uid)) {
         WS_HILOGE("check workInfo failed, bundleName inconsistency.");
         return E_CHECK_WORKINFO_FAILED;
@@ -965,7 +990,7 @@ int32_t WorkSchedulerService::StopAndClearWorks()
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    StopAndClearWorksByUid(IPCSkeleton::GetCallingUid());
+    StopAndClearWorksByUid(IPCSkeleton::GetCallingAppUid());
     return ERR_OK;
 }
 
@@ -997,7 +1022,7 @@ int32_t WorkSchedulerService::IsLastWorkTimeout(int32_t workId, bool &result)
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
     }
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     return workPolicyManager_->IsLastWorkTimeout(workId, uid, result);
 }
 
@@ -1009,7 +1034,7 @@ void WorkSchedulerService::OnConditionReady(shared_ptr<vector<shared_ptr<WorkSta
 int32_t WorkSchedulerService::ObtainAllWorks(std::vector<WorkInfo>& workInfos)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::ObtainAllWorks");
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (!ready_.load()) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -1047,7 +1072,7 @@ int32_t WorkSchedulerService::ObtainWorksByUidAndWorkIdForInner(int32_t uid,
 int32_t WorkSchedulerService::GetWorkStatus(int32_t workId, WorkInfo& workInfo)
 {
     HitraceScoped traceScoped(HITRACE_TAG_OHOS, "WorkSchedulerService::GetWorkStatus");
-    int32_t uid = IPCSkeleton::GetCallingUid();
+    int32_t uid = IPCSkeleton::GetCallingAppUid();
     if (!ready_.load()) {
         WS_HILOGE("service is not ready.");
         return E_SERVICE_NOT_READY;
@@ -1215,7 +1240,10 @@ void WorkSchedulerService::DumpUsage(std::string &result)
         .append("    -cpu (number): set the usage cpu.\n")
         .append("    -count (number): set the max running task count.\n")
         .append("    -thermalLevel (number): set the thermal level.\n")
-        .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n");
+        .append("    -high_perf_duration (number): set high perf duration, unit ms, max 600000.\n")
+        .append("    -idle_time (number): set deep idle screen off time, unit ms, default 1860000.\n")
+        .append("    -group (uid) (group): set app group, group: 10|20|30|40|50|60.\n")
+        .append("    -b (bundleName) (abilityName): run backgroundloader task for App.\n");
     DumpCommonUsage(result);
 }
 
@@ -1355,6 +1383,10 @@ std::string WorkSchedulerService::DumpExemptionBundles()
 
 void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, std::string &result)
 {
+    if (workPolicyManager_ == nullptr || workQueueManager_ == nullptr) {
+        result.append("workPolicyManager or workQueueManager is nullptr.");
+        return;
+    }
     if (!std::all_of(value.begin(), value.end(), ::isdigit)) {
         result.append("Error params.");
         return;
@@ -1376,6 +1408,10 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
         result.append("Set cpu success.");
     } else if (key == "-nap") {
 #ifdef DEVICE_STANDBY_ENABLE
+        if (standbyStateObserver_ == nullptr) {
+            result.append("standby state observer is nullptr.");
+            return;
+        }
         standbyStateObserver_->OnDeviceIdleMode(std::atoi(value.c_str()), 0);
 #endif
     } else if (key == "-count") {
@@ -1384,9 +1420,25 @@ void WorkSchedulerService::DumpParamSet(std::string &key, std::string &value, st
     } else if (key == "-thermalLevel") {
         workPolicyManager_->SetThermalLevelByDump(std::atoi(value.c_str()));
         result.append("Set thermal level success.");
+    } else if (key == "-high_perf_duration") {
+        DumpSetHighPerfDuration(value, result);
+    } else if (key == "-idle_time") {
+        workQueueManager_->SetIdleTime(std::atoi(value.c_str()));
+        result.append("Set deep idle screen off time success.");
     } else {
         result.append("Error params.");
     }
+}
+
+void WorkSchedulerService::DumpSetHighPerfDuration(const std::string& value, std::string& result)
+{
+    uint64_t duration = static_cast<uint64_t>(std::atoi(value.c_str()));
+    if (duration > MAX_HIGH_PERF_DURATION) {
+        result.append("Duration exceeds max value.");
+        return;
+    }
+    WorkStatus::SetHighPerfDuration(duration);
+    result.append("Set high perf duration success.");
 }
 
 void WorkSchedulerService::DumpParamRestore(std::string &result)
@@ -1618,7 +1670,7 @@ void WorkSchedulerService::RegisterStandbyStateObserver()
 #endif
 }
 
-bool WorkSchedulerService::CheckProcessName()
+WEAK_FUNC bool WorkSchedulerService::CheckProcessName()
 {
     Security::AccessToken::AccessTokenID tokenId = OHOS::IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo callingTokenInfo;
@@ -1631,7 +1683,7 @@ bool WorkSchedulerService::CheckProcessName()
     return true;
 }
 
-bool WorkSchedulerService::CheckCallingServiceName()
+WEAK_FUNC bool WorkSchedulerService::CheckCallingServiceName()
 {
     Security::AccessToken::AccessTokenID tokenId = IPCSkeleton::GetCallingTokenID();
     Security::AccessToken::NativeTokenInfo callingTokenInfo;
@@ -2332,9 +2384,26 @@ void WorkSchedulerService::DumpTwoParamsSet(std::vector<std::string> &argsInStr,
         DumpTriggerWork(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else if (argsInStr[DUMP_OPTION] == "-group") {
         DumpAppGroup(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
+    } else if (argsInStr[DUMP_OPTION] == "-b") {
+        DumpBackgroundLoader(argsInStr[DUMP_PARAM_INDEX], argsInStr[DUMP_VALUE_INDEX], result);
     } else {
         result.append("Error params.");
     }
+}
+
+void WorkSchedulerService::DumpBackgroundLoader(const std::string& bundleName,
+    const std::string& abilityName, std::string& result)
+{
+    if (bundleName.empty() || abilityName.empty()) {
+        result.append("param error");
+        return;
+    }
+    nlohmann::json payload;
+    payload["bundleName"] = bundleName;
+    payload["abilityName"] = abilityName;
+    payload["appIndex"] = "0";
+    BackgroundLoaderMgr::GetInstance().HandleBackgroundLoaderTask(payload);
+    result.append("dump background loader success.");
 }
 
 void WorkSchedulerService::DumpAppGroup(const std::string& uidStr, const std::string& groupStr, std::string& result)
@@ -2425,7 +2494,7 @@ int32_t WorkSchedulerService::SetExecFrequency(const FrequencyInfo& frequencyInf
         return E_INTERVAL_ERROR;
     }
 
-    int32_t callingUid = IPCSkeleton::GetCallingUid();
+    int32_t callingUid = IPCSkeleton::GetCallingAppUid();
     SetExecFrequencyInner(callingUid, frequencyInfo);
     // 刷新持久化数据
     RefreshPersistedInfos();
@@ -2448,7 +2517,7 @@ int32_t WorkSchedulerService::ResetExecFrequency(const int32_t uid)
         WS_HILOGE("ResetExecFrequency not allowed.");
         return E_PERMISSION_DENIED;
     }
-    int32_t callingUid = IPCSkeleton::GetCallingUid();
+    int32_t callingUid = IPCSkeleton::GetCallingAppUid();
     if (GetExecFrequency(uid, callingUid) == -1) {
         WS_HILOGE("uid: %{public}d is invalid, not set exec frequency.", uid);
         return E_UID_ERROR;

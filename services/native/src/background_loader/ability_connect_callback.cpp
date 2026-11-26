@@ -25,25 +25,21 @@ void AbilityConnectCallback::OnAbilityConnectDone(const OHOS::AppExecFwk::Elemen
     const std::string& bundleName = element.GetBundleName();
     WS_HILOGI("[%{public}s:%{public}d] bundleName: %{public}s, resultCode: %{public}d",
         __FUNCTION__, __LINE__, bundleName.c_str(), resultCode);
-    if (resultCode != ERR_OK) {
-        WS_HILOGE("OnAbilityConnectDone failed: resultCode: %{public}d", resultCode);
-        return;
-    }
     if (remoteObject == nullptr) {
         WS_HILOGE("OnAbilityConnectDone failed: remoteObject is null");
         return;
     }
 
     const std::string& abilityName = element.GetAbilityName();
-    BackgroundLoaderMgr::GetInstance().SaveRemoteObject(bundleName, abilityName, appIndex_, remoteObject);
-    BackgroundLoaderMgr::GetInstance().SendOnStart(remoteObject, bundleName, appIndex_);
+    BackgroundLoaderMgr::GetInstance().HandleAbilityConnectDone(bundleName, abilityName, appIndex_, uid_, remoteObject);
 }
 
 void AbilityConnectCallback::OnAbilityDisconnectDone(const OHOS::AppExecFwk::ElementName& element, int32_t resultCode)
 {
     WS_HILOGI("OnAbilityDisconnectDone: bundleName: %{public}s, appIndex: %{public}d, resultCode: %{public}d",
         element.GetBundleName().c_str(), appIndex_, resultCode);
-    BackgroundLoaderMgr::GetInstance().RemoveRemoteObject(bundleName_, appIndex_);
+    BackgroundLoaderMgr::GetInstance().HandleAbilityDisonnectDone(bundleName_, appIndex_);
 }
+
 } // namespace WorkScheduler
 } // namespace OHOS

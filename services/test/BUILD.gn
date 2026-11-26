@@ -107,6 +107,7 @@ ohos_unittest("WorkScheduleServiceTest") {
     "resource_schedule_service:ressched_common_utils",
     "safwk:system_ability_fwk",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
     "time_service:time_client",
   ]
   defines = [ "WORK_SCHEDULER_TEST" ]
@@ -141,6 +142,9 @@ ohos_unittest("WorkScheduleServiceTest") {
   if (target_platform == "pc") {
     defines += [ "PC_PLATFORM" ]
   }
+  if (target_platform == "car") {
+    defines += [ "CAR_PLATFORM" ]
+  }
 }
 
 ohos_unittest("BackgroundLoaderMgrTest") {
@@ -164,6 +168,9 @@ ohos_unittest("BackgroundLoaderMgrTest") {
   sources = [
     "src/background_loader/background_loader_mgr_test.cpp",
     "src/background_loader/ability_connect_callback_test.cpp",
+    "src/background_loader/background_loader_database_test.cpp",
+    "src/background_loader/background_loader_adapter_test.cpp",
+    "src/background_loader/background_loader_hisysevent_report_test.cpp",
   ]
 
   deps = [
@@ -175,13 +182,16 @@ ohos_unittest("BackgroundLoaderMgrTest") {
   external_deps = [
     "ability_runtime:ability_connect_callback_stub",
     "ability_runtime:ability_manager",
+    "bundle_framework:appexecfwk_base",
     "c_utils:utils",
     "ffrt:libffrt",
     "hilog:libhilog",
+    "hisysevent:libhisysevent",
     "ipc:ipc_single",
     "resource_schedule_service:resschedsvc",
     "resource_schedule_service:ressched_common_utils",
     "samgr:samgr_proxy",
+    "sqlite:sqlite",
   ]
 
   defines = [ "WORK_SCHEDULER_TEST" ]

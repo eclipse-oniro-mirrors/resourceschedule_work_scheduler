@@ -67,3 +67,20 @@ WORK_SCHEDULER_RUNTIME_EXCEPTION:
   MODULE_NAME: {type: STRING, desc: module name}
   FUNC_NAME: {type: STRING, desc: function name}
   EXCEPTION_INFO: {type: STRING, desc: exception info}
+
+BACKGROUND_LOADER_RECORD:
+  __BASE: {type: STATISTIC, level: CRITICAL, tag: PowerStats, desc: background loader task record}
+  UID: {type: INT32, desc: Application uid}
+  PID: {type: INT32, desc: Application pid}
+  BUNDLE_NAME: {type: STRING, desc: Application bundle name}
+  APP_INDEX: {type: INT32, desc: App clone id}
+  REASON: {type: STRING, desc: Reason classification}
+  EXTEND_REASON: {type: STRING, desc: Secondary reason}
+
+BACKGROUND_LOADER_ANOMALOUS:
+  __BASE: {type: STATISTIC, level: CRITICAL, tag: PowerStats, desc: background loader anomalous event}
+  UID: {type: INT32, desc: Application uid}
+  PID: {type: INT32, desc: Application pid}
+  BUNDLE_NAME: {type: STRING, desc: Application bundle name}
+  REASON: {type: STRING, desc: Reason classification}
+  EXTEND_REASON: {type: STRING, desc: Secondary reason}

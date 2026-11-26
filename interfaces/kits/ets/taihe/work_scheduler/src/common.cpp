@@ -93,6 +93,9 @@ bool Common::GetBaseWorkInfo(
     }
     workInfo.SetElement(std::string(aniWork.bundleName), std::string(aniWork.abilityName));
     workInfo.RequestPersisted(aniWork.isPersisted.has_value() ? aniWork.isPersisted.value() : false);
+    bool isPerformanceSensitive = aniWork.isPerformanceSensitive.has_value() ?
+        aniWork.isPerformanceSensitive.value() : false;
+    workInfo.RequestPerformanceSensitive(isPerformanceSensitive);
  
     int32_t earliestStartTime = 0;
     if (aniWork.earliestStartTime.has_value() && (aniWork.earliestStartTime.value() > 0)) {
@@ -409,6 +412,7 @@ void Common::ParseWorkInfo(std::shared_ptr<OHOS::WorkScheduler::WorkInfo> workIn
     ::ohos::resourceschedule::workScheduler::WorkInfo &aniWork)
 {
     aniWork.isPersisted = optional<bool>(std::in_place, workInfo->IsPersisted());
+    aniWork.isPerformanceSensitive = optional<bool>(std::in_place, workInfo->IsPerformanceSensitive());
     aniWork.networkType = optional<NetworkType>(std::in_place, NetworkType::key_t(workInfo->GetNetworkType()));
     if (workInfo->GetChargerType() >= WorkCondition::Charger::CHARGING_UNPLUGGED) {
         aniWork.isCharging = optional<bool>(std::in_place, false);

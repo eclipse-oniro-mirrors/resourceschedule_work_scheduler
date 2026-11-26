@@ -16,7 +16,10 @@ import("//build/ohos/ace/ace.gni")
 import("//foundation/resourceschedule/work_scheduler/workscheduler.gni")
 
 config("worksched_public_config") {
-  include_dirs = [ "${worksched_root_path}/interfaces/kits/js/napi/include" ]
+  include_dirs = [
+    "${worksched_root_path}/interfaces/kits/js/napi/include",
+    "${worksched_root_path}/interfaces/kits/js/napi/background_loader/include",
+  ]
 }
 
 ohos_shared_library("workscheduler") {
@@ -88,8 +91,8 @@ ohos_shared_library("backgroundloader_napi") {
 
   sources = [
     "${worksched_root_path}/interfaces/kits/js/napi/src/common.cpp",
-    "${worksched_root_path}/interfaces/kits/js/napi/src/background_loader_init.cpp",
-    "${worksched_root_path}/interfaces/kits/js/napi/src/background_loader_task.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/background_loader/src/background_loader_init.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/background_loader/src/background_loader_task.cpp",
   ]
 
   deps = [

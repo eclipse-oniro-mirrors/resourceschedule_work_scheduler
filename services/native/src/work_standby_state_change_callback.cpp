@@ -32,7 +32,7 @@ WorkStandbyStateChangeCallback::WorkStandbyStateChangeCallback(std::shared_ptr<W
 
 void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping)
 {
-    WS_HILOGI("napped is %{public}d, sleeping is %{public}d", napped, sleeping);
+    WS_HILOGD("napped is %{public}d, sleeping is %{public}d", napped, sleeping);
     if (napped && !sleeping) {
         WS_HILOGD("Device standby state is nap, do not need process");
         return;
@@ -45,7 +45,7 @@ void WorkStandbyStateChangeCallback::OnDeviceIdleMode(bool napped, bool sleeping
     }
     auto dataManager = DelayedSingleton<DataManager>::GetInstance();
     if (dataManager->GetDeviceSleep() == sleeping) {
-        WS_HILOGI("Device standby state is not changed");
+        WS_HILOGD("Device standby state is not changed");
         return;
     }
     WorkSchedUtil::HiSysEventStateChanged({"DEVICE_STANDBY", sleeping});
