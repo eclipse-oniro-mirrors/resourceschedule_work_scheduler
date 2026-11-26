@@ -52,6 +52,10 @@ struct FuzzStubContext {
 FuzzStubContext g_fuzzStubContext;
 
 constexpr uint8_t ACCOUNT_MODE_COUNT = 5;
+constexpr uint8_t ACCOUNT_MODE_SINGLE = 0;
+constexpr uint8_t ACCOUNT_MODE_DUAL = 1;
+constexpr uint8_t ACCOUNT_MODE_INVALID = 2;
+constexpr uint8_t ACCOUNT_MODE_EMPTY = 3;
 constexpr uint8_t MOD_TWO = 2;
 constexpr int32_t DEFAULT_ACCOUNT_ID = 100;
 constexpr int32_t INVALID_ACCOUNT_ID = -1;
@@ -66,17 +70,17 @@ ErrCode OsAccountManager::QueryActiveOsAccountIds(std::vector<int32_t>& osAccoun
         return ERR_OK;
     }
     switch (g_fuzzStubContext.accountMode % ACCOUNT_MODE_COUNT) {
-        case 0:
+        case ACCOUNT_MODE_SINGLE:
             osAccountIds.push_back(DEFAULT_ACCOUNT_ID);
             break;
-        case 1:
+        case ACCOUNT_MODE_DUAL:
             osAccountIds.push_back(DEFAULT_ACCOUNT_ID);
             osAccountIds.push_back(g_fuzzStubContext.activeAccountId);
             break;
-        case 2:
+        case ACCOUNT_MODE_INVALID:
             osAccountIds.push_back(INVALID_ACCOUNT_ID);
             break;
-        case 3:
+        case ACCOUNT_MODE_EMPTY:
             break;
         default:
             return ERR_ACCOUNT_COMMON_NOT_INIT_ERROR;
