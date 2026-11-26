@@ -24,7 +24,7 @@ group("fuzztest") {
     "workcjparam_fuzzer:fuzztest",
     "workinfomarshalling_fuzzer:fuzztest",
     "workqueuecondition_fuzzer:fuzztest",
-    "workstatuscondition_fuzzer:fuzztest"
+    "workstatuscondition_fuzzer:fuzztest",
     "workschedulergetallrunningworks_fuzzer:fuzztest",
     "workschedulergetworkstatus_fuzzer:fuzztest",
     "workschedulerislastworktimeout_fuzzer:fuzztest",
