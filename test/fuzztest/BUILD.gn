@@ -22,7 +22,7 @@ group("fuzztest") {
     "workschedulerdump_fuzzer:fuzztest",
     "workschedulereventpublisher_fuzzer:fuzztest",
     "workinfoparsefromjson_fuzzer:fuzztest",
-    "workschedutils_fuzzer:fuzztest"
+    "workschedutils_fuzzer:fuzztest",
     "workschedulergetallrunningworks_fuzzer:fuzztest",
     "workschedulergetworkstatus_fuzzer:fuzztest",
     "workschedulerislastworktimeout_fuzzer:fuzztest",
