@@ -92,6 +92,7 @@ ohos_shared_library("backgroundloader_napi") {
   sources = [
     "${worksched_root_path}/interfaces/kits/js/napi/src/common.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/background_loader/src/background_loader_init.cpp",
+    "${worksched_root_path}/interfaces/kits/js/napi/background_loader/src/background_loader_napi_helper.cpp",
     "${worksched_root_path}/interfaces/kits/js/napi/background_loader/src/background_loader_task.cpp",
   ]
 

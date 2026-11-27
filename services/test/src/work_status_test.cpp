@@ -22,6 +22,7 @@
 #include "work_condition.h"
 #include "work_sched_data_manager.h"
 #include "work_sched_hilog.h"
+#include "work_sched_errors.h"
 #include "work_info.h"
 #include "work_sched_utils.h"
 #include "work_sched_constants.h"

@@ -20,6 +20,7 @@
 #include <system_ability_definition.h>
 
 #include "work_sched_errors.h"
+#include "background_loader/background_loader_errors.h"
 #include "work_sched_hilog.h"
 #include "background_loader_task_info.h"
 
@@ -29,7 +30,7 @@ WorkSchedulerSrvClient::WorkSchedulerSrvClient() {}
 
 WorkSchedulerSrvClient::~WorkSchedulerSrvClient() {}
 
-ErrCode WorkSchedulerSrvClient::Connect()
+ErrCode WorkSchedulerSrvClient::Connect(int32_t errCode)
 {
     if (iWorkSchedService_ != nullptr) {
         return ERR_OK;
@@ -37,21 +38,21 @@ ErrCode WorkSchedulerSrvClient::Connect()
     sptr<ISystemAbilityManager> sam = SystemAbilityManagerClient::GetInstance().GetSystemAbilityManager();
     if (sam == nullptr) {
         WS_HILOGE("GetSystemAbilityManager failed!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return errCode;
     }
     sptr<IRemoteObject> remoteObject_ = sam->CheckSystemAbility(WORK_SCHEDULE_SERVICE_ID);
     if (remoteObject_ == nullptr) {
         WS_HILOGE("GetSystemAbility failed!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return errCode;
     }
     deathRecipient_ = sptr<IRemoteObject::DeathRecipient>(new WorkSchedulerDeathRecipient(*this));
     if (deathRecipient_ == nullptr) {
         WS_HILOGE("Failed to create WorkScheduelrDeathRecipient!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return errCode;
     }
     if ((remoteObject_->IsProxyObject()) && (!remoteObject_->AddDeathRecipient(deathRecipient_))) {
         WS_HILOGE("Add death recipient to WorkSchedulerService failed!");
-        return E_CLIENT_CONNECT_SERVICE_FAILED;
+        return errCode;
     }
     iWorkSchedService_ = iface_cast<IWorkSchedService>(remoteObject_);
     WS_HILOGD("Connecting WorkSchedService success.");
@@ -289,7 +290,7 @@ ErrCode WorkSchedulerSrvClient::RegisterTask(BackgroundLoaderTaskInfo& taskInfo)
 {
     WS_HILOGD("Register background_loader task");
     std::lock_guard<std::mutex> lock(mutex_);
-    ErrCode code = Connect();
+    ErrCode code = Connect(BackgroundLoader::E_SYSTEM_SERVICE_NOT_READY);
     if (code != ERR_OK) {
         return code;
     }
@@ -300,7 +301,7 @@ ErrCode WorkSchedulerSrvClient::UnregisterTask(BackgroundLoaderTaskInfo& taskInf
 {
     WS_HILOGD("Unregister background_loader task");
     std::lock_guard<std::mutex> lock(mutex_);
-    ErrCode code = Connect();
+    ErrCode code = Connect(BackgroundLoader::E_SYSTEM_SERVICE_NOT_READY);
     if (code != ERR_OK) {
         return code;
     }
@@ -311,7 +312,7 @@ ErrCode WorkSchedulerSrvClient::FinishTask(BackgroundLoaderTaskInfo& taskInfo)
 {
     WS_HILOGD("Finish background_loader task");
     std::lock_guard<std::mutex> lock(mutex_);
-    ErrCode code = Connect();
+    ErrCode code = Connect(BackgroundLoader::E_SYSTEM_SERVICE_NOT_READY);
     if (code != ERR_OK) {
         return code;
     }
@@ -322,7 +323,7 @@ ErrCode WorkSchedulerSrvClient::GetTaskInfo(int32_t taskId, BackgroundLoaderTask
 {
     WS_HILOGD("Get background_loader task info");
     std::lock_guard<std::mutex> lock(mutex_);
-    ErrCode code = Connect();
+    ErrCode code = Connect(BackgroundLoader::E_SYSTEM_SERVICE_NOT_READY);
     if (code != ERR_OK) {
         return code;
     }

@@ -24,6 +24,7 @@
 
 namespace OHOS {
 namespace WorkScheduler {
+constexpr int32_t DEFAULT_CLIENT_ERR_CODE = 970000301;
 class WorkSchedulerSrvClient final : public DelayedRefSingleton<WorkSchedulerSrvClient> {
     DECLARE_DELAYED_REF_SINGLETON(WorkSchedulerSrvClient)
 public:
@@ -204,7 +205,7 @@ private:
         WorkSchedulerSrvClient &workSchedulerSrvClient_;
     };
 
-    ErrCode Connect();
+    ErrCode Connect(int32_t errCode = DEFAULT_CLIENT_ERR_CODE);
     sptr<IWorkSchedService> iWorkSchedService_ {nullptr};
     sptr<IRemoteObject::DeathRecipient> deathRecipient_ {nullptr};
     void ResetProxy();
