@@ -111,7 +111,11 @@ void BackgroundLoaderMgr::RestoreTaskMapFromDb(const std::vector<TaskRow>& rows)
             info.abilityName_ = row.abilityName;
             info.appIndex_ = row.appIndex;
             info.taskId_ = row.taskId;
-            info.status_ = static_cast<TaskStatus>(row.status); // running状态的要做接续处理
+            if (static_cast<TaskStatus>(row.status) == TaskStatus::RUNNING) {
+                info.status_ = TaskStatus::FINISHED;
+            } else {
+                info.status_ = static_cast<TaskStatus>(row.status); 
+            }
             info.uid_ = row.uid;
             info.timeoutCount_ = row.timeoutCount;
             // 重启后运行状态已失效，强制恢复默认值
