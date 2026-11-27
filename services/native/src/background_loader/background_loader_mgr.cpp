@@ -60,7 +60,6 @@ constexpr int32_t MAX_BUNDLE_NAME_LENGTH = 256;
 constexpr int32_t MAX_ABILITY_NAME_LENGTH = 256;
 constexpr int32_t MAX_TASK_MAP_SIZE = 1000;
 constexpr int32_t DEFAULT_FRAME_NUM = 0;
-constexpr std::string_view LOCATION_STATE_START = "start";
 constexpr std::string_view TORCH_STATE_ON = "ON";
 constexpr std::string_view OHOS_PERMISSION_CAMERA_BACKGROUND = "ohos.permission.CAMERA_BACKGROUND";
 constexpr std::string_view OHOS_PERMISSION_MICROPHONE_BACKGROUND = "ohos.permission.MICROPHONE_BACKGROUND";
@@ -1577,31 +1576,6 @@ void BackgroundLoaderMgr::HandleAppAudioCaptureStateChangeEvent(int64_t value, c
     HandlePerceivableIntercept(uid, BlockListReason::AUDIO_CAPTURE);
 }
 
-void BackgroundLoaderMgr::HandleAppLocationStateEvent(int64_t value, const nlohmann::json &payload)
-{
-    if (!isReady_.load()) {
-        BL_HILOGE("BackgroundLoaderMgr service is not ready");
-        return;
-    }
-    if (value != ResType::LocationStatus::APP_LOCATION_STATUE_CHANGE) {
-        return;
-    }
-    std::string state = "";
-    if (!ResCommonUtil::ParseStringParameterFromJson("state", state, payload)) {
-        BL_HILOGE("HandleAppLocationStateEvent parse state fail");
-        return;
-    }
-    if (state != std::string(LOCATION_STATE_START)) {
-        return;
-    }
-    int32_t uid = 0;
-    if (!ResCommonUtil::ParseIntParameterFromJson("uid", uid, payload)) {
-        BL_HILOGE("HandleAppLocationStateEvent parse payload fail");
-        return;
-    }
-    HandlePerceivableIntercept(uid, BlockListReason::USE_LOCATION);
-}
-
 void BackgroundLoaderMgr::HandleAppTorchStateEvent(int64_t value, const nlohmann::json &payload)
 {
     if (!isReady_.load()) {
@@ -1613,7 +1587,7 @@ void BackgroundLoaderMgr::HandleAppTorchStateEvent(int64_t value, const nlohmann
     }
     int32_t uid = 0;
     if (!ResCommonUtil::ParseIntParameterFromJson("uid", uid, payload)) {
-        BL_HILOGE("HandleAppLocationStateEvent parse payload fail");
+        BL_HILOGE("HandleAppTorchStateEvent parse payload fail");
         return;
     }
     HandlePerceivableIntercept(uid, BlockListReason::USE_TORCH);

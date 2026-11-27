@@ -81,11 +81,10 @@ enum class BlockListReason : int32_t {
     HAS_LOCATION_BG_PERM = 3,  // 拥有 LOCATION_IN_BACKGROUND 权限
     AUDIO_RENDER = 4,  // 音频播放
     AUDIO_CAPTURE = 5,  // 音频录制
-    USE_LOCATION = 6,  // 定位
-    USE_TORCH = 7,  //闪光灯
-    APP_CRASH = 8,  // 预取过程中应用崩溃
-    TRANSIENT_TASK = 9,  // 短时任务
-    CONTINUOUS_TASK = 10,  // 长时任务
+    USE_TORCH = 6,  //闪光灯
+    APP_CRASH = 7,  // 预取过程中应用崩溃
+    TRANSIENT_TASK = 8,  // 短时任务
+    CONTINUOUS_TASK = 9,  // 长时任务
 };
 
 enum class ProcessDiedResult : int32_t {
@@ -107,7 +106,6 @@ public:
     void HandleAppStateChangeEvent(int64_t value, const nlohmann::json &payload);
     void HandleAppAudioRenderStateChangeEvent(int64_t value, const nlohmann::json &payload);
     void HandleAppAudioCaptureStateChangeEvent(int64_t value, const nlohmann::json &payload);
-    void HandleAppLocationStateEvent(int64_t value, const nlohmann::json &payload);
     void HandleAppTorchStateEvent(int64_t value, const nlohmann::json &payload);
     void HandleTransientTaskEvent(int64_t value, const nlohmann::json &payload);
     void HandleContinuousTaskEvent(int64_t value, const nlohmann::json &payload);

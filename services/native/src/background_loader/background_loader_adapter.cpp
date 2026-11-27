@@ -51,10 +51,6 @@ void BackgroundLoaderAdapter::DispatchResource(const std::shared_ptr<ResourceSch
             BackgroundLoaderMgr::GetInstance().HandleAppAudioCaptureStateChangeEvent(resData->value, resData->payload);
             break;
         }
-        case ResType::RES_TYPE_LOCATION_STATUS_CHANGE: {
-            BackgroundLoaderMgr::GetInstance().HandleAppLocationStateEvent(resData->value, resData->payload);
-            break;
-        }
         case ResType::RES_TYPE_CAMERA_TORCH_STATE_CHANGE: {
             BackgroundLoaderMgr::GetInstance().HandleAppTorchStateEvent(resData->value, resData->payload);
             break;
