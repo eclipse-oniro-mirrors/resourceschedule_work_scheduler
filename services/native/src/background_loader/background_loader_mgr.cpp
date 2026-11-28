@@ -114,7 +114,7 @@ void BackgroundLoaderMgr::RestoreTaskMapFromDb(const std::vector<TaskRow>& rows)
             if (static_cast<TaskStatus>(row.status) == TaskStatus::RUNNING) {
                 info.status_ = TaskStatus::FINISHED;
             } else {
-                info.status_ = static_cast<TaskStatus>(row.status); 
+                info.status_ = static_cast<TaskStatus>(row.status);
             }
             info.uid_ = row.uid;
             info.timeoutCount_ = row.timeoutCount;
