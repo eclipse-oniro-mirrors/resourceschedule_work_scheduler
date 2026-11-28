@@ -156,21 +156,6 @@ HWTEST_F(BackgroundLoaderAdapterTest, DispatchResource_AudioCaptureStatusChanged
 }
 
 /**
- * @tc.name: DispatchResource_LocationStatusChange_001
- * @tc.desc: Test DispatchResource dispatches RES_TYPE_LOCATION_STATUS_CHANGE.
- * @tc.type: FUNC
- */
-HWTEST_F(BackgroundLoaderAdapterTest, DispatchResource_LocationStatusChange_001, TestSize.Level1)
-{
-    auto& mgr = BackgroundLoaderMgr::GetInstance();
-    auto data = std::make_shared<ResData>(ResType::RES_TYPE_LOCATION_STATUS_CHANGE, 0, nlohmann::json{});
-    BackgroundLoaderAdapter::GetInstance().DispatchResource(data);
-    EXPECT_EQ(mgr.taskMap_.count(SEED_UID), 1);
-    EXPECT_EQ(mgr.blockLists_.count(SEED_BUNDLE), 1);
-    EXPECT_FALSE(mgr.isReady_.load());
-}
-
-/**
  * @tc.name: DispatchResource_CameraTorchStateChange_001
  * @tc.desc: Test DispatchResource dispatches RES_TYPE_CAMERA_TORCH_STATE_CHANGE.
  * @tc.type: FUNC

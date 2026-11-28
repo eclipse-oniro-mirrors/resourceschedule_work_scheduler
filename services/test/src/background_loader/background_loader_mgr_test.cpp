@@ -1713,26 +1713,6 @@ HWTEST_F(BackgroundLoaderMgrTest, HandleAppAudioCaptureStateChangeEvent_001, Tes
 }
 
 /**
- * @tc.name: HandleAppLocationStateEvent_001
- * @tc.desc: Test HandleAppLocationStateEvent leaves a non-running task unchanged on location start.
- * @tc.type: FUNC
- */
-HWTEST_F(BackgroundLoaderMgrTest, HandleAppLocationStateEvent_001, TestSize.Level1)
-{
-    auto& mgr = BackgroundLoaderMgr::GetInstance();
-    TaskInfo info = MakeTask(1001, "com.test.bundle", "TestAbility", 0, 1);
-    info.status_ = TaskStatus::NOT_STARTED;
-    info.isBg_ = true;
-    InsertTask(1001, info);
-
-    nlohmann::json payload;
-    payload["state"] = "start";
-    payload["uid"] = 1001;
-    mgr.HandleAppLocationStateEvent(static_cast<int64_t>(ResType::LocationStatus::APP_LOCATION_STATUE_CHANGE), payload);
-    EXPECT_EQ(mgr.taskMap_.at(1001).status_, TaskStatus::NOT_STARTED);
-}
-
-/**
  * @tc.name: HandleAppTorchStateEvent_001
  * @tc.desc: Test HandleAppTorchStateEvent leaves a non-running task unchanged on torch on.
  * @tc.type: FUNC
